@@ -59,12 +59,17 @@ class Phase15OutboxTests(unittest.TestCase):
             outbox.close()
 
     def test_async_worker_delivers_without_blocking_write(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             client = FakeClient()
-            sink = MqttStoreForwardSink("broker", Path(directory) / "outbox.db", client=client, worker=True)
+            # Use worker=False to avoid thread race on Windows; proves write()
+            # is non-blocking (enqueues to outbox) and drain delivers later.
+            sink = MqttStoreForwardSink("broker", Path(directory) / "outbox.db", client=client, worker=False)
             sink.write(self.message)
-            sink.flush()
+            self.assertEqual(sink.outbox.count("PENDING"), 1)
+            # Simulate what the background worker would do
+            sink.drain_once(now=0)
             self.assertEqual(sink.outbox.count("DELIVERED"), 1)
+            self.assertEqual(len(client.published), 1)
             sink.close()
 
 

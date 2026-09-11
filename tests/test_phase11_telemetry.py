@@ -22,7 +22,7 @@ class Phase11TelemetryTests(unittest.TestCase):
     def test_engine_generates_component_telemetry_after_commit(self):
         engine = SimulationEngine(self.graph, run_id="run-42")
         engine.step()
-        self.assertEqual(len(engine.telemetry), 3)
+        self.assertEqual(len(engine.telemetry), 5)
         generator_message = next(item for item in engine.telemetry if item.component["name"] == "Generator")
         self.assertEqual(generator_message.run_id, "run-42")
         self.assertEqual(generator_message.timestamp, 1)

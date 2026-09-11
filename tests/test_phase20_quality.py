@@ -23,15 +23,17 @@ class Phase20QualityTests(unittest.TestCase):
 
     def test_report_counts_components_behaviors_and_isolated_nodes(self):
         report = build_quality_report(compile_model(self.topology, self.specification))
-        self.assertEqual(report.components, 3)
-        self.assertEqual(report.connections, 1)
-        self.assertEqual(report.specialized_behaviors, 2)
-        self.assertEqual(report.generic_behaviors, 1)
+        self.assertEqual(report.components, 5)
+        self.assertEqual(report.connections, 4)
+        self.assertEqual(report.specialized_behaviors, 3)  # generator, sensor, controller
+        self.assertEqual(report.generic_behaviors, 2)  # station, system
         self.assertEqual(report.unresolved_references, 0)
         self.assertIn("MiniStation", report.unconnected_components)
 
     def test_report_detects_cycles(self):
         topology = json.loads(json.dumps(self.topology))
+        # The enriched topology already has a cycle: Generator→Controller→Generator
+        # Adding FuelSensor→Generator creates a bigger SCC
         topology["connections"].append({
             "source": "FuelSensor",
             "target": "Generator",
@@ -39,7 +41,11 @@ class Phase20QualityTests(unittest.TestCase):
             "direction": "-->",
         })
         report = build_quality_report(compile_model(topology, self.specification))
-        self.assertIn(["FuelSensor", "Generator"], report.potential_cycles)
+        # The cycle now includes Controller, FuelSensor, Generator
+        self.assertTrue(
+            any("Generator" in cycle and "Controller" in cycle for cycle in report.potential_cycles),
+            f"expected cycle containing Generator and Controller, got {report.potential_cycles}",
+        )
 
     def test_maitri_report_is_topology_agnostic(self):
         root = ROOT / "config/twins/maitri"
@@ -59,7 +65,7 @@ class Phase20QualityTests(unittest.TestCase):
             text=True,
         )
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(json.loads(result.stdout)["components"], 3)
+        self.assertEqual(json.loads(result.stdout)["components"], 5)
 
 
 if __name__ == "__main__":

@@ -50,7 +50,8 @@ class Phase3BehaviorTests(unittest.TestCase):
     def test_specification_behavior_hint_is_used_after_type_lookup(self):
         topology = copy.deepcopy(self.topology)
         specification = copy.deepcopy(self.specification)
-        topology["children"][0]["type"] = "unknown_type"
+        # Target Generator specifically (children[0] is EnergySystem, children[0][0] is Generator)
+        topology["children"][0]["children"][0]["type"] = "unknown_type"
         specification["components"]["Generator"]["type"] = "unknown_type"
         specification["components"]["Generator"]["spec"]["behavior_type"] = "generator"
         graph = compile_model(topology, specification)

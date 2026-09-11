@@ -22,12 +22,18 @@ class Phase2GraphTests(unittest.TestCase):
     def test_compiles_containment_and_functional_indexes(self):
         graph = compile_model(self.topology, self.specification)
         self.assertEqual(graph.root.name, "MiniStation")
-        self.assertEqual([child.name for child in graph.children_of("MiniStation")], ["Generator", "FuelSensor"])
-        self.assertEqual([item.name for item in graph.descendants_of("MiniStation")], ["Generator", "FuelSensor"])
-        self.assertEqual(graph.parent_of("Generator").name, "MiniStation")
-        self.assertEqual(graph.ancestors_of("Generator")[0].name, "MiniStation")
-        self.assertEqual(graph.outgoing("Generator")[0].target, "FuelSensor")
-        self.assertEqual(graph.incoming("FuelSensor")[0].source, "Generator")
+        # MiniStation -> EnergySystem -> {Generator, FuelSensor, Controller}
+        self.assertEqual([child.name for child in graph.children_of("MiniStation")], ["EnergySystem"])
+        descendant_names = sorted(item.name for item in graph.descendants_of("MiniStation"))
+        self.assertEqual(descendant_names, ["Controller", "EnergySystem", "FuelSensor", "Generator"])
+        self.assertEqual(graph.parent_of("Generator").name, "EnergySystem")
+        ancestor_names = [item.name for item in graph.ancestors_of("Generator")]
+        self.assertEqual(ancestor_names, ["EnergySystem", "MiniStation"])
+        # Generator has outgoing connections to Controller and FuelSensor
+        outgoing_targets = sorted(c.target for c in graph.outgoing("Generator"))
+        self.assertIn("FuelSensor", outgoing_targets)
+        self.assertIn("Controller", outgoing_targets)
+        self.assertTrue(any(c.source == "Generator" for c in graph.incoming("FuelSensor")))
 
     def test_compiled_component_has_independent_runtime_state(self):
         graph = compile_model(self.topology, self.specification)
@@ -38,10 +44,15 @@ class Phase2GraphTests(unittest.TestCase):
 
     def test_bidirectional_connection_is_indexed_both_ways(self):
         topology = copy.deepcopy(self.topology)
-        topology["connections"][0]["direction"] = "<-->"
+        # Make the fuel connection (Generator->FuelSensor) bidirectional
+        for conn in topology["connections"]:
+            if conn["source"] == "Generator" and conn["target"] == "FuelSensor":
+                conn["direction"] = "<-->"
+                break
         graph = compile_model(topology, self.specification)
-        self.assertEqual(graph.incoming("Generator")[0].source, "FuelSensor")
-        self.assertEqual(graph.outgoing("FuelSensor")[0].target, "Generator")
+        # Bidirectional should create reverse indexing
+        self.assertTrue(any(c.source == "FuelSensor" and c.target == "Generator" for c in graph.incoming("Generator")))
+        self.assertTrue(any(c.target == "Generator" for c in graph.outgoing("FuelSensor")))
 
     def test_orphan_specification_is_diagnostic(self):
         specification = copy.deepcopy(self.specification)

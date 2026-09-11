@@ -37,7 +37,8 @@ class Phase1ContractTests(unittest.TestCase):
 
     def test_duplicate_component_name_is_rejected(self):
         invalid = copy.deepcopy(self.topology)
-        invalid["children"][1]["name"] = "Generator"
+        # FuelSensor is children[0].children[1] in the nested hierarchy
+        invalid["children"][0]["children"][1]["name"] = "Generator"
         with self.assertRaisesRegex(ValidationError, "duplicate component name"):
             validate_topology(invalid)
 

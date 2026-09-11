@@ -29,13 +29,13 @@ class Phase17CliTests(unittest.TestCase):
         output = self.run_cli("validate", "--topology", str(self.root / "topology.json"), "--spec", str(self.root / "specification.json"))
         self.assertEqual(output.strip(), "VALID")
         report = json.loads(self.run_cli("inspect", "--topology", str(self.root / "topology.json"), "--spec", str(self.root / "specification.json")))
-        self.assertEqual(report["components"], 3)
+        self.assertEqual(report["components"], 5)
 
     def test_graph_and_run_output(self):
         graph_output = self.run_cli("graph", "--topology", str(self.root / "topology.json"), "--spec", str(self.root / "specification.json"))
         self.assertIn("Generator-->FuelSensor@fuel", graph_output)
         output = self.run_cli("run", "--topology", str(self.root / "topology.json"), "--spec", str(self.root / "specification.json"), "--duration", "1")
-        self.assertEqual(len(output.strip().splitlines()), 3)
+        self.assertEqual(len(output.strip().splitlines()), 5)
 
     def test_validate_simulation(self):
         output = self.run_cli("validate-simulation", "--topology", str(self.root / "topology.json"), "--spec", str(self.root / "specification.json"), "--scenario", str(self.root / "blizzard.scenario.json"))
