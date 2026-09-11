@@ -9,7 +9,7 @@ from collections.abc import Mapping
 
 from twin_sim.behaviors import BehaviorContext
 from twin_sim.model import ComponentGraph
-from twin_sim.observability import CausalTracer
+from twin_sim.observability import CausalTracer, SafetyMonitor, SafetyViolation
 from twin_sim.telemetry import TelemetryGenerator, TelemetryMessage
 
 from .clock import ClockMode, SimulationClock
@@ -41,6 +41,7 @@ class SimulationEngine:
         run_id: str = "run-default",
         debug: bool = False,
         tracer: CausalTracer | None = None,
+        validation_config: dict[str, str] | None = None,
     ) -> None:
         self.graph = graph
         self.clock = SimulationClock(tick_interval, time_scale, mode)
@@ -59,6 +60,8 @@ class SimulationEngine:
         self.causal_trace: list[dict[str, Any]] = []
         self.debug = debug
         self.tracer = tracer or CausalTracer(enabled=debug)
+        self.safety_monitor = SafetyMonitor(validation_config or {})
+        self.safety_warnings: list[SafetyViolation] = []
         self.telemetry_generator = TelemetryGenerator(run_id)
         self.telemetry: list[TelemetryMessage] = []
         for component in self.graph.components.values():
@@ -103,10 +106,14 @@ class SimulationEngine:
             component.runtime_state.values.update(proposals[name])
             if input_updates[name].get("inputs"):
                 component.runtime_state.values["inputs"] = input_updates[name]["inputs"]
+
+        violations = self.safety_monitor.evaluate_and_enforce(self.graph, self.environment.values)
+        self.safety_warnings.extend([v for v in violations if v.severity == "warning"])
+
         self.telemetry.extend(self.telemetry_generator.generate(
             self.graph,
             timestamp,
-            self.environment.snapshot(),
+            self.environment.values,
             self.causal_trace[-5:],
         ))
         self.tick_count += 1

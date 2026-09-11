@@ -6,12 +6,13 @@ from typing import Any
 
 from twin_sim.behaviors import infer_behaviors
 from twin_sim.ingestion.validator import validate_documents
+from twin_sim.observability import SafetyError
 from twin_sim.model import Component, ComponentGraph, Connection
 
 
-def compile_model(topology: Any, specification: Any) -> ComponentGraph:
+def compile_model(topology: Any, specification: Any, validation_config: dict[str, str] | None = None) -> ComponentGraph:
     """Build a reusable graph without referring to topology-specific names."""
-    valid_topology, valid_specification = validate_documents(topology, specification)
+    valid_topology, valid_specification = validate_documents(topology, specification, validation_config)
     components: dict[str, Component] = {}
 
     def build(node: dict[str, Any], parent: Component | None = None) -> Component:
@@ -41,5 +42,19 @@ def compile_model(topology: Any, specification: Any) -> ComponentGraph:
     for connection in connections:
         if connection.source == connection.target:
             graph.diagnostics.append(f"self-connection detected for '{connection.source}'")
+            
+    # Check for unknown sensors
+    validation_config = validation_config or {}
+    for name, component in components.items():
+        if component.type == "sensor":
+            quantity = component.specification.get("quantity")
+            if quantity not in {None, '', 'wind_speed', 'data_integrity', 'battery_health', 'air_quality', 'storage_level', 'humidity', 'environmental_status', 'state_of_charge', 'ground_displacement', 'co2', 'fuel_level', 'access_event', 'temperature', 'network_status', 'position', 'occupancy', 'health_status', 'pressure', 'signal_quality', 'smoke_detection', 'emergency_status', 'salinity', 'voltage', 'gas_concentration', 'radiation', 'fire_detection', 'power', 'level', 'inventory_status', 'airflow', 'status', 'energy', 'fuel'}:
+                msg = f"unknown sensor quantity '{quantity}' for sensor '{name}'"
+                severity = validation_config.get("unknown_sensor", "error")
+                if severity == "error":
+                    raise SafetyError(f"Safety violation (unknown_sensor): [{name}] {msg}")
+                elif severity == "warning":
+                    graph.diagnostics.append(msg)
+                    
     infer_behaviors(graph)
     return graph

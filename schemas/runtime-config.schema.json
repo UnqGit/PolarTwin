@@ -10,7 +10,13 @@
     "tick_interval": {"type": "number", "exclusiveMinimum": 0},
     "time_scale": {"type": "number", "exclusiveMinimum": 0},
     "seed": {"type": "integer"},
-    "outputs": {"type": "array", "items": {"$ref": "#/$defs/output"}}
+    "outputs": {"type": "array", "items": {"$ref": "#/$defs/output"}},
+    "validation": {
+      "type": "object",
+      "additionalProperties": {
+        "enum": ["error", "warning", "ignore"]
+      }
+    }
   },
   "additionalProperties": true,
   "$defs": {

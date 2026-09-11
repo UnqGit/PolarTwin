@@ -38,7 +38,8 @@ def _string(value: Any, path: str) -> str:
     return value
 
 
-def validate_topology(document: Any) -> dict[str, Any]:
+def validate_topology(document: Any, validation_config: dict[str, str] | None = None) -> dict[str, Any]:
+    validation_config = validation_config or {}
     root = _object(document, "topology")
     for field in ("name", "type", "tags", "children", "connections"):
         if field not in root:
@@ -87,7 +88,12 @@ def validate_topology(document: Any) -> dict[str, Any]:
             raise ValidationError(f"{path}.direction must be one of {sorted(ALLOWED_DIRECTIONS)}")
         if source not in names or target not in names:
             missing = source if source not in names else target
-            raise ValidationError(f"{path} references unknown component '{missing}'")
+            msg = f"{path} references unknown component '{missing}'"
+            severity = validation_config.get("invalid_connection", "error")
+            if severity == "error":
+                raise ValidationError(msg)
+            elif severity == "warning":
+                pass  # We could log or append to a diagnostics list but right now this returns the dict
     return root
 
 
@@ -113,9 +119,9 @@ def validate_specification(document: Any) -> dict[str, Any]:
     return spec
 
 
-def validate_documents(topology: Any, specification: Any) -> tuple[dict[str, Any], dict[str, Any]]:
+def validate_documents(topology: Any, specification: Any, validation_config: dict[str, str] | None = None) -> tuple[dict[str, Any], dict[str, Any]]:
     """Validate both documents and their component/type cross references."""
-    valid_topology = validate_topology(topology)
+    valid_topology = validate_topology(topology, validation_config)
     valid_specification = validate_specification(specification)
     relation_types: dict[str, str] = {}
 

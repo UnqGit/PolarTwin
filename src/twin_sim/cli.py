@@ -103,7 +103,8 @@ def _write_messages(messages, output: str | None) -> None:
 
 def _run_engine(args):
     topology, specification = _inputs(args)
-    graph = compile_model(topology, specification)
+    validation_config = json.loads(args.validation) if getattr(args, "validation", None) else None
+    graph = compile_model(topology, specification, validation_config)
     engine = SimulationEngine(
         graph,
         tick_interval=getattr(args, "tick_interval", 1.0),
@@ -112,6 +113,7 @@ def _run_engine(args):
         run_id=getattr(args, "run_id", "run-cli"),
         environment=json.loads(args.environment) if getattr(args, "environment", None) else None,
         debug=getattr(args, "debug", True) if getattr(args, "command", "") in ("explain", "trace") else getattr(args, "debug", False),
+        validation_config=validation_config,
     )
     _scenario(engine, getattr(args, "scenario", None))
     engine.run(duration=getattr(args, "duration", 1.0))
@@ -141,7 +143,8 @@ def command_generate(args) -> int:
 
 def command_validate_simulation(args) -> int:
     topology, specification = _inputs(args)
-    graph = compile_model(topology, specification)
+    validation_config = json.loads(args.validation) if getattr(args, "validation", None) else None
+    graph = compile_model(topology, specification, validation_config)
     events = load_scenario_events(args.scenario) if args.scenario else []
     targets = set(graph.components)
     for event in events:
@@ -158,6 +161,7 @@ def build_parser() -> argparse.ArgumentParser:
     def add_inputs(command):
         command.add_argument("--topology", required=True)
         command.add_argument("--spec", required=True)
+        command.add_argument("--validation", help="JSON string for validation safety rails config")
 
     validate = subparsers.add_parser("validate")
     add_inputs(validate)
