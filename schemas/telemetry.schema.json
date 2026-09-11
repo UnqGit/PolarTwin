@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://polartwin.dev/schemas/telemetry.schema.json",
+  "title": "Digital Twin Telemetry",
+  "type": "object",
+  "required": ["schema_version", "run_id", "timestamp"],
+  "properties": {
+    "schema_version": {"type": "string", "minLength": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "timestamp": {"type": "number"},
+    "wallclock_timestamp": {"type": "string"},
+    "component": {"type": "object"},
+    "measurement": {"type": "object"},
+    "quality": {"type": "object"},
+    "source": {"type": "object"},
+    "context": {"type": "object"},
+    "active_events": {"type": "array"},
+    "state": {"type": "object"},
+    "event": {"type": "object"}
+  },
+  "additionalProperties": true,
+  "oneOf": [
+    {"required": ["component", "measurement"]},
+    {"required": ["event"]}
+  ]
+}

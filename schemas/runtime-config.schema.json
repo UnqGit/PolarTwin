@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://polartwin.dev/schemas/runtime-config.schema.json",
+  "title": "Digital Twin Runtime Configuration",
+  "type": "object",
+  "required": ["mode", "tick_interval", "time_scale", "outputs"],
+  "properties": {
+    "mode": {"enum": ["simulator", "generator"]},
+    "duration": {"type": ["number", "null"], "minimum": 0},
+    "tick_interval": {"type": "number", "exclusiveMinimum": 0},
+    "time_scale": {"type": "number", "exclusiveMinimum": 0},
+    "seed": {"type": "integer"},
+    "outputs": {"type": "array", "items": {"$ref": "#/$defs/output"}}
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "output": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {"enum": ["stdout", "jsonl", "sqlite", "mqtt"]},
+        "enabled": {"type": "boolean"},
+        "path": {"type": "string", "minLength": 1}
+      },
+      "additionalProperties": true
+    }
+  }
+}

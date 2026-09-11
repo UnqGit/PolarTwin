@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://polartwin.dev/schemas/scenario.schema.json",
+  "title": "Digital Twin Scenario",
+  "type": "object",
+  "required": ["name", "events"],
+  "properties": {
+    "name": {"type": "string", "minLength": 1},
+    "seed": {"type": "integer"},
+    "events": {"type": "array", "items": {"$ref": "#/$defs/event"}}
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "event": {
+      "type": "object",
+      "required": ["id", "timestamp", "event"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "timestamp": {"type": "number", "minimum": 0},
+        "event": {"type": "string", "minLength": 1},
+        "duration": {"type": "number", "exclusiveMinimum": 0},
+        "target": {"type": "string", "minLength": 1},
+        "parameters": {"type": "object"}
+      },
+      "additionalProperties": true
+    }
+  }
+}

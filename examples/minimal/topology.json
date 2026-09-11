@@ -1,0 +1,22 @@
+{
+  "name": "MiniStation",
+  "type": "station",
+  "tags": ["test"],
+  "children": [
+    {
+      "name": "Generator",
+      "type": "generator",
+      "tags": ["primary"],
+      "children": []
+    },
+    {
+      "name": "FuelSensor",
+      "type": "sensor",
+      "tags": ["monitoring"],
+      "children": []
+    }
+  ],
+  "connections": [
+    {"source": "Generator", "target": "FuelSensor", "type": "fuel", "direction": "-->"}
+  ]
+}

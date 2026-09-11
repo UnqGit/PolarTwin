@@ -1,0 +1,8 @@
+{
+  "mode": "simulator",
+  "duration": 10,
+  "tick_interval": 1,
+  "time_scale": 1,
+  "seed": 42,
+  "outputs": [{"type": "jsonl", "enabled": true, "path": "./output/telemetry.jsonl"}]
+}

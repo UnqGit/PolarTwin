@@ -1,0 +1,1 @@
+"""Input loading and Phase 1 contract validation."""

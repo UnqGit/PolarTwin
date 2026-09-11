@@ -1,0 +1,134 @@
+"""Dependency-free validation for the canonical Phase 1 JSON contracts."""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Any
+
+ALLOWED_DIRECTIONS = {"-->", "<-->", "-.->"}
+
+
+class ValidationError(ValueError):
+    """Raised when a document or cross-document reference is invalid."""
+
+
+def load_json(path: str | Path) -> Any:
+    filename = Path(path)
+    try:
+        with filename.open(encoding="utf-8") as stream:
+            return json.load(stream)
+    except FileNotFoundError as exc:
+        raise ValidationError(f"File not found: {filename}") from exc
+    except json.JSONDecodeError as exc:
+        raise ValidationError(
+            f"Invalid JSON in {filename}: line {exc.lineno}, column {exc.colno}: {exc.msg}"
+        ) from exc
+
+
+def _object(value: Any, path: str) -> dict[str, Any]:
+    if not isinstance(value, dict):
+        raise ValidationError(f"{path} must be an object")
+    return value
+
+
+def _string(value: Any, path: str) -> str:
+    if not isinstance(value, str) or not value:
+        raise ValidationError(f"{path} must be a non-empty string")
+    return value
+
+
+def validate_topology(document: Any) -> dict[str, Any]:
+    root = _object(document, "topology")
+    for field in ("name", "type", "tags", "children", "connections"):
+        if field not in root:
+            raise ValidationError(f"topology is missing required field '{field}'")
+    _string(root["name"], "topology.name")
+    _string(root["type"], "topology.type")
+    if not isinstance(root["tags"], list) or not all(isinstance(tag, str) and tag for tag in root["tags"]):
+        raise ValidationError("topology.tags must be an array of non-empty strings")
+    if len(root["tags"]) != len(set(root["tags"])):
+        raise ValidationError("topology.tags must not contain duplicates")
+    if not isinstance(root["children"], list):
+        raise ValidationError("topology.children must be an array")
+    if not isinstance(root["connections"], list):
+        raise ValidationError("topology.connections must be an array")
+
+    names: dict[str, str] = {}
+
+    def visit(node: Any, path: str) -> None:
+        item = _object(node, path)
+        for field in ("name", "type", "tags", "children"):
+            if field not in item:
+                raise ValidationError(f"{path} is missing required field '{field}'")
+        name = _string(item["name"], f"{path}.name")
+        _string(item["type"], f"{path}.type")
+        if name in names:
+            raise ValidationError(f"duplicate component name '{name}' at {path}; first declared at {names[name]}")
+        names[name] = path
+        if not isinstance(item["tags"], list) or not all(isinstance(tag, str) and tag for tag in item["tags"]):
+            raise ValidationError(f"{path}.tags must be an array of non-empty strings")
+        if not isinstance(item["children"], list):
+            raise ValidationError(f"{path}.children must be an array")
+        for index, child in enumerate(item["children"]):
+            visit(child, f"{path}.children[{index}]")
+
+    visit(root, "topology")
+    for index, connection in enumerate(root["connections"]):
+        path = f"topology.connections[{index}]"
+        item = _object(connection, path)
+        for field in ("source", "target", "type", "direction"):
+            if field not in item:
+                raise ValidationError(f"{path} is missing required field '{field}'")
+        source = _string(item["source"], f"{path}.source")
+        target = _string(item["target"], f"{path}.target")
+        _string(item["type"], f"{path}.type")
+        if item["direction"] not in ALLOWED_DIRECTIONS:
+            raise ValidationError(f"{path}.direction must be one of {sorted(ALLOWED_DIRECTIONS)}")
+        if source not in names or target not in names:
+            missing = source if source not in names else target
+            raise ValidationError(f"{path} references unknown component '{missing}'")
+    return root
+
+
+def validate_specification(document: Any) -> dict[str, Any]:
+    spec = _object(document, "specification")
+    for field in ("components", "defaults"):
+        if field not in spec:
+            raise ValidationError(f"specification is missing required field '{field}'")
+        if not isinstance(spec[field], dict):
+            raise ValidationError(f"specification.{field} must be an object")
+    for name, component in spec["components"].items():
+        _string(name, "specification.components key")
+        item = _object(component, f"specification.components['{name}']")
+        if "type" not in item or "spec" not in item:
+            raise ValidationError(f"specification component '{name}' requires 'type' and 'spec'")
+        _string(item["type"], f"specification.components['{name}'].type")
+        if not isinstance(item["spec"], dict):
+            raise ValidationError(f"specification.components['{name}'].spec must be an object")
+    for component_type, default in spec["defaults"].items():
+        _string(component_type, "specification.defaults key")
+        if not isinstance(default, dict):
+            raise ValidationError(f"specification.defaults['{component_type}'] must be an object")
+    return spec
+
+
+def validate_documents(topology: Any, specification: Any) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Validate both documents and their component/type cross references."""
+    valid_topology = validate_topology(topology)
+    valid_specification = validate_specification(specification)
+    relation_types: dict[str, str] = {}
+
+    def collect(node: dict[str, Any]) -> None:
+        relation_types[node["name"]] = node["type"]
+        for child in node["children"]:
+            collect(child)
+
+    collect(valid_topology)
+    for name, relation_type in relation_types.items():
+        component = valid_specification["components"].get(name)
+        if component is None:
+            raise ValidationError(f"component '{name}' has no specification")
+        if component["type"] != relation_type:
+            raise ValidationError(f"type mismatch for '{name}': topology has '{relation_type}', specification has '{component['type']}'")
+    return valid_topology, valid_specification

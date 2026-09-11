@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://polartwin.dev/schemas/specification.schema.json",
+  "title": "Digital Twin Component Specifications",
+  "type": "object",
+  "required": ["components", "defaults"],
+  "properties": {
+    "components": {"type": "object", "additionalProperties": {"$ref": "#/$defs/component"}},
+    "defaults": {"type": "object", "additionalProperties": {"type": "object"}}
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "component": {
+      "type": "object",
+      "required": ["type", "spec"],
+      "properties": {
+        "type": {"type": "string", "minLength": 1},
+        "spec": {"type": "object"}
+      },
+      "additionalProperties": true
+    }
+  }
+}
