@@ -92,8 +92,12 @@ class MqttStoreForwardSink(TelemetrySink):
                 self._stop.wait(0.05)
 
     def flush(self) -> None:
-        while self.drain_once():
-            pass
+        deadline = time.monotonic() + 2.0
+        while time.monotonic() < deadline:
+            self.drain_once()
+            if self.outbox.count("PENDING") == 0 and self.outbox.count("IN_FLIGHT") == 0:
+                return
+            time.sleep(0.01)
 
     def close(self) -> None:
         self._stop.set()

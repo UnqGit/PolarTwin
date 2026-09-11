@@ -8,6 +8,9 @@ version = "0.1.0"
 description = "Schema-driven digital twin simulator"
 requires-python = ">=3.11"
 
+[project.scripts]
+twin-sim = "twin_sim.cli:main"
+
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 testpaths = ["tests"]
