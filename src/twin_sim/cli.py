@@ -65,6 +65,7 @@ def command_quality(args) -> int:
 
 def command_explain(args) -> int:
     engine = _run_engine(args)
+    engine.run(duration=getattr(args, "duration", 1.0))
     explanation = engine.tracer.explain(args.component)
     if args.json:
         print(json.dumps(explanation.to_dict(), sort_keys=True, indent=2))
@@ -75,6 +76,7 @@ def command_explain(args) -> int:
 
 def command_trace(args) -> int:
     engine = _run_engine(args)
+    engine.run(duration=getattr(args, "duration", 1.0))
     if args.component:
         events = [e for e in engine.tracer.events if any(eff.component == args.component for eff in e.effects)]
     else:
@@ -90,9 +92,11 @@ def command_trace(args) -> int:
     return 0
 
 
-def _write_messages(messages, output: str | None) -> None:
-    if output:
-        sink = JsonlSink(output)
+from twin_sim.outputs import create_sink, AsyncTelemetryPipeline, JsonlSink
+
+def _write_messages(messages, output_file):
+    if output_file:
+        sink = JsonlSink(output_file)
         with sink:
             for message in messages:
                 sink.write(message)
@@ -116,12 +120,12 @@ def _run_engine(args):
         validation_config=validation_config,
     )
     _scenario(engine, getattr(args, "scenario", None))
-    engine.run(duration=getattr(args, "duration", 1.0))
     return engine
 
 
 def command_run(args) -> int:
     engine = _run_engine(args)
+    engine.run(duration=getattr(args, "duration", 1.0))
     _write_messages(engine.telemetry, args.output)
     return 0
 
@@ -130,14 +134,18 @@ def command_generate(args) -> int:
     engine = _run_engine(args)
     configuration = load_json(args.mqtt_config)
     sink = create_sink(configuration)
+    pipeline = AsyncTelemetryPipeline(sink, backpressure_policy="drop")
+    engine.telemetry_sink = pipeline
+    engine.telemetry_batch_size = 100
+    
     try:
-        sink.start()
-        for message in engine.telemetry:
-            sink.write(message)
-        sink.flush()
+        pipeline.start()
+        engine.run(duration=getattr(args, "duration", 1.0))
+        pipeline.flush()
     finally:
-        sink.close()
-    print(json.dumps({"messages": len(engine.telemetry), "sink": configuration.get("type")}))
+        pipeline.close()
+    
+    print(json.dumps({"sink": configuration.get("type"), "dropped_batches": pipeline.dropped_batches}))
     return 0
 
 

@@ -8,9 +8,10 @@ from typing import Any, Callable
 from collections.abc import Mapping
 
 from twin_sim.behaviors import BehaviorContext
-from twin_sim.model import ComponentGraph
+from twin_sim.model import ComponentGraph, Component
 from twin_sim.observability import CausalTracer, SafetyMonitor, SafetyViolation
 from twin_sim.telemetry import TelemetryGenerator, TelemetryMessage
+from twin_sim.outputs import TelemetrySink
 
 from .clock import ClockMode, SimulationClock
 from .environment import EnvironmentState
@@ -42,6 +43,8 @@ class SimulationEngine:
         debug: bool = False,
         tracer: CausalTracer | None = None,
         validation_config: dict[str, str] | None = None,
+        telemetry_sink: TelemetrySink | None = None,
+        telemetry_batch_size: int = 1000,
     ) -> None:
         self.graph = graph
         self.clock = SimulationClock(tick_interval, time_scale, mode)
@@ -64,8 +67,13 @@ class SimulationEngine:
         self.safety_warnings: list[SafetyViolation] = []
         self.telemetry_generator = TelemetryGenerator(run_id)
         self.telemetry: list[TelemetryMessage] = []
+        self.telemetry_sink = telemetry_sink
+        self.telemetry_batch_size = telemetry_batch_size
+        
+        self._active_components: list[Component] = []
         for component in self.graph.components.values():
             if component.behavior is not None:
+                self._active_components.append(component)
                 component.behavior.initialize(component, self.context)
 
     @property
@@ -89,23 +97,22 @@ class SimulationEngine:
         self.context.values["environment"] = self.environment.snapshot()
         self.last_phase_order.append("evaluation")
         proposals: dict[str, dict[str, Any]] = {}
-        for component in self.graph.components.values():
-            if component.behavior is not None:
-                inputs = component.runtime_state.values.get("inputs", {})
-                context = BehaviorContext({**self.context.values, "inputs": inputs})
-                proposals[component.name] = component.behavior.evaluate(
-                    component, context, self.clock.tick_interval
-                )
-            else:
-                proposals[component.name] = {}
+        for component in self._active_components:
+            inputs = component.runtime_state.values.get("inputs", {})
+            context = BehaviorContext({**self.context.values, "inputs": inputs})
+            proposals[component.name] = component.behavior.evaluate(
+                component, context, self.clock.tick_interval
+            )
         self.last_phase_order.append("propagation")
         apply_failure_recovery(self.graph, proposals, self.causal_trace, timestamp=timestamp, tracer=self.tracer)
         input_updates = propagate(self.graph, proposals)
         self.last_phase_order.append("commit")
-        for name, component in self.graph.components.items():
-            component.runtime_state.values.update(proposals[name])
-            if input_updates[name].get("inputs"):
-                component.runtime_state.values["inputs"] = input_updates[name]["inputs"]
+        for name, proposal in proposals.items():
+            if proposal:
+                self.graph.components[name].runtime_state.values.update(proposal)
+        for name, updates in input_updates.items():
+            if updates and updates.get("inputs"):
+                self.graph.components[name].runtime_state.values["inputs"] = updates["inputs"]
 
         violations = self.safety_monitor.evaluate_and_enforce(self.graph, self.environment.values)
         self.safety_warnings.extend([v for v in violations if v.severity == "warning"])
@@ -116,6 +123,10 @@ class SimulationEngine:
             self.environment.values,
             self.causal_trace[-5:],
         ))
+        if self.telemetry_sink and len(self.telemetry) >= self.telemetry_batch_size:
+            self.telemetry_sink.write_batch(self.telemetry)
+            self.telemetry.clear()
+
         self.tick_count += 1
         self.status = SimulationStatus.PAUSED if self.status == SimulationStatus.PAUSED else SimulationStatus.RUNNING
         return timestamp
@@ -134,6 +145,9 @@ class SimulationEngine:
             timestamps.append(self.step())
         if end is not None and self.status == SimulationStatus.RUNNING:
             self.status = SimulationStatus.COMPLETED
+        if self.telemetry_sink and self.telemetry:
+            self.telemetry_sink.write_batch(self.telemetry)
+            self.telemetry.clear()
         return timestamps
 
     def pause(self) -> None:

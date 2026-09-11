@@ -17,16 +17,18 @@ def propagate(
     copied into that channel, so propagation never exposes mutable source
     state or depends on component iteration order.
     """
-    updates: dict[str, dict[str, Any]] = {name: {} for name in graph.components}
+    updates: dict[str, dict[str, Any]] = {}
     for connection in graph.connections:
         source_values = dict(proposals.get(connection.source, {}))
-        updates[connection.target].setdefault("inputs", {})[connection.type] = {
+        updates.setdefault(connection.target, {}).setdefault("inputs", {})[connection.type] = {
             "source": connection.source,
             "values": source_values,
         }
+        
         if connection.direction == "<-->" and connection.source != connection.target:
-            updates[connection.source].setdefault("inputs", {})[connection.type] = {
+            target_values = dict(proposals.get(connection.target, {}))
+            updates.setdefault(connection.source, {}).setdefault("inputs", {})[connection.type] = {
                 "source": connection.target,
-                "values": dict(proposals.get(connection.target, {})),
+                "values": target_values,
             }
     return updates
