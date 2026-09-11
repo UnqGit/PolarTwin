@@ -11,6 +11,7 @@ from twin_sim.model import ComponentGraph
 
 from .clock import ClockMode, SimulationClock
 from .randomness import RandomSource
+from .propagation import propagate
 from .scheduler import Callback, SimulationScheduler
 
 
@@ -40,6 +41,7 @@ class SimulationEngine:
         self.status = SimulationStatus.READY
         self.tick_count = 0
         self.context = BehaviorContext({"clock": self.clock, "random": self.random})
+        self.last_phase_order: list[str] = []
         for component in self.graph.components.values():
             if component.behavior is not None:
                 component.behavior.initialize(component, self.context)
@@ -56,11 +58,30 @@ class SimulationEngine:
             raise RuntimeError(f"cannot step while simulation is {self.status.value}")
         self.status = SimulationStatus.RUNNING
         timestamp = self.clock.advance()
+        self.last_phase_order = []
+        self.last_phase_order.append("events")
         for event in self.scheduler.pop_due(timestamp):
             event.callback(timestamp, event.payload)
+        self.last_phase_order.append("environment")
+        self.context.values["timestamp"] = timestamp
+        self.last_phase_order.append("evaluation")
+        proposals: dict[str, dict[str, Any]] = {}
         for component in self.graph.components.values():
             if component.behavior is not None:
-                component.behavior.step(component, self.context, self.clock.tick_interval)
+                inputs = component.runtime_state.values.get("inputs", {})
+                context = BehaviorContext({**self.context.values, "inputs": inputs})
+                proposals[component.name] = component.behavior.evaluate(
+                    component, context, self.clock.tick_interval
+                )
+            else:
+                proposals[component.name] = {}
+        self.last_phase_order.append("propagation")
+        input_updates = propagate(self.graph, proposals)
+        self.last_phase_order.append("commit")
+        for name, component in self.graph.components.items():
+            component.runtime_state.values.update(proposals[name])
+            if input_updates[name].get("inputs"):
+                component.runtime_state.values["inputs"] = input_updates[name]["inputs"]
         self.tick_count += 1
         self.status = SimulationStatus.PAUSED if self.status == SimulationStatus.PAUSED else SimulationStatus.RUNNING
         return timestamp
