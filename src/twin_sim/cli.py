@@ -64,8 +64,9 @@ def command_quality(args) -> int:
 
 
 def command_explain(args) -> int:
-    engine = _run_engine(args)
-    engine.run(duration=getattr(args, "duration", 1.0))
+    _, _get = _merge_config(args)
+    engine = _run_engine(args, _get)
+    engine.run(duration=_get("duration", 1.0))
     explanation = engine.tracer.explain(args.component)
     if args.json:
         print(json.dumps(explanation.to_dict(), sort_keys=True, indent=2))
@@ -75,8 +76,9 @@ def command_explain(args) -> int:
 
 
 def command_trace(args) -> int:
-    engine = _run_engine(args)
-    engine.run(duration=getattr(args, "duration", 1.0))
+    _, _get = _merge_config(args)
+    engine = _run_engine(args, _get)
+    engine.run(duration=_get("duration", 1.0))
     if args.component:
         events = [e for e in engine.tracer.events if any(eff.component == args.component for eff in e.effects)]
     else:
@@ -92,7 +94,24 @@ def command_trace(args) -> int:
     return 0
 
 
-from twin_sim.outputs import create_sink, AsyncTelemetryPipeline, JsonlSink
+from twin_sim.outputs import create_sink, AsyncTelemetryPipeline, JsonlSink, MultiSink
+from twin_sim.ingestion.config import load_runtime_config
+
+def _merge_config(args):
+    config = {}
+    if getattr(args, "config", None):
+        config = load_runtime_config(args.config)
+        
+    def _get(key, default=None):
+        val = getattr(args, key, None)
+        if val is not None:
+            return val
+        if key in config:
+            return config[key]
+        return default
+        
+    return config, _get
+
 
 def _write_messages(messages, output_file):
     if output_file:
@@ -105,18 +124,31 @@ def _write_messages(messages, output_file):
         print(json.dumps(message.to_dict(), sort_keys=True))
 
 
-def _run_engine(args):
+def _run_engine(args, _get=None):
+    if _get is None:
+        _, _get = _merge_config(args)
     topology, specification = _inputs(args)
-    validation_config = json.loads(args.validation) if getattr(args, "validation", None) else None
+    
+    val_arg = _get("validation")
+    validation_config = None
+    if val_arg:
+        validation_config = json.loads(val_arg) if isinstance(val_arg, str) else val_arg
+
     graph = compile_model(topology, specification, validation_config)
+    
+    env_arg = _get("environment")
+    environment = None
+    if env_arg:
+        environment = json.loads(env_arg) if isinstance(env_arg, str) else env_arg
+
     engine = SimulationEngine(
         graph,
-        tick_interval=getattr(args, "tick_interval", 1.0),
-        time_scale=getattr(args, "time_scale", 1.0),
-        seed=getattr(args, "seed", None),
-        run_id=getattr(args, "run_id", "run-cli"),
-        environment=json.loads(args.environment) if getattr(args, "environment", None) else None,
-        debug=getattr(args, "debug", True) if getattr(args, "command", "") in ("explain", "trace") else getattr(args, "debug", False),
+        tick_interval=_get("tick_interval", 1.0),
+        time_scale=_get("time_scale", 1.0),
+        seed=_get("seed", None),
+        run_id=_get("run_id", "run-cli"),
+        environment=environment,
+        debug=_get("debug", True) if getattr(args, "command", "") in ("explain", "trace") else _get("debug", False),
         validation_config=validation_config,
     )
     _scenario(engine, getattr(args, "scenario", None))
@@ -124,28 +156,68 @@ def _run_engine(args):
 
 
 def command_run(args) -> int:
-    engine = _run_engine(args)
-    engine.run(duration=getattr(args, "duration", 1.0))
-    _write_messages(engine.telemetry, args.output)
-    return 0
-
-
-def command_generate(args) -> int:
-    engine = _run_engine(args)
-    configuration = load_json(args.mqtt_config)
-    sink = create_sink(configuration)
-    pipeline = AsyncTelemetryPipeline(sink, backpressure_policy="drop")
+    config, _get = _merge_config(args)
+    engine = _run_engine(args, _get)
+    
+    sinks = []
+    if "outputs" in config:
+        for output_cfg in config["outputs"]:
+            if output_cfg.get("enabled", True):
+                sinks.append(create_sink(output_cfg))
+    elif args.output:
+        sinks.append(JsonlSink(args.output))
+    else:
+        sinks.append(create_sink({"type": "stdout"}))
+        
+    multi_sink = MultiSink(sinks)
+    pipeline = AsyncTelemetryPipeline(multi_sink, backpressure_policy="drop")
     engine.telemetry_sink = pipeline
     engine.telemetry_batch_size = 100
     
     try:
         pipeline.start()
-        engine.run(duration=getattr(args, "duration", 1.0))
+        engine.run(duration=_get("duration", 1.0))
+        pipeline.flush()
+    finally:
+        pipeline.close()
+        
+    import sys
+    sys.stdout.flush()
+
+    return 0
+
+
+def command_generate(args) -> int:
+    config, _get = _merge_config(args)
+    engine = _run_engine(args, _get)
+    
+    sinks = []
+    if getattr(args, "mqtt_config", None):
+        configuration = load_json(args.mqtt_config)
+        sinks.append(create_sink(configuration))
+    elif "outputs" in config:
+        for output_cfg in config["outputs"]:
+            if output_cfg.get("enabled", True):
+                sinks.append(create_sink(output_cfg))
+                
+    if not sinks:
+        print("No outputs configured. Use --mqtt-config or --config with outputs array.")
+        return 1
+
+    multi_sink = MultiSink(sinks)
+    pipeline = AsyncTelemetryPipeline(multi_sink, backpressure_policy="drop")
+    engine.telemetry_sink = pipeline
+    engine.telemetry_batch_size = 100
+    
+    try:
+        pipeline.start()
+        engine.run(duration=_get("duration", 1.0))
         pipeline.flush()
     finally:
         pipeline.close()
     
-    print(json.dumps({"sink": configuration.get("type"), "dropped_batches": pipeline.dropped_batches}))
+    dropped = pipeline.dropped_batches
+    print(json.dumps({"sinks": len(sinks), "dropped_batches": dropped}))
     return 0
 
 
@@ -189,12 +261,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     run = subparsers.add_parser("run")
     add_inputs(run)
+    run.add_argument("--config", help="Runtime configuration JSON file")
     run.add_argument("--scenario")
-    run.add_argument("--duration", type=float, default=1)
-    run.add_argument("--tick-interval", type=float, default=1)
-    run.add_argument("--time-scale", type=float, default=1)
+    run.add_argument("--duration", type=float, default=None)
+    run.add_argument("--tick-interval", type=float, default=None)
+    run.add_argument("--time-scale", type=float, default=None)
     run.add_argument("--seed", type=int)
-    run.add_argument("--run-id", default="run-cli")
+    run.add_argument("--run-id", default=None)
     run.add_argument("--environment", help="JSON object of initial environment values")
     run.add_argument("--output")
     run.add_argument("--debug", action="store_true", help="Enable debug causal tracing")
@@ -203,12 +276,13 @@ def build_parser() -> argparse.ArgumentParser:
     generate = subparsers.add_parser("generate")
     for action in ("topology", "spec", "scenario"):
         generate.add_argument(f"--{action}", required=action != "scenario")
-    generate.add_argument("--mqtt-config", required=True)
-    generate.add_argument("--duration", type=float, default=1)
-    generate.add_argument("--tick-interval", type=float, default=1)
-    generate.add_argument("--time-scale", type=float, default=1)
+    generate.add_argument("--config", help="Runtime configuration JSON file")
+    generate.add_argument("--mqtt-config", required=False)
+    generate.add_argument("--duration", type=float, default=None)
+    generate.add_argument("--tick-interval", type=float, default=None)
+    generate.add_argument("--time-scale", type=float, default=None)
     generate.add_argument("--seed", type=int)
-    generate.add_argument("--run-id", default="run-generate")
+    generate.add_argument("--run-id", default=None)
     generate.add_argument("--environment")
     generate.set_defaults(handler=command_generate)
 
@@ -219,17 +293,19 @@ def build_parser() -> argparse.ArgumentParser:
     
     explain = subparsers.add_parser("explain")
     add_inputs(explain)
+    explain.add_argument("--config", help="Runtime configuration JSON file")
     explain.add_argument("--scenario")
     explain.add_argument("--component", required=True)
-    explain.add_argument("--duration", type=float, default=1)
+    explain.add_argument("--duration", type=float, default=None)
     explain.add_argument("--json", action="store_true")
     explain.set_defaults(handler=command_explain)
 
     trace = subparsers.add_parser("trace")
     add_inputs(trace)
+    trace.add_argument("--config", help="Runtime configuration JSON file")
     trace.add_argument("--scenario")
     trace.add_argument("--component")
-    trace.add_argument("--duration", type=float, default=1)
+    trace.add_argument("--duration", type=float, default=None)
     trace.add_argument("--json", action="store_true")
     trace.set_defaults(handler=command_trace)
     

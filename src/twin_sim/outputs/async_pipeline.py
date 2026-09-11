@@ -36,7 +36,7 @@ class AsyncTelemetryPipeline(TelemetrySink):
         self._thread.start()
 
     def _worker(self) -> None:
-        while self._running:
+        while True:
             try:
                 batch = self._queue.get(timeout=0.1)
                 if batch is None:
@@ -52,6 +52,8 @@ class AsyncTelemetryPipeline(TelemetrySink):
                 # For the MVP, we continue pulling to avoid backing up the queue.
                 if self._queue.unfinished_tasks:
                     self._queue.task_done()
+        # Flush one last time when exiting
+        self.sink.flush()
 
     def write(self, message: Any) -> None:
         """Write a single message. Usually `write_batch` is preferred."""

@@ -124,7 +124,7 @@ class SimulationEngine:
             self.causal_trace[-5:],
         ))
         if self.telemetry_sink and len(self.telemetry) >= self.telemetry_batch_size:
-            self.telemetry_sink.write_batch(self.telemetry)
+            self.telemetry_sink.write_batch(list(self.telemetry))
             self.telemetry.clear()
 
         self.tick_count += 1
@@ -139,14 +139,18 @@ class SimulationEngine:
         self.status = SimulationStatus.RUNNING
         end = self.simulation_time + duration if duration is not None else None
         timestamps: list[float] = []
-        while self.status == SimulationStatus.RUNNING and (end is None or self.simulation_time < end):
+        while True:
+            if end is not None and self.simulation_time >= end:
+                break
+            if self.status != SimulationStatus.RUNNING:
+                break
             if self.clock.wall_delay:
                 self._sleeper(self.clock.wall_delay)
             timestamps.append(self.step())
         if end is not None and self.status == SimulationStatus.RUNNING:
             self.status = SimulationStatus.COMPLETED
         if self.telemetry_sink and self.telemetry:
-            self.telemetry_sink.write_batch(self.telemetry)
+            self.telemetry_sink.write_batch(list(self.telemetry))
             self.telemetry.clear()
         return timestamps
 
