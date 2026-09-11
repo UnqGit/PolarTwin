@@ -20,12 +20,12 @@ DESCRIPTION_DIR = CONFIG_DIR / "twins"
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Format relation.txt and spec.txt for a digital twin."
+        description="Format relation.twin and spec.twin for a digital twin."
     )
 
     parser.add_argument(
         "twin",
-        help="Name of the twin directory inside config/description/"
+        help="Name of the twin directory inside config/description/twins"
     )
 
     args = parser.parse_args()
@@ -33,8 +33,8 @@ def main():
     twin_name = args.twin
     twin_dir = DESCRIPTION_DIR / twin_name
 
-    relation_file = twin_dir / "relation.txt"
-    spec_file = twin_dir / "spec.txt"
+    relation_file = twin_dir / "relation.twin"
+    spec_file = twin_dir / "spec.twin"
 
     # -----------------------------------------------------------------
     # Validate twin directory
@@ -48,12 +48,12 @@ def main():
         sys.exit(1)
 
     # -----------------------------------------------------------------
-    # Format relation.txt
+    # Format relation.twin
     # -----------------------------------------------------------------
 
     if not relation_file.is_file():
         print(
-            f"Error: relation.txt not found: {relation_file}",
+            f"Error: relation.twin not found: {relation_file}",
             file=sys.stderr
         )
         sys.exit(1)
@@ -70,12 +70,12 @@ def main():
         sys.exit(1)
 
     # -----------------------------------------------------------------
-    # Format spec.txt
+    # Format spec.twin
     # -----------------------------------------------------------------
 
     if not spec_file.is_file():
         print(
-            f"Error: spec.txt not found: {spec_file}",
+            f"Error: spec.twin not found: {spec_file}",
             file=sys.stderr
         )
         sys.exit(1)

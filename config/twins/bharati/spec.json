@@ -1,0 +1,2006 @@
+{
+  "components": {
+    "Bharati": {
+      "type": "station",
+      "spec": {
+        "provides": "research station",
+        "environment": "Antarctic",
+        "mounting": "ground",
+        "representation": "building",
+        "name": "Bharati Antarctic Research Station",
+        "purpose": "Antarctic research and habitation",
+        "location": "Bharati Station, Antarctica",
+        "research_focus": "earth science, atmospheric science and coastal research",
+        "length": {
+          "value": 130,
+          "unit": "m"
+        },
+        "breadth": {
+          "value": 60,
+          "unit": "m"
+        },
+        "height": {
+          "value": 15,
+          "unit": "m"
+        }
+      }
+    },
+    "PowerBlock": {
+      "type": "block",
+      "spec": {
+        "provides": "station power and autonomous microgrid infrastructure",
+        "mounting": "indoor",
+        "representation": "room"
+      }
+    },
+    "MicrogridSystem": {
+      "type": "system",
+      "spec": {
+        "provides": "autonomous electrical power generation, storage and conditioning",
+        "mounting": "floor",
+        "representation": "equipment_group"
+      }
+    },
+    "SolarArray": {
+      "type": "solar",
+      "spec": {
+        "provides": "renewable electrical power",
+        "output": "electrical",
+        "energy_source": "solar",
+        "representation": "solar_array",
+        "role": "primary",
+        "rated_power": {
+          "value": 500,
+          "unit": "kW"
+        },
+        "voltage": {
+          "value": 800,
+          "unit": "V"
+        },
+        "operating_temperature": {
+          "min": -40,
+          "max": 50,
+          "unit": "C"
+        }
+      }
+    },
+    "DieselGeneratorA": {
+      "type": "generator",
+      "spec": {
+        "provides": "electrical power",
+        "output": "electrical",
+        "fuel": "diesel",
+        "frequency": {
+          "value": 50,
+          "unit": "Hz"
+        },
+        "voltage": {
+          "value": 400,
+          "unit": "V"
+        },
+        "phases": 3,
+        "representation": "generator",
+        "role": "primary",
+        "rating": {
+          "value": 500,
+          "unit": "kW"
+        },
+        "continuous_power": {
+          "value": 450,
+          "unit": "kW"
+        },
+        "fuel_capacity": {
+          "value": 3000,
+          "unit": "L"
+        },
+        "rating_temperature": {
+          "min": -40,
+          "max": 50,
+          "unit": "C"
+        }
+      }
+    },
+    "DieselGeneratorB": {
+      "type": "generator",
+      "spec": {
+        "provides": "electrical power",
+        "output": "electrical",
+        "fuel": "diesel",
+        "frequency": {
+          "value": 50,
+          "unit": "Hz"
+        },
+        "voltage": {
+          "value": 400,
+          "unit": "V"
+        },
+        "phases": 3,
+        "representation": "generator",
+        "role": "backup",
+        "rating": {
+          "value": 500,
+          "unit": "kW"
+        },
+        "continuous_power": {
+          "value": 450,
+          "unit": "kW"
+        },
+        "fuel_capacity": {
+          "value": 3000,
+          "unit": "L"
+        },
+        "rating_temperature": {
+          "min": -40,
+          "max": 50,
+          "unit": "C"
+        }
+      }
+    },
+    "BatteryStorage": {
+      "type": "battery",
+      "spec": {
+        "provides": "electrical energy storage",
+        "output": "DC",
+        "technology": "lithium battery",
+        "representation": "battery",
+        "role": "storage",
+        "capacity": {
+          "value": 2000,
+          "unit": "kWh"
+        },
+        "nominal_voltage": {
+          "value": 800,
+          "unit": "V"
+        },
+        "maximum_power": {
+          "value": 500,
+          "unit": "kW"
+        },
+        "charging_temperature": {
+          "min": 0,
+          "max": 45,
+          "unit": "C"
+        },
+        "discharging_temperature": {
+          "min": -30,
+          "max": 50,
+          "unit": "C"
+        }
+      }
+    },
+    "PowerConditioner": {
+      "type": "inverter",
+      "spec": {
+        "provides": "power conditioning and conversion",
+        "input": "DC",
+        "output": "AC",
+        "representation": "inverter",
+        "role": "primary",
+        "rating": {
+          "value": 500,
+          "unit": "kW"
+        },
+        "input_voltage": {
+          "value": 800,
+          "unit": "V"
+        },
+        "output_voltage": {
+          "value": 400,
+          "unit": "V"
+        },
+        "frequency": {
+          "value": 50,
+          "unit": "Hz"
+        },
+        "efficiency": {
+          "min": 90,
+          "max": 98,
+          "unit": "%"
+        },
+        "operating_temperature": {
+          "min": -30,
+          "max": 50,
+          "unit": "C"
+        }
+      }
+    },
+    "GridVoltageSensor": {
+      "type": "sensor",
+      "spec": {
+        "provides": "measurement",
+        "output": "measurement_data",
+        "representation": "sensor",
+        "measures": "grid voltage",
+        "quantity": "voltage",
+        "rating": {
+          "min": 0,
+          "max": 500,
+          "unit": "V"
+        },
+        "accuracy": {
+          "value": 0.5,
+          "unit": "%"
+        }
+      }
+    },
+    "FuelSensor": {
+      "type": "sensor",
+      "spec": {
+        "provides": "measurement",
+        "output": "measurement_data",
+        "representation": "sensor",
+        "measures": "diesel fuel level",
+        "quantity": "fuel_level",
+        "rating": {
+          "min": 0,
+          "max": 100,
+          "unit": "%"
+        },
+        "accuracy": {
+          "value": 1,
+          "unit": "%"
+        }
+      }
+    },
+    "BatteryHealthSensor": {
+      "type": "sensor",
+      "spec": {
+        "provides": "measurement",
+        "output": "measurement_data",
+        "representation": "sensor",
+        "measures": "battery health",
+        "quantity": "battery_health",
+        "rating": {
+          "min": 0,
+          "max": 100,
+          "unit": "%"
+        },
+        "accuracy": {
+          "value": 1,
+          "unit": "%"
+        }
+      }
+    },
+    "MicrogridController": {
+      "type": "controller",
+      "spec": {
+        "provides": "control",
+        "input": "sensor_data",
+        "output": "control_command",
+        "representation": "controller",
+        "role": "central",
+        "controls": "microgrid system",
+        "inputs": "voltage,fuel_level,battery_health,generation_status",
+        "outputs": "generator_control,storage_control,power_control",
+        "control_mode": "automatic"
+      }
+    },
+    "HabitatBlock": {
+      "type": "block",
+      "spec": {
+        "provides": "personnel habitation and life support",
+        "mounting": "indoor",
+        "representation": "room"
+      }
+    },
+    "LifeSupportSystem": {
+      "type": "system",
+      "spec": {
+        "provides": "heating ventilation and air quality management",
+        "mounting": "floor",
+        "representation": "equipment_group"
+      }
+    },
+    "HeatingUnit": {
+      "type": "heater",
+      "spec": {
+        "provides": "heating",
+        "input": "electrical_power",
+        "output": "thermal_energy",
+        "representation": "heater",
+        "role": "primary",
+        "rating": {
+          "value": 100,
+          "unit": "kW"
+        },
+        "thermal_output": {
+          "value": 100,
+          "unit": "kW"
+        },
+        "operating_temperature": {
+          "min": -40,
+          "max": 40,
+          "unit": "C"
+        }
+      }
+    },
+    "AirCirculationUnit": {
+      "type": "fan",
+      "spec": {
+        "provides": "airflow",
+        "input": "electrical_power",
+        "output": "airflow",
+        "representation": "fan",
+        "role": "primary",
+        "airflow": {
+          "min": 0,
+          "max": 12000,
+          "unit": "m3/h"
+        },
+        "pressure": {
+          "min": 0,
+          "max": 1000,
+          "unit": "Pa"
+        },
+        "power": {
+          "value": 7.5,
+          "unit": "kW"
+        }
+      }
+    },
+    "FreshAirUnit": {
+      "type": "ventilator",
+      "spec": {
+        "provides": "fresh air ventilation",
+        "input": "electrical_power",
+        "output": "fresh_air",
+        "representation": "ventilator",
+        "role": "primary",
+        "airflow": {
+          "min": 0,
+          "max": 8000,
+          "unit": "m3/h"
+        },
+        "pressure": {
+          "min": 0,
+          "max": 800,
+          "unit": "Pa"
+        },
+        "power": {
+          "value": 6,
+          "unit": "kW"
+        },
+        "filtration_efficiency": {
+          "min": 95,
+          "max": 99,
+          "unit": "%"
+        }
+      }
+    },
+    "IndoorTempSensor": {
+      "type": "sensor",
+      "spec": {
+        "provides": "measurement",
+        "output": "measurement_data",
+        "representation": "sensor",
+        "measures": "indoor temperature",
+        "quantity": "temperature",
+        "rating": {
+          "min": -50,
+          "max": 50,
+          "unit": "C"
+        },
+        "accuracy": {
+          "value": 0.1,
+          "unit": "C"
+        },
+        "resolution": {
+          "value": 0.1,
+          "unit": "C"
+        }
+      }
+    },
+    "HumiditySensor": {
+      "type": "sensor",
+      "spec": {
+        "provides": "measurement",
+        "output": "measurement_data",
+        "representation": "sensor",
+        "measures": "relative humidity",
+        "quantity": "humidity",
+        "rating": {
+          "min": 0,
+          "max": 100,
+          "unit": "%"
+        },
+        "accuracy": {
+          "value": 2,
+          "unit": "%"
+        }
+      }
+    },
+    "CO2Sensor": {
+      "type": "sensor",
+      "spec": {
+        "provides": "measurement",
+        "output": "measurement_data",
+        "representation": "sensor",
+        "measures": "carbon dioxide concentration",
+        "quantity": "co2",
+        "rating": {
+          "min": 0,
+          "max": 5000,
+          "unit": "ppm"
+        },
+        "accuracy": {
+          "value": 1,
+          "unit": "%"
+        }
+      }
+    },
+    "LifeSupportController": {
+      "type": "controller",
+      "spec": {
+        "provides": "control",
+        "input": "sensor_data",
+        "output": "control_command",
+        "representation": "controller",
+        "role": "central",
+        "controls": "life support system",
+        "inputs": "temperature,humidity,air_quality",
+        "outputs": "heat_control,airflow,ventilation",
+        "control_mode": "automatic"
+      }
+    },
+    "AccommodationSystem": {
+      "type": "system",
+      "spec": {
+        "provides": "personnel accommodation and welfare",
+        "mounting": "floor",
+        "representation": "equipment_group"
+      }
+    },
+    "SleepingModule": {
+      "type": "habitat",
+      "spec": {
+        "provides": "personnel accommodation",
+        "environment": "controlled",
+        "representation": "habitat",
+        "capacity": {
+          "value": 40,
+          "unit": "persons"
+        },
+        "area": {
+          "value": 600,
+          "unit": "m2"
+        }
+      }
+    },
+    "RecreationModule": {
+      "type": "habitat",
+      "spec": {
+        "provides": "personnel accommodation",
+        "environment": "controlled",
+        "representation": "habitat",
+        "capacity": {
+          "value": 30,
+          "unit": "persons"
+        },
+        "area": {
+          "value": 300,
+          "unit": "m2"
+        }
+      }
+    },
+    "MedicalModule": {
+      "type": "medical",
+      "spec": {
+        "provides": "medical support",
+        "environment": "controlled",
+        "representation": "medical_unit",
+        "capacity": {
+          "value": 4,
+          "unit": "persons"
+        },
+        "area": {
+          "value": 100,
+          "unit": "m2"
+        },
+        "emergency_support": "medical care"
+      }
+    },
+    "OccupancySensor": {
+      "type": "sensor",
+      "spec": {
+        "provides": "measurement",
+        "output": "measurement_data",
+        "representation": "sensor",
+        "measures": "personnel occupancy",
+        "quantity": "occupancy",
+        "rating": {
+          "min": 0,
+          "max": 100,
+          "unit": "persons"
+        },
+        "accuracy": {
+          "value": 1,
+          "unit": "persons"
+        }
+      }
+    },
+    "MedicalMonitor": {
+      "type": "sensor",
+      "spec": {
+        "provides": "measurement",
+        "output": "measurement_data",
+        "representation": "sensor",
+        "measures": "personnel medical status",
+        "quantity": "health_status"
+      }
+    },
+    "HabitatController": {
+      "type": "controller",
+      "spec": {
+        "provides": "control",
+        "input": "sensor_data",
+        "output": "control_command",
+        "representation": "controller",
+        "role": "central",
+        "controls": "accommodation system",
+        "inputs": "occupancy,medical_status",
+        "outputs": "habitat_demand,personnel_status",
+        "control_mode": "automatic"
+      }
+    },
+    "EarthScienceBlock": {
+      "type": "block",
+      "spec": {
+        "provides": "earth science research infrastructure",
+        "mounting": "indoor",
+        "representation": "room"
+      }
+    },
+    "GeoscienceSystem": {
+      "type": "system",
+      "spec": {
+        "provides": "geological and seismic research",
+        "mounting": "floor",
+        "representation": "equipment_group"
+      }
+    },
+    "SeismicStation": {
+      "type": "seismic",
+      "spec": {
+        "provides": "seismic monitoring",
+        "output": "seismic_data",
+        "representation": "seismic_station",
+        "role": "primary",
+        "sensitivity": {
+          "min": 0,
+          "max": 10,
+          "unit": "Hz"
+        },
+        "operating_temperature": {
+          "min": -50,
+          "max": 30,
+          "unit": "C"
+        }
+      }
+    },
+    "GPSReceiver": {
+      "type": "receiver",
+      "spec": {
+        "provides": "geospatial positioning",
+        "input": "satellite_signal",
+        "output": "position_data",
+        "representation": "receiver",
+        "role": "primary",
+        "accuracy": {
+          "value": 5,
+          "unit": "m"
+        },
+        "update_rate": {
+          "value": 1,
+          "unit": "Hz"
+        },
+        "operating_temperature": {
+          "min": -40,
+          "max": 50,
+          "unit": "C"
+        }
+      }
+    },
+    "GroundMovementSensor": {
+      "type": "sensor",
+      "spec": {
+        "provides": "measurement",
+        "output": "measurement_data",
+        "representation": "sensor",
+        "measures": "ground movement",
+        "quantity": "ground_displacement",
+        "rating": {
+          "min": 0,
+          "max": 100,
+          "unit": "mm"
+        },
+        "accuracy": {
+          "value": 0.1,
+          "unit": "mm"
+        }
+      }
+    },
+    "SeismicDataLogger": {
+      "type": "logger",
+      "spec": {
+        "provides": "research data logging",
+        "input": "measurement_data",
+        "output": "stored_data",
+        "representation": "data_logger",
+        "role": "primary",
+        "storage_capacity": {
+          "value": 10,
+          "unit": "TB"
+        },
+        "sampling_rate": {
+          "value": 100,
+          "unit": "Hz"
+        }
+      }
+    },
+    "GeoscienceController": {
+      "type": "controller",
+      "spec": {
+        "provides": "control",
+        "input": "sensor_data",
+        "output": "control_command",
+        "representation": "controller",
+        "role": "central",
+        "controls": "geoscience system",
+        "inputs": "ground_motion,seismic_data",
+        "outputs": "geoscience_data",
+        "control_mode": "automatic"
+      }
+    },
+    "AtmosphericSystem": {
+      "type": "system",
+      "spec": {
+        "provides": "atmospheric and weather research",
+        "mounting": "floor",
+        "representation": "equipment_group"
+      }
+    },
+    "WeatherStation": {
+      "type": "weather",
+      "spec": {
+        "provides": "weather monitoring",
+        "output": "weather_data",
+        "representation": "weather_station",
+        "role": "primary",
+        "operating_temperature": {
+          "min": -80,
+          "max": 50,
+          "unit": "C"
+        }
+      }
+    },
+    "WindSensor": {
+      "type": "sensor",
+      "spec": {
+        "provides": "measurement",
+        "output": "measurement_data",
+        "representation": "sensor",
+        "measures": "wind speed",
+        "quantity": "wind_speed",
+        "rating": {
+          "min": 0,
+          "max": 60,
+          "unit": "m/s"
+        },
+        "accuracy": {
+          "value": 1,
+          "unit": "%"
+        }
+      }
+    },
+    "PressureSensor": {
+      "type": "sensor",
+      "spec": {
+        "provides": "measurement",
+        "output": "measurement_data",
+        "representation": "sensor",
+        "measures": "atmospheric pressure",
+        "quantity": "pressure",
+        "rating": {
+          "min": 500,
+          "max": 1100,
+          "unit": "hPa"
+        },
+        "accuracy": {
+          "value": 0.5,
+          "unit": "%"
+        }
+      }
+    },
+    "RadiationSensor": {
+      "type": "sensor",
+      "spec": {
+        "provides": "measurement",
+        "output": "measurement_data",
+        "representation": "sensor",
+        "measures": "radiation level",
+        "quantity": "radiation",
+        "rating": {
+          "min": 0,
+          "max": 1000,
+          "unit": "uSv/h"
+        },
+        "accuracy": {
+          "value": 5,
+          "unit": "%"
+        }
+      }
+    },
+    "AtmosphericLogger": {
+      "type": "logger",
+      "spec": {
+        "provides": "research data logging",
+        "input": "measurement_data",
+        "output": "stored_data",
+        "representation": "data_logger",
+        "role": "primary",
+        "storage_capacity": {
+          "value": 10,
+          "unit": "TB"
+        },
+        "sampling_rate": {
+          "value": 1,
+          "unit": "Hz"
+        }
+      }
+    },
+    "AtmosphereController": {
+      "type": "controller",
+      "spec": {
+        "provides": "control",
+        "input": "sensor_data",
+        "output": "control_command",
+        "representation": "controller",
+        "role": "central",
+        "controls": "atmospheric system",
+        "inputs": "wind_speed,pressure,radiation,atmospheric_data",
+        "outputs": "weather_records,research_data",
+        "control_mode": "automatic"
+      }
+    },
+    "CoastalResearchBlock": {
+      "type": "block",
+      "spec": {
+        "provides": "marine and coastal research",
+        "mounting": "indoor",
+        "representation": "room"
+      }
+    },
+    "MarineSystem": {
+      "type": "system",
+      "spec": {
+        "provides": "marine field research",
+        "mounting": "floor",
+        "representation": "equipment_group"
+      }
+    },
+    "OceanProbe": {
+      "type": "probe",
+      "spec": {
+        "provides": "marine measurement",
+        "output": "ocean_data",
+        "representation": "ocean_probe",
+        "role": "primary",
+        "depth_rating": {
+          "min": 0,
+          "max": 1000,
+          "unit": "m"
+        },
+        "operating_temperature": {
+          "min": -5,
+          "max": 40,
+          "unit": "C"
+        }
+      }
+    },
+    "WaterSampler": {
+      "type": "sampler",
+      "spec": {
+        "provides": "environmental sample collection",
+        "output": "sample_data",
+        "representation": "sampler",
+        "role": "research",
+        "sample_volume": {
+          "value": 5,
+          "unit": "L"
+        },
+        "depth_rating": {
+          "min": 0,
+          "max": 500,
+          "unit": "m"
+        }
+      }
+    },
+    "SalinitySensor": {
+      "type": "sensor",
+      "spec": {
+        "provides": "measurement",
+        "output": "measurement_data",
+        "representation": "sensor",
+        "measures": "water salinity",
+        "quantity": "salinity",
+        "rating": {
+          "min": 0,
+          "max": 50,
+          "unit": "PSU"
+        },
+        "accuracy": {
+          "value": 0.1,
+          "unit": "PSU"
+        }
+      }
+    },
+    "OceanTemperatureSensor": {
+      "type": "sensor",
+      "spec": {
+        "provides": "measurement",
+        "output": "measurement_data",
+        "representation": "sensor",
+        "measures": "ocean temperature",
+        "quantity": "temperature",
+        "rating": {
+          "min": -5,
+          "max": 40,
+          "unit": "C"
+        },
+        "accuracy": {
+          "value": 0.1,
+          "unit": "C"
+        }
+      }
+    },
+    "MarineDataLogger": {
+      "type": "logger",
+      "spec": {
+        "provides": "research data logging",
+        "input": "measurement_data",
+        "output": "stored_data",
+        "representation": "data_logger",
+        "role": "primary",
+        "storage_capacity": {
+          "value": 5,
+          "unit": "TB"
+        },
+        "sampling_rate": {
+          "value": 1,
+          "unit": "Hz"
+        }
+      }
+    },
+    "MarineController": {
+      "type": "controller",
+      "spec": {
+        "provides": "control",
+        "input": "sensor_data",
+        "output": "control_command",
+        "representation": "controller",
+        "role": "central",
+        "controls": "marine research system",
+        "inputs": "sample_status,salinity,temperature,marine_data",
+        "outputs": "ocean_records,field_mission",
+        "control_mode": "automatic"
+      }
+    },
+    "FieldOperationsSystem": {
+      "type": "system",
+      "spec": {
+        "provides": "mobile field research operations",
+        "mounting": "floor",
+        "representation": "equipment_group"
+      }
+    },
+    "FieldVehicle": {
+      "type": "vehicle",
+      "spec": {
+        "provides": "transport",
+        "mobility": "tracked",
+        "representation": "vehicle",
+        "role": "primary",
+        "vehicle_type": "Antarctic field vehicle",
+        "payload_capacity": {
+          "value": 1500,
+          "unit": "kg"
+        },
+        "range": {
+          "value": 500,
+          "unit": "km"
+        },
+        "operating_temperature": {
+          "min": -60,
+          "max": 20,
+          "unit": "C"
+        }
+      }
+    },
+    "SurveyDrone": {
+      "type": "drone",
+      "spec": {
+        "provides": "remote field survey",
+        "mobility": "aerial",
+        "control": "remote",
+        "representation": "drone",
+        "role": "mobile",
+        "vehicle_type": "research survey drone",
+        "payload_capacity": {
+          "value": 20,
+          "unit": "kg"
+        },
+        "range": {
+          "value": 100,
+          "unit": "km"
+        },
+        "operating_temperature": {
+          "min": -40,
+          "max": 20,
+          "unit": "C"
+        }
+      }
+    },
+    "NavigationUnit": {
+      "type": "navigation",
+      "spec": {
+        "provides": "navigation",
+        "input": "position_data",
+        "output": "navigation_data",
+        "representation": "navigation_unit",
+        "role": "critical",
+        "accuracy": {
+          "value": 5,
+          "unit": "m"
+        },
+        "update_rate": {
+          "value": 1,
+          "unit": "Hz"
+        }
+      }
+    },
+    "FieldGPS": {
+      "type": "sensor",
+      "spec": {
+        "provides": "measurement",
+        "output": "measurement_data",
+        "representation": "sensor",
+        "measures": "geographic position",
+        "quantity": "position",
+        "accuracy": {
+          "value": 5,
+          "unit": "m"
+        }
+      }
+    },
+    "FieldOperationsController": {
+      "type": "controller",
+      "spec": {
+        "provides": "control",
+        "input": "sensor_data",
+        "output": "control_command",
+        "representation": "controller",
+        "role": "central",
+        "controls": "field operations",
+        "inputs": "location,navigation,survey_data,vehicle_status",
+        "outputs": "vehicle_control,mission_control,field_mission",
+        "control_mode": "automatic"
+      }
+    },
+    "CommunicationsBlock": {
+      "type": "block",
+      "spec": {
+        "provides": "station communications and research data infrastructure",
+        "mounting": "indoor",
+        "representation": "room"
+      }
+    },
+    "SatelliteCommunicationSystem": {
+      "type": "system",
+      "spec": {
+        "provides": "satellite communication",
+        "mounting": "floor",
+        "representation": "equipment_group"
+      }
+    },
+    "SatelliteTerminal": {
+      "type": "terminal",
+      "spec": {
+        "provides": "satellite communication",
+        "input": "network_data",
+        "output": "radio_signal",
+        "representation": "communication_terminal",
+        "role": "primary",
+        "frequency": {
+          "min": 1,
+          "max": 10,
+          "unit": "GHz"
+        },
+        "bandwidth": {
+          "value": 100,
+          "unit": "Mbps"
+        },
+        "operating_temperature": {
+          "min": -40,
+          "max": 50,
+          "unit": "C"
+        }
+      }
+    },
+    "HighGainAntenna": {
+      "type": "antenna",
+      "spec": {
+        "provides": "radio communication",
+        "representation": "antenna",
+        "role": "primary",
+        "gain": {
+          "value": 30,
+          "unit": "dBi"
+        },
+        "frequency": {
+          "min": 1,
+          "max": 10,
+          "unit": "GHz"
+        }
+      }
+    },
+    "BackupAntenna": {
+      "type": "antenna",
+      "spec": {
+        "provides": "radio communication",
+        "representation": "antenna",
+        "role": "backup",
+        "gain": {
+          "value": 25,
+          "unit": "dBi"
+        },
+        "frequency": {
+          "min": 1,
+          "max": 10,
+          "unit": "GHz"
+        }
+      }
+    },
+    "LinkQualitySensor": {
+      "type": "sensor",
+      "spec": {
+        "provides": "measurement",
+        "output": "measurement_data",
+        "representation": "sensor",
+        "measures": "satellite link quality",
+        "quantity": "signal_quality",
+        "rating": {
+          "min": 0,
+          "max": 100,
+          "unit": "%"
+        },
+        "accuracy": {
+          "value": 1,
+          "unit": "%"
+        }
+      }
+    },
+    "SatelliteModem": {
+      "type": "modem",
+      "spec": {
+        "provides": "satellite data communication",
+        "input": "radio_signal",
+        "output": "network_data",
+        "representation": "modem",
+        "role": "primary",
+        "data_rate": {
+          "value": 100,
+          "unit": "Mbps"
+        },
+        "frequency": {
+          "min": 1,
+          "max": 10,
+          "unit": "GHz"
+        }
+      }
+    },
+    "CommunicationsController": {
+      "type": "controller",
+      "spec": {
+        "provides": "control",
+        "input": "sensor_data",
+        "output": "control_command",
+        "representation": "controller",
+        "role": "central",
+        "controls": "satellite communication system",
+        "inputs": "signal_quality,link_status",
+        "outputs": "connection_control,remote_access,emergency_message",
+        "control_mode": "automatic"
+      }
+    },
+    "DataManagementSystem": {
+      "type": "system",
+      "spec": {
+        "provides": "research data management and archival",
+        "mounting": "floor",
+        "representation": "equipment_group"
+      }
+    },
+    "ResearchDataServer": {
+      "type": "server",
+      "spec": {
+        "provides": "computing",
+        "interface": "network",
+        "representation": "server_rack",
+        "role": "primary",
+        "processing": "research data management",
+        "storage_capacity": {
+          "value": 100,
+          "unit": "TB"
+        },
+        "availability": "24x7"
+      }
+    },
+    "ArchiveServer": {
+      "type": "server",
+      "spec": {
+        "provides": "computing",
+        "interface": "network",
+        "representation": "server_rack",
+        "role": "backup",
+        "processing": "data archival and replication",
+        "storage_capacity": {
+          "value": 200,
+          "unit": "TB"
+        },
+        "availability": "24x7"
+      }
+    },
+    "DataStorage": {
+      "type": "storage",
+      "spec": {
+        "provides": "storage",
+        "representation": "storage",
+        "storage_type": "research data",
+        "capacity": {
+          "value": 500,
+          "unit": "TB"
+        },
+        "redundancy": "high_availability"
+      }
+    },
+    "DataIntegritySensor": {
+      "type": "sensor",
+      "spec": {
+        "provides": "measurement",
+        "output": "measurement_data",
+        "representation": "sensor",
+        "measures": "research data integrity",
+        "quantity": "data_integrity",
+        "rating": {
+          "min": 0,
+          "max": 100,
+          "unit": "%"
+        },
+        "accuracy": {
+          "value": 1,
+          "unit": "%"
+        }
+      }
+    },
+    "DataManagementController": {
+      "type": "controller",
+      "spec": {
+        "provides": "control",
+        "input": "sensor_data",
+        "output": "control_command",
+        "representation": "controller",
+        "role": "central",
+        "controls": "data management system",
+        "inputs": "research_data,backup_data,integrity_status,remote_data",
+        "outputs": "archive,replication,data_transmission",
+        "control_mode": "automatic"
+      }
+    },
+    "LogisticsBlock": {
+      "type": "block",
+      "spec": {
+        "provides": "station logistics and supply",
+        "mounting": "indoor",
+        "representation": "room"
+      }
+    },
+    "SupplySystem": {
+      "type": "system",
+      "spec": {
+        "provides": "cargo inventory and fuel management",
+        "mounting": "floor",
+        "representation": "equipment_group"
+      }
+    },
+    "CargoInventory": {
+      "type": "storage",
+      "spec": {
+        "provides": "storage",
+        "representation": "storage",
+        "storage_type": "cargo inventory",
+        "capacity": {
+          "value": 100,
+          "unit": "m3"
+        }
+      }
+    },
+    "FuelDepot": {
+      "type": "storage",
+      "spec": {
+        "provides": "storage",
+        "representation": "storage",
+        "storage_type": "diesel fuel",
+        "capacity": {
+          "value": 100,
+          "unit": "m3"
+        },
+        "temperature_rating": {
+          "min": -50,
+          "max": 40,
+          "unit": "C"
+        }
+      }
+    },
+    "EquipmentDepot": {
+      "type": "storage",
+      "spec": {
+        "provides": "storage",
+        "representation": "storage",
+        "storage_type": "equipment",
+        "capacity": {
+          "value": 100,
+          "unit": "m3"
+        }
+      }
+    },
+    "InventorySensor": {
+      "type": "sensor",
+      "spec": {
+        "provides": "measurement",
+        "output": "measurement_data",
+        "representation": "sensor",
+        "measures": "cargo inventory",
+        "quantity": "inventory_status",
+        "rating": {
+          "min": 0,
+          "max": 100,
+          "unit": "%"
+        },
+        "accuracy": {
+          "value": 1,
+          "unit": "%"
+        }
+      }
+    },
+    "FuelDepotSensor": {
+      "type": "sensor",
+      "spec": {
+        "provides": "measurement",
+        "output": "measurement_data",
+        "representation": "sensor",
+        "measures": "fuel depot level",
+        "quantity": "fuel_level",
+        "rating": {
+          "min": 0,
+          "max": 100,
+          "unit": "%"
+        },
+        "accuracy": {
+          "value": 1,
+          "unit": "%"
+        }
+      }
+    },
+    "SupplyController": {
+      "type": "controller",
+      "spec": {
+        "provides": "control",
+        "input": "sensor_data",
+        "output": "control_command",
+        "representation": "controller",
+        "role": "central",
+        "controls": "supply system",
+        "inputs": "inventory_status,fuel_status,delivery_status,utility_status",
+        "outputs": "inventory_update,fuel_management,equipment_tracking",
+        "control_mode": "automatic"
+      }
+    },
+    "TransportSystem": {
+      "type": "system",
+      "spec": {
+        "provides": "station transportation and field logistics",
+        "mounting": "floor",
+        "representation": "equipment_group"
+      }
+    },
+    "CargoTransport": {
+      "type": "vehicle",
+      "spec": {
+        "provides": "transport",
+        "mobility": "tracked",
+        "representation": "vehicle",
+        "role": "primary",
+        "vehicle_type": "cargo transport vehicle",
+        "payload_capacity": {
+          "value": 3000,
+          "unit": "kg"
+        },
+        "range": {
+          "value": 500,
+          "unit": "km"
+        },
+        "operating_temperature": {
+          "min": -60,
+          "max": 20,
+          "unit": "C"
+        }
+      }
+    },
+    "UtilityVehicle": {
+      "type": "vehicle",
+      "spec": {
+        "provides": "transport",
+        "mobility": "tracked",
+        "representation": "vehicle",
+        "role": "backup",
+        "vehicle_type": "utility vehicle",
+        "payload_capacity": {
+          "value": 1500,
+          "unit": "kg"
+        },
+        "range": {
+          "value": 400,
+          "unit": "km"
+        },
+        "operating_temperature": {
+          "min": -60,
+          "max": 20,
+          "unit": "C"
+        }
+      }
+    },
+    "Snowmobile": {
+      "type": "vehicle",
+      "spec": {
+        "provides": "transport",
+        "mobility": "tracked",
+        "representation": "vehicle",
+        "role": "field",
+        "vehicle_type": "Antarctic snowmobile",
+        "payload_capacity": {
+          "value": 300,
+          "unit": "kg"
+        },
+        "range": {
+          "value": 300,
+          "unit": "km"
+        },
+        "operating_temperature": {
+          "min": -60,
+          "max": 20,
+          "unit": "C"
+        }
+      }
+    },
+    "VehicleTracker": {
+      "type": "tracker",
+      "spec": {
+        "provides": "vehicle tracking",
+        "input": "location_data",
+        "output": "tracking_data",
+        "representation": "tracker",
+        "role": "monitoring",
+        "accuracy": {
+          "value": 10,
+          "unit": "m"
+        },
+        "update_rate": {
+          "value": 1,
+          "unit": "Hz"
+        }
+      }
+    },
+    "TransportController": {
+      "type": "controller",
+      "spec": {
+        "provides": "control",
+        "input": "sensor_data",
+        "output": "control_command",
+        "representation": "controller",
+        "role": "central",
+        "controls": "transport system",
+        "inputs": "vehicle_location,transport_status",
+        "outputs": "dispatch,field_dispatch",
+        "control_mode": "automatic"
+      }
+    },
+    "EnvironmentBlock": {
+      "type": "block",
+      "spec": {
+        "provides": "water treatment and environmental management",
+        "mounting": "indoor",
+        "representation": "room"
+      }
+    },
+    "WaterTreatmentSystem": {
+      "type": "system",
+      "spec": {
+        "provides": "meltwater treatment and water supply",
+        "mounting": "floor",
+        "representation": "equipment_group"
+      }
+    },
+    "MeltwaterTank": {
+      "type": "tank",
+      "spec": {
+        "provides": "fluid storage",
+        "representation": "tank",
+        "storage_type": "meltwater",
+        "capacity": {
+          "value": 100,
+          "unit": "m3"
+        },
+        "pressure_rating": {
+          "min": 0,
+          "max": 5,
+          "unit": "bar"
+        },
+        "temperature_rating": {
+          "min": 0,
+          "max": 30,
+          "unit": "C"
+        }
+      }
+    },
+    "TreatmentUnit": {
+      "type": "treatment",
+      "spec": {
+        "provides": "water treatment",
+        "input": "raw_water",
+        "output": "treated_water",
+        "representation": "treatment_unit",
+        "role": "primary",
+        "treatment_capacity": {
+          "min": 0,
+          "max": 20,
+          "unit": "m3/h"
+        },
+        "removal_efficiency": {
+          "min": 95,
+          "max": 99,
+          "unit": "%"
+        }
+      }
+    },
+    "WaterPump": {
+      "type": "pump",
+      "spec": {
+        "provides": "fluid transfer",
+        "input": "mechanical_power",
+        "output": "fluid_flow",
+        "representation": "pump",
+        "role": "primary",
+        "flow_rate": {
+          "min": 0,
+          "max": 20,
+          "unit": "m3/h"
+        },
+        "pressure": {
+          "min": 0,
+          "max": 10,
+          "unit": "bar"
+        },
+        "power": {
+          "value": 15,
+          "unit": "kW"
+        }
+      }
+    },
+    "WaterLevelSensor": {
+      "type": "sensor",
+      "spec": {
+        "provides": "measurement",
+        "output": "measurement_data",
+        "representation": "sensor",
+        "measures": "water level",
+        "quantity": "level",
+        "rating": {
+          "min": 0,
+          "max": 100,
+          "unit": "%"
+        },
+        "accuracy": {
+          "value": 1,
+          "unit": "%"
+        }
+      }
+    },
+    "WaterQualitySensor": {
+      "type": "sensor",
+      "spec": {
+        "provides": "measurement",
+        "output": "measurement_data",
+        "representation": "sensor",
+        "measures": "water quality",
+        "quantities": "pH,turbidity,conductivity",
+        "pH_rating": {
+          "min": 0,
+          "max": 14,
+          "unit": "pH"
+        },
+        "accuracy": {
+          "value": 1,
+          "unit": "%"
+        }
+      }
+    },
+    "WaterTreatmentController": {
+      "type": "controller",
+      "spec": {
+        "provides": "control",
+        "input": "sensor_data",
+        "output": "control_command",
+        "representation": "controller",
+        "role": "central",
+        "controls": "water treatment system",
+        "inputs": "water_level,water_quality",
+        "outputs": "pump_control,water_status",
+        "control_mode": "automatic"
+      }
+    },
+    "WasteManagementSystem": {
+      "type": "system",
+      "spec": {
+        "provides": "waste processing and environmental management",
+        "mounting": "floor",
+        "representation": "equipment_group"
+      }
+    },
+    "WasteProcessor": {
+      "type": "processor",
+      "spec": {
+        "provides": "waste processing",
+        "input": "waste",
+        "output": "processed_waste",
+        "representation": "waste_processor",
+        "role": "primary",
+        "processing_capacity": {
+          "min": 0,
+          "max": 10,
+          "unit": "m3/h"
+        },
+        "reduction_efficiency": {
+          "min": 80,
+          "max": 95,
+          "unit": "%"
+        }
+      }
+    },
+    "WasteStorage": {
+      "type": "storage",
+      "spec": {
+        "provides": "storage",
+        "representation": "storage",
+        "storage_type": "processed waste",
+        "capacity": {
+          "value": 50,
+          "unit": "m3"
+        }
+      }
+    },
+    "WasteLevelSensor": {
+      "type": "sensor",
+      "spec": {
+        "provides": "measurement",
+        "output": "measurement_data",
+        "representation": "sensor",
+        "measures": "waste storage level",
+        "quantity": "storage_level",
+        "rating": {
+          "min": 0,
+          "max": 100,
+          "unit": "%"
+        },
+        "accuracy": {
+          "value": 1,
+          "unit": "%"
+        }
+      }
+    },
+    "WasteMonitor": {
+      "type": "sensor",
+      "spec": {
+        "provides": "measurement",
+        "output": "measurement_data",
+        "representation": "sensor",
+        "measures": "environmental waste status",
+        "quantity": "environmental_status"
+      }
+    },
+    "WasteManagementController": {
+      "type": "controller",
+      "spec": {
+        "provides": "control",
+        "input": "sensor_data",
+        "output": "control_command",
+        "representation": "controller",
+        "role": "central",
+        "controls": "waste management system",
+        "inputs": "storage_level,environmental_status",
+        "outputs": "processing_control,environment_data,waste_shutdown",
+        "control_mode": "automatic"
+      }
+    },
+    "SafetyBlock": {
+      "type": "block",
+      "spec": {
+        "provides": "station safety and emergency response",
+        "mounting": "indoor",
+        "representation": "room"
+      }
+    },
+    "EmergencySystem": {
+      "type": "system",
+      "spec": {
+        "provides": "emergency response and personnel safety",
+        "mounting": "floor",
+        "representation": "equipment_group"
+      }
+    },
+    "EmergencyBeacon": {
+      "type": "beacon",
+      "spec": {
+        "provides": "emergency visual indication",
+        "output": "visual_signal",
+        "representation": "beacon",
+        "role": "critical",
+        "signal_type": "visual",
+        "range": {
+          "value": 5,
+          "unit": "km"
+        }
+      }
+    },
+    "EmergencyRadio": {
+      "type": "radio",
+      "spec": {
+        "provides": "radio communication",
+        "input": "radio_signal",
+        "output": "radio_signal",
+        "representation": "radio",
+        "role": "critical",
+        "communication_type": "emergency radio",
+        "frequency": {
+          "min": 30,
+          "max": 300,
+          "unit": "MHz"
+        },
+        "range": {
+          "value": 100,
+          "unit": "km"
+        }
+      }
+    },
+    "EmergencyLocator": {
+      "type": "locator",
+      "spec": {
+        "provides": "emergency location",
+        "input": "position_data",
+        "output": "location_signal",
+        "representation": "locator",
+        "role": "critical",
+        "accuracy": {
+          "value": 10,
+          "unit": "m"
+        },
+        "update_rate": {
+          "value": 1,
+          "unit": "Hz"
+        }
+      }
+    },
+    "EmergencySensor": {
+      "type": "sensor",
+      "spec": {
+        "provides": "measurement",
+        "output": "measurement_data",
+        "representation": "sensor",
+        "measures": "emergency condition",
+        "quantity": "emergency_status"
+      }
+    },
+    "EmergencyController": {
+      "type": "controller",
+      "spec": {
+        "provides": "control",
+        "input": "sensor_data",
+        "output": "control_command",
+        "representation": "controller",
+        "role": "central",
+        "controls": "emergency system",
+        "inputs": "emergency_detection,personnel_status,fire_alert",
+        "outputs": "beacon,radio,location_signal,emergency_mode",
+        "control_mode": "automatic"
+      }
+    },
+    "FireProtectionSystem": {
+      "type": "system",
+      "spec": {
+        "provides": "fire detection and suppression",
+        "mounting": "floor",
+        "representation": "equipment_group"
+      }
+    },
+    "FireDetector": {
+      "type": "detector",
+      "spec": {
+        "provides": "hazard detection",
+        "output": "detection_signal",
+        "representation": "detector",
+        "measures": "fire condition",
+        "quantity": "fire_detection",
+        "detection": "flame and heat"
+      }
+    },
+    "SmokeDetector": {
+      "type": "detector",
+      "spec": {
+        "provides": "hazard detection",
+        "output": "detection_signal",
+        "representation": "detector",
+        "measures": "smoke condition",
+        "quantity": "smoke_detection",
+        "detection": "particulate smoke"
+      }
+    },
+    "FireSuppressionUnit": {
+      "type": "suppression",
+      "spec": {
+        "provides": "fire suppression",
+        "input": "suppression_command",
+        "output": "fire_suppression",
+        "representation": "suppression_unit",
+        "role": "critical",
+        "suppression_type": "automatic fire suppression",
+        "coverage": {
+          "value": 500,
+          "unit": "m2"
+        }
+      }
+    },
+    "FireSafetyController": {
+      "type": "controller",
+      "spec": {
+        "provides": "control",
+        "input": "sensor_data",
+        "output": "control_command",
+        "representation": "controller",
+        "role": "central",
+        "controls": "fire protection system",
+        "inputs": "fire_detection,smoke_detection",
+        "outputs": "suppression_control,fire_alert",
+        "control_mode": "automatic"
+      }
+    }
+  },
+  "defaults": {
+    "station": {
+      "provides": "research station",
+      "environment": "Antarctic",
+      "mounting": "ground",
+      "representation": "building"
+    },
+    "block": {
+      "provides": "functional station block",
+      "mounting": "indoor",
+      "representation": "room"
+    },
+    "system": {
+      "provides": "functional system",
+      "mounting": "floor",
+      "representation": "equipment_group"
+    },
+    "solar": {
+      "provides": "renewable electrical power",
+      "output": "electrical",
+      "energy_source": "solar",
+      "representation": "solar_array"
+    },
+    "generator": {
+      "provides": "electrical power",
+      "output": "electrical",
+      "fuel": "diesel",
+      "frequency": {
+        "value": 50,
+        "unit": "Hz"
+      },
+      "voltage": {
+        "value": 400,
+        "unit": "V"
+      },
+      "phases": 3,
+      "representation": "generator"
+    },
+    "battery": {
+      "provides": "electrical energy storage",
+      "output": "DC",
+      "technology": "lithium battery",
+      "representation": "battery"
+    },
+    "inverter": {
+      "provides": "power conditioning and conversion",
+      "input": "DC",
+      "output": "AC",
+      "representation": "inverter"
+    },
+    "sensor": {
+      "provides": "measurement",
+      "output": "measurement_data",
+      "representation": "sensor"
+    },
+    "controller": {
+      "provides": "control",
+      "input": "sensor_data",
+      "output": "control_command",
+      "representation": "controller"
+    },
+    "heater": {
+      "provides": "heating",
+      "input": "electrical_power",
+      "output": "thermal_energy",
+      "representation": "heater"
+    },
+    "fan": {
+      "provides": "airflow",
+      "input": "electrical_power",
+      "output": "airflow",
+      "representation": "fan"
+    },
+    "ventilator": {
+      "provides": "fresh air ventilation",
+      "input": "electrical_power",
+      "output": "fresh_air",
+      "representation": "ventilator"
+    },
+    "habitat": {
+      "provides": "personnel accommodation",
+      "environment": "controlled",
+      "representation": "habitat"
+    },
+    "medical": {
+      "provides": "medical support",
+      "environment": "controlled",
+      "representation": "medical_unit"
+    },
+    "seismic": {
+      "provides": "seismic monitoring",
+      "output": "seismic_data",
+      "representation": "seismic_station"
+    },
+    "receiver": {
+      "provides": "geospatial positioning",
+      "input": "satellite_signal",
+      "output": "position_data",
+      "representation": "receiver"
+    },
+    "logger": {
+      "provides": "research data logging",
+      "input": "measurement_data",
+      "output": "stored_data",
+      "representation": "data_logger"
+    },
+    "weather": {
+      "provides": "weather monitoring",
+      "output": "weather_data",
+      "representation": "weather_station"
+    },
+    "probe": {
+      "provides": "marine measurement",
+      "output": "ocean_data",
+      "representation": "ocean_probe"
+    },
+    "sampler": {
+      "provides": "environmental sample collection",
+      "output": "sample_data",
+      "representation": "sampler"
+    },
+    "vehicle": {
+      "provides": "transport",
+      "mobility": "mobile",
+      "representation": "vehicle"
+    },
+    "drone": {
+      "provides": "remote field survey",
+      "mobility": "mobile",
+      "control": "remote",
+      "representation": "drone"
+    },
+    "navigation": {
+      "provides": "navigation",
+      "input": "position_data",
+      "output": "navigation_data",
+      "representation": "navigation_unit"
+    },
+    "terminal": {
+      "provides": "satellite communication",
+      "input": "network_data",
+      "output": "radio_signal",
+      "representation": "communication_terminal"
+    },
+    "antenna": {
+      "provides": "radio communication",
+      "representation": "antenna"
+    },
+    "modem": {
+      "provides": "satellite data communication",
+      "input": "radio_signal",
+      "output": "network_data",
+      "representation": "modem"
+    },
+    "server": {
+      "provides": "computing",
+      "interface": "network",
+      "representation": "server_rack"
+    },
+    "storage": {
+      "provides": "storage",
+      "representation": "storage"
+    },
+    "tank": {
+      "provides": "fluid storage",
+      "representation": "tank"
+    },
+    "pump": {
+      "provides": "fluid transfer",
+      "input": "mechanical_power",
+      "output": "fluid_flow",
+      "representation": "pump"
+    },
+    "treatment": {
+      "provides": "water treatment",
+      "input": "raw_water",
+      "output": "treated_water",
+      "representation": "treatment_unit"
+    },
+    "processor": {
+      "provides": "waste processing",
+      "input": "waste",
+      "output": "processed_waste",
+      "representation": "waste_processor"
+    },
+    "tracker": {
+      "provides": "vehicle tracking",
+      "input": "location_data",
+      "output": "tracking_data",
+      "representation": "tracker"
+    },
+    "beacon": {
+      "provides": "emergency visual indication",
+      "output": "visual_signal",
+      "representation": "beacon"
+    },
+    "radio": {
+      "provides": "radio communication",
+      "input": "radio_signal",
+      "output": "radio_signal",
+      "representation": "radio"
+    },
+    "locator": {
+      "provides": "emergency location",
+      "input": "position_data",
+      "output": "location_signal",
+      "representation": "locator"
+    },
+    "detector": {
+      "provides": "hazard detection",
+      "output": "detection_signal",
+      "representation": "detector"
+    },
+    "suppression": {
+      "provides": "fire suppression",
+      "input": "suppression_command",
+      "output": "fire_suppression",
+      "representation": "suppression_unit"
+    }
+  }
+}

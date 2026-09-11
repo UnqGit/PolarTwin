@@ -1,0 +1,1203 @@
+# ============================================================
+# BHARATI ANTARCTIC RESEARCH STATION
+# SPECIFICATION DEFINITIONS
+# ============================================================
+#
+# This file describes engineering and semantic specifications.
+#
+# ============================================================
+# TYPE DEFAULTS
+# ============================================================
+# ------------------------------------------------------------
+# STATION
+# ------------------------------------------------------------
+
+default:station {
+    provides="research station"
+    environment="Antarctic"
+    mounting=ground
+    representation=building
+}
+
+# ------------------------------------------------------------
+# BLOCK
+# ------------------------------------------------------------
+
+default:block {
+    provides="functional station block"
+    mounting=indoor
+    representation=room
+}
+
+# ------------------------------------------------------------
+# SYSTEM
+# ------------------------------------------------------------
+
+default:system {
+    provides="functional system"
+    mounting=floor
+    representation=equipment_group
+}
+
+# ------------------------------------------------------------
+# SOLAR ARRAY
+# ------------------------------------------------------------
+
+default:solar {
+    provides="renewable electrical power"
+    output="electrical"
+    energy_source="solar"
+    representation=solar_array
+}
+
+# ------------------------------------------------------------
+# GENERATOR
+# ------------------------------------------------------------
+
+default:generator {
+    provides="electrical power"
+    output="electrical"
+    fuel="diesel"
+    frequency=50 unit=Hz
+    voltage=400 unit=V
+    phases=3
+    representation=generator
+}
+
+# ------------------------------------------------------------
+# BATTERY
+# ------------------------------------------------------------
+
+default:battery {
+    provides="electrical energy storage"
+    output="DC"
+    technology="lithium battery"
+    representation=battery
+}
+
+# ------------------------------------------------------------
+# INVERTER
+# ------------------------------------------------------------
+
+default:inverter {
+    provides="power conditioning and conversion"
+    input="DC"
+    output="AC"
+    representation=inverter
+}
+
+# ------------------------------------------------------------
+# SENSOR
+# ------------------------------------------------------------
+
+default:sensor {
+    provides="measurement"
+    output="measurement_data"
+    representation=sensor
+}
+
+# ------------------------------------------------------------
+# CONTROLLER
+# ------------------------------------------------------------
+
+default:controller {
+    provides="control"
+    input="sensor_data"
+    output="control_command"
+    representation=controller
+}
+
+# ------------------------------------------------------------
+# HEATER
+# ------------------------------------------------------------
+
+default:heater {
+    provides="heating"
+    input="electrical_power"
+    output="thermal_energy"
+    representation=heater
+}
+
+# ------------------------------------------------------------
+# FAN
+# ------------------------------------------------------------
+
+default:fan {
+    provides="airflow"
+    input="electrical_power"
+    output="airflow"
+    representation=fan
+}
+
+# ------------------------------------------------------------
+# VENTILATOR
+# ------------------------------------------------------------
+
+default:ventilator {
+    provides="fresh air ventilation"
+    input="electrical_power"
+    output="fresh_air"
+    representation=ventilator
+}
+
+# ------------------------------------------------------------
+# HABITAT
+# ------------------------------------------------------------
+
+default:habitat {
+    provides="personnel accommodation"
+    environment="controlled"
+    representation=habitat
+}
+
+# ------------------------------------------------------------
+# MEDICAL
+# ------------------------------------------------------------
+
+default:medical {
+    provides="medical support"
+    environment="controlled"
+    representation=medical_unit
+}
+
+# ------------------------------------------------------------
+# SEISMIC
+# ------------------------------------------------------------
+
+default:seismic {
+    provides="seismic monitoring"
+    output="seismic_data"
+    representation=seismic_station
+}
+
+# ------------------------------------------------------------
+# RECEIVER
+# ------------------------------------------------------------
+
+default:receiver {
+    provides="geospatial positioning"
+    input="satellite_signal"
+    output="position_data"
+    representation=receiver
+}
+
+# ------------------------------------------------------------
+# LOGGER
+# ------------------------------------------------------------
+
+default:logger {
+    provides="research data logging"
+    input="measurement_data"
+    output="stored_data"
+    representation=data_logger
+}
+
+# ------------------------------------------------------------
+# WEATHER
+# ------------------------------------------------------------
+
+default:weather {
+    provides="weather monitoring"
+    output="weather_data"
+    representation=weather_station
+}
+
+# ------------------------------------------------------------
+# PROBE
+# ------------------------------------------------------------
+
+default:probe {
+    provides="marine measurement"
+    output="ocean_data"
+    representation=ocean_probe
+}
+
+# ------------------------------------------------------------
+# SAMPLER
+# ------------------------------------------------------------
+
+default:sampler {
+    provides="environmental sample collection"
+    output="sample_data"
+    representation=sampler
+}
+
+# ------------------------------------------------------------
+# VEHICLE
+# ------------------------------------------------------------
+
+default:vehicle {
+    provides="transport"
+    mobility=mobile
+    representation=vehicle
+}
+
+# ------------------------------------------------------------
+# DRONE
+# ------------------------------------------------------------
+
+default:drone {
+    provides="remote field survey"
+    mobility=mobile
+    control="remote"
+    representation=drone
+}
+
+# ------------------------------------------------------------
+# NAVIGATION
+# ------------------------------------------------------------
+
+default:navigation {
+    provides="navigation"
+    input="position_data"
+    output="navigation_data"
+    representation=navigation_unit
+}
+
+# ------------------------------------------------------------
+# TERMINAL
+# ------------------------------------------------------------
+
+default:terminal {
+    provides="satellite communication"
+    input="network_data"
+    output="radio_signal"
+    representation=communication_terminal
+}
+
+# ------------------------------------------------------------
+# ANTENNA
+# ------------------------------------------------------------
+
+default:antenna {
+    provides="radio communication"
+    representation=antenna
+}
+
+# ------------------------------------------------------------
+# MODEM
+# ------------------------------------------------------------
+
+default:modem {
+    provides="satellite data communication"
+    input="radio_signal"
+    output="network_data"
+    representation=modem
+}
+
+# ------------------------------------------------------------
+# SERVER
+# ------------------------------------------------------------
+
+default:server {
+    provides="computing"
+    interface="network"
+    representation=server_rack
+}
+
+# ------------------------------------------------------------
+# STORAGE
+# ------------------------------------------------------------
+
+default:storage {
+    provides="storage"
+    representation=storage
+}
+
+# ------------------------------------------------------------
+# TANK
+# ------------------------------------------------------------
+
+default:tank {
+    provides="fluid storage"
+    representation=tank
+}
+
+# ------------------------------------------------------------
+# PUMP
+# ------------------------------------------------------------
+
+default:pump {
+    provides="fluid transfer"
+    input="mechanical_power"
+    output="fluid_flow"
+    representation=pump
+}
+
+# ------------------------------------------------------------
+# TREATMENT
+# ------------------------------------------------------------
+
+default:treatment {
+    provides="water treatment"
+    input="raw_water"
+    output="treated_water"
+    representation=treatment_unit
+}
+
+# ------------------------------------------------------------
+# PROCESSOR
+# ------------------------------------------------------------
+
+default:processor {
+    provides="waste processing"
+    input="waste"
+    output="processed_waste"
+    representation=waste_processor
+}
+
+# ------------------------------------------------------------
+# TRACKER
+# ------------------------------------------------------------
+
+default:tracker {
+    provides="vehicle tracking"
+    input="location_data"
+    output="tracking_data"
+    representation=tracker
+}
+
+# ------------------------------------------------------------
+# BEACON
+# ------------------------------------------------------------
+
+default:beacon {
+    provides="emergency visual indication"
+    output="visual_signal"
+    representation=beacon
+}
+
+# ------------------------------------------------------------
+# RADIO
+# ------------------------------------------------------------
+
+default:radio {
+    provides="radio communication"
+    input="radio_signal"
+    output="radio_signal"
+    representation=radio
+}
+
+# ------------------------------------------------------------
+# LOCATOR
+# ------------------------------------------------------------
+
+default:locator {
+    provides="emergency location"
+    input="position_data"
+    output="location_signal"
+    representation=locator
+}
+
+# ------------------------------------------------------------
+# DETECTOR
+# ------------------------------------------------------------
+
+default:detector {
+    provides="hazard detection"
+    output="detection_signal"
+    representation=detector
+}
+
+# ------------------------------------------------------------
+# SUPPRESSION
+# ------------------------------------------------------------
+
+default:suppression {
+    provides="fire suppression"
+    input="suppression_command"
+    output="fire_suppression"
+    representation=suppression_unit
+}
+
+# ============================================================
+# STATION
+# ============================================================
+
+Bharati:station {
+    name="Bharati Antarctic Research Station"
+    purpose="Antarctic research and habitation"
+    environment="Antarctic"
+    location="Bharati Station, Antarctica"
+    research_focus="earth science, atmospheric science and coastal research"
+    length=130 unit=m
+    breadth=60 unit=m
+    height=15 unit=m
+    representation=building
+}
+
+# ============================================================
+# POWER AND MICROGRID BLOCK
+# ============================================================
+
+PowerBlock:block {
+    provides="station power and autonomous microgrid infrastructure"
+}
+
+MicrogridSystem:system {
+    provides="autonomous electrical power generation, storage and conditioning"
+}
+
+SolarArray:solar {
+    role=primary
+    rated_power=500 unit=kW
+    voltage=800 unit=V
+    operating_temperature=-40:50 unit=C
+    representation=solar_array
+}
+
+DieselGeneratorA:generator {
+    role=primary
+    rating=500 unit=kW
+    continuous_power=450 unit=kW
+    fuel_capacity=3000 unit=L
+    voltage=400 unit=V
+    frequency=50 unit=Hz
+    rating_temperature=-40:50 unit=C
+    representation=generator
+}
+
+DieselGeneratorB:generator {
+    role=backup
+    rating=500 unit=kW
+    continuous_power=450 unit=kW
+    fuel_capacity=3000 unit=L
+    voltage=400 unit=V
+    frequency=50 unit=Hz
+    rating_temperature=-40:50 unit=C
+    representation=generator
+}
+
+BatteryStorage:battery {
+    role=storage
+    capacity=2000 unit=kWh
+    nominal_voltage=800 unit=V
+    maximum_power=500 unit=kW
+    charging_temperature=0:45 unit=C
+    discharging_temperature=-30:50 unit=C
+    representation=battery
+}
+
+PowerConditioner:inverter {
+    role=primary
+    rating=500 unit=kW
+    input_voltage=800 unit=V
+    output_voltage=400 unit=V
+    frequency=50 unit=Hz
+    efficiency=90:98 unit=%
+    operating_temperature=-30:50 unit=C
+    representation=inverter
+}
+
+GridVoltageSensor:sensor {
+    measures="grid voltage"
+    quantity="voltage"
+    rating=0:500 unit=V
+    accuracy=0.5 unit=%
+    representation=sensor
+}
+
+FuelSensor:sensor {
+    measures="diesel fuel level"
+    quantity="fuel_level"
+    rating=0:100 unit=%
+    accuracy=1 unit=%
+    representation=sensor
+}
+
+BatteryHealthSensor:sensor {
+    measures="battery health"
+    quantity="battery_health"
+    rating=0:100 unit=%
+    accuracy=1 unit=%
+    representation=sensor
+}
+
+MicrogridController:controller {
+    role=central
+    controls="microgrid system"
+    inputs="voltage,fuel_level,battery_health,generation_status"
+    outputs="generator_control,storage_control,power_control"
+    control_mode="automatic"
+    representation=controller
+}
+
+# ============================================================
+# HABITATION AND LIFE SUPPORT BLOCK
+# ============================================================
+
+HabitatBlock:block {
+    provides="personnel habitation and life support"
+}
+
+LifeSupportSystem:system {
+    provides="heating ventilation and air quality management"
+}
+
+HeatingUnit:heater {
+    role=primary
+    rating=100 unit=kW
+    thermal_output=100 unit=kW
+    operating_temperature=-40:40 unit=C
+    representation=heater
+}
+
+AirCirculationUnit:fan {
+    role=primary
+    airflow=0:12000 unit=m3/h
+    pressure=0:1000 unit=Pa
+    power=7.5 unit=kW
+    representation=fan
+}
+
+FreshAirUnit:ventilator {
+    role=primary
+    airflow=0:8000 unit=m3/h
+    pressure=0:800 unit=Pa
+    power=6 unit=kW
+    filtration_efficiency=95:99 unit=%
+    representation=ventilator
+}
+
+IndoorTempSensor:sensor {
+    measures="indoor temperature"
+    quantity="temperature"
+    rating=-50:50 unit=C
+    accuracy=0.1 unit=C
+    resolution=0.1 unit=C
+}
+
+HumiditySensor:sensor {
+    measures="relative humidity"
+    quantity="humidity"
+    rating=0:100 unit=%
+    accuracy=2 unit=%
+}
+
+CO2Sensor:sensor {
+    measures="carbon dioxide concentration"
+    quantity="co2"
+    rating=0:5000 unit=ppm
+    accuracy=1 unit=%
+}
+
+LifeSupportController:controller {
+    role=central
+    controls="life support system"
+    inputs="temperature,humidity,air_quality"
+    outputs="heat_control,airflow,ventilation"
+    control_mode="automatic"
+}
+
+AccommodationSystem:system {
+    provides="personnel accommodation and welfare"
+}
+
+SleepingModule:habitat {
+    capacity=40 unit=persons
+    area=600 unit=m2
+    representation=habitat
+}
+
+RecreationModule:habitat {
+    capacity=30 unit=persons
+    area=300 unit=m2
+    representation=habitat
+}
+
+MedicalModule:medical {
+    capacity=4 unit=persons
+    area=100 unit=m2
+    emergency_support="medical care"
+    representation=medical_unit
+}
+
+OccupancySensor:sensor {
+    measures="personnel occupancy"
+    quantity="occupancy"
+    rating=0:100 unit=persons
+    accuracy=1 unit=persons
+}
+
+MedicalMonitor:sensor {
+    measures="personnel medical status"
+    quantity="health_status"
+    representation=sensor
+}
+
+HabitatController:controller {
+    role=central
+    controls="accommodation system"
+    inputs="occupancy,medical_status"
+    outputs="habitat_demand,personnel_status"
+    control_mode="automatic"
+}
+
+# ============================================================
+# EARTH SCIENCE BLOCK
+# ============================================================
+
+EarthScienceBlock:block {
+    provides="earth science research infrastructure"
+}
+
+GeoscienceSystem:system {
+    provides="geological and seismic research"
+}
+
+SeismicStation:seismic {
+    role=primary
+    sensitivity=0:10 unit=Hz
+    operating_temperature=-50:30 unit=C
+    representation=seismic_station
+}
+
+GPSReceiver:receiver {
+    role=primary
+    accuracy=5 unit=m
+    update_rate=1 unit=Hz
+    operating_temperature=-40:50 unit=C
+    representation=receiver
+}
+
+GroundMovementSensor:sensor {
+    measures="ground movement"
+    quantity="ground_displacement"
+    rating=0:100 unit=mm
+    accuracy=0.1 unit=mm
+    representation=sensor
+}
+
+SeismicDataLogger:logger {
+    role=primary
+    storage_capacity=10 unit=TB
+    sampling_rate=100 unit=Hz
+    representation=data_logger
+}
+
+GeoscienceController:controller {
+    role=central
+    controls="geoscience system"
+    inputs="ground_motion,seismic_data"
+    outputs="geoscience_data"
+    control_mode="automatic"
+}
+
+AtmosphericSystem:system {
+    provides="atmospheric and weather research"
+}
+
+WeatherStation:weather {
+    role=primary
+    operating_temperature=-80:50 unit=C
+    representation=weather_station
+}
+
+WindSensor:sensor {
+    measures="wind speed"
+    quantity="wind_speed"
+    rating=0:60 unit=m/s
+    accuracy=1 unit=%
+}
+
+PressureSensor:sensor {
+    measures="atmospheric pressure"
+    quantity="pressure"
+    rating=500:1100 unit=hPa
+    accuracy=0.5 unit=%
+}
+
+RadiationSensor:sensor {
+    measures="radiation level"
+    quantity="radiation"
+    rating=0:1000 unit=uSv/h
+    accuracy=5 unit=%
+}
+
+AtmosphericLogger:logger {
+    role=primary
+    storage_capacity=10 unit=TB
+    sampling_rate=1 unit=Hz
+    representation=data_logger
+}
+
+AtmosphereController:controller {
+    role=central
+    controls="atmospheric system"
+    inputs="wind_speed,pressure,radiation,atmospheric_data"
+    outputs="weather_records,research_data"
+    control_mode="automatic"
+}
+
+# ============================================================
+# OCEAN AND COASTAL RESEARCH BLOCK
+# ============================================================
+
+CoastalResearchBlock:block {
+    provides="marine and coastal research"
+}
+
+MarineSystem:system {
+    provides="marine field research"
+}
+
+OceanProbe:probe {
+    role=primary
+    depth_rating=0:1000 unit=m
+    operating_temperature=-5:40 unit=C
+    representation=ocean_probe
+}
+
+WaterSampler:sampler {
+    role=research
+    sample_volume=5 unit=L
+    depth_rating=0:500 unit=m
+    representation=sampler
+}
+
+SalinitySensor:sensor {
+    measures="water salinity"
+    quantity="salinity"
+    rating=0:50 unit=PSU
+    accuracy=0.1 unit=PSU
+}
+
+OceanTemperatureSensor:sensor {
+    measures="ocean temperature"
+    quantity="temperature"
+    rating=-5:40 unit=C
+    accuracy=0.1 unit=C
+}
+
+MarineDataLogger:logger {
+    role=primary
+    storage_capacity=5 unit=TB
+    sampling_rate=1 unit=Hz
+    representation=data_logger
+}
+
+MarineController:controller {
+    role=central
+    controls="marine research system"
+    inputs="sample_status,salinity,temperature,marine_data"
+    outputs="ocean_records,field_mission"
+    control_mode="automatic"
+}
+
+FieldOperationsSystem:system {
+    provides="mobile field research operations"
+}
+
+FieldVehicle:vehicle {
+    role=primary
+    vehicle_type="Antarctic field vehicle"
+    mobility="tracked"
+    payload_capacity=1500 unit=kg
+    range=500 unit=km
+    operating_temperature=-60:20 unit=C
+    representation=vehicle
+}
+
+SurveyDrone:drone {
+    role=mobile
+    vehicle_type="research survey drone"
+    mobility="aerial"
+    payload_capacity=20 unit=kg
+    range=100 unit=km
+    operating_temperature=-40:20 unit=C
+    representation=drone
+}
+
+NavigationUnit:navigation {
+    role=critical
+    accuracy=5 unit=m
+    update_rate=1 unit=Hz
+    representation=navigation_unit
+}
+
+FieldGPS:sensor {
+    measures="geographic position"
+    quantity="position"
+    accuracy=5 unit=m
+    representation=sensor
+}
+
+FieldOperationsController:controller {
+    role=central
+    controls="field operations"
+    inputs="location,navigation,survey_data,vehicle_status"
+    outputs="vehicle_control,mission_control,field_mission"
+    control_mode="automatic"
+}
+
+# ============================================================
+# COMMUNICATIONS AND DATA BLOCK
+# ============================================================
+
+CommunicationsBlock:block {
+    provides="station communications and research data infrastructure"
+}
+
+SatelliteCommunicationSystem:system {
+    provides="satellite communication"
+}
+
+SatelliteTerminal:terminal {
+    role=primary
+    frequency=1:10 unit=GHz
+    bandwidth=100 unit=Mbps
+    operating_temperature=-40:50 unit=C
+    representation=communication_terminal
+}
+
+HighGainAntenna:antenna {
+    role=primary
+    gain=30 unit=dBi
+    frequency=1:10 unit=GHz
+    representation=antenna
+}
+
+BackupAntenna:antenna {
+    role=backup
+    gain=25 unit=dBi
+    frequency=1:10 unit=GHz
+    representation=antenna
+}
+
+LinkQualitySensor:sensor {
+    measures="satellite link quality"
+    quantity="signal_quality"
+    rating=0:100 unit=%
+    accuracy=1 unit=%
+}
+
+SatelliteModem:modem {
+    role=primary
+    data_rate=100 unit=Mbps
+    frequency=1:10 unit=GHz
+    representation=modem
+}
+
+CommunicationsController:controller {
+    role=central
+    controls="satellite communication system"
+    inputs="signal_quality,link_status"
+    outputs="connection_control,remote_access,emergency_message"
+    control_mode="automatic"
+}
+
+DataManagementSystem:system {
+    provides="research data management and archival"
+}
+
+ResearchDataServer:server {
+    role=primary
+    processing="research data management"
+    storage_capacity=100 unit=TB
+    availability="24x7"
+}
+
+ArchiveServer:server {
+    role=backup
+    processing="data archival and replication"
+    storage_capacity=200 unit=TB
+    availability="24x7"
+}
+
+DataStorage:storage {
+    storage_type="research data"
+    capacity=500 unit=TB
+    redundancy="high_availability"
+}
+
+DataIntegritySensor:sensor {
+    measures="research data integrity"
+    quantity="data_integrity"
+    rating=0:100 unit=%
+    accuracy=1 unit=%
+}
+
+DataManagementController:controller {
+    role=central
+    controls="data management system"
+    inputs="research_data,backup_data,integrity_status,remote_data"
+    outputs="archive,replication,data_transmission"
+    control_mode="automatic"
+}
+
+# ============================================================
+# LOGISTICS AND SUPPLY BLOCK
+# ============================================================
+
+LogisticsBlock:block {
+    provides="station logistics and supply"
+}
+
+SupplySystem:system {
+    provides="cargo inventory and fuel management"
+}
+
+CargoInventory:storage {
+    storage_type="cargo inventory"
+    capacity=100 unit=m3
+    representation=storage
+}
+
+FuelDepot:storage {
+    storage_type="diesel fuel"
+    capacity=100 unit=m3
+    temperature_rating=-50:40 unit=C
+    representation=storage
+}
+
+EquipmentDepot:storage {
+    storage_type="equipment"
+    capacity=100 unit=m3
+    representation=storage
+}
+
+InventorySensor:sensor {
+    measures="cargo inventory"
+    quantity="inventory_status"
+    rating=0:100 unit=%
+    accuracy=1 unit=%
+}
+
+FuelDepotSensor:sensor {
+    measures="fuel depot level"
+    quantity="fuel_level"
+    rating=0:100 unit=%
+    accuracy=1 unit=%
+}
+
+SupplyController:controller {
+    role=central
+    controls="supply system"
+    inputs="inventory_status,fuel_status,delivery_status,utility_status"
+    outputs="inventory_update,fuel_management,equipment_tracking"
+    control_mode="automatic"
+}
+
+TransportSystem:system {
+    provides="station transportation and field logistics"
+}
+
+CargoTransport:vehicle {
+    role=primary
+    vehicle_type="cargo transport vehicle"
+    mobility="tracked"
+    payload_capacity=3000 unit=kg
+    range=500 unit=km
+    operating_temperature=-60:20 unit=C
+    representation=vehicle
+}
+
+UtilityVehicle:vehicle {
+    role=backup
+    vehicle_type="utility vehicle"
+    mobility="tracked"
+    payload_capacity=1500 unit=kg
+    range=400 unit=km
+    operating_temperature=-60:20 unit=C
+    representation=vehicle
+}
+
+Snowmobile:vehicle {
+    role=field
+    vehicle_type="Antarctic snowmobile"
+    mobility="tracked"
+    payload_capacity=300 unit=kg
+    range=300 unit=km
+    operating_temperature=-60:20 unit=C
+    representation=vehicle
+}
+
+VehicleTracker:tracker {
+    role=monitoring
+    accuracy=10 unit=m
+    update_rate=1 unit=Hz
+    representation=tracker
+}
+
+TransportController:controller {
+    role=central
+    controls="transport system"
+    inputs="vehicle_location,transport_status"
+    outputs="dispatch,field_dispatch"
+    control_mode="automatic"
+}
+
+# ============================================================
+# WATER AND ENVIRONMENT BLOCK
+# ============================================================
+
+EnvironmentBlock:block {
+    provides="water treatment and environmental management"
+}
+
+WaterTreatmentSystem:system {
+    provides="meltwater treatment and water supply"
+}
+
+MeltwaterTank:tank {
+    storage_type="meltwater"
+    capacity=100 unit=m3
+    pressure_rating=0:5 unit=bar
+    temperature_rating=0:30 unit=C
+    representation=tank
+}
+
+TreatmentUnit:treatment {
+    role=primary
+    treatment_capacity=0:20 unit=m3/h
+    removal_efficiency=95:99 unit=%
+    representation=treatment_unit
+}
+
+WaterPump:pump {
+    role=primary
+    flow_rate=0:20 unit=m3/h
+    pressure=0:10 unit=bar
+    power=15 unit=kW
+}
+
+WaterLevelSensor:sensor {
+    measures="water level"
+    quantity="level"
+    rating=0:100 unit=%
+    accuracy=1 unit=%
+}
+
+WaterQualitySensor:sensor {
+    measures="water quality"
+    quantities="pH,turbidity,conductivity"
+    pH_rating=0:14 unit=pH
+    accuracy=1 unit=%
+}
+
+WaterTreatmentController:controller {
+    role=central
+    controls="water treatment system"
+    inputs="water_level,water_quality"
+    outputs="pump_control,water_status"
+    control_mode="automatic"
+}
+
+WasteManagementSystem:system {
+    provides="waste processing and environmental management"
+}
+
+WasteProcessor:processor {
+    role=primary
+    processing_capacity=0:10 unit=m3/h
+    reduction_efficiency=80:95 unit=%
+    representation=waste_processor
+}
+
+WasteStorage:storage {
+    storage_type="processed waste"
+    capacity=50 unit=m3
+    representation=storage
+}
+
+WasteLevelSensor:sensor {
+    measures="waste storage level"
+    quantity="storage_level"
+    rating=0:100 unit=%
+    accuracy=1 unit=%
+}
+
+WasteMonitor:sensor {
+    measures="environmental waste status"
+    quantity="environmental_status"
+    representation=sensor
+}
+
+WasteManagementController:controller {
+    role=central
+    controls="waste management system"
+    inputs="storage_level,environmental_status"
+    outputs="processing_control,environment_data,waste_shutdown"
+    control_mode="automatic"
+}
+
+# ============================================================
+# SAFETY AND EMERGENCY BLOCK
+# ============================================================
+
+SafetyBlock:block {
+    provides="station safety and emergency response"
+}
+
+EmergencySystem:system {
+    provides="emergency response and personnel safety"
+}
+
+EmergencyBeacon:beacon {
+    role=critical
+    signal_type="visual"
+    range=5 unit=km
+    representation=beacon
+}
+
+EmergencyRadio:radio {
+    role=critical
+    communication_type="emergency radio"
+    frequency=30:300 unit=MHz
+    range=100 unit=km
+    representation=radio
+}
+
+EmergencyLocator:locator {
+    role=critical
+    accuracy=10 unit=m
+    update_rate=1 unit=Hz
+    representation=locator
+}
+
+EmergencySensor:sensor {
+    measures="emergency condition"
+    quantity="emergency_status"
+    representation=sensor
+}
+
+EmergencyController:controller {
+    role=central
+    controls="emergency system"
+    inputs="emergency_detection,personnel_status,fire_alert"
+    outputs="beacon,radio,location_signal,emergency_mode"
+    control_mode="automatic"
+}
+
+FireProtectionSystem:system {
+    provides="fire detection and suppression"
+}
+
+FireDetector:detector {
+    measures="fire condition"
+    quantity="fire_detection"
+    detection="flame and heat"
+    representation=detector
+}
+
+SmokeDetector:detector {
+    measures="smoke condition"
+    quantity="smoke_detection"
+    detection="particulate smoke"
+    representation=detector
+}
+
+FireSuppressionUnit:suppression {
+    role=critical
+    suppression_type="automatic fire suppression"
+    coverage=500 unit=m2
+    representation=suppression_unit
+}
+
+FireSafetyController:controller {
+    role=central
+    controls="fire protection system"
+    inputs="fire_detection,smoke_detection"
+    outputs="suppression_control,fire_alert"
+    control_mode="automatic"
+}
