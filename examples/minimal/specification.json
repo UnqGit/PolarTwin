@@ -1,7 +1,7 @@
 {
   "components": {
     "MiniStation": {"type": "station", "spec": {"purpose": "test", "future_field": {"enabled": true}}},
-    "Generator": {"type": "generator", "spec": {"rating": {"value": 10, "unit": "kW"}}},
+    "Generator": {"type": "generator", "spec": {"rating": {"value": 10, "unit": "kW"}, "fuel_capacity": {"value": 100, "unit": "L"}}},
     "FuelSensor": {"type": "sensor", "spec": {"quantity": "fuel_level", "range": {"min": 0, "max": 100, "unit": "%"}}}
   },
   "defaults": {}

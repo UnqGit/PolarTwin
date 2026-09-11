@@ -27,6 +27,17 @@ from .base import (
     TankBehavior,
     VehicleBehavior,
 )
+from .physical import (
+    BatteryPhysicalBehavior,
+    FanPhysicalBehavior,
+    GeneratorPhysicalBehavior,
+    HeaterPhysicalBehavior,
+    InverterPhysicalBehavior,
+    PumpPhysicalBehavior,
+    SensorPhysicalBehavior,
+    StoragePhysicalBehavior,
+    TankPhysicalBehavior,
+)
 
 BehaviorFactory = Callable[[], Behavior]
 
@@ -56,17 +67,17 @@ class BehaviorRegistry:
 def default_registry() -> BehaviorRegistry:
     registry = BehaviorRegistry()
     for behavior_class in (
-        SensorBehavior,
+        SensorPhysicalBehavior,
         ControllerBehavior,
-        GeneratorBehavior,
-        BatteryBehavior,
-        InverterBehavior,
-        HeaterBehavior,
-        FanBehavior,
+        GeneratorPhysicalBehavior,
+        BatteryPhysicalBehavior,
+        InverterPhysicalBehavior,
+        HeaterPhysicalBehavior,
+        FanPhysicalBehavior,
         CoolerBehavior,
-        PumpBehavior,
-        TankBehavior,
-        StorageBehavior,
+        PumpPhysicalBehavior,
+        TankPhysicalBehavior,
+        StoragePhysicalBehavior,
         ServerBehavior,
         RouterBehavior,
         VehicleBehavior,
