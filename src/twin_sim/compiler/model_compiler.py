@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
+from twin_sim.behaviors import infer_behaviors
 from twin_sim.ingestion.validator import validate_documents
 from twin_sim.model import Component, ComponentGraph, Connection
 
@@ -40,4 +41,5 @@ def compile_model(topology: Any, specification: Any) -> ComponentGraph:
     for connection in connections:
         if connection.source == connection.target:
             graph.diagnostics.append(f"self-connection detected for '{connection.source}'")
+    infer_behaviors(graph)
     return graph

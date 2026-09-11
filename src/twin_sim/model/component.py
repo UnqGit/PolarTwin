@@ -17,3 +17,4 @@ class Component:
     children: list["Component"] = field(default_factory=list)
     specification: dict[str, Any] = field(default_factory=dict)
     runtime_state: RuntimeState = field(default_factory=RuntimeState)
+    behavior: Any | None = None
