@@ -1,6 +1,6 @@
 import argparse
 from pathlib import Path
-
+from validate_twin import validate_twin
 from relation_parser import generate_relation_json
 from spec_parser import generate_spec_json
 
@@ -21,12 +21,12 @@ TWINS_DIR = CONFIG_DIR / "twins"
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Parse relation.txt and spec.txt for a digital twin."
+        description="Compile Twin DSL source files into JSON."
     )
 
     parser.add_argument(
         "twin",
-        help="Name of the twin directory inside config/description/"
+        help="Name of the twin directory inside config/description/twins"
     )
 
     args = parser.parse_args()
@@ -36,8 +36,8 @@ def main():
     description_dir = DESCRIPTION_DIR / twin_name
     output_dir = TWINS_DIR / twin_name
 
-    relation_file = description_dir / "relation.txt"
-    spec_file = description_dir / "spec.txt"
+    relation_file = description_dir / "relation.twin"
+    spec_file = description_dir / "spec.twin"
 
     relation_output = output_dir / "relation.json"
     spec_output = output_dir / "spec.json"
@@ -51,11 +51,11 @@ def main():
         raise SystemExit(1)
 
     if not relation_file.is_file():
-        print(f"Error: relation.txt not found: {relation_file}")
+        print(f"Error: relation.twin not found: {relation_file}")
         raise SystemExit(1)
 
     if not spec_file.is_file():
-        print(f"Error: spec.txt not found: {spec_file}")
+        print(f"Error: spec.twin not found: {spec_file}")
         raise SystemExit(1)
 
     # -----------------------------------------------------------------
@@ -90,6 +90,21 @@ def main():
 
     print(f"\nSuccessfully parsed twin: {twin_name}")
     print(f"Output directory: {output_dir}")
+
+    print("\nCross-validating generated JSON files...")
+
+    result = validate_twin(
+        relation_output,
+        spec_output,
+    )
+
+    result.print_report()
+
+    if not result.valid:
+        print("\nCross-validation failed.")
+        raise SystemExit(1)
+
+    print("\nCross-validation passed.")
 
 
 if __name__ == "__main__":
