@@ -2,5 +2,6 @@
 
 from .base import DatabaseAdapter
 from .sqlite import SQLiteAdapter
+from .outbox import OutboxRecord, SQLiteOutbox
 
-__all__ = ["DatabaseAdapter", "SQLiteAdapter"]
+__all__ = ["DatabaseAdapter", "OutboxRecord", "SQLiteAdapter", "SQLiteOutbox"]

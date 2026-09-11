@@ -8,6 +8,7 @@ from .base import TelemetrySink
 from .csv import CsvSink
 from .database import DatabaseSink
 from .jsonl import JsonlSink
+from .mqtt import MqttSink
 from .sqlite import SqliteSink
 from .stdout import StdoutSink
 from twin_sim.storage import SQLiteAdapter
@@ -23,4 +24,12 @@ def create_sink(configuration: dict[str, Any]) -> TelemetrySink:
         return CsvSink(configuration["path"])
     if sink_type == "sqlite":
         return DatabaseSink(SQLiteAdapter(configuration["path"]))
+    if sink_type == "mqtt":
+        return MqttSink(
+            host=configuration["host"],
+            port=configuration.get("port", 1883),
+            topic_prefix=configuration.get("topic_prefix", "twin/telemetry"),
+            qos=configuration.get("qos", 1),
+            retain=configuration.get("retain", False),
+        )
     raise ValueError(f"unsupported telemetry sink '{sink_type}'")
