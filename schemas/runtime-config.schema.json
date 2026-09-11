@@ -18,7 +18,7 @@
       "type": "object",
       "required": ["type"],
       "properties": {
-        "type": {"enum": ["stdout", "jsonl", "csv", "sqlite", "mqtt"]},
+        "type": {"enum": ["stdout", "jsonl", "csv", "sqlite", "mqtt", "mqtt_store_forward"]},
         "enabled": {"type": "boolean"},
         "path": {"type": "string", "minLength": 1},
         "host": {"type": "string", "minLength": 1},

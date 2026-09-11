@@ -10,6 +10,7 @@ from twin_sim.storage import SQLiteOutbox
 from twin_sim.telemetry import TelemetryMessage
 
 from .base import TelemetrySink
+from .connectivity import ConnectivityPolicy
 from .mqtt import MqttClient, create_paho_client, topic_for
 
 
@@ -25,6 +26,7 @@ class MqttStoreForwardSink(TelemetrySink):
         client: MqttClient | None = None,
         worker: bool = True,
         retry_base: float = 1.0,
+        connectivity_policy: ConnectivityPolicy | None = None,
     ) -> None:
         self.host = host
         self.port = port
@@ -39,6 +41,7 @@ class MqttStoreForwardSink(TelemetrySink):
         self._thread: threading.Thread | None = None
         self.connected = False
         self.worker_enabled = worker
+        self.connectivity_policy = connectivity_policy or ConnectivityPolicy()
 
     def start(self) -> None:
         self.outbox.start()
@@ -66,6 +69,14 @@ class MqttStoreForwardSink(TelemetrySink):
         if record is None:
             return False
         try:
+            environment = {}
+            try:
+                environment = __import__("json").loads(record.payload).get("context", {}).get("environment", {})
+            except (TypeError, ValueError):
+                pass
+            self.connectivity_policy.delay(environment)
+            if not self.connectivity_policy.allow(environment):
+                raise ConnectionError("simulated network loss")
             self._connect()
             self.client.publish(record.topic, record.payload, record.qos, record.retain)
             self.outbox.mark_delivered(record.message_id)

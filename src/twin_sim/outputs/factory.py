@@ -9,6 +9,7 @@ from .csv import CsvSink
 from .database import DatabaseSink
 from .jsonl import JsonlSink
 from .mqtt import MqttSink
+from .mqtt_store_forward import MqttStoreForwardSink
 from .sqlite import SqliteSink
 from .stdout import StdoutSink
 from twin_sim.storage import SQLiteAdapter
@@ -27,6 +28,15 @@ def create_sink(configuration: dict[str, Any]) -> TelemetrySink:
     if sink_type == "mqtt":
         return MqttSink(
             host=configuration["host"],
+            port=configuration.get("port", 1883),
+            topic_prefix=configuration.get("topic_prefix", "twin/telemetry"),
+            qos=configuration.get("qos", 1),
+            retain=configuration.get("retain", False),
+        )
+    if sink_type == "mqtt_store_forward":
+        return MqttStoreForwardSink(
+            host=configuration["host"],
+            outbox_path=configuration["outbox_path"],
             port=configuration.get("port", 1883),
             topic_prefix=configuration.get("topic_prefix", "twin/telemetry"),
             qos=configuration.get("qos", 1),
