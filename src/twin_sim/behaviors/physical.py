@@ -55,6 +55,8 @@ class GeneratorPhysicalBehavior(SpecializedBehavior):
         current = component.runtime_state.values
         inputs = _inputs(context)
         command = inputs.get("power_command", inputs.get("command", current.get("power_command")))
+        if not isinstance(command, (int, float)):
+            command = None
         if command is None:
             command = rating if spec.get("role") != "backup" else 0.0
         command = max(0.0, min(float(command), rating))
@@ -99,7 +101,14 @@ class SensorPhysicalBehavior(SpecializedBehavior):
         spec = component.specification
         inputs = _inputs(context)
         quantity = str(spec.get("quantity", "value"))
-        true_value = inputs.get(quantity, inputs.get("value", component.runtime_state.values.get(quantity, 0.0)))
+        environment = context.values.get("environment", {})
+        true_value = inputs.get(
+            quantity,
+            inputs.get(
+                "value",
+                component.runtime_state.values.get(quantity, environment.get(quantity, 0.0)),
+            ),
+        )
         true_value = float(true_value) if isinstance(true_value, (int, float)) else 0.0
         accuracy = _value(spec, "accuracy", 0.0)
         noise = context.values["random"].gaussian(0.0, accuracy) if accuracy else 0.0

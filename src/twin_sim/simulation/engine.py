@@ -5,11 +5,13 @@ from __future__ import annotations
 import time
 from enum import Enum
 from typing import Any, Callable
+from collections.abc import Mapping
 
 from twin_sim.behaviors import BehaviorContext
 from twin_sim.model import ComponentGraph
 
 from .clock import ClockMode, SimulationClock
+from .environment import EnvironmentState
 from .randomness import RandomSource
 from .propagation import propagate
 from .scheduler import Callback, SimulationScheduler
@@ -32,15 +34,21 @@ class SimulationEngine:
         mode: ClockMode | str = ClockMode.FAST,
         seed: int | None = None,
         sleeper: Callable[[float], None] = time.sleep,
+        environment: EnvironmentState | Mapping[str, Any] | None = None,
     ) -> None:
         self.graph = graph
         self.clock = SimulationClock(tick_interval, time_scale, mode)
         self.scheduler = SimulationScheduler()
         self.random = RandomSource(seed)
         self._sleeper = sleeper
+        self.environment = environment if isinstance(environment, EnvironmentState) else EnvironmentState(environment)
         self.status = SimulationStatus.READY
         self.tick_count = 0
-        self.context = BehaviorContext({"clock": self.clock, "random": self.random})
+        self.context = BehaviorContext({
+            "clock": self.clock,
+            "random": self.random,
+            "environment": self.environment.snapshot(),
+        })
         self.last_phase_order: list[str] = []
         for component in self.graph.components.values():
             if component.behavior is not None:
@@ -64,6 +72,7 @@ class SimulationEngine:
             event.callback(timestamp, event.payload)
         self.last_phase_order.append("environment")
         self.context.values["timestamp"] = timestamp
+        self.context.values["environment"] = self.environment.snapshot()
         self.last_phase_order.append("evaluation")
         proposals: dict[str, dict[str, Any]] = {}
         for component in self.graph.components.values():
