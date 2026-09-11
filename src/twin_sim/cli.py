@@ -11,6 +11,7 @@ from twin_sim.compiler import compile_model
 from twin_sim.ingestion.loaders import load_model_inputs
 from twin_sim.ingestion.validator import ValidationError, load_json
 from twin_sim.outputs import JsonlSink, create_sink
+from twin_sim.observability import build_quality_report
 from twin_sim.scenarios import ScenarioScheduler, load_scenario_events
 from twin_sim.simulation import SimulationEngine
 
@@ -52,6 +53,13 @@ def command_graph(args) -> int:
     graph = compile_model(topology, specification)
     for connection in graph.connections:
         print(f"{connection.source}{connection.direction}{connection.target}@{connection.type}")
+    return 0
+
+
+def command_quality(args) -> int:
+    topology, specification = _inputs(args)
+    report = build_quality_report(compile_model(topology, specification))
+    print(json.dumps(report.to_dict(), sort_keys=True))
     return 0
 
 
@@ -134,6 +142,10 @@ def build_parser() -> argparse.ArgumentParser:
     graph = subparsers.add_parser("graph")
     add_inputs(graph)
     graph.set_defaults(handler=command_graph)
+
+    quality = subparsers.add_parser("quality")
+    add_inputs(quality)
+    quality.set_defaults(handler=command_quality)
 
     run = subparsers.add_parser("run")
     add_inputs(run)
