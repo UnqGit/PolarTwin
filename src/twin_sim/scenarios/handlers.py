@@ -65,6 +65,10 @@ def _blizzard(event: ScenarioEvent, context: EventContext) -> None:
         updates["temperature"] = context.environment.get("temperature", 0) + parameters["temperature_delta"]
     if "connectivity_loss_probability" in parameters:
         updates["connectivity"] = 1.0 - float(parameters["connectivity_loss_probability"])
+    if "heating_demand_multiplier" in parameters:
+        updates["heating_demand_multiplier"] = float(parameters["heating_demand_multiplier"])
+    if "heating_demand" in parameters:
+        updates["heating_demand"] = float(parameters["heating_demand"])
     _temporary_environment_update(event, context, updates)
 
 

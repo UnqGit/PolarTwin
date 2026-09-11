@@ -1,0 +1,18 @@
+{
+  "name": "Minimal blizzard test",
+  "seed": 42,
+  "events": [
+    {
+      "id": "blizzard-1",
+      "timestamp": 1,
+      "event": "blizzard",
+      "duration": 2,
+      "parameters": {
+        "temperature_delta": -15,
+        "wind_speed": 50,
+        "heating_demand_multiplier": 1.7,
+        "connectivity_loss_probability": 0.9
+      }
+    }
+  ]
+}

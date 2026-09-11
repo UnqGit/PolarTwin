@@ -59,6 +59,8 @@ class GeneratorPhysicalBehavior(SpecializedBehavior):
             command = None
         if command is None:
             command = rating if spec.get("role") != "backup" else 0.0
+        multiplier = context.values.get("environment", {}).get("heating_demand_multiplier") or 1.0
+        command *= float(multiplier)
         command = max(0.0, min(float(command), rating))
         fuel = max(0.0, float(current.get("fuel_level", _value(spec, "fuel_capacity", 0.0))))
         running = bool(current.get("running", True)) and component.runtime_state.available and fuel > 0
