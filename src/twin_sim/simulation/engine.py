@@ -9,6 +9,7 @@ from collections.abc import Mapping
 
 from twin_sim.behaviors import BehaviorContext
 from twin_sim.model import ComponentGraph
+from twin_sim.telemetry import TelemetryGenerator, TelemetryMessage
 
 from .clock import ClockMode, SimulationClock
 from .environment import EnvironmentState
@@ -36,6 +37,7 @@ class SimulationEngine:
         seed: int | None = None,
         sleeper: Callable[[float], None] = time.sleep,
         environment: EnvironmentState | Mapping[str, Any] | None = None,
+        run_id: str = "run-default",
     ) -> None:
         self.graph = graph
         self.clock = SimulationClock(tick_interval, time_scale, mode)
@@ -52,6 +54,8 @@ class SimulationEngine:
         })
         self.last_phase_order: list[str] = []
         self.causal_trace: list[dict[str, Any]] = []
+        self.telemetry_generator = TelemetryGenerator(run_id)
+        self.telemetry: list[TelemetryMessage] = []
         for component in self.graph.components.values():
             if component.behavior is not None:
                 component.behavior.initialize(component, self.context)
@@ -94,6 +98,12 @@ class SimulationEngine:
             component.runtime_state.values.update(proposals[name])
             if input_updates[name].get("inputs"):
                 component.runtime_state.values["inputs"] = input_updates[name]["inputs"]
+        self.telemetry.extend(self.telemetry_generator.generate(
+            self.graph,
+            timestamp,
+            self.environment.snapshot(),
+            self.causal_trace[-5:],
+        ))
         self.tick_count += 1
         self.status = SimulationStatus.PAUSED if self.status == SimulationStatus.PAUSED else SimulationStatus.RUNNING
         return timestamp

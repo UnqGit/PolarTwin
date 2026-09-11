@@ -21,6 +21,7 @@
   "additionalProperties": true,
   "oneOf": [
     {"required": ["component", "measurement"]},
+    {"required": ["component", "state"]},
     {"required": ["event"]}
   ]
 }
