@@ -6,9 +6,11 @@ from typing import Any
 
 from .base import TelemetrySink
 from .csv import CsvSink
+from .database import DatabaseSink
 from .jsonl import JsonlSink
 from .sqlite import SqliteSink
 from .stdout import StdoutSink
+from twin_sim.storage import SQLiteAdapter
 
 
 def create_sink(configuration: dict[str, Any]) -> TelemetrySink:
@@ -20,5 +22,5 @@ def create_sink(configuration: dict[str, Any]) -> TelemetrySink:
     if sink_type == "csv":
         return CsvSink(configuration["path"])
     if sink_type == "sqlite":
-        return SqliteSink(configuration["path"])
+        return DatabaseSink(SQLiteAdapter(configuration["path"]))
     raise ValueError(f"unsupported telemetry sink '{sink_type}'")
