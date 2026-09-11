@@ -63,6 +63,33 @@ def command_quality(args) -> int:
     return 0
 
 
+def command_explain(args) -> int:
+    engine = _run_engine(args)
+    explanation = engine.tracer.explain(args.component)
+    if args.json:
+        print(json.dumps(explanation.to_dict(), sort_keys=True, indent=2))
+    else:
+        print(explanation.format_text())
+    return 0
+
+
+def command_trace(args) -> int:
+    engine = _run_engine(args)
+    if args.component:
+        events = [e for e in engine.tracer.events if any(eff.component == args.component for eff in e.effects)]
+    else:
+        events = engine.tracer.events
+    
+    if args.json:
+        print(json.dumps([e.to_dict() for e in events], sort_keys=True, indent=2))
+    else:
+        for event in events:
+            print(f"[{event.timestamp}] {event.cause.component} {event.cause.event}")
+            for effect in event.effects:
+                print(f"  -> {effect.component}: {effect.state_change}")
+    return 0
+
+
 def _write_messages(messages, output: str | None) -> None:
     if output:
         sink = JsonlSink(output)
@@ -79,14 +106,15 @@ def _run_engine(args):
     graph = compile_model(topology, specification)
     engine = SimulationEngine(
         graph,
-        tick_interval=args.tick_interval,
-        time_scale=args.time_scale,
-        seed=args.seed,
-        run_id=args.run_id,
-        environment=json.loads(args.environment) if args.environment else None,
+        tick_interval=getattr(args, "tick_interval", 1.0),
+        time_scale=getattr(args, "time_scale", 1.0),
+        seed=getattr(args, "seed", None),
+        run_id=getattr(args, "run_id", "run-cli"),
+        environment=json.loads(args.environment) if getattr(args, "environment", None) else None,
+        debug=getattr(args, "debug", True) if getattr(args, "command", "") in ("explain", "trace") else getattr(args, "debug", False),
     )
-    _scenario(engine, args.scenario)
-    engine.run(duration=args.duration)
+    _scenario(engine, getattr(args, "scenario", None))
+    engine.run(duration=getattr(args, "duration", 1.0))
     return engine
 
 
@@ -157,6 +185,7 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--run-id", default="run-cli")
     run.add_argument("--environment", help="JSON object of initial environment values")
     run.add_argument("--output")
+    run.add_argument("--debug", action="store_true", help="Enable debug causal tracing")
     run.set_defaults(handler=command_run)
 
     generate = subparsers.add_parser("generate")
@@ -175,6 +204,23 @@ def build_parser() -> argparse.ArgumentParser:
     add_inputs(dry_run)
     dry_run.add_argument("--scenario")
     dry_run.set_defaults(handler=command_validate_simulation)
+    
+    explain = subparsers.add_parser("explain")
+    add_inputs(explain)
+    explain.add_argument("--scenario")
+    explain.add_argument("--component", required=True)
+    explain.add_argument("--duration", type=float, default=1)
+    explain.add_argument("--json", action="store_true")
+    explain.set_defaults(handler=command_explain)
+
+    trace = subparsers.add_parser("trace")
+    add_inputs(trace)
+    trace.add_argument("--scenario")
+    trace.add_argument("--component")
+    trace.add_argument("--duration", type=float, default=1)
+    trace.add_argument("--json", action="store_true")
+    trace.set_defaults(handler=command_trace)
+    
     return parser
 
 

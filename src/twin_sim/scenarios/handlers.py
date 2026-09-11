@@ -19,6 +19,8 @@ class EventContext:
     behavior_context: BehaviorContext
     schedule: Callable[[float, Callable[[float, Any], None], Any], None]
     causal_trace: list[dict[str, Any]] | None = None
+    timestamp: float = 0.0
+    tracer: Any = None
 
 
 EventHandler = Callable[[ScenarioEvent, EventContext], None]
@@ -71,6 +73,15 @@ def _blizzard(event: ScenarioEvent, context: EventContext) -> None:
     if "heating_demand" in parameters:
         updates["heating_demand"] = float(parameters["heating_demand"])
     _temporary_environment_update(event, context, updates)
+    
+    if context.tracer:
+        context.tracer.record_cause_and_effects(
+            timestamp=context.timestamp,
+            cause_component="environment",
+            cause_event=event.event,
+            effects=[(k, f"{k}={v}") for k, v in updates.items()],
+            chain=[f"Environment event '{event.event}' occurred", f"Environment updated: {updates}"],
+        )
 
 
 def _component_state(event: ScenarioEvent, context: EventContext, available: bool, health: float) -> None:
@@ -85,7 +96,16 @@ def _component_state(event: ScenarioEvent, context: EventContext, available: boo
             "component": component.name,
             "effect": "availability_changed",
             "value": available,
+            "timestamp": context.timestamp,
         })
+    if context.tracer:
+        context.tracer.record_cause_and_effects(
+            timestamp=context.timestamp,
+            cause_component=component.name,
+            cause_event="failure" if not available else "repair",
+            effects=[(component.name, f"available={available}")],
+            chain=[f"{component.name} {'failed' if not available else 'repaired'}"],
+        )
     if not available:
         component.runtime_state.values["running"] = False
 

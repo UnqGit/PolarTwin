@@ -9,6 +9,7 @@ from collections.abc import Mapping
 
 from twin_sim.behaviors import BehaviorContext
 from twin_sim.model import ComponentGraph
+from twin_sim.observability import CausalTracer
 from twin_sim.telemetry import TelemetryGenerator, TelemetryMessage
 
 from .clock import ClockMode, SimulationClock
@@ -38,6 +39,8 @@ class SimulationEngine:
         sleeper: Callable[[float], None] = time.sleep,
         environment: EnvironmentState | Mapping[str, Any] | None = None,
         run_id: str = "run-default",
+        debug: bool = False,
+        tracer: CausalTracer | None = None,
     ) -> None:
         self.graph = graph
         self.clock = SimulationClock(tick_interval, time_scale, mode)
@@ -54,6 +57,8 @@ class SimulationEngine:
         })
         self.last_phase_order: list[str] = []
         self.causal_trace: list[dict[str, Any]] = []
+        self.debug = debug
+        self.tracer = tracer or CausalTracer(enabled=debug)
         self.telemetry_generator = TelemetryGenerator(run_id)
         self.telemetry: list[TelemetryMessage] = []
         for component in self.graph.components.values():
@@ -91,7 +96,7 @@ class SimulationEngine:
             else:
                 proposals[component.name] = {}
         self.last_phase_order.append("propagation")
-        apply_failure_recovery(self.graph, proposals, self.causal_trace)
+        apply_failure_recovery(self.graph, proposals, self.causal_trace, timestamp=timestamp, tracer=self.tracer)
         input_updates = propagate(self.graph, proposals)
         self.last_phase_order.append("commit")
         for name, component in self.graph.components.items():
