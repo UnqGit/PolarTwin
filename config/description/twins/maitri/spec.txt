@@ -1,0 +1,1039 @@
+# ============================================================
+# MAITRI ANTARCTIC RESEARCH STATION
+# SPECIFICATION DEFINITIONS
+# ============================================================
+#
+# This file describes engineering and semantic specifications.
+#
+# Syntax:
+#
+# <name>:<type> {
+#       property=value
+# }
+#
+# Type defaults:
+#
+# default:<type> {
+#       property=value
+# }
+#
+# A component inherits from default:<type>.
+# Component properties override inherited properties.
+#
+# Ranges:
+#
+# rating=-50:50 unit=C
+#
+# Single measurements:
+#
+# power=300 unit=kW
+#
+# Strings:
+#
+# provides="electrical power"
+#
+# Visual/physical properties are optional and are NOT required
+# for every component.
+#
+# ============================================================
+# ============================================================
+# TYPE DEFAULTS
+# ============================================================
+# ------------------------------------------------------------
+# STATION
+# ------------------------------------------------------------
+
+default:station {
+    provides="research station"
+    environment="Antarctic"
+    mounting=ground
+    representation=building
+}
+
+# ------------------------------------------------------------
+# BLOCK
+# ------------------------------------------------------------
+
+default:block {
+    provides="functional station block"
+    mounting=indoor
+    representation=room
+}
+
+# ------------------------------------------------------------
+# SYSTEM
+# ------------------------------------------------------------
+
+default:system {
+    provides="functional system"
+    mounting=floor
+    representation=equipment_group
+}
+
+# ------------------------------------------------------------
+# SUBSYSTEM
+# ------------------------------------------------------------
+
+default:subsystem {
+    provides="functional subsystem"
+    mounting=floor
+    representation=equipment_group
+}
+
+# ------------------------------------------------------------
+# GENERATOR
+# ------------------------------------------------------------
+
+default:generator {
+    provides="electrical power"
+    output="electrical"
+    fuel="diesel"
+    frequency=50 unit=Hz
+    voltage=400 unit=V
+    phases=3
+    representation=generator
+}
+
+# ------------------------------------------------------------
+# BATTERY
+# ------------------------------------------------------------
+
+default:battery {
+    provides="electrical energy storage"
+    output="DC"
+    technology="lithium battery"
+    representation=battery
+}
+
+# ------------------------------------------------------------
+# INVERTER
+# ------------------------------------------------------------
+
+default:inverter {
+    provides="DC to AC power conversion"
+    input="DC"
+    output="AC"
+    representation=inverter
+}
+
+# ------------------------------------------------------------
+# SENSOR
+# ------------------------------------------------------------
+
+default:sensor {
+    provides="measurement"
+    output="measurement_data"
+    representation=sensor
+}
+
+# ------------------------------------------------------------
+# CONTROLLER
+# ------------------------------------------------------------
+
+default:controller {
+    provides="control"
+    input="sensor_data"
+    output="control_command"
+    representation=controller
+}
+
+# ------------------------------------------------------------
+# HEATER
+# ------------------------------------------------------------
+
+default:heater {
+    provides="heating"
+    input="electrical_power"
+    output="thermal_energy"
+    representation=heater
+}
+
+# ------------------------------------------------------------
+# FAN
+# ------------------------------------------------------------
+
+default:fan {
+    provides="airflow"
+    input="electrical_power"
+    output="airflow"
+    representation=fan
+}
+
+# ------------------------------------------------------------
+# COOLER
+# ------------------------------------------------------------
+
+default:cooler {
+    provides="cooling"
+    input="electrical_power"
+    output="thermal_transfer"
+    representation=cooler
+}
+
+# ------------------------------------------------------------
+# LABORATORY
+# ------------------------------------------------------------
+
+default:laboratory {
+    provides="research workspace"
+    environment="controlled"
+    representation=laboratory
+}
+
+# ------------------------------------------------------------
+# VEHICLE
+# ------------------------------------------------------------
+
+default:vehicle {
+    provides="transport"
+    mobility=mobile
+    representation=vehicle
+}
+
+# ------------------------------------------------------------
+# ROBOT
+# ------------------------------------------------------------
+
+default:robot {
+    provides="autonomous research mobility"
+    mobility=mobile
+    control="autonomous"
+    representation=robot
+}
+
+# ------------------------------------------------------------
+# SERVER
+# ------------------------------------------------------------
+
+default:server {
+    provides="computing"
+    interface="network"
+    representation=server_rack
+}
+
+# ------------------------------------------------------------
+# ALARM
+# ------------------------------------------------------------
+
+default:alarm {
+    provides="alarm indication"
+    output="alarm"
+    representation=alarm
+}
+
+# ------------------------------------------------------------
+# ANTENNA
+# ------------------------------------------------------------
+
+default:antenna {
+    provides="radio communication"
+    representation=antenna
+}
+
+# ------------------------------------------------------------
+# ROUTER
+# ------------------------------------------------------------
+
+default:router {
+    provides="network routing"
+    interface="network"
+    representation=network_device
+}
+
+# ------------------------------------------------------------
+# STORAGE
+# ------------------------------------------------------------
+
+default:storage {
+    provides="storage"
+    representation=storage
+}
+
+# ------------------------------------------------------------
+# DATABASE
+# ------------------------------------------------------------
+
+default:database {
+    provides="data storage"
+    interface="network"
+    representation=server_rack
+}
+
+# ------------------------------------------------------------
+# PUMP
+# ------------------------------------------------------------
+
+default:pump {
+    provides="fluid transfer"
+    input="mechanical_power"
+    output="fluid_flow"
+    representation=pump
+}
+
+# ------------------------------------------------------------
+# TANK
+# ------------------------------------------------------------
+
+default:tank {
+    provides="fluid storage"
+    representation=tank
+}
+
+# ------------------------------------------------------------
+# BEACON
+# ------------------------------------------------------------
+
+default:beacon {
+    provides="visual emergency indication"
+    output="visual_signal"
+    representation=beacon
+}
+
+# ------------------------------------------------------------
+# RADIO
+# ------------------------------------------------------------
+
+default:radio {
+    provides="radio communication"
+    input="radio_signal"
+    output="radio_signal"
+    representation=radio
+}
+
+# ============================================================
+# STATION
+# ============================================================
+
+Maitri:station {
+    name="Maitri Antarctic Research Station"
+    purpose="Antarctic research and habitation"
+    environment="Antarctic"
+    location="Maitri Station, Antarctica"
+    length=30 unit=m
+    breadth=18 unit=m
+    height=8 unit=m
+    representation=building
+}
+
+# ============================================================
+# ENERGY BLOCK
+# ============================================================
+
+EnergyBlock:block {
+    provides="station energy infrastructure"
+}
+
+EnergySystem:system {
+    provides="electrical power generation, storage and conversion"
+}
+
+# ------------------------------------------------------------
+# GENERATORS
+# ------------------------------------------------------------
+
+Generator1:generator {
+    role=primary
+    rating=300 unit=kW
+    continuous_power=300 unit=kW
+    fuel_capacity=2000 unit=L
+    voltage=400 unit=V
+    frequency=50 unit=Hz
+    rating_temperature=-40:50 unit=C
+    length=3 unit=m
+    breadth=1.3 unit=m
+    height=1.9 unit=m
+    representation=generator
+}
+
+Generator2:generator {
+    role=backup
+    rating=300 unit=kW
+    continuous_power=300 unit=kW
+    fuel_capacity=2000 unit=L
+    voltage=400 unit=V
+    frequency=50 unit=Hz
+    rating_temperature=-40:50 unit=C
+    length=3 unit=m
+    breadth=1.3 unit=m
+    height=1.9 unit=m
+    representation=generator
+}
+
+# ------------------------------------------------------------
+# BATTERY
+# ------------------------------------------------------------
+
+BatteryBank:battery {
+    role=backup
+    capacity=1200 unit=kWh
+    nominal_voltage=800 unit=V
+    maximum_power=300 unit=kW
+    charging_temperature=0:45 unit=C
+    discharging_temperature=-30:50 unit=C
+    representation=battery
+}
+
+# ------------------------------------------------------------
+# INVERTER
+# ------------------------------------------------------------
+
+PowerInverter:inverter {
+    role=primary
+    rating=300 unit=kW
+    input_voltage=800 unit=V
+    output_voltage=400 unit=V
+    frequency=50 unit=Hz
+    efficiency=90:98 unit=%
+    operating_temperature=-30:50 unit=C
+    representation=inverter
+}
+
+# ------------------------------------------------------------
+# ENERGY SENSORS
+# ------------------------------------------------------------
+
+PowerSensor:sensor {
+    measures="electrical power"
+    quantity="power"
+    rating=0:500 unit=kW
+    accuracy=0.5 unit=%
+}
+
+FuelLevelSensor:sensor {
+    measures="fuel level"
+    quantity="fuel_level"
+    rating=0:100 unit=%
+    accuracy=1 unit=%
+}
+
+BatterySensor:sensor {
+    measures="battery state"
+    quantity="state_of_charge"
+    rating=0:100 unit=%
+    accuracy=1 unit=%
+}
+
+# ------------------------------------------------------------
+# ENERGY CONTROLLER
+# ------------------------------------------------------------
+
+EnergyController:controller {
+    role=central
+    controls="energy system"
+    inputs="power_data,fuel_data,battery_data,status"
+    outputs="generator_command,charge_control,power_control"
+    control_mode="automatic"
+}
+
+# ============================================================
+# HVAC BLOCK
+# ============================================================
+
+HVACBlock:block {
+    provides="heating ventilation and cooling"
+}
+
+# ------------------------------------------------------------
+# HEATING
+# ------------------------------------------------------------
+
+HeatingSystem:system {
+    provides="station heating"
+}
+
+MainHeater:heater {
+    role=primary
+    rating=80 unit=kW
+    thermal_output=80 unit=kW
+    operating_temperature=-40:40 unit=C
+}
+
+BackupHeater:heater {
+    role=backup
+    rating=60 unit=kW
+    thermal_output=60 unit=kW
+    operating_temperature=-40:40 unit=C
+}
+
+IndoorTemperatureSensor:sensor {
+    measures="indoor temperature"
+    quantity="temperature"
+    rating=-50:50 unit=C
+    accuracy=0.1 unit=C
+    resolution=0.1 unit=C
+}
+
+OutdoorTemperatureSensor:sensor {
+    measures="outdoor temperature"
+    quantity="temperature"
+    rating=-80:50 unit=C
+    accuracy=0.2 unit=C
+    resolution=0.1 unit=C
+}
+
+HeatingController:controller {
+    controls="heating system"
+    inputs="temperature,outside_temperature"
+    outputs="heater_control"
+    control_mode="automatic"
+}
+
+# ------------------------------------------------------------
+# VENTILATION
+# ------------------------------------------------------------
+
+VentilationSystem:system {
+    provides="air circulation and ventilation"
+}
+
+SupplyFan:fan {
+    role=primary
+    airflow=0:10000 unit=m3/h
+    pressure=0:1000 unit=Pa
+    power=5 unit=kW
+}
+
+ExhaustFan:fan {
+    role=backup
+    airflow=0:10000 unit=m3/h
+    pressure=0:1000 unit=Pa
+    power=5 unit=kW
+}
+
+AirQualitySensor:sensor {
+    measures="air quality"
+    quantity="air_quality"
+    rating=0:5000 unit=ppm
+    accuracy=1 unit=%
+}
+
+AirflowSensor:sensor {
+    measures="airflow"
+    quantity="airflow"
+    rating=0:10000 unit=m3/h
+    accuracy=2 unit=%
+}
+
+VentilationController:controller {
+    controls="ventilation system"
+    inputs="air_quality,airflow"
+    outputs="fan_control"
+    control_mode="automatic"
+}
+
+# ------------------------------------------------------------
+# COOLING
+# ------------------------------------------------------------
+
+CoolingSubsystem:subsystem {
+    provides="cooling"
+}
+
+CoolingUnit:cooler {
+    role=primary
+    rating=60 unit=kW
+    cooling_capacity=60 unit=kW
+    operating_temperature=-30:45 unit=C
+}
+
+CoolingTemperatureSensor:sensor {
+    measures="cooling temperature"
+    quantity="temperature"
+    rating=-50:50 unit=C
+    accuracy=0.1 unit=C
+}
+
+CoolingController:controller {
+    controls="cooling system"
+    inputs="temperature"
+    outputs="cooler_control"
+    control_mode="automatic"
+}
+
+# ============================================================
+# RESEARCH BLOCK
+# ============================================================
+
+ResearchBlock:block {
+    provides="scientific research infrastructure"
+}
+
+# ------------------------------------------------------------
+# RESEARCH LAB
+# ------------------------------------------------------------
+
+ResearchLab:system {
+    provides="laboratory research"
+}
+
+WetLab:laboratory {
+    laboratory_type="wet"
+    activities="biological and chemical research"
+}
+
+DryLab:laboratory {
+    laboratory_type="dry"
+    activities="physical and computational research"
+}
+
+LabTemperatureSensor:sensor {
+    measures="laboratory temperature"
+    quantity="temperature"
+    rating=-30:50 unit=C
+    accuracy=0.1 unit=C
+}
+
+LabHumiditySensor:sensor {
+    measures="relative humidity"
+    quantity="humidity"
+    rating=0:100 unit=%
+    accuracy=2 unit=%
+}
+
+LabGasSensor:sensor {
+    measures="gas concentration"
+    quantity="gas_concentration"
+    rating=0:100 unit=%
+    accuracy=1 unit=%
+}
+
+LabController:controller {
+    controls="laboratory environment"
+    inputs="temperature,humidity,gas_data"
+    outputs="laboratory_control"
+    control_mode="automatic"
+}
+
+# ------------------------------------------------------------
+# FIELD RESEARCH
+# ------------------------------------------------------------
+
+FieldResearchSystem:system {
+    provides="mobile scientific research"
+}
+
+SnowVehicle:vehicle {
+    role=primary
+    vehicle_type="Antarctic snow vehicle"
+    mobility="tracked"
+    payload_capacity=1000 unit=kg
+    range=500 unit=km
+    operating_temperature=-60:20 unit=C
+}
+
+ResearchRobot:robot {
+    vehicle_type="research robot"
+    mobility="tracked"
+    payload_capacity=50 unit=kg
+    range=50 unit=km
+    operating_temperature=-60:20 unit=C
+}
+
+GPS:sensor {
+    measures="geographic position"
+    quantity="position"
+    accuracy=5 unit=m
+}
+
+WeatherSensor:sensor {
+    measures="weather conditions"
+    quantities="temperature,pressure,humidity,wind"
+    temperature_rating=-80:50 unit=C
+    pressure_rating=500:1100 unit=hPa
+    humidity_rating=0:100 unit=%
+    wind_rating=0:60 unit=m/s
+}
+
+# ============================================================
+# CONTROL BLOCK
+# ============================================================
+
+ControlBlock:block {
+    provides="central monitoring and control"
+}
+
+ControlSystem:system {
+    provides="central computing and control"
+}
+
+ControlServer:server {
+    role=primary
+    processing="central control"
+    availability="24x7"
+    storage_capacity=20 unit=TB
+}
+
+DataServer:server {
+    role=backup
+    processing="data storage and backup"
+    storage_capacity=100 unit=TB
+}
+
+MainController:controller {
+    role=primary
+    controls="station"
+    control_mode="automatic"
+    inputs="station_status"
+    outputs="station_commands"
+}
+
+BackupController:controller {
+    role=backup
+    controls="station"
+    control_mode="automatic"
+}
+
+SystemHealthSensor:sensor {
+    measures="system health"
+    quantity="health_status"
+}
+
+NetworkSensor:sensor {
+    measures="network status"
+    quantity="network_status"
+}
+
+# ------------------------------------------------------------
+# ALARM SYSTEM
+# ------------------------------------------------------------
+
+AlarmSystem:subsystem {
+    provides="station alarm management"
+}
+
+FireAlarm:alarm {
+    alarm_type="fire"
+    severity="critical"
+}
+
+SmokeAlarm:alarm {
+    alarm_type="smoke"
+    severity="critical"
+}
+
+EmergencyAlarm:alarm {
+    alarm_type="emergency"
+    severity="critical"
+}
+
+AlarmController:controller {
+    controls="alarm system"
+    control_mode="automatic"
+    outputs="alarm"
+}
+
+# ============================================================
+# COMMUNICATION BLOCK
+# ============================================================
+
+CommunicationBlock:block {
+    provides="station communications"
+}
+
+CommunicationSystem:system {
+    provides="network and radio communications"
+}
+
+MainRouter:router {
+    role=primary
+    protocol="IP"
+    redundancy="active"
+}
+
+BackupRouter:router {
+    role=backup
+    protocol="IP"
+    redundancy="standby"
+}
+
+SatelliteAntenna:antenna {
+    role=primary
+    communication_type="satellite"
+    frequency=1:10 unit=GHz
+}
+
+RadioAntenna:antenna {
+    role=backup
+    communication_type="radio"
+    frequency=30:300 unit=MHz
+}
+
+CommunicationServer:server {
+    role=primary
+    processing="communications"
+    availability="24x7"
+}
+
+# ============================================================
+# INVENTORY BLOCK
+# ============================================================
+
+InventoryBlock:block {
+    provides="inventory and logistics"
+}
+
+# ------------------------------------------------------------
+# STORAGE
+# ------------------------------------------------------------
+
+StorageSystem:system {
+    provides="physical inventory storage"
+}
+
+FoodStorage:storage {
+    storage_type="food"
+    capacity=30 unit=m3
+    temperature_rating=-30:10 unit=C
+}
+
+FuelStorage:storage {
+    storage_type="fuel"
+    capacity=40 unit=m3
+    temperature_rating=-50:40 unit=C
+}
+
+EquipmentStorage:storage {
+    storage_type="equipment"
+    capacity=25 unit=m3
+}
+
+FoodTemperatureSensor:sensor {
+    measures="food storage temperature"
+    quantity="temperature"
+    rating=-40:30 unit=C
+    accuracy=0.2 unit=C
+}
+
+FuelLevelSensor2:sensor {
+    measures="fuel level"
+    quantity="fuel_level"
+    rating=0:100 unit=%
+    accuracy=1 unit=%
+}
+
+InventoryController:controller {
+    controls="inventory system"
+    inputs="food_temperature,fuel_level"
+    outputs="inventory_status"
+    control_mode="automatic"
+}
+
+# ------------------------------------------------------------
+# LOGISTICS
+# ------------------------------------------------------------
+
+LogisticsSystem:system {
+    provides="material logistics"
+}
+
+SupplyVehicle:vehicle {
+    role=primary
+    vehicle_type="supply vehicle"
+    payload_capacity=1500 unit=kg
+    range=500 unit=km
+    operating_temperature=-60:20 unit=C
+}
+
+CargoVehicle:vehicle {
+    role=backup
+    vehicle_type="cargo vehicle"
+    payload_capacity=3000 unit=kg
+    range=400 unit=km
+    operating_temperature=-60:20 unit=C
+}
+
+LogisticsController:controller {
+    controls="logistics system"
+    inputs="vehicle_location"
+    outputs="dispatch"
+    control_mode="automatic"
+}
+
+# ============================================================
+# PERSONNEL BLOCK
+# ============================================================
+
+PersonnelBlock:block {
+    provides="personnel administration"
+}
+
+PersonnelSystem:system {
+    provides="personnel management"
+}
+
+PersonnelDatabase:database {
+    stores="personnel records"
+    storage_capacity=1 unit=TB
+}
+
+PersonnelServer:server {
+    role=primary
+    processing="personnel management"
+}
+
+PersonnelController:controller {
+    controls="personnel system"
+    inputs="access_event"
+    outputs="personnel_data"
+    control_mode="automatic"
+}
+
+AccessSensor:sensor {
+    measures="access event"
+    quantity="access_event"
+    authentication="personnel identification"
+}
+
+# ============================================================
+# WATER AND WASTE BLOCK
+# ============================================================
+
+WaterWasteBlock:block {
+    provides="water supply and waste management"
+}
+
+# ------------------------------------------------------------
+# WATER SYSTEM
+# ------------------------------------------------------------
+
+WaterSystem:system {
+    provides="water supply"
+}
+
+WaterPump:pump {
+    role=primary
+    flow_rate=0:100 unit=m3/h
+    pressure=0:10 unit=bar
+    power=15 unit=kW
+}
+
+WaterTank:tank {
+    storage_type="water"
+    capacity=25 unit=m3
+    pressure_rating=0:5 unit=bar
+    temperature_rating=0:50 unit=C
+}
+
+WaterLevelSensor:sensor {
+    measures="water level"
+    quantity="level"
+    rating=0:100 unit=%
+    accuracy=1 unit=%
+}
+
+WaterQualitySensor:sensor {
+    measures="water quality"
+    quantities="pH,turbidity,conductivity"
+    pH_rating=0:14 unit=pH
+}
+
+WaterController:controller {
+    controls="water system"
+    inputs="water_level,water_quality"
+    outputs="pump_control"
+    control_mode="automatic"
+}
+
+# ------------------------------------------------------------
+# WASTE SYSTEM
+# ------------------------------------------------------------
+
+WasteSystem:system {
+    provides="waste management"
+}
+
+WastePump:pump {
+    role=primary
+    flow_rate=0:50 unit=m3/h
+    pressure=0:8 unit=bar
+    power=10 unit=kW
+}
+
+WasteStorage:storage {
+    storage_type="waste"
+    capacity=15 unit=m3
+}
+
+WasteLevelSensor:sensor {
+    measures="waste level"
+    quantity="level"
+    rating=0:100 unit=%
+    accuracy=1 unit=%
+}
+
+WasteController:controller {
+    controls="waste system"
+    inputs="waste_level"
+    outputs="pump_control"
+    control_mode="automatic"
+}
+
+# ============================================================
+# SAFETY BLOCK
+# ============================================================
+
+SafetyBlock:block {
+    provides="station safety and emergency response"
+}
+
+# ------------------------------------------------------------
+# FIRE SAFETY
+# ------------------------------------------------------------
+
+FireSafetySystem:system {
+    provides="fire detection and alarm"
+}
+
+FireSensor:sensor {
+    measures="fire condition"
+    quantity="fire_detection"
+    detection="flame and heat"
+}
+
+SmokeSensor:sensor {
+    measures="smoke"
+    quantity="smoke_detection"
+    detection="particulate smoke"
+}
+
+FireAlarm2:alarm {
+    alarm_type="fire"
+    severity="critical"
+}
+
+FireSafetyController:controller {
+    controls="fire safety"
+    inputs="fire_detection,smoke_detection"
+    outputs="activate_alarm"
+    control_mode="automatic"
+}
+
+# ------------------------------------------------------------
+# EMERGENCY SYSTEM
+# ------------------------------------------------------------
+
+EmergencySystem:system {
+    provides="emergency response"
+}
+
+EmergencyBeacon:beacon {
+    signal_type="visual"
+    severity="emergency"
+}
+
+EmergencyRadio:radio {
+    communication_type="emergency radio"
+    frequency=30:300 unit=MHz
+}
+
+EmergencySensor:sensor {
+    measures="emergency condition"
+    quantity="emergency_status"
+}
+
+EmergencyController:controller {
+    controls="emergency system"
+    inputs="emergency_data"
+    outputs="beacon,radio"
+    control_mode="automatic"
+}

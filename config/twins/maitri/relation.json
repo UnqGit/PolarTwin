@@ -1,0 +1,1474 @@
+{
+  "name": "Maitri",
+  "type": "station",
+  "tags": [
+    "critical",
+    "essential"
+  ],
+  "children": [
+    {
+      "name": "EnergyBlock",
+      "type": "block",
+      "tags": [
+        "critical",
+        "essential"
+      ],
+      "children": [
+        {
+          "name": "EnergySystem",
+          "type": "system",
+          "tags": [
+            "power",
+            "critical"
+          ],
+          "children": [
+            {
+              "name": "Generator1",
+              "type": "generator",
+              "tags": [
+                "primary",
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "Generator2",
+              "type": "generator",
+              "tags": [
+                "backup",
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "BatteryBank",
+              "type": "battery",
+              "tags": [
+                "backup",
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "PowerInverter",
+              "type": "inverter",
+              "tags": [
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "PowerSensor",
+              "type": "sensor",
+              "tags": [
+                "monitoring",
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "FuelLevelSensor",
+              "type": "sensor",
+              "tags": [
+                "monitoring"
+              ],
+              "children": []
+            },
+            {
+              "name": "BatterySensor",
+              "type": "sensor",
+              "tags": [
+                "monitoring"
+              ],
+              "children": []
+            },
+            {
+              "name": "EnergyController",
+              "type": "controller",
+              "tags": [
+                "central",
+                "automatic",
+                "critical"
+              ],
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "HVACBlock",
+      "type": "block",
+      "tags": [
+        "essential",
+        "critical"
+      ],
+      "children": [
+        {
+          "name": "HeatingSystem",
+          "type": "system",
+          "tags": [
+            "thermal",
+            "essential"
+          ],
+          "children": [
+            {
+              "name": "MainHeater",
+              "type": "heater",
+              "tags": [
+                "primary",
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "BackupHeater",
+              "type": "heater",
+              "tags": [
+                "backup",
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "IndoorTemperatureSensor",
+              "type": "sensor",
+              "tags": [
+                "monitoring"
+              ],
+              "children": []
+            },
+            {
+              "name": "OutdoorTemperatureSensor",
+              "type": "sensor",
+              "tags": [
+                "monitoring"
+              ],
+              "children": []
+            },
+            {
+              "name": "HeatingController",
+              "type": "controller",
+              "tags": [
+                "automatic"
+              ],
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "VentilationSystem",
+          "type": "system",
+          "tags": [
+            "air",
+            "essential"
+          ],
+          "children": [
+            {
+              "name": "SupplyFan",
+              "type": "fan",
+              "tags": [
+                "primary"
+              ],
+              "children": []
+            },
+            {
+              "name": "ExhaustFan",
+              "type": "fan",
+              "tags": [
+                "backup"
+              ],
+              "children": []
+            },
+            {
+              "name": "AirQualitySensor",
+              "type": "sensor",
+              "tags": [
+                "monitoring",
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "AirflowSensor",
+              "type": "sensor",
+              "tags": [
+                "monitoring"
+              ],
+              "children": []
+            },
+            {
+              "name": "VentilationController",
+              "type": "controller",
+              "tags": [
+                "automatic"
+              ],
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "CoolingSubsystem",
+          "type": "subsystem",
+          "tags": [
+            "thermal"
+          ],
+          "children": [
+            {
+              "name": "CoolingUnit",
+              "type": "cooler",
+              "tags": [
+                "primary"
+              ],
+              "children": []
+            },
+            {
+              "name": "CoolingTemperatureSensor",
+              "type": "sensor",
+              "tags": [
+                "monitoring"
+              ],
+              "children": []
+            },
+            {
+              "name": "CoolingController",
+              "type": "controller",
+              "tags": [
+                "automatic"
+              ],
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ResearchBlock",
+      "type": "block",
+      "tags": [
+        "science"
+      ],
+      "children": [
+        {
+          "name": "ResearchLab",
+          "type": "system",
+          "tags": [
+            "laboratory",
+            "science"
+          ],
+          "children": [
+            {
+              "name": "WetLab",
+              "type": "laboratory",
+              "tags": [
+                "active"
+              ],
+              "children": []
+            },
+            {
+              "name": "DryLab",
+              "type": "laboratory",
+              "tags": [
+                "active"
+              ],
+              "children": []
+            },
+            {
+              "name": "LabTemperatureSensor",
+              "type": "sensor",
+              "tags": [
+                "monitoring"
+              ],
+              "children": []
+            },
+            {
+              "name": "LabHumiditySensor",
+              "type": "sensor",
+              "tags": [
+                "monitoring"
+              ],
+              "children": []
+            },
+            {
+              "name": "LabGasSensor",
+              "type": "sensor",
+              "tags": [
+                "monitoring",
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "LabController",
+              "type": "controller",
+              "tags": [
+                "automatic"
+              ],
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "FieldResearchSystem",
+          "type": "system",
+          "tags": [
+            "science",
+            "mobile"
+          ],
+          "children": [
+            {
+              "name": "SnowVehicle",
+              "type": "vehicle",
+              "tags": [
+                "primary",
+                "mobile"
+              ],
+              "children": []
+            },
+            {
+              "name": "ResearchRobot",
+              "type": "robot",
+              "tags": [
+                "mobile"
+              ],
+              "children": []
+            },
+            {
+              "name": "GPS",
+              "type": "sensor",
+              "tags": [
+                "monitoring"
+              ],
+              "children": []
+            },
+            {
+              "name": "WeatherSensor",
+              "type": "sensor",
+              "tags": [
+                "monitoring"
+              ],
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ControlBlock",
+      "type": "block",
+      "tags": [
+        "central",
+        "critical",
+        "essential"
+      ],
+      "children": [
+        {
+          "name": "ControlSystem",
+          "type": "system",
+          "tags": [
+            "central",
+            "critical"
+          ],
+          "children": [
+            {
+              "name": "ControlServer",
+              "type": "server",
+              "tags": [
+                "primary",
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "DataServer",
+              "type": "server",
+              "tags": [
+                "backup"
+              ],
+              "children": []
+            },
+            {
+              "name": "MainController",
+              "type": "controller",
+              "tags": [
+                "primary",
+                "central",
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "BackupController",
+              "type": "controller",
+              "tags": [
+                "backup",
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "SystemHealthSensor",
+              "type": "sensor",
+              "tags": [
+                "monitoring",
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "NetworkSensor",
+              "type": "sensor",
+              "tags": [
+                "monitoring"
+              ],
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "AlarmSystem",
+          "type": "subsystem",
+          "tags": [
+            "safety",
+            "critical"
+          ],
+          "children": [
+            {
+              "name": "FireAlarm",
+              "type": "alarm",
+              "tags": [
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "SmokeAlarm",
+              "type": "alarm",
+              "tags": [
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "EmergencyAlarm",
+              "type": "alarm",
+              "tags": [
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "AlarmController",
+              "type": "controller",
+              "tags": [
+                "automatic",
+                "safety"
+              ],
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "CommunicationBlock",
+      "type": "block",
+      "tags": [
+        "network",
+        "essential"
+      ],
+      "children": [
+        {
+          "name": "CommunicationSystem",
+          "type": "system",
+          "tags": [
+            "network",
+            "critical"
+          ],
+          "children": [
+            {
+              "name": "MainRouter",
+              "type": "router",
+              "tags": [
+                "primary",
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "BackupRouter",
+              "type": "router",
+              "tags": [
+                "backup"
+              ],
+              "children": []
+            },
+            {
+              "name": "SatelliteAntenna",
+              "type": "antenna",
+              "tags": [
+                "primary",
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "RadioAntenna",
+              "type": "antenna",
+              "tags": [
+                "backup"
+              ],
+              "children": []
+            },
+            {
+              "name": "CommunicationServer",
+              "type": "server",
+              "tags": [
+                "critical"
+              ],
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "InventoryBlock",
+      "type": "block",
+      "tags": [
+        "storage",
+        "essential"
+      ],
+      "children": [
+        {
+          "name": "StorageSystem",
+          "type": "system",
+          "tags": [
+            "storage"
+          ],
+          "children": [
+            {
+              "name": "FoodStorage",
+              "type": "storage",
+              "tags": [
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "FuelStorage",
+              "type": "storage",
+              "tags": [
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "EquipmentStorage",
+              "type": "storage",
+              "tags": [],
+              "children": []
+            },
+            {
+              "name": "FoodTemperatureSensor",
+              "type": "sensor",
+              "tags": [
+                "monitoring",
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "FuelLevelSensor2",
+              "type": "sensor",
+              "tags": [
+                "monitoring",
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "InventoryController",
+              "type": "controller",
+              "tags": [
+                "automatic"
+              ],
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "LogisticsSystem",
+          "type": "system",
+          "tags": [
+            "logistics",
+            "mobile"
+          ],
+          "children": [
+            {
+              "name": "SupplyVehicle",
+              "type": "vehicle",
+              "tags": [
+                "primary",
+                "mobile"
+              ],
+              "children": []
+            },
+            {
+              "name": "CargoVehicle",
+              "type": "vehicle",
+              "tags": [
+                "backup",
+                "mobile"
+              ],
+              "children": []
+            },
+            {
+              "name": "LogisticsController",
+              "type": "controller",
+              "tags": [
+                "automatic"
+              ],
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PersonnelBlock",
+      "type": "block",
+      "tags": [
+        "personnel"
+      ],
+      "children": [
+        {
+          "name": "PersonnelSystem",
+          "type": "system",
+          "tags": [
+            "administration"
+          ],
+          "children": [
+            {
+              "name": "PersonnelDatabase",
+              "type": "database",
+              "tags": [
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "PersonnelServer",
+              "type": "server",
+              "tags": [
+                "primary"
+              ],
+              "children": []
+            },
+            {
+              "name": "PersonnelController",
+              "type": "controller",
+              "tags": [
+                "automatic"
+              ],
+              "children": []
+            },
+            {
+              "name": "AccessSensor",
+              "type": "sensor",
+              "tags": [
+                "monitoring",
+                "security"
+              ],
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "WaterWasteBlock",
+      "type": "block",
+      "tags": [
+        "essential",
+        "critical"
+      ],
+      "children": [
+        {
+          "name": "WaterSystem",
+          "type": "system",
+          "tags": [
+            "water",
+            "essential"
+          ],
+          "children": [
+            {
+              "name": "WaterPump",
+              "type": "pump",
+              "tags": [
+                "primary",
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "WaterTank",
+              "type": "tank",
+              "tags": [
+                "storage",
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "WaterLevelSensor",
+              "type": "sensor",
+              "tags": [
+                "monitoring",
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "WaterQualitySensor",
+              "type": "sensor",
+              "tags": [
+                "monitoring",
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "WaterController",
+              "type": "controller",
+              "tags": [
+                "automatic"
+              ],
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "WasteSystem",
+          "type": "system",
+          "tags": [
+            "waste",
+            "essential"
+          ],
+          "children": [
+            {
+              "name": "WastePump",
+              "type": "pump",
+              "tags": [
+                "primary"
+              ],
+              "children": []
+            },
+            {
+              "name": "WasteStorage",
+              "type": "storage",
+              "tags": [
+                "storage"
+              ],
+              "children": []
+            },
+            {
+              "name": "WasteLevelSensor",
+              "type": "sensor",
+              "tags": [
+                "monitoring"
+              ],
+              "children": []
+            },
+            {
+              "name": "WasteController",
+              "type": "controller",
+              "tags": [
+                "automatic"
+              ],
+              "children": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "SafetyBlock",
+      "type": "block",
+      "tags": [
+        "safety",
+        "critical",
+        "essential"
+      ],
+      "children": [
+        {
+          "name": "FireSafetySystem",
+          "type": "system",
+          "tags": [
+            "safety",
+            "critical"
+          ],
+          "children": [
+            {
+              "name": "FireSensor",
+              "type": "sensor",
+              "tags": [
+                "monitoring",
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "SmokeSensor",
+              "type": "sensor",
+              "tags": [
+                "monitoring",
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "FireAlarm2",
+              "type": "alarm",
+              "tags": [
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "FireSafetyController",
+              "type": "controller",
+              "tags": [
+                "automatic",
+                "safety"
+              ],
+              "children": []
+            }
+          ]
+        },
+        {
+          "name": "EmergencySystem",
+          "type": "system",
+          "tags": [
+            "safety",
+            "critical"
+          ],
+          "children": [
+            {
+              "name": "EmergencyBeacon",
+              "type": "beacon",
+              "tags": [
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "EmergencyRadio",
+              "type": "radio",
+              "tags": [
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "EmergencySensor",
+              "type": "sensor",
+              "tags": [
+                "monitoring",
+                "critical"
+              ],
+              "children": []
+            },
+            {
+              "name": "EmergencyController",
+              "type": "controller",
+              "tags": [
+                "automatic",
+                "safety"
+              ],
+              "children": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "source": "Generator1",
+      "target": "EnergyController",
+      "type": "status",
+      "direction": "-->"
+    },
+    {
+      "source": "Generator2",
+      "target": "EnergyController",
+      "type": "status",
+      "direction": "-->"
+    },
+    {
+      "source": "PowerSensor",
+      "target": "EnergyController",
+      "type": "power_data",
+      "direction": "-->"
+    },
+    {
+      "source": "FuelLevelSensor",
+      "target": "EnergyController",
+      "type": "fuel_data",
+      "direction": "-->"
+    },
+    {
+      "source": "BatterySensor",
+      "target": "EnergyController",
+      "type": "battery_data",
+      "direction": "-->"
+    },
+    {
+      "source": "EnergyController",
+      "target": "Generator1",
+      "type": "command",
+      "direction": "-->"
+    },
+    {
+      "source": "EnergyController",
+      "target": "Generator2",
+      "type": "command",
+      "direction": "-->"
+    },
+    {
+      "source": "EnergyController",
+      "target": "BatteryBank",
+      "type": "charge_control",
+      "direction": "-->"
+    },
+    {
+      "source": "EnergyController",
+      "target": "PowerInverter",
+      "type": "power_control",
+      "direction": "-->"
+    },
+    {
+      "source": "BatteryBank",
+      "target": "PowerInverter",
+      "type": "stored_power",
+      "direction": "-->"
+    },
+    {
+      "source": "PowerInverter",
+      "target": "ControlServer",
+      "type": "power_status",
+      "direction": "-->"
+    },
+    {
+      "source": "IndoorTemperatureSensor",
+      "target": "HeatingController",
+      "type": "temperature",
+      "direction": "-->"
+    },
+    {
+      "source": "OutdoorTemperatureSensor",
+      "target": "HeatingController",
+      "type": "outside_temperature",
+      "direction": "-->"
+    },
+    {
+      "source": "HeatingController",
+      "target": "MainHeater",
+      "type": "control",
+      "direction": "-->"
+    },
+    {
+      "source": "HeatingController",
+      "target": "BackupHeater",
+      "type": "backup_control",
+      "direction": "-->"
+    },
+    {
+      "source": "AirQualitySensor",
+      "target": "VentilationController",
+      "type": "air_quality",
+      "direction": "-->"
+    },
+    {
+      "source": "AirflowSensor",
+      "target": "VentilationController",
+      "type": "airflow",
+      "direction": "-->"
+    },
+    {
+      "source": "VentilationController",
+      "target": "SupplyFan",
+      "type": "control",
+      "direction": "-->"
+    },
+    {
+      "source": "VentilationController",
+      "target": "ExhaustFan",
+      "type": "control",
+      "direction": "-->"
+    },
+    {
+      "source": "CoolingTemperatureSensor",
+      "target": "CoolingController",
+      "type": "temperature",
+      "direction": "-->"
+    },
+    {
+      "source": "CoolingController",
+      "target": "CoolingUnit",
+      "type": "control",
+      "direction": "-->"
+    },
+    {
+      "source": "HeatingController",
+      "target": "MainController",
+      "type": "heating_status",
+      "direction": "-->"
+    },
+    {
+      "source": "VentilationController",
+      "target": "MainController",
+      "type": "ventilation_status",
+      "direction": "-->"
+    },
+    {
+      "source": "CoolingController",
+      "target": "MainController",
+      "type": "cooling_status",
+      "direction": "-->"
+    },
+    {
+      "source": "MainController",
+      "target": "HeatingController",
+      "type": "command",
+      "direction": "-->"
+    },
+    {
+      "source": "MainController",
+      "target": "VentilationController",
+      "type": "command",
+      "direction": "-->"
+    },
+    {
+      "source": "MainController",
+      "target": "CoolingController",
+      "type": "command",
+      "direction": "-->"
+    },
+    {
+      "source": "LabTemperatureSensor",
+      "target": "LabController",
+      "type": "temperature",
+      "direction": "-->"
+    },
+    {
+      "source": "LabHumiditySensor",
+      "target": "LabController",
+      "type": "humidity",
+      "direction": "-->"
+    },
+    {
+      "source": "LabGasSensor",
+      "target": "LabController",
+      "type": "gas_data",
+      "direction": "-->"
+    },
+    {
+      "source": "LabController",
+      "target": "WetLab",
+      "type": "control",
+      "direction": "-->"
+    },
+    {
+      "source": "LabController",
+      "target": "DryLab",
+      "type": "control",
+      "direction": "-->"
+    },
+    {
+      "source": "GPS",
+      "target": "MainController",
+      "type": "location",
+      "direction": "-->"
+    },
+    {
+      "source": "WeatherSensor",
+      "target": "MainController",
+      "type": "weather_data",
+      "direction": "-->"
+    },
+    {
+      "source": "ResearchRobot",
+      "target": "ControlServer",
+      "type": "telemetry",
+      "direction": "-->"
+    },
+    {
+      "source": "SnowVehicle",
+      "target": "ControlServer",
+      "type": "telemetry",
+      "direction": "-->"
+    },
+    {
+      "source": "SystemHealthSensor",
+      "target": "MainController",
+      "type": "health",
+      "direction": "-->"
+    },
+    {
+      "source": "NetworkSensor",
+      "target": "MainController",
+      "type": "network_status",
+      "direction": "-->"
+    },
+    {
+      "source": "MainController",
+      "target": "ControlServer",
+      "type": "system_data",
+      "direction": "-->"
+    },
+    {
+      "source": "BackupController",
+      "target": "ControlServer",
+      "type": "backup_data",
+      "direction": "-->"
+    },
+    {
+      "source": "ControlServer",
+      "target": "MainController",
+      "type": "commands",
+      "direction": "-->"
+    },
+    {
+      "source": "ControlServer",
+      "target": "DataServer",
+      "type": "data",
+      "direction": "-->"
+    },
+    {
+      "source": "FireAlarm",
+      "target": "AlarmController",
+      "type": "alarm",
+      "direction": "-->"
+    },
+    {
+      "source": "SmokeAlarm",
+      "target": "AlarmController",
+      "type": "alarm",
+      "direction": "-->"
+    },
+    {
+      "source": "EmergencyAlarm",
+      "target": "AlarmController",
+      "type": "alarm",
+      "direction": "-->"
+    },
+    {
+      "source": "FireSensor",
+      "target": "FireSafetyController",
+      "type": "fire_detection",
+      "direction": "-->"
+    },
+    {
+      "source": "SmokeSensor",
+      "target": "FireSafetyController",
+      "type": "smoke_detection",
+      "direction": "-->"
+    },
+    {
+      "source": "FireSafetyController",
+      "target": "FireAlarm2",
+      "type": "activate_alarm",
+      "direction": "-->"
+    },
+    {
+      "source": "FireSafetyController",
+      "target": "AlarmController",
+      "type": "emergency_status",
+      "direction": "-->"
+    },
+    {
+      "source": "EmergencySensor",
+      "target": "EmergencyController",
+      "type": "emergency_data",
+      "direction": "-->"
+    },
+    {
+      "source": "EmergencyController",
+      "target": "EmergencyBeacon",
+      "type": "activate",
+      "direction": "-->"
+    },
+    {
+      "source": "EmergencyController",
+      "target": "EmergencyRadio",
+      "type": "broadcast",
+      "direction": "-->"
+    },
+    {
+      "source": "MainRouter",
+      "target": "CommunicationServer",
+      "type": "network_data",
+      "direction": "-->"
+    },
+    {
+      "source": "BackupRouter",
+      "target": "CommunicationServer",
+      "type": "backup_network",
+      "direction": "-->"
+    },
+    {
+      "source": "SatelliteAntenna",
+      "target": "CommunicationServer",
+      "type": "satellite_link",
+      "direction": "-->"
+    },
+    {
+      "source": "RadioAntenna",
+      "target": "CommunicationServer",
+      "type": "radio_link",
+      "direction": "-->"
+    },
+    {
+      "source": "CommunicationServer",
+      "target": "ControlServer",
+      "type": "communication",
+      "direction": "-->"
+    },
+    {
+      "source": "ControlServer",
+      "target": "CommunicationServer",
+      "type": "commands",
+      "direction": "-->"
+    },
+    {
+      "source": "MainRouter",
+      "target": "BackupRouter",
+      "type": "network_backup",
+      "direction": "<-->"
+    },
+    {
+      "source": "FoodTemperatureSensor",
+      "target": "InventoryController",
+      "type": "food_temperature",
+      "direction": "-->"
+    },
+    {
+      "source": "FuelLevelSensor2",
+      "target": "InventoryController",
+      "type": "fuel_level",
+      "direction": "-->"
+    },
+    {
+      "source": "InventoryController",
+      "target": "FoodStorage",
+      "type": "inventory_status",
+      "direction": "-->"
+    },
+    {
+      "source": "InventoryController",
+      "target": "FuelStorage",
+      "type": "fuel_status",
+      "direction": "-->"
+    },
+    {
+      "source": "InventoryController",
+      "target": "EquipmentStorage",
+      "type": "equipment_status",
+      "direction": "-->"
+    },
+    {
+      "source": "LogisticsController",
+      "target": "SupplyVehicle",
+      "type": "dispatch",
+      "direction": "-->"
+    },
+    {
+      "source": "LogisticsController",
+      "target": "CargoVehicle",
+      "type": "dispatch",
+      "direction": "-->"
+    },
+    {
+      "source": "SupplyVehicle",
+      "target": "LogisticsController",
+      "type": "location",
+      "direction": "-->"
+    },
+    {
+      "source": "CargoVehicle",
+      "target": "LogisticsController",
+      "type": "location",
+      "direction": "-->"
+    },
+    {
+      "source": "AccessSensor",
+      "target": "PersonnelController",
+      "type": "access_event",
+      "direction": "-->"
+    },
+    {
+      "source": "PersonnelController",
+      "target": "PersonnelDatabase",
+      "type": "personnel_data",
+      "direction": "-->"
+    },
+    {
+      "source": "PersonnelDatabase",
+      "target": "PersonnelServer",
+      "type": "personnel_records",
+      "direction": "-->"
+    },
+    {
+      "source": "PersonnelServer",
+      "target": "ControlServer",
+      "type": "personnel_status",
+      "direction": "-->"
+    },
+    {
+      "source": "ControlServer",
+      "target": "PersonnelServer",
+      "type": "access_request",
+      "direction": "-->"
+    },
+    {
+      "source": "WaterLevelSensor",
+      "target": "WaterController",
+      "type": "water_level",
+      "direction": "-->"
+    },
+    {
+      "source": "WaterQualitySensor",
+      "target": "WaterController",
+      "type": "water_quality",
+      "direction": "-->"
+    },
+    {
+      "source": "WaterController",
+      "target": "WaterPump",
+      "type": "pump_control",
+      "direction": "-->"
+    },
+    {
+      "source": "WaterPump",
+      "target": "WaterTank",
+      "type": "water_flow",
+      "direction": "-->"
+    },
+    {
+      "source": "WaterController",
+      "target": "ControlServer",
+      "type": "water_status",
+      "direction": "-->"
+    },
+    {
+      "source": "WasteLevelSensor",
+      "target": "WasteController",
+      "type": "waste_level",
+      "direction": "-->"
+    },
+    {
+      "source": "WasteController",
+      "target": "WastePump",
+      "type": "pump_control",
+      "direction": "-->"
+    },
+    {
+      "source": "WastePump",
+      "target": "WasteStorage",
+      "type": "waste_flow",
+      "direction": "-->"
+    },
+    {
+      "source": "WasteController",
+      "target": "ControlServer",
+      "type": "waste_status",
+      "direction": "-->"
+    },
+    {
+      "source": "FireSafetyController",
+      "target": "MainController",
+      "type": "fire_status",
+      "direction": "-->"
+    },
+    {
+      "source": "EmergencyController",
+      "target": "MainController",
+      "type": "emergency_status",
+      "direction": "-->"
+    },
+    {
+      "source": "MainController",
+      "target": "EmergencyController",
+      "type": "emergency_command",
+      "direction": "-->"
+    },
+    {
+      "source": "MainController",
+      "target": "AlarmController",
+      "type": "alarm_command",
+      "direction": "-->"
+    },
+    {
+      "source": "EmergencyBeacon",
+      "target": "CommunicationServer",
+      "type": "emergency_signal",
+      "direction": "-->"
+    },
+    {
+      "source": "EmergencyRadio",
+      "target": "CommunicationServer",
+      "type": "emergency_broadcast",
+      "direction": "-->"
+    },
+    {
+      "source": "EnergyController",
+      "target": "MainController",
+      "type": "energy_status",
+      "direction": "-->"
+    },
+    {
+      "source": "MainController",
+      "target": "EnergyController",
+      "type": "energy_command",
+      "direction": "-->"
+    },
+    {
+      "source": "InventoryController",
+      "target": "MainController",
+      "type": "inventory_status",
+      "direction": "-->"
+    },
+    {
+      "source": "PersonnelController",
+      "target": "MainController",
+      "type": "personnel_status",
+      "direction": "-->"
+    },
+    {
+      "source": "WaterController",
+      "target": "MainController",
+      "type": "water_status",
+      "direction": "-->"
+    },
+    {
+      "source": "WasteController",
+      "target": "MainController",
+      "type": "waste_status",
+      "direction": "-->"
+    },
+    {
+      "source": "MainController",
+      "target": "ControlServer",
+      "type": "central_status",
+      "direction": "-->"
+    },
+    {
+      "source": "ControlServer",
+      "target": "MainController",
+      "type": "central_command",
+      "direction": "-->"
+    }
+  ]
+}
