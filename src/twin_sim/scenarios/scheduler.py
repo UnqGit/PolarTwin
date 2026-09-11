@@ -25,5 +25,6 @@ class ScenarioScheduler:
             environment=engine.environment,
             behavior_context=engine.context,
             schedule=engine.schedule,
+            causal_trace=engine.causal_trace,
         )
         self.registry.dispatch(event, context)

@@ -18,6 +18,7 @@ class EventContext:
     environment: EnvironmentState
     behavior_context: BehaviorContext
     schedule: Callable[[float, Callable[[float, Any], None], Any], None]
+    causal_trace: list[dict[str, Any]] | None = None
 
 
 EventHandler = Callable[[ScenarioEvent, EventContext], None]
@@ -78,6 +79,13 @@ def _component_state(event: ScenarioEvent, context: EventContext, available: boo
     component = context.graph.get(event.target)
     component.runtime_state.available = available
     component.runtime_state.health = health
+    if context.causal_trace is not None:
+        context.causal_trace.append({
+            "cause": "component_failure" if not available else "component_repair",
+            "component": component.name,
+            "effect": "availability_changed",
+            "value": available,
+        })
     if not available:
         component.runtime_state.values["running"] = False
 

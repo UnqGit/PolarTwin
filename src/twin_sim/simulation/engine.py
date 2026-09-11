@@ -12,6 +12,7 @@ from twin_sim.model import ComponentGraph
 
 from .clock import ClockMode, SimulationClock
 from .environment import EnvironmentState
+from .failure import apply_failure_recovery
 from .randomness import RandomSource
 from .propagation import propagate
 from .scheduler import Callback, SimulationScheduler
@@ -50,6 +51,7 @@ class SimulationEngine:
             "environment": self.environment.snapshot(),
         })
         self.last_phase_order: list[str] = []
+        self.causal_trace: list[dict[str, Any]] = []
         for component in self.graph.components.values():
             if component.behavior is not None:
                 component.behavior.initialize(component, self.context)
@@ -85,6 +87,7 @@ class SimulationEngine:
             else:
                 proposals[component.name] = {}
         self.last_phase_order.append("propagation")
+        apply_failure_recovery(self.graph, proposals, self.causal_trace)
         input_updates = propagate(self.graph, proposals)
         self.last_phase_order.append("commit")
         for name, component in self.graph.components.items():
