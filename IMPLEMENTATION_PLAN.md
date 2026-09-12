@@ -2088,7 +2088,667 @@ Do this after the engine works as a library/CLI.
 
 ---
 
-# 32. Phase 30 — Web UI
+# 32. Phase 30 — 3D Twin Visualization (React Fiber)
+
+## Objective
+
+Create the 3D visualization layer for the web UI using React Three Fiber (React Fiber), while integrating with the **existing schema-driven component graph and specification system**.
+
+The visualization must consume the same topology/relations data and component specifications already used by the backend/compiler. Do **not** create a second, incompatible representation of the system just for rendering.
+
+The existing architecture distinguishes between:
+
+* the **containment hierarchy** (`children` / parent-child relationships)
+* the **functional connection graph** (`connections`)
+
+The 3D visualization should primarily use the **containment hierarchy to determine spatial placement**, while functional connections may be visualized separately if the existing UI supports them.
+
+The visualization must remain generic and schema-driven. Do not hardcode knowledge of Maitri, individual component names, or one particular topology.
+
+---
+
+## 32.1 Data sources and existing architecture
+
+The visualization should accept or derive its data from the already-established model:
+
+```text
+relation/topology JSON
+        +
+specification JSON
+        |
+        v
+existing normalized component graph
+        |
+        v
+3D visualization
+```
+
+Prefer consuming the normalized component representation produced by the existing application if that is already available, rather than reparsing the raw JSON independently.
+
+The visualization must preserve access to:
+
+```text
+Component
+├── id
+├── name
+├── type
+├── tags
+├── parent
+├── children
+├── specification
+├── incoming_connections
+├── outgoing_connections
+└── runtime_state
+```
+
+Do not discard specification fields that are not currently used by the renderer.
+
+The renderer should therefore remain forward-compatible with additional specification properties.
+
+---
+
+# 32.2 Build the 3D hierarchy dynamically
+
+Dynamically create the 3D scene from the component containment hierarchy.
+
+For example:
+
+```text
+System
+├── Generator
+├── Battery
+├── Controller
+└── Sensor
+```
+
+should become conceptually:
+
+```text
+3D System Container
+├── Generator mesh
+├── Battery mesh
+├── Controller mesh
+└── Sensor mesh
+```
+
+Nested systems must work recursively:
+
+```text
+Vehicle
+└── PowerSystem
+    ├── Generator
+    └── Battery
+```
+
+The `PowerSystem` should itself become a container inside the `Vehicle`, with its own children laid out inside it.
+
+Do not assume a fixed hierarchy depth.
+
+---
+
+# 32.3 Every component must have a visible name
+
+Every rendered component must have a name, including components that contain **no children/internal components**.
+
+Do not restrict labels to "major components."
+
+For example:
+
+```text
+Vehicle
+ ├── Generator
+ ├── Battery
+ ├── FuelSensor
+ └── Controller
+```
+
+All four child components must have identifiable names.
+
+Systems that contain children must also have names.
+
+The name should be associated with the corresponding 3D object and remain available without requiring the user to hover.
+
+Use the existing component `name` from the normalized model/data source.
+
+Do not invent display names when a valid component name already exists.
+
+If a component has no usable name, use the existing ID/type fallback convention rather than crashing.
+
+---
+
+# 32.4 Systems with children are translucent containers
+
+A component that contains one or more child components should be rendered as a **translucent container/system mesh**.
+
+Conceptually:
+
+```text
++--------------------------------------+
+|                                      |
+|   [Generator]    [Battery]           |
+|                                      |
+|   [Controller]    [Sensor]            |
+|                                      |
++--------------------------------------+
+             System
+```
+
+The outer system should remain visible as a boundary/context object, but its children must clearly be visible through it.
+
+Requirements:
+
+* `children.length > 0` → render the parent as translucent.
+* `children.length === 0` → render it as a normal leaf component.
+* The transparency must not completely obscure child meshes.
+* Children should render clearly inside the parent.
+* The parent should still communicate its physical/container boundary.
+* Nested translucent systems must work recursively.
+
+Do not make all objects translucent.
+
+Only objects functioning as containers should automatically receive container-style transparency.
+
+---
+
+# 32.5 Internal component visibility and hover behavior
+
+The user must be able to see components inside translucent systems without having to hover first.
+
+Hovering an internal component should provide additional visual feedback.
+
+When the pointer is over an internal component:
+
+* clearly highlight the hovered component;
+* preserve the translucent parent as context;
+* ensure the component remains visually distinguishable from the parent;
+* display/use the component's name and existing HTML preview behavior where appropriate;
+* do not hide the component behind the parent container;
+* do not cause unrelated sibling components to disappear.
+
+The existing Phase 30 requirement to provide an HTML preview when hovering major components should be retained, but it should be generalized so that the hierarchy can be inspected naturally rather than limiting the behavior to only a small set of "major" components.
+
+If an existing hover/selection system is already implemented, extend it instead of creating a competing interaction model.
+
+---
+
+# 32.6 Do NOT stack children at the same position
+
+This is a critical requirement.
+
+When a system contains multiple children, **never render all children at the same position by default**.
+
+Incorrect:
+
+```text
+       [A]
+       [B]
+       [C]
+       [D]
+```
+
+where all four occupy the same coordinates.
+
+Instead, automatically arrange them spatially inside their parent:
+
+```text
++-----------------------------------+
+|                                   |
+|   [A]       [B]                   |
+|                                   |
+|   [C]       [D]                   |
+|                                   |
++-----------------------------------+
+```
+
+The exact arrangement may be a grid, row/column packing system, or another deterministic layout, but it must:
+
+* avoid unnecessary overlap;
+* use the dimensions of the components;
+* leave spacing between neighboring components;
+* fit the children within the parent;
+* adapt to different numbers of children;
+* adapt to different component dimensions;
+* work recursively for nested systems.
+
+A simple deterministic 2D/3D packing/grid algorithm is acceptable for the first implementation.
+
+Do not introduce a complex physics simulation merely to position components.
+
+---
+
+# 32.7 Use dimensions from spec.json
+
+The component specification is the authoritative source for physical/component dimensions whenever dimensions are provided.
+
+Use the dimensions from `spec.json` when determining:
+
+1. mesh size;
+2. bounding box size;
+3. child spacing;
+4. child placement;
+5. parent/container size;
+6. collision/overlap checks;
+7. automatic layout.
+
+The visualization must not assume that every component is a unit cube.
+
+For example, if the specification provides:
+
+```json
+{
+  "dimensions": {
+    "width": 4,
+    "height": 2,
+    "depth": 3
+  }
+}
+```
+
+the corresponding mesh and layout calculations should use those dimensions.
+
+Respect the existing specification schema and dimension representation already implemented in the project.
+
+**Do not silently introduce a new incompatible `dimensions` JSON format if the repository already defines one.**
+
+First inspect the existing schema/model and adapt to it.
+
+---
+
+# 32.8 Missing dimensions must be inferred
+
+Not every component will necessarily have explicit dimensions.
+
+The renderer must therefore have a deterministic dimension-resolution strategy.
+
+Use this priority:
+
+```text
+1. Explicit dimensions from specification
+2. Existing derived/compiled dimensions if available
+3. Dimensions inferred from children
+4. Type-specific default dimensions
+5. Final generic fallback dimensions
+```
+
+Do not immediately assign every unknown object an arbitrary cube.
+
+### Container with children but no explicit dimensions
+
+If a system has no explicit dimensions, calculate its bounding dimensions from its children.
+
+Conceptually:
+
+```text
+parent size =
+    packed child bounds
+    + internal spacing
+    + outer padding
+```
+
+For example:
+
+```text
++-----------------------------------------+
+| padding                                 |
+|                                         |
+|  [A] spacing [B]                        |
+|                                         |
+|  [C] spacing [D]                        |
+|                                         |
+|                                 padding |
++-----------------------------------------+
+```
+
+The calculated parent size must be large enough for all children and their spacing.
+
+### Leaf component without dimensions
+
+If a leaf has no dimensions:
+
+* use an existing type-specific dimension if one exists;
+* otherwise use a sensible generic fallback;
+* keep the fallback deterministic.
+
+The fallback must be large enough to remain visible but must not dominate the scene.
+
+### Nested systems
+
+If a dimensionless component is itself inside another system, its calculated dimensions must participate in the parent's layout.
+
+Do not allow an inferred child to consume the entire parent and prevent its siblings from fitting.
+
+---
+
+# 32.9 Parent sizing and child layout are one system
+
+Mesh generation, dimension calculation, and layout must not be implemented as unrelated features.
+
+Use a layout pipeline conceptually similar to:
+
+```text
+component specification
+        |
+        v
+resolve dimensions
+        |
+        v
+create/resolve component mesh
+        |
+        v
+calculate mesh bounds
+        |
+        v
+pack children
+        |
+        v
+calculate parent bounds
+        |
+        v
+apply parent padding
+        |
+        v
+position children
+        |
+        v
+render hierarchy
+```
+
+This should be recursive.
+
+For every container:
+
+```text
+resolve child dimensions
+        ↓
+arrange children
+        ↓
+calculate container bounds
+        ↓
+render container
+```
+
+The result should remain valid if:
+
+* a component is added;
+* a component is removed;
+* component dimensions change;
+* the hierarchy changes;
+* a previously dimensionless component receives dimensions.
+
+---
+
+# 32.10 Component-specific geometry
+
+The existing fallback behavior of using generic meshes when no specialized 3D model exists must be preserved.
+
+However, where the component type has a known visual representation, prefer a **type-specific procedural mesh** instead of representing everything as a cube.
+
+The system should conceptually support:
+
+```text
+component type
+      |
+      +--> specialized procedural mesh
+      |
+      +--> provided/imported 3D model
+      |
+      +--> generic fallback mesh
+```
+
+Do not require a manually authored 3D model for every component type.
+
+The renderer must still be able to visualize unknown/new component types.
+
+Unknown types should fall back gracefully to the generic mesh rather than crashing.
+
+---
+
+# 32.11 Generator-specific mesh
+
+At minimum, implement a recognizable procedural mesh for components whose type resolves to:
+
+```text
+generator
+```
+
+A generator should visually resemble a generator/machinery unit rather than simply being a cube.
+
+The generator geometry must be **parameterized by dimensions**.
+
+Conceptually:
+
+```text
+createGeneratorMesh(width, height, depth)
+```
+
+or an equivalent implementation appropriate to the existing React Three Fiber/Three.js architecture.
+
+The geometry must be able to scale to different dimensions.
+
+For example:
+
+```text
+small generator
++---------+
+|  MOTOR  |
++---------+
+
+large generator
++----------------------+
+|      MOTOR/BODY      |
+|                      |
++----------------------+
+```
+
+Do not hardcode one fixed generator size and then scale the entire scene around it.
+
+The procedural generator should adapt to the resolved dimensions while maintaining a recognizable generator-like silhouette.
+
+If the project already contains a generator model, reuse it and make its scale/configuration dimension-aware rather than creating a duplicate implementation.
+
+---
+
+# 32.12 Type-based visual materials
+
+Do not render every component using the same blue material.
+
+Introduce a deterministic component-type visual/material mapping.
+
+Prefer neutral/greyish industrial colors so that different component types remain distinguishable without requiring hover interaction.
+
+Conceptually:
+
+```text
+system       → translucent neutral material
+generator    → metallic grey variant
+battery      → distinct grey/neutral variant
+controller   → distinct grey/neutral variant
+sensor       → distinct grey/neutral variant
+motor        → distinct grey/neutral variant
+unknown      → generic neutral fallback
+```
+
+The exact palette should be chosen by the implementation based on the existing UI design.
+
+Requirements:
+
+* visually distinguish component types;
+* remain readable through translucent containers;
+* avoid excessive saturation;
+* maintain a coherent industrial/engineering visualization style;
+* preserve clear hover/selection highlighting.
+
+Do not hardcode individual component names to colors.
+
+The mapping should be based on **component type**, with a generic fallback for unknown types.
+
+If the application already has a component-type registry, extend that registry.
+
+---
+
+# 32.13 Generic fallback is mandatory
+
+The renderer must continue to support arbitrary future component types.
+
+For example:
+
+```json
+{
+  "name": "QuantumWidget",
+  "type": "quantum_widget"
+}
+```
+
+must still render.
+
+If there is no specialized geometry:
+
+```text
+quantum_widget
+      ↓
+generic mesh
+```
+
+If there are no explicit dimensions:
+
+```text
+quantum_widget
+      ↓
+dimension resolver
+      ↓
+generic fallback dimensions
+```
+
+The visualization must not crash because:
+
+* the component type is unknown;
+* no specialized mesh exists;
+* dimensions are missing;
+* the component has unusual hierarchy depth.
+
+This follows the existing architecture's generic/fallback philosophy.
+
+---
+
+# 32.14 Names, geometry, and hierarchy must remain synchronized
+
+A rendered mesh must remain associated with its source component.
+
+Each rendered object should be traceable to:
+
+```text
+component.id
+component.name
+component.type
+parent
+children
+specification
+```
+
+Do not rely on mesh array indexes as component identity.
+
+This is important for:
+
+* hover;
+* selection;
+* labels;
+* future telemetry visualization;
+* future live-state updates;
+* future failure/status visualization.
+
+The architecture should make it possible for later UI phases to change a component's visual state based on simulation/runtime state without rebuilding the entire scene.
+
+---
+
+# 32.15 Performance considerations
+
+The first implementation should prioritize correctness, but avoid obviously inefficient behavior.
+
+For large hierarchies:
+
+* avoid recalculating the entire layout on every pointer movement;
+* memoize derived dimensions/layout where appropriate;
+* avoid recreating geometries unnecessarily;
+* reuse materials/geometries where safe;
+* recalculate layout only when hierarchy/specification/dimension inputs change;
+* keep hover state localized.
+
+Do not prematurely introduce a complicated rendering architecture.
+
+---
+
+# 32.16 Functional connections are separate from containment
+
+Do not confuse:
+
+```text
+parent/child containment
+```
+
+with:
+
+```text
+functional connections
+```
+
+The containment hierarchy determines where components live spatially.
+
+Functional connections describe how components interact.
+
+If connection lines are implemented during this phase, derive them from the existing `connections` graph rather than assuming that parent-child relationships represent functional connections.
+
+Do not change the underlying graph model to accommodate rendering.
+
+---
+
+# 32.17 Testing requirements
+
+Add tests for the visualization's non-rendering logic wherever practical.
+
+At minimum test:
+
+### Naming
+
+* leaf components receive names;
+* containers receive names;
+* missing-name fallback works.
+
+### Dimensions
+
+* explicit dimensions are respected;
+* missing dimensions receive deterministic fallback dimensions;
+* container dimensions are inferred from children;
+* nested containers calculate correctly.
+
+### Layout
+
+* multiple children do not occupy identical coordinates;
+* children fit within their parent;
+* spacing is maintained;
+* different child dimensions are respected;
+* nested systems lay out recursively;
+* changing child dimensions changes the layout appropriately.
+
+### Geometry
+
+* known component types select specialized geometry;
+* generator selects generator geometry;
+* generator geometry accepts configurable dimensions;
+* unknown types use generic fallback geometry.
+
+### Materials
+
+* different component types resolve to different visual styles;
+* unknown types use fallback styling;
+* systems use translucent container styling.
+
+### Regression
+
+Verify that existing React Fiber functionality, hover behavior, camera controls, and any already-implemented 3D functionality continue to work.
+
+---
+
+# 33. Phase 31 — Web UI Dashboard
 
 Only after the backend is stable.
 
@@ -2141,7 +2801,7 @@ Outbox: 18,420 messages
 
 ---
 
-# 33. Recommended MVP Scope
+# 34. Recommended MVP Scope
 
 Do NOT build every phase immediately.
 
@@ -2182,7 +2842,7 @@ Get the causal simulation loop working first.
 
 ---
 
-# 34. Recommended MVP Behavior Model
+# 35. Recommended MVP Behavior Model
 
 For the first version, implement these causal chains.
 
@@ -2262,7 +2922,7 @@ This gives a compelling demonstration with relatively little code.
 
 ---
 
-# 35. Telemetry Frequency
+# 36. Telemetry Frequency
 
 Do not necessarily emit every component on every tick.
 
@@ -2294,7 +2954,7 @@ This prevents massive output volumes.
 
 ---
 
-# 36. Simulation vs Telemetry Generation
+# 37. Simulation vs Telemetry Generation
 
 Keep these as separate concepts.
 
@@ -2347,7 +3007,7 @@ This is one of the most important architectural decisions.
 
 ---
 
-# 37. Failure Handling Strategy
+# 38. Failure Handling Strategy
 
 Every external output must be non-blocking from the simulation engine's perspective.
 
@@ -2387,7 +3047,7 @@ For synthetic telemetry, `PERSIST` should generally be preferred when reliable d
 
 ---
 
-# 38. Security Considerations
+# 39. Security Considerations
 
 When MQTT is eventually deployed:
 
@@ -2405,7 +3065,7 @@ Never place passwords directly in topology/spec JSON.
 
 ---
 
-# 39. Testing Strategy
+# 40. Testing Strategy
 
 Use several layers.
 
@@ -2471,7 +3131,7 @@ no connection references nonexistent components
 
 ---
 
-# 40. Definition of Done for MVP
+# 41. Definition of Done for MVP
 
 The MVP is complete when this works:
 
@@ -2505,9 +3165,10 @@ and:
 17. A smaller topology works without changing the simulator code.
 18. A new unknown component type falls back to GenericBehavior rather than crashing.
 
+
 ---
 
-# 41. Suggested Agent Execution Strategy
+# 42. Suggested Agent Execution Strategy
 
 Do not ask Cursor/Copilot to implement the entire project in one prompt.
 
@@ -2556,12 +3217,13 @@ Phase 26 -> experiments
 Phase 27 -> telemetry ingress/egress
 Phase 28 -> scenario composition
 Phase 29 -> API
-Phase 30 -> UI
+Phase 30 -> 3D Twin Visualization (React Fiber)
+Phase 31 -> Web UI Dashboard
 ```
 
 ---
 
-# 42. Master Prompt for Cursor / Copilot / Coding Agent
+# 43. Master Prompt for Cursor / Copilot / Coding Agent
 
 Copy this prompt into the coding agent after giving it this plan:
 
@@ -2659,7 +3321,7 @@ Copy this prompt into the coding agent after giving it this plan:
 
 ---
 
-# 43. Prompt for Later "Implement Next Phase" Iterations
+# 44. Prompt for Later "Implement Next Phase" Iterations
 
 Use this repeatedly:
 
@@ -2705,7 +3367,7 @@ Use this repeatedly:
 
 ---
 
-# 44. Prompt for Debugging an Existing Implementation
+# 45. Prompt for Debugging an Existing Implementation
 
 > Act as a senior distributed-systems and simulation-engineering reviewer.
 >
@@ -2737,7 +3399,7 @@ Use this repeatedly:
 
 ---
 
-# 45. Long-Term Architecture
+# 46. Long-Term Architecture
 
 The eventual system should look like:
 
@@ -2816,7 +3478,7 @@ without requiring a separate simulator for every station/system.
 
 ---
 
-# 46. Final Architectural Rule
+# 47. Final Architectural Rule
 
 The most important rule for the project is:
 
