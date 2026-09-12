@@ -22,14 +22,24 @@ def _inputs(args):
     return load_model_inputs(args.topology, args.spec)
 
 
-def _scenario(engine, path):
-    if path:
-        ScenarioScheduler().schedule(engine, load_scenario_events(path))
+def _scenario(engine, paths):
+    if paths:
+        if isinstance(paths, str):
+            paths = [paths]
+        ScenarioScheduler().schedule(engine, load_scenario_events(paths))
 
 
-def _hash_file(path_str: str | None) -> str | None:
+def _hash_file(path_str: str | list[str] | None) -> str | None:
     if not path_str:
         return None
+    if isinstance(path_str, list):
+        hashes = []
+        for p in path_str:
+            data = load_json(p)
+            content = json.dumps(data, sort_keys=True).encode("utf-8")
+            hashes.append(hashlib.sha256(content).hexdigest())
+        return hashlib.sha256(",".join(hashes).encode("utf-8")).hexdigest()
+        
     data = load_json(path_str)
     content = json.dumps(data, sort_keys=True).encode("utf-8")
     return hashlib.sha256(content).hexdigest()
@@ -113,6 +123,9 @@ def _merge_config(args):
         val = getattr(args, key, None)
         if val is not None:
             return val
+        if key == "scenario":
+            if "scenarios" in config:
+                return config["scenarios"]
         if key in config:
             return config[key]
         return default
@@ -240,7 +253,10 @@ def command_validate_simulation(args) -> int:
     topology, specification = _inputs(args)
     validation_config = json.loads(args.validation) if getattr(args, "validation", None) else None
     graph = compile_model(topology, specification, validation_config)
-    events = load_scenario_events(args.scenario) if args.scenario else []
+    scenario_paths = getattr(args, "scenario", None) or []
+    if isinstance(scenario_paths, str):
+        scenario_paths = [scenario_paths]
+    events = load_scenario_events(scenario_paths) if scenario_paths else []
     targets = set(graph.components)
     for event in events:
         if event.target and event.target not in targets:
@@ -318,6 +334,12 @@ def command_experiment(args) -> int:
     return 0
 
 
+def command_serve(args) -> int:
+    import uvicorn
+    uvicorn.run("twin_sim.api.server:app", host=args.host, port=args.port)
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="twin-sim")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -355,7 +377,7 @@ def build_parser() -> argparse.ArgumentParser:
     run = subparsers.add_parser("run")
     add_inputs(run)
     run.add_argument("--config", help="Runtime configuration JSON file")
-    run.add_argument("--scenario")
+    run.add_argument("--scenario", action="append", help="Scenario JSON file(s)")
     run.add_argument("--duration", type=float, default=None)
     run.add_argument("--tick-interval", type=float, default=None)
     run.add_argument("--time-scale", type=float, default=None)
@@ -369,7 +391,7 @@ def build_parser() -> argparse.ArgumentParser:
     experiment = subparsers.add_parser("experiment")
     add_inputs(experiment)
     experiment.add_argument("--config", help="Runtime configuration JSON file")
-    experiment.add_argument("--scenario")
+    experiment.add_argument("--scenario", action="append", help="Scenario JSON file(s)")
     experiment.add_argument("--runs", type=int, default=1, help="Number of experiment runs")
     experiment.add_argument("--db-path", default="experiments.db", help="Path to SQLite database file")
     experiment.add_argument("--duration", type=float, default=None)
@@ -382,8 +404,9 @@ def build_parser() -> argparse.ArgumentParser:
     experiment.set_defaults(handler=command_experiment)
 
     generate = subparsers.add_parser("generate")
-    for action in ("topology", "spec", "scenario"):
-        generate.add_argument(f"--{action}", required=action != "scenario")
+    for action in ("topology", "spec"):
+        generate.add_argument(f"--{action}", required=True)
+    generate.add_argument("--scenario", action="append", help="Scenario JSON file(s)")
     generate.add_argument("--config", help="Runtime configuration JSON file")
     generate.add_argument("--mqtt-config", required=False)
     generate.add_argument("--duration", type=float, default=None)
@@ -396,13 +419,13 @@ def build_parser() -> argparse.ArgumentParser:
 
     dry_run = subparsers.add_parser("validate-simulation")
     add_inputs(dry_run)
-    dry_run.add_argument("--scenario")
+    dry_run.add_argument("--scenario", action="append", help="Scenario JSON file(s)")
     dry_run.set_defaults(handler=command_validate_simulation)
     
     explain = subparsers.add_parser("explain")
     add_inputs(explain)
     explain.add_argument("--config", help="Runtime configuration JSON file")
-    explain.add_argument("--scenario")
+    explain.add_argument("--scenario", action="append", help="Scenario JSON file(s)")
     explain.add_argument("--component", required=True)
     explain.add_argument("--duration", type=float, default=None)
     explain.add_argument("--json", action="store_true")
@@ -411,11 +434,16 @@ def build_parser() -> argparse.ArgumentParser:
     trace = subparsers.add_parser("trace")
     add_inputs(trace)
     trace.add_argument("--config", help="Runtime configuration JSON file")
-    trace.add_argument("--scenario")
+    trace.add_argument("--scenario", action="append", help="Scenario JSON file(s)")
     trace.add_argument("--component")
     trace.add_argument("--duration", type=float, default=None)
     trace.add_argument("--json", action="store_true")
     trace.set_defaults(handler=command_trace)
+    
+    serve = subparsers.add_parser("serve")
+    serve.add_argument("--host", default="127.0.0.1")
+    serve.add_argument("--port", type=int, default=8000)
+    serve.set_defaults(handler=command_serve)
     
     return parser
 

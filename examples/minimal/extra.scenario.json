@@ -1,0 +1,14 @@
+{
+  "name": "Generator Failure",
+  "events": [
+    {
+      "id": "gen_fail",
+      "timestamp": 2.0,
+      "event": "component_failure",
+      "target": "Generator",
+      "parameters": {
+        "failure_mode": "hard_failure"
+      }
+    }
+  ]
+}

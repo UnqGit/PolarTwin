@@ -27,6 +27,7 @@ class SimulationStatus(str, Enum):
     PAUSED = "paused"
     STOPPED = "stopped"
     COMPLETED = "completed"
+    FAILED = "failed"
 
 
 class SimulationEngine:
