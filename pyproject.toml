@@ -7,6 +7,9 @@ name = "polar-twin"
 version = "0.1.0"
 description = "Schema-driven digital twin simulator"
 requires-python = ">=3.11"
+dependencies = [
+    "pydantic>=2.0.0"
+]
 
 [project.scripts]
 twin-sim = "twin_sim.cli:main"

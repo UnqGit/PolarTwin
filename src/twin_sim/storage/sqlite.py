@@ -18,7 +18,7 @@ class SQLiteAdapter(DatabaseAdapter):
     def start(self) -> None:
         if self.connection is None:
             self.path.parent.mkdir(parents=True, exist_ok=True)
-            self.connection = sqlite3.connect(self.path)
+            self.connection = sqlite3.connect(self.path, check_same_thread=False)
             self.connection.execute("""
                 CREATE TABLE IF NOT EXISTS telemetry (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,6 +28,18 @@ class SQLiteAdapter(DatabaseAdapter):
                     component TEXT,
                     component_type TEXT,
                     payload TEXT NOT NULL
+                )
+            """)
+            self.connection.execute("""
+                CREATE TABLE IF NOT EXISTS experiments (
+                    run_id TEXT PRIMARY KEY,
+                    seed INTEGER,
+                    topology_hash TEXT NOT NULL,
+                    specification_hash TEXT NOT NULL,
+                    scenario_hash TEXT,
+                    configuration TEXT,
+                    start_timestamp TEXT NOT NULL,
+                    end_timestamp TEXT NOT NULL
                 )
             """)
             self.connection.commit()
@@ -42,6 +54,38 @@ class SQLiteAdapter(DatabaseAdapter):
             "INSERT INTO telemetry (run_id, timestamp, message_type, component, component_type, payload) VALUES (?, ?, ?, ?, ?, ?)",
             (telemetry.run_id, telemetry.timestamp, message_type, component.get("name"), component.get("type"), serialize(telemetry)),
         )
+
+    def record_experiment(
+        self,
+        run_id: str,
+        seed: int | None,
+        topology_hash: str,
+        specification_hash: str,
+        scenario_hash: str | None,
+        configuration: str | None,
+        start_timestamp: str,
+        end_timestamp: str,
+    ) -> None:
+        if self.connection is None:
+            self.start()
+        self.connection.execute(
+            """
+            INSERT INTO experiments (
+                run_id, seed, topology_hash, specification_hash, scenario_hash, configuration, start_timestamp, end_timestamp
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                run_id,
+                seed,
+                topology_hash,
+                specification_hash,
+                scenario_hash,
+                configuration,
+                start_timestamp,
+                end_timestamp,
+            ),
+        )
+        self.connection.commit()
 
     def flush(self) -> None:
         if self.connection is not None:

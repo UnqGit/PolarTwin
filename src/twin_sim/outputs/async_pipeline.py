@@ -73,6 +73,23 @@ class AsyncTelemetryPipeline(TelemetrySink):
 
         if self.backpressure_policy == "block":
             self._queue.put(messages)
+        elif self.backpressure_policy == "compress":
+            try:
+                old_messages = self._queue.get_nowait()
+                self._queue.task_done()
+                
+                from .compressor import compress_telemetry_batch
+                combined = old_messages + messages
+                compressed = compress_telemetry_batch(combined)
+                
+                self._queue.put_nowait(compressed)
+            except queue.Empty:
+                try:
+                    self._queue.put_nowait(messages)
+                except queue.Full:
+                    self.dropped_batches += 1
+            except queue.Full:
+                self.dropped_batches += 1
         else:
             # Policy is 'drop'. Try to remove the oldest to make room.
             try:

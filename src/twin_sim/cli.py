@@ -1,19 +1,21 @@
-"""Command-line composition layer for validation, inspection, and runs."""
-
-from __future__ import annotations
-
 import argparse
+import datetime
+import hashlib
 import json
+import random
 import sys
+import uuid
 from pathlib import Path
 
 from twin_sim.compiler import compile_model
+from twin_sim.ingestion.config import load_runtime_config
 from twin_sim.ingestion.loaders import load_model_inputs
 from twin_sim.ingestion.validator import ValidationError, load_json
-from twin_sim.outputs import JsonlSink, create_sink
 from twin_sim.observability import build_quality_report
+from twin_sim.outputs import AsyncTelemetryPipeline, DatabaseSink, JsonlSink, MultiSink, create_sink
 from twin_sim.scenarios import ScenarioScheduler, load_scenario_events
 from twin_sim.simulation import SimulationEngine
+from twin_sim.storage import SQLiteAdapter
 
 
 def _inputs(args):
@@ -23,6 +25,14 @@ def _inputs(args):
 def _scenario(engine, path):
     if path:
         ScenarioScheduler().schedule(engine, load_scenario_events(path))
+
+
+def _hash_file(path_str: str | None) -> str | None:
+    if not path_str:
+        return None
+    data = load_json(path_str)
+    content = json.dumps(data, sort_keys=True).encode("utf-8")
+    return hashlib.sha256(content).hexdigest()
 
 
 def command_validate(args) -> int:
@@ -94,9 +104,6 @@ def command_trace(args) -> int:
     return 0
 
 
-from twin_sim.outputs import create_sink, AsyncTelemetryPipeline, JsonlSink, MultiSink
-from twin_sim.ingestion.config import load_runtime_config
-
 def _merge_config(args):
     config = {}
     if getattr(args, "config", None):
@@ -124,7 +131,7 @@ def _write_messages(messages, output_file):
         print(json.dumps(message.to_dict(), sort_keys=True))
 
 
-def _run_engine(args, _get=None):
+def _run_engine(args, _get=None, seed: int | None = None, run_id: str | None = None):
     if _get is None:
         _, _get = _merge_config(args)
     topology, specification = _inputs(args)
@@ -146,12 +153,15 @@ def _run_engine(args, _get=None):
     if env_arg:
         environment = json.loads(env_arg) if isinstance(env_arg, str) else env_arg
 
+    final_seed = seed if seed is not None else _get("seed", None)
+    final_run_id = run_id if run_id is not None else _get("run_id", "run-cli")
+
     engine = SimulationEngine(
         graph,
         tick_interval=_get("tick_interval", 1.0),
         time_scale=_get("time_scale", 1.0),
-        seed=_get("seed", None),
-        run_id=_get("run_id", "run-cli"),
+        seed=final_seed,
+        run_id=final_run_id,
         environment=environment,
         debug=_get("debug", True) if getattr(args, "command", "") in ("explain", "trace") else _get("debug", False),
         validation_config=validation_config,
@@ -239,6 +249,75 @@ def command_validate_simulation(args) -> int:
     return 0
 
 
+def command_experiment(args) -> int:
+    config, _get = _merge_config(args)
+    
+    topology_hash = _hash_file(args.topology)
+    spec_hash = _hash_file(args.spec)
+    scen_hash = _hash_file(getattr(args, "scenario", None))
+    config_content = json.dumps(config, sort_keys=True) if config else None
+    
+    db_path = getattr(args, "db_path", "experiments.db")
+    db_adapter = SQLiteAdapter(db_path)
+    db_adapter.start()
+    
+    runs_count = getattr(args, "runs", 1)
+    base_seed = _get("seed", None)
+    
+    try:
+        for run_idx in range(runs_count):
+            run_id = getattr(args, "run_id", None)
+            if not run_id or runs_count > 1:
+                run_id = f"run-{uuid.uuid4().hex[:8]}"
+                
+            if base_seed is not None:
+                current_seed = base_seed + run_idx
+            else:
+                current_seed = random.randint(0, 2**31 - 1)
+                
+            start_ts = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            
+            engine = _run_engine(args, _get, seed=current_seed, run_id=run_id)
+            
+            sinks = [DatabaseSink(SQLiteAdapter(db_path))]
+            if "outputs" in config:
+                for output_cfg in config["outputs"]:
+                    if output_cfg.get("enabled", True):
+                        sinks.append(create_sink(output_cfg))
+            elif getattr(args, "output", None):
+                sinks.append(JsonlSink(args.output))
+                
+            multi_sink = MultiSink(sinks)
+            pipeline = AsyncTelemetryPipeline(multi_sink, backpressure_policy="drop")
+            engine.telemetry_sink = pipeline
+            engine.telemetry_batch_size = 100
+            
+            try:
+                pipeline.start()
+                engine.run(duration=_get("duration", 1.0))
+                pipeline.flush()
+            finally:
+                pipeline.close()
+                
+            end_ts = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            
+            db_adapter.record_experiment(
+                run_id=run_id,
+                seed=current_seed,
+                topology_hash=topology_hash,
+                specification_hash=spec_hash,
+                scenario_hash=scen_hash,
+                configuration=config_content,
+                start_timestamp=start_ts,
+                end_timestamp=end_ts,
+            )
+    finally:
+        db_adapter.close()
+        
+    print(json.dumps({"runs": runs_count, "db_path": db_path, "status": "completed"}, sort_keys=True))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="twin-sim")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -286,6 +365,21 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--output")
     run.add_argument("--debug", action="store_true", help="Enable debug causal tracing")
     run.set_defaults(handler=command_run)
+
+    experiment = subparsers.add_parser("experiment")
+    add_inputs(experiment)
+    experiment.add_argument("--config", help="Runtime configuration JSON file")
+    experiment.add_argument("--scenario")
+    experiment.add_argument("--runs", type=int, default=1, help="Number of experiment runs")
+    experiment.add_argument("--db-path", default="experiments.db", help="Path to SQLite database file")
+    experiment.add_argument("--duration", type=float, default=None)
+    experiment.add_argument("--tick-interval", type=float, default=None)
+    experiment.add_argument("--time-scale", type=float, default=None)
+    experiment.add_argument("--seed", type=int)
+    experiment.add_argument("--run-id", default=None)
+    experiment.add_argument("--environment", help="JSON object of initial environment values")
+    experiment.add_argument("--output")
+    experiment.set_defaults(handler=command_experiment)
 
     generate = subparsers.add_parser("generate")
     for action in ("topology", "spec", "scenario"):

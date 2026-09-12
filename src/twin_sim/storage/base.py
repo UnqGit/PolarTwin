@@ -15,6 +15,19 @@ class DatabaseAdapter(ABC):
     def write(self, telemetry: TelemetryMessage) -> None:
         raise NotImplementedError
 
+    def record_experiment(
+        self,
+        run_id: str,
+        seed: int | None,
+        topology_hash: str,
+        specification_hash: str,
+        scenario_hash: str | None,
+        configuration: str | None,
+        start_timestamp: str,
+        end_timestamp: str,
+    ) -> None:
+        return None
+
     def flush(self) -> None:
         return None
 

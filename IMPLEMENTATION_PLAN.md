@@ -2030,7 +2030,16 @@ This is the beginning of a proper what-if analysis platform.
 
 ---
 
-# 29. Phase 27 — Scenario Composition
+# 29. Phase 27 — Telemetry Ingress & Egress Middleware
+
+Implement an Ingress (Modulation) and Egress (Demodulation) pipeline to securely and robustly handle external data.
+
+1. **Ingress (Modulation)**: Validate incoming data via Pydantic and normalize units (e.g. F to K, pounds to kg).
+2. **Egress (Demodulation)**: Expand compressed delta telemetry into discrete time points using linear interpolation right before the sink.
+
+---
+
+# 30. Phase 28 — Scenario Composition
 
 Allow multiple scenario files:
 
@@ -2055,7 +2064,7 @@ The engine should merge events deterministically.
 
 ---
 
-# 30. Phase 28 — Digital Twin API
+# 31. Phase 29 — Digital Twin API
 
 After the core CLI is stable, add an API.
 
@@ -2079,7 +2088,7 @@ Do this after the engine works as a library/CLI.
 
 ---
 
-# 31. Phase 29 — Web UI
+# 32. Phase 30 — Web UI
 
 Only after the backend is stable.
 
@@ -2132,7 +2141,7 @@ Outbox: 18,420 messages
 
 ---
 
-# 32. Recommended MVP Scope
+# 33. Recommended MVP Scope
 
 Do NOT build every phase immediately.
 
@@ -2173,7 +2182,7 @@ Get the causal simulation loop working first.
 
 ---
 
-# 33. Recommended MVP Behavior Model
+# 34. Recommended MVP Behavior Model
 
 For the first version, implement these causal chains.
 
@@ -2253,7 +2262,7 @@ This gives a compelling demonstration with relatively little code.
 
 ---
 
-# 34. Telemetry Frequency
+# 35. Telemetry Frequency
 
 Do not necessarily emit every component on every tick.
 
@@ -2285,7 +2294,7 @@ This prevents massive output volumes.
 
 ---
 
-# 35. Simulation vs Telemetry Generation
+# 36. Simulation vs Telemetry Generation
 
 Keep these as separate concepts.
 
@@ -2338,7 +2347,7 @@ This is one of the most important architectural decisions.
 
 ---
 
-# 36. Failure Handling Strategy
+# 37. Failure Handling Strategy
 
 Every external output must be non-blocking from the simulation engine's perspective.
 
@@ -2378,7 +2387,7 @@ For synthetic telemetry, `PERSIST` should generally be preferred when reliable d
 
 ---
 
-# 37. Security Considerations
+# 38. Security Considerations
 
 When MQTT is eventually deployed:
 
@@ -2396,7 +2405,7 @@ Never place passwords directly in topology/spec JSON.
 
 ---
 
-# 38. Testing Strategy
+# 39. Testing Strategy
 
 Use several layers.
 
@@ -2462,7 +2471,7 @@ no connection references nonexistent components
 
 ---
 
-# 39. Definition of Done for MVP
+# 40. Definition of Done for MVP
 
 The MVP is complete when this works:
 
@@ -2498,7 +2507,7 @@ and:
 
 ---
 
-# 40. Suggested Agent Execution Strategy
+# 41. Suggested Agent Execution Strategy
 
 Do not ask Cursor/Copilot to implement the entire project in one prompt.
 
@@ -2544,14 +2553,15 @@ Phase 23 -> performance
 Phase 24 -> configuration
 Phase 25 -> plugins
 Phase 26 -> experiments
-Phase 27 -> scenario composition
-Phase 28 -> API
-Phase 29 -> UI
+Phase 27 -> telemetry ingress/egress
+Phase 28 -> scenario composition
+Phase 29 -> API
+Phase 30 -> UI
 ```
 
 ---
 
-# 41. Master Prompt for Cursor / Copilot / Coding Agent
+# 42. Master Prompt for Cursor / Copilot / Coding Agent
 
 Copy this prompt into the coding agent after giving it this plan:
 
@@ -2649,7 +2659,7 @@ Copy this prompt into the coding agent after giving it this plan:
 
 ---
 
-# 42. Prompt for Later "Implement Next Phase" Iterations
+# 43. Prompt for Later "Implement Next Phase" Iterations
 
 Use this repeatedly:
 
@@ -2695,7 +2705,7 @@ Use this repeatedly:
 
 ---
 
-# 43. Prompt for Debugging an Existing Implementation
+# 44. Prompt for Debugging an Existing Implementation
 
 > Act as a senior distributed-systems and simulation-engineering reviewer.
 >
@@ -2727,7 +2737,7 @@ Use this repeatedly:
 
 ---
 
-# 44. Long-Term Architecture
+# 45. Long-Term Architecture
 
 The eventual system should look like:
 
@@ -2806,7 +2816,7 @@ without requiring a separate simulator for every station/system.
 
 ---
 
-# 45. Final Architectural Rule
+# 46. Final Architectural Rule
 
 The most important rule for the project is:
 
