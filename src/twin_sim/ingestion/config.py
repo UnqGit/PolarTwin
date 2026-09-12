@@ -31,6 +31,9 @@ def validate_runtime_config(config: Any) -> dict[str, Any]:
         item = _object(output, f"runtime_config.outputs[{idx}]")
         if "type" not in item:
             raise ValidationError(f"runtime config outputs[{idx}] is missing required field 'type'")
+    if "plugins" in root:
+        if not isinstance(root["plugins"], str):
+            raise ValidationError("runtime config plugins must be a string (directory path)")
             
     return root
 

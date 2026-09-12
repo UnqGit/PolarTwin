@@ -134,6 +134,11 @@ def _run_engine(args, _get=None):
     if val_arg:
         validation_config = json.loads(val_arg) if isinstance(val_arg, str) else val_arg
 
+    plugins_dir = _get("plugins")
+    if plugins_dir:
+        from twin_sim.plugins import load_plugins_from_directory
+        load_plugins_from_directory(plugins_dir)
+
     graph = compile_model(topology, specification, validation_config)
     
     env_arg = _get("environment")
@@ -241,7 +246,16 @@ def build_parser() -> argparse.ArgumentParser:
     def add_inputs(command):
         command.add_argument("--topology", required=True)
         command.add_argument("--spec", required=True)
-        command.add_argument("--validation", help="JSON string for validation safety rails config")
+        command.add_argument(
+            "--validation",
+            choices=["error", "warning", "ignore"],
+            help="validation strictness (overrides config JSON)",
+        )
+        command.add_argument(
+            "--plugins",
+            type=str,
+            help="path to external plugins directory (overrides config JSON)",
+        )
 
     validate = subparsers.add_parser("validate")
     add_inputs(validate)

@@ -16,7 +16,8 @@
       "additionalProperties": {
         "enum": ["error", "warning", "ignore"]
       }
-    }
+    },
+    "plugins": {"type": "string"}
   },
   "additionalProperties": true,
   "$defs": {

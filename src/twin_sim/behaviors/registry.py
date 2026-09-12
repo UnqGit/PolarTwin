@@ -64,8 +64,17 @@ class BehaviorRegistry:
             raise KeyError(f"unknown behavior '{name}'") from exc
 
 
+_PLUGIN_BEHAVIORS: dict[str, BehaviorFactory] = {}
+
+
+def register_plugin_behavior(name: str, factory: BehaviorFactory) -> None:
+    _PLUGIN_BEHAVIORS[name] = factory
+
+
 def default_registry() -> BehaviorRegistry:
     registry = BehaviorRegistry()
+    for name, factory in _PLUGIN_BEHAVIORS.items():
+        registry.register(name, factory)
     for behavior_class in (
         SensorPhysicalBehavior,
         ControllerBehavior,
