@@ -1,11 +1,19 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+import '@testing-library/jest-dom/vitest';
 import { render } from '@testing-library/react';
 import React from 'react';
 import App from './App';
 
 // Mock R3F Canvas and Drei components since they need a real WebGL context to render properly in jsdom
 vi.mock('@react-three/fiber', () => ({
-  Canvas: ({ children }: { children: React.ReactNode }) => <div data-testid="mock-canvas">{children}</div>,
+  Canvas:   ({ children }: { children: React.ReactNode }) => <div data-testid="mock-canvas">{children}</div>,
+  // useFrame: no-op stub — HoverManager calls this inside Canvas; in jsdom there is no GL loop
+  useFrame: (_cb: unknown) => undefined,
+  // useThree: return a minimal fake raycaster for RaycasterConfig
+  useThree: () => ({
+    raycaster: { params: { Line: {}, Points: {} } },
+    scene: { children: [] },
+  }),
 }));
 
 vi.mock('@react-three/drei', () => ({
@@ -15,6 +23,8 @@ vi.mock('@react-three/drei', () => ({
   Html:    ({ children }: { children: React.ReactNode }) => <div data-testid="html-overlay">{children}</div>,
   Text:    ({ children }: { children?: React.ReactNode }) => <span data-testid="text-label">{children}</span>,
   useGLTF: () => ({ scene: {} }),
+  Line:    () => <div data-testid="connection-line" />,
+  Edges:   () => null,
 }));
 
 describe('App Component (Phase 30 3D Twin Viewer)', () => {

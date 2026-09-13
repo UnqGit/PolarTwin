@@ -1,0 +1,163 @@
+{
+  "components": {
+    "Campus": {
+      "type": "campus",
+      "spec": {
+        "dummy": "true"
+      }
+    },
+    "StationA": {
+      "type": "station",
+      "spec": {
+        "dummy": "true"
+      }
+    },
+    "StationB": {
+      "type": "station",
+      "spec": {
+        "dummy": "true"
+      }
+    },
+    "BlockA1": {
+      "type": "block",
+      "spec": {
+        "dummy": "true"
+      }
+    },
+    "BlockA2": {
+      "type": "block",
+      "spec": {
+        "dummy": "true"
+      }
+    },
+    "BlockB1": {
+      "type": "block",
+      "spec": {
+        "dummy": "true"
+      }
+    },
+    "BlockB2": {
+      "type": "block",
+      "spec": {
+        "dummy": "true"
+      }
+    },
+    "PowerSystem": {
+      "type": "system",
+      "spec": {
+        "dummy": "true"
+      }
+    },
+    "ControlSystem": {
+      "type": "system",
+      "spec": {
+        "dummy": "true"
+      }
+    },
+    "StorageSystem": {
+      "type": "system",
+      "spec": {
+        "dummy": "true"
+      }
+    },
+    "HVACSystem": {
+      "type": "system",
+      "spec": {
+        "dummy": "true"
+      }
+    },
+    "MainGenerator": {
+      "type": "generator",
+      "spec": {
+        "length": 3,
+        "breadth": 2,
+        "height": 2,
+        "power": 500
+      }
+    },
+    "PowerSensor": {
+      "type": "sensor",
+      "spec": {
+        "length": 1,
+        "breadth": 1,
+        "height": 1,
+        "accuracy": 0.99
+      }
+    },
+    "MainController": {
+      "type": "controller",
+      "spec": {
+        "length": 1,
+        "breadth": 1,
+        "height": 2,
+        "mode": "auto"
+      }
+    },
+    "WaterTank": {
+      "type": "tank",
+      "spec": {
+        "length": 2,
+        "breadth": 2,
+        "height": 3,
+        "capacity": 2000
+      }
+    },
+    "TankSensor": {
+      "type": "sensor",
+      "spec": {
+        "length": 1,
+        "breadth": 1,
+        "height": 1,
+        "accuracy": 0.95
+      }
+    },
+    "MainPump": {
+      "type": "pump",
+      "spec": {
+        "length": 1.5,
+        "breadth": 1.5,
+        "height": 1.5,
+        "flow_rate": 100
+      }
+    }
+  },
+  "defaults": {
+    "campus": {
+      "dummy": "true"
+    },
+    "station": {
+      "dummy": "true"
+    },
+    "block": {
+      "dummy": "true"
+    },
+    "system": {
+      "dummy": "true"
+    },
+    "generator": {
+      "length": 3,
+      "breadth": 2,
+      "height": 2
+    },
+    "sensor": {
+      "length": 1,
+      "breadth": 1,
+      "height": 1
+    },
+    "controller": {
+      "length": 1,
+      "breadth": 1,
+      "height": 2
+    },
+    "tank": {
+      "length": 2,
+      "breadth": 2,
+      "height": 3
+    },
+    "pump": {
+      "length": 1.5,
+      "breadth": 1.5,
+      "height": 1.5
+    }
+  }
+}

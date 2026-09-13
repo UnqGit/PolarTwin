@@ -1,0 +1,169 @@
+{
+  "name": "Campus",
+  "type": "campus",
+  "tags": [],
+  "children": [
+    {
+      "name": "StationA",
+      "type": "station",
+      "tags": [],
+      "children": [
+        {
+          "name": "BlockA1",
+          "type": "block",
+          "tags": [],
+          "children": [
+            {
+              "name": "PowerSystem",
+              "type": "system",
+              "tags": [],
+              "children": [
+                {
+                  "name": "MainGenerator",
+                  "type": "generator",
+                  "tags": [],
+                  "children": []
+                },
+                {
+                  "name": "PowerSensor",
+                  "type": "sensor",
+                  "tags": [],
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "BlockA2",
+          "type": "block",
+          "tags": [],
+          "children": [
+            {
+              "name": "ControlSystem",
+              "type": "system",
+              "tags": [],
+              "children": [
+                {
+                  "name": "MainController",
+                  "type": "controller",
+                  "tags": [],
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "StationB",
+      "type": "station",
+      "tags": [],
+      "children": [
+        {
+          "name": "BlockB1",
+          "type": "block",
+          "tags": [],
+          "children": [
+            {
+              "name": "StorageSystem",
+              "type": "system",
+              "tags": [],
+              "children": [
+                {
+                  "name": "WaterTank",
+                  "type": "tank",
+                  "tags": [],
+                  "children": []
+                },
+                {
+                  "name": "TankSensor",
+                  "type": "sensor",
+                  "tags": [],
+                  "children": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "name": "BlockB2",
+          "type": "block",
+          "tags": [],
+          "children": [
+            {
+              "name": "HVACSystem",
+              "type": "system",
+              "tags": [],
+              "children": [
+                {
+                  "name": "MainPump",
+                  "type": "pump",
+                  "tags": [],
+                  "children": []
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "source": "MainGenerator",
+      "target": "PowerSensor",
+      "type": "power",
+      "direction": "-->"
+    },
+    {
+      "source": "PowerSensor",
+      "target": "MainController",
+      "type": "data",
+      "direction": "-->"
+    },
+    {
+      "source": "MainController",
+      "target": "MainGenerator",
+      "type": "control",
+      "direction": "-->"
+    },
+    {
+      "source": "TankSensor",
+      "target": "MainController",
+      "type": "data",
+      "direction": "-->"
+    },
+    {
+      "source": "MainController",
+      "target": "MainPump",
+      "type": "control",
+      "direction": "-->"
+    },
+    {
+      "source": "MainPump",
+      "target": "WaterTank",
+      "type": "water",
+      "direction": "-->"
+    },
+    {
+      "source": "StationA",
+      "target": "StationB",
+      "type": "road",
+      "direction": "<-->"
+    },
+    {
+      "source": "BlockA1",
+      "target": "BlockA2",
+      "type": "hallway",
+      "direction": "<-->"
+    },
+    {
+      "source": "BlockB1",
+      "target": "BlockB2",
+      "type": "hallway",
+      "direction": "<-->"
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+Campus:campus {
+    StationA:station {
+        BlockA1:block {
+            PowerSystem:system {
+                MainGenerator:generator
+                PowerSensor:sensor
+            }
+        }
+        BlockA2:block {
+            ControlSystem:system {
+                MainController:controller
+            }
+        }
+    }
+
+    StationB:station {
+        BlockB1:block {
+            StorageSystem:system {
+                WaterTank:tank
+                TankSensor:sensor
+            }
+        }
+        BlockB2:block {
+            HVACSystem:system {
+                MainPump:pump
+            }
+        }
+    }
+}
+
+# Component-level connections (wires)
+MainGenerator-->PowerSensor@power
+PowerSensor-->MainController@data
+MainController-->MainGenerator@control
+TankSensor-->MainController@data
+MainController-->MainPump@control
+MainPump-->WaterTank@water
+
+# Station-level connections (roads)
+StationA<-->StationB@road
+
+# Block-level connections (hallways)
+BlockA1<-->BlockA2@hallway
+BlockB1<-->BlockB2@hallway

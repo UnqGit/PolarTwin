@@ -5,6 +5,7 @@ from pathlib import Path
 
 # Types that are allowed to contain child nodes.
 CONTAINER_TYPES = {
+    "campus",
     "station",
     "block",
     "system",

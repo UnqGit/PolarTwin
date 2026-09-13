@@ -18,6 +18,7 @@ export interface MaterialProps {
 /** Base material for each component type.  Ordered by specificity. */
 const TYPE_MATERIALS: Array<{ match: string; mat: MaterialProps }> = [
   // containers / systems
+  { match: 'campus',  mat: { color: '#2a2a3a', metalness: 0.1, roughness: 0.9, opacity: 0.15, transparent: true } },
   { match: 'station', mat: { color: '#3a3a4a', metalness: 0.1, roughness: 0.9, opacity: 0.25, transparent: true } },
   { match: 'block',   mat: { color: '#3a4a3a', metalness: 0.1, roughness: 0.9, opacity: 0.25, transparent: true } },
   { match: 'system',  mat: { color: '#4a4a5a', metalness: 0.1, roughness: 0.9, opacity: 0.25, transparent: true } },
@@ -63,5 +64,5 @@ export function resolveMaterial(
 /** Returns true when this type should render as a translucent container. */
 export function isContainer(type: string): boolean {
   const t = (type || '').toLowerCase();
-  return t.includes('station') || t.includes('block') || t.includes('system');
+  return t.includes('campus') || t.includes('station') || t.includes('block') || t.includes('system');
 }
