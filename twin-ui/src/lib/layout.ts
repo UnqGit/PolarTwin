@@ -68,6 +68,8 @@ export interface NodeLayout {
   /** Raw spec object forwarded from spec.json for this component. */
   spec: Record<string, unknown>;
   tags: string[];
+  level?: number;
+  yOffset?: number; // local vertical offset for the container mesh (e.g., to enclose basements)
 }
 
 // ConnectionVisual removed
@@ -101,8 +103,8 @@ export interface SceneLayout {
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
-const CHILD_GAP = 0.6;   // XZ spacing between siblings inside a container
 const PADDING = 0.8;   // extra space added around children when sizing parent
+const LEVEL_SPACING = 3.0; // vertical spacing between semantic floor levels
 
 /** Y coordinate of the ground / connection plane.
  *  gridHelper sits at Y = -0.02 so ground is definitively Y = 0. */
@@ -144,22 +146,23 @@ const GENERIC_FALLBACK: Dims = { width: 1.0, height: 1.0, depth: 1.0 };
 
 export interface ConnectionProfile {
   width: number;
-  /** Fixed height, or 'min-block' to use min(srcHeight, tgtHeight) */
-  height: number | 'min-block';
-  elevation: number | 'ground';
-  clearance: number;
+  height: number | 'min-block'; // 'min-block' means stretch to layout block height
+  elevation: number | 'ground'; // 'ground' means y=0, else float at Y = elevation
+  clearance: number;            // A* penalty radius
   color?: string;
 }
 
 export const CONNECTION_PROFILES: Record<string, ConnectionProfile> = {
-  road: { width: 1.2, height: 0.05, elevation: 'ground', clearance: 4.0 },
-  hallway: { width: 1.0, height: 'min-block', elevation: 'ground', clearance: 3.0 },
-  power: { width: 0.15, height: 0.15, elevation: 0.075, clearance: 1.0 },
-  data: { width: 0.1, height: 0.1, elevation: 0.05, clearance: 0.8 },
-  water: { width: 0.2, height: 0.2, elevation: 0.1, clearance: 1.0 },
-  control: { width: 0.1, height: 0.1, elevation: 0.05, clearance: 0.8 },
+  road: { width: 1.2, height: 0.05, elevation: 'ground', clearance: 4.0, color: '#3f3f46' }, // darker gray
+  hallway: { width: 1.0, height: 'min-block', elevation: 'ground', clearance: 3.0, color: '#64748b' }, // slate
+  power: { width: 0.15, height: 0.15, elevation: 0.075, clearance: 1.0, color: '#ef4444' }, // red
+  data: { width: 0.1, height: 0.1, elevation: 0.05, clearance: 0.8, color: '#3b82f6' }, // blue
+  water: { width: 0.2, height: 0.2, elevation: 0.1, clearance: 1.0, color: '#06b6d4' }, // cyan
+  control: { width: 0.1, height: 0.1, elevation: 0.05, clearance: 0.8, color: '#eab308' }, // yellow
+  ladder: { width: 0.6, height: 0.1, elevation: 0, clearance: 1.0, color: '#b45309' }, // orange-brown
+  lift: { width: 1.2, height: 1.2, elevation: 0, clearance: 1.0, color: '#475569' }, // dark slate
   // Default fallback for unknown types
-  default: { width: 0.1, height: 0.1, elevation: 0.05, clearance: 1.0 },
+  default: { width: 0.1, height: 0.1, elevation: 0.05, clearance: 1.0, color: '#6b7280' },
 };
 
 export function getProfile(type: string): ConnectionProfile {
@@ -756,13 +759,44 @@ function routeConnection(
 
   const simplified = simplifyPath(fullPath);
 
+  // Cross-floor handling: if source and target are on different physical Y planes,
+  // we must insert a vertical segment. The path routes to the source wall at its Y level,
+  // then drops/climbs to the target Y level, then routes to the target.
+  const sourceY = srcInfo.worldOrigin[1];
+  const targetY = tgtInfo.worldOrigin[1];
+  
+  const path3d: [number, number, number][] = [];
+  
+  if (Math.abs(sourceY - targetY) > 0.01) {
+    // The A* route is in XZ. We need to split it into two horizontal segments, joined by a vertical segment.
+    // For simplicity, we drop/climb at the source's outer boundary (index 2 in the path typically, or simply the second waypoint).
+    // Let's drop immediately after clearing the source bounding box.
+    const dropIndex = Math.min(2, simplified.length - 1);
+    
+    for (let i = 0; i < simplified.length; i++) {
+      const [x, z] = simplified[i];
+      if (i < dropIndex) {
+        path3d.push([x, sourceY, z]);
+      } else if (i === dropIndex) {
+        path3d.push([x, sourceY, z]);
+        path3d.push([x, targetY, z]); // Vertical drop segment
+      } else {
+        path3d.push([x, targetY, z]);
+      }
+    }
+  } else {
+    // Same Y plane
+    for (const [x, z] of simplified) {
+      path3d.push([x, sourceY, z]);
+    }
+  }
+
   // Register cells as used for subsequent connections (overlap avoidance).
   for (const [wx, wz] of simplified) {
     usedCells.add(cellKey(Math.round(wx / GRID_CELL), Math.round(wz / GRID_CELL)));
   }
 
-  // Convert to 3D with ground Y.
-  return simplified.map(([x, z]) => [x, GROUND_Y, z]);
+  return path3d;
 }
 
 // ─── main exports ─────────────────────────────────────────────────────────────
@@ -777,6 +811,7 @@ export function buildLayout(node: any, spec: any, rawConnections: any[] = []): N
   const name: string = node.name ?? '(unnamed)';
   const type: string = node.type ?? '';
   const tags: string[] = node.tags ?? [];
+  const level: number | undefined = typeof node.level === 'number' ? node.level : undefined;
   const rawSpec: Record<string, unknown> = (spec?.components?.[name]?.spec) ?? {};
   const rawChildren: any[] = node.children ?? [];
 
@@ -788,7 +823,9 @@ export function buildLayout(node: any, spec: any, rawConnections: any[] = []): N
 
   // Compute dynamic gap based on connections between children
   let dynamicGap = 0.6; // fallback CHILD_GAP
-  if (children.length > 0) {
+  const hasFloors = children.some(c => c.type === 'floor');
+  
+  if (children.length > 0 && !hasFloors) {
     const childNames = new Set(children.map(c => c.name));
     let requiredGap = 0.6;
     for (const conn of rawConnections) {
@@ -803,27 +840,72 @@ export function buildLayout(node: any, spec: any, rawConnections: any[] = []): N
   }
 
   const explicit = resolveExplicitDims(rawSpec);
-  if (explicit) {
-    dims = explicit;
-  } else if (children.length > 0) {
-    // Container: size is inferred from packed children.
-    const { packedWidth, packedDepth } = gridPack(children.map((c) => c.dims), dynamicGap);
-    const maxChildHeight = children.reduce((m, c) => Math.max(m, c.dims.height), 0);
-    dims = {
-      width: packedWidth + PADDING * 2,
-      height: maxChildHeight + PADDING,   // tall enough to fully enclose tallest child
-      depth: packedDepth + PADDING * 2,
-    };
+  if (hasFloors) {
+    // Floor-aware layout: stack children based on their level.
+    children.sort((a, b) => (a.level ?? 0) - (b.level ?? 0));
+    
+    // Position each child according to its semantic level
+    let yMin = Infinity;
+    let yMax = -Infinity;
+    let maxWidth = 0;
+    let maxDepth = 0;
+    
+    children.forEach(c => {
+      const cLevel = c.level ?? 0;
+      const baseY = cLevel * LEVEL_SPACING;
+      c.position = [0, baseY, 0];
+      
+      yMin = Math.min(yMin, baseY);
+      yMax = Math.max(yMax, baseY + c.dims.height);
+      maxWidth = Math.max(maxWidth, c.dims.width);
+      maxDepth = Math.max(maxDepth, c.dims.depth);
+    });
+
+    if (explicit) {
+      dims = explicit;
+    } else {
+      dims = {
+        width: maxWidth + PADDING * 2,
+        height: (yMax - yMin) + PADDING,
+        depth: maxDepth + PADDING * 2,
+      };
+    }
   } else {
-    dims = resolveTypeDefault(type);
+    // Standard layout for components/rooms
+    if (explicit) {
+      dims = explicit;
+    } else if (children.length > 0) {
+      // Container: size is inferred from packed children.
+      const { packedWidth, packedDepth } = gridPack(children.map((c) => c.dims), dynamicGap);
+      const maxChildHeight = children.reduce((m, c) => Math.max(m, c.dims.height), 0);
+      dims = {
+        width: packedWidth + PADDING * 2,
+        height: maxChildHeight + PADDING,   // tall enough to fully enclose tallest child
+        depth: packedDepth + PADDING * 2,
+      };
+    } else {
+      dims = resolveTypeDefault(type);
+    }
+
+    // ── Position children in the XZ plane; all at Y = 0 within this group ────
+    if (children.length > 0) {
+      const { offsets } = gridPack(children.map((c) => c.dims), dynamicGap);
+      offsets.forEach(({ x, z }, i) => {
+        children[i].position = [x, 0, z];
+      });
+    }
   }
 
-  // ── Position children in the XZ plane; all at Y = 0 within this group ────
-  if (children.length > 0) {
-    const { offsets } = gridPack(children.map((c) => c.dims), dynamicGap);
-    offsets.forEach(({ x, z }, i) => {
-      children[i].position = [x, 0, z];
-    });
+  let yOffset = 0;
+  if (hasFloors && !explicit) {
+    // We compute yMin over children. If yMin != 0, the container's center 
+    // needs to shift so the lowest floor sits at the bottom of the bounding box.
+    // We already computed yMin in the hasFloors block, but let's re-verify it.
+    let yMin = Infinity;
+    children.forEach(c => { yMin = Math.min(yMin, c.position[1]); });
+    if (yMin !== Infinity) {
+      yOffset = yMin - PADDING / 2;
+    }
   }
 
   return {
@@ -834,6 +916,8 @@ export function buildLayout(node: any, spec: any, rawConnections: any[] = []): N
     children,
     spec: rawSpec,
     tags,
+    level,
+    yOffset: yOffset !== 0 ? yOffset : undefined,
   };
 }
 
@@ -848,6 +932,35 @@ export function buildSceneLayout(topology: any, spec: any): SceneLayout {
   const root = buildLayout(topology, spec);
   const nodeMap = buildNodeMap(root);
   const rawConnections: any[] = topology?.connections ?? [];
+  
+  // Discover floors and generate synthetic connections (ladders/lifts)
+  const floorContainers = new Map<string, NodeLayout[]>();
+  const collectFloors = (node: NodeLayout, parentName: string | null) => {
+    if (node.type === 'floor' && parentName) {
+      if (!floorContainers.has(parentName)) floorContainers.set(parentName, []);
+      floorContainers.get(parentName)!.push(node);
+    }
+    node.children.forEach(c => collectFloors(c, node.name));
+  };
+  collectFloors(root, null);
+  
+  for (const [_, floors] of floorContainers.entries()) {
+    floors.sort((a, b) => (a.level ?? 0) - (b.level ?? 0));
+    for (let i = 0; i < floors.length - 1; i++) {
+      const src = floors[i];
+      const tgt = floors[i+1];
+      const diff = (tgt.level ?? 0) - (src.level ?? 0);
+      const connType = diff === 1 ? 'ladder' : 'lift';
+      
+      rawConnections.push({
+        source: src.name,
+        target: tgt.name,
+        type: connType,
+        direction: '<-->',
+        _synthetic: true,
+      });
+    }
+  }
 
   // Track used grid cells across all connections for overlap avoidance.
   const usedCells = new Set<string>();
@@ -885,9 +998,10 @@ export function buildSceneLayout(topology: any, spec: any): SceneLayout {
         return null;
       }
 
-      // Convert path elevations
+      // If elevation is relative to ground, add it to the Y coordinate of the path.
+      // But for 3D paths, Y varies, so we just add elevation to all Ys.
       const elevation = profile.elevation === 'ground' ? height / 2 : profile.elevation;
-      const elevatedPath = path.map(([x, y, z]) => [x, elevation as number, z] as [number, number, number]);
+      const elevatedPath = path.map(([x, y, z]) => [x, y + (elevation as number), z] as [number, number, number]);
 
       return {
         id:             `${c.source}--${c.target}--${index}`,

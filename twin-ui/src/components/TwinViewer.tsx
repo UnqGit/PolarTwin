@@ -174,7 +174,9 @@ const HoverManager: React.FC<HoverManagerProps> = ({
 
   // Pointer drag check (delta distance)
   useEffect(() => {
-    const el = gl.domElement;
+    const el = gl?.domElement;
+    if (!el) return;
+    
     let downPos = { x: 0, y: 0 };
 
     const onPointerDown = (e: PointerEvent) => {
@@ -268,6 +270,18 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
   const [internalConnectionsInteractable, setInternalConnectionsInteractable] = useState(true);
 
   const controlsRef = useRef<any>(null);
+
+  const [activeLayer, setActiveLayer] = useState<number | null>(null);
+
+  const availableLayers = useMemo(() => {
+    const layers = new Set<number>();
+    for (const node of sceneLayout.allNodes.values()) {
+      if (node.type === 'floor' && typeof node.level === 'number') {
+        layers.add(node.level);
+      }
+    }
+    return Array.from(layers).sort((a, b) => a - b);
+  }, [sceneLayout.allNodes]);
 
   const handleResetCamera = React.useCallback(() => {
     if (controlsRef.current) {
@@ -382,8 +396,15 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
 
   return (
     <SelectionProvider externalSelection={onSelectName !== undefined ? [selectedName, onSelectName] : undefined}>
-      {/* Expose both HoverContext and update hoveredNodes to highlight selected connection source/targets */}
-      <HoverContext.Provider value={{ hoveredName: internalHoveredName, hoveredNodes: new Set([...hoveredNodes, ...selectionNodes]), hoveredAncestors, selectedAncestors }}>
+      <HoverContext.Provider value={{ 
+        hoveredName: internalHoveredName, 
+        hoveredNodes: new Set([...hoveredNodes, ...selectionNodes]), 
+        hoveredAncestors, 
+        selectedAncestors, 
+        activeLayer,
+        componentsInteractable: activeComponentsInteractable,
+        connectionsInteractable: activeConnectionsInteractable 
+      }}>
         <div style={{ width: '100%', height: '100%', background: '#0f172a', position: 'relative' }}>
           <Canvas
             camera={{ position: [35, 25, 35], fov: 50 }}
@@ -460,6 +481,9 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
             onHideAllComponentsChange={setHideAllComponents}
             onHideAllConnectionsChange={setHideAllConnections}
             onResetCamera={handleResetCamera}
+            availableLayers={availableLayers}
+            activeLayer={activeLayer}
+            setActiveLayer={setActiveLayer}
           />
         </div>
       </HoverContext.Provider>

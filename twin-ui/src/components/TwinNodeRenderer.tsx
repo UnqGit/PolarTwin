@@ -107,7 +107,7 @@ const ContainerMesh: React.FC<ContainerMeshProps> = ({
   }
 
   return (
-    <mesh receiveShadow position={[0, dims.height / 2, 0]} userData={userData}>
+    <mesh receiveShadow position={[0, dims.height / 2 + (userData.yOffset as number ?? 0), 0]} userData={userData}>
       <boxGeometry args={[dims.width, dims.height, dims.depth]} />
       <meshStandardMaterial
         color={color}
@@ -137,13 +137,15 @@ interface TwinNodeRendererProps {
    *  HoverManager uses this to pick the most-specific hovered component. */
   depth?: number;
   containerOcclusion?: 'off' | 'off_on_hover';
+  hasNonCampusAncestor?: boolean;
+  effectiveLayer?: number | null;
 }
 
 export const TwinNodeRenderer: React.FC<TwinNodeRendererProps> = React.memo(({
-  layout, liveStateRef, depth = 0, containerOcclusion = 'off',
+  layout, liveStateRef, depth = 0, containerOcclusion = 'off', hasNonCampusAncestor = false, effectiveLayer = null,
 }) => {
-  // ── Read hover state from the centralized HoverContext ──────────────────
-  const { hoveredNodes, hoveredAncestors, selectedAncestors } = useContext(HoverContext);
+  // ── Read hover state from the centralized HoverContext ───────────────────
+  const { hoveredNodes, hoveredAncestors, selectedAncestors, activeLayer, componentsInteractable } = useContext(HoverContext);
   const hovered = hoveredNodes.has(layout.name);
   const descendantHovered = hoveredAncestors?.has(layout.name) ?? false;
   const descendantSelected = selectedAncestors?.has(layout.name) ?? false;
@@ -176,23 +178,65 @@ export const TwinNodeRenderer: React.FC<TwinNodeRendererProps> = React.memo(({
   // userData stamped onto every raycast-target mesh for this component.
   // HoverManager reads this to identify which component was hit.
   const meshUserData = useMemo(
-    () => ({ componentName: layout.name, depth }),
-    [layout.name, depth]
+    () => ({ componentName: layout.name, depth, yOffset: layout.yOffset }),
+    [layout.name, depth, layout.yOffset]
   );
 
   const isHidden = hiddenSet.has(layout.name);
+  
+  // ── Campus Logic ──
+  const isCampus = layout.type === 'campus';
+  const isOutermostNonCampus = !isCampus && !hasNonCampusAncestor;
+  const nextHasNonCampusAncestor = hasNonCampusAncestor || !isCampus;
+  
+  // ── Interaction Layer Logic ──
+  const myEffectiveLayer = layout.type === 'floor' && typeof layout.level === 'number' 
+    ? layout.level 
+    : effectiveLayer;
+    
+  // A node is interactive if no layer is selected, OR if it has no effective layer (e.g., Block outside a floor), OR if its layer matches.
+  const isInteractive = activeLayer === null || myEffectiveLayer === null || activeLayer === myEffectiveLayer;
 
   const isOffOnHover = containerOcclusion === 'off_on_hover';
-  const containerOpacity = isOffOnHover
-    ? (depth === 0 || hovered || descendantHovered || descendantSelected || selected ? mat.opacity : 1.0)
-    : mat.opacity;
+  let containerOpacity = mat.opacity;
+  
+  if (!componentsInteractable) {
+    // If global interaction is disabled, all floors use equal normal translucency
+    containerOpacity = mat.opacity;
+  } else if (activeLayer !== null && containerOcclusion === 'off') {
+    // If a specific layer is active and we want emphasis (occlusion is off)
+    if (myEffectiveLayer !== null && activeLayer === myEffectiveLayer) {
+      containerOpacity = 1.0;
+    } else if (myEffectiveLayer !== null) {
+      containerOpacity = mat.opacity * 0.15; // subdued
+    }
+  } else if (isOffOnHover) {
+    // Normal off_on_hover logic using outermost non-campus
+    containerOpacity = (isOutermostNonCampus || hovered || descendantHovered || descendantSelected || selected ? mat.opacity : 1.0);
+  }
+
+  const yOffset = layout.yOffset ?? 0;
 
   return (
     <group
       position={layout.position}
       visible={!isHidden}
     >
-      {container ? (
+      {isCampus ? (
+        // ── Campus: render as a flat reference plane ──
+        <mesh receiveShadow position={[0, yOffset, 0]} userData={isInteractive ? meshUserData : {}} rotation={[-Math.PI / 2, 0, 0]}>
+          <planeGeometry args={[layout.dims.width, layout.dims.depth]} />
+          <meshStandardMaterial
+            color={hovered ? '#93c5fd' : mat.color}
+            metalness={mat.metalness}
+            roughness={mat.roughness}
+            opacity={containerOpacity}
+            transparent={containerOpacity < 1.0}
+            depthWrite={containerOpacity === 1.0}
+          />
+          <Edges scale={1} threshold={15} color={mat.color} opacity={0.6} transparent />
+        </mesh>
+      ) : container ? (
         // ── Container: full DoubleSide slab (walls + top + bottom all raycastable)
         <ContainerMesh
           name={layout.name}
@@ -201,34 +245,36 @@ export const TwinNodeRenderer: React.FC<TwinNodeRendererProps> = React.memo(({
           metalness={mat.metalness}
           roughness={mat.roughness}
           opacity={containerOpacity}
-          userData={meshUserData}
-          showDoor={layout.type !== 'system'}
+          userData={isInteractive ? meshUserData : {}}
+          showDoor={layout.type !== 'system' && layout.type !== 'floor'}
         />
       ) : (
         // ── Leaf: invisible DoubleSide bounding box carries the userData for
         //    raycasting; the visual MeshComp renders the actual shape on top.
         <>
           <mesh
-            position={[0, layout.dims.height / 2, 0]}
-            userData={meshUserData}
+            position={[0, layout.dims.height / 2 + yOffset, 0]}
+            userData={isInteractive ? meshUserData : {}}
           >
             <boxGeometry args={[layout.dims.width, layout.dims.height, layout.dims.depth]} />
             <meshBasicMaterial transparent opacity={0} depthWrite={false} side={2} />
           </mesh>
-          <MeshComp
-            dims={layout.dims}
-            color={hovered ? '#93c5fd' : mat.color}
-            metalness={mat.metalness}
-            roughness={mat.roughness}
-            opacity={mat.opacity}
-            transparent={mat.transparent}
-          />
+          <group position={[0, yOffset, 0]}>
+            <MeshComp
+              dims={layout.dims}
+              color={hovered ? '#93c5fd' : mat.color}
+              metalness={mat.metalness}
+              roughness={mat.roughness}
+              opacity={mat.opacity}
+              transparent={mat.transparent}
+            />
+          </group>
         </>
       )}
 
       {/* Selection bounding-box outline — bright cyan ring when selected */}
       {selected && (
-        <mesh position={[0, layout.dims.height / 2, 0]}>
+        <mesh position={[0, layout.dims.height / 2 + yOffset, 0]}>
           <boxGeometry args={[layout.dims.width + 0.05, layout.dims.height + 0.05, layout.dims.depth + 0.05]} />
           <meshBasicMaterial color="#22d3ee" transparent opacity={0} depthWrite={false} />
           <Edges scale={1} threshold={1} color="#22d3ee" />
@@ -246,6 +292,8 @@ export const TwinNodeRenderer: React.FC<TwinNodeRendererProps> = React.memo(({
           liveStateRef={liveStateRef}
           depth={depth + 1}
           containerOcclusion={containerOcclusion}
+          hasNonCampusAncestor={nextHasNonCampusAncestor}
+          effectiveLayer={myEffectiveLayer}
         />
       ))}
     </group>

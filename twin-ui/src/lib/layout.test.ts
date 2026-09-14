@@ -256,54 +256,6 @@ describe('Layout — non-overlapping placement', () => {
   });
 });
 
-// ─── resolveConnectionVisual ──────────────────────────────────────────────────
-
-describe('resolveConnectionVisual', () => {
-  it('station × station → road', () => {
-    expect(resolveConnectionVisual('station', 'station')).toBe('road');
-  });
-
-  it('type containing "station" substring is treated as station tier', () => {
-    expect(resolveConnectionVisual('main_station', 'sub_station')).toBe('road');
-  });
-
-  it('block × block → hallway', () => {
-    expect(resolveConnectionVisual('block', 'block')).toBe('hallway');
-  });
-
-  it('type containing "block" substring is treated as block tier', () => {
-    expect(resolveConnectionVisual('housing_block', 'storage_block')).toBe('hallway');
-  });
-
-  it('leaf × leaf (generator, controller) → wire', () => {
-    expect(resolveConnectionVisual('generator', 'controller')).toBe('wire');
-  });
-
-  it('leaf × leaf (sensor, motor) → wire', () => {
-    expect(resolveConnectionVisual('sensor', 'motor')).toBe('wire');
-  });
-
-  it('unknown × unknown → wire (both default to leaf tier)', () => {
-    expect(resolveConnectionVisual('quantum_device', 'photon_emitter')).toBe('wire');
-  });
-
-  it('block × system → none (mixed tiers)', () => {
-    expect(resolveConnectionVisual('block', 'system')).toBe('none');
-  });
-
-  it('station × block → none (mixed tiers)', () => {
-    expect(resolveConnectionVisual('station', 'block')).toBe('none');
-  });
-
-  it('station × generator → none (mixed tiers)', () => {
-    expect(resolveConnectionVisual('station', 'generator')).toBe('none');
-  });
-
-  it('block × sensor → none (mixed tiers)', () => {
-    expect(resolveConnectionVisual('block', 'sensor')).toBe('none');
-  });
-});
-
 // ─── buildSceneLayout ─────────────────────────────────────────────────────────
 
 describe('buildSceneLayout', () => {
@@ -333,7 +285,7 @@ describe('buildSceneLayout', () => {
       connections: [{ source: 'A', target: 'B', type: 'signal', direction: '-->' }],
     };
     const result = buildSceneLayout(topo, emptySpec);
-    expect(result.connections[0].visual).toBe('wire');
+    expect(result.connections[0].connectionType).toBe('signal');
   });
 
   it('connection carries the raw connectionType from topology', () => {
@@ -394,7 +346,6 @@ describe('buildSceneLayout', () => {
     const result = buildSceneLayout(topo, emptySpec);
     expect(result.root.name).toBe('Future');
     expect(result.root.children).toHaveLength(2);
-    expect(result.connections[0].visual).toBe('wire'); // both leaf-tier unknowns
   });
 
   it('connection startPos / endPos are distinct for non-co-located components', () => {

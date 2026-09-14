@@ -24,6 +24,19 @@ export interface HoverState {
   hoveredAncestors: Set<string>;
   /** Set containing the ancestors of the selected component */
   selectedAncestors: Set<string>;
+  /** The currently active interaction layer (floor level), if any. */
+  activeLayer: number | null;
+  /** Global interactivity flags */
+  componentsInteractable: boolean;
+  connectionsInteractable: boolean;
 }
 
-export const HoverContext = createContext<HoverState>({ hoveredName: null, hoveredNodes: new Set(), hoveredAncestors: new Set(), selectedAncestors: new Set() });
+export const HoverContext = createContext<HoverState>({ 
+  hoveredName: null, 
+  hoveredNodes: new Set(), 
+  hoveredAncestors: new Set(), 
+  selectedAncestors: new Set(), 
+  activeLayer: null,
+  componentsInteractable: true,
+  connectionsInteractable: true,
+});

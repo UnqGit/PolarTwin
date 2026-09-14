@@ -8,13 +8,21 @@ CONTAINER_TYPES = {
     "campus",
     "station",
     "block",
+    "floor",
     "system",
     "subsystem",
 }
 
 
+# A floor may only be directly nested inside one of these types.
+FLOOR_PARENT_TYPES = {
+    "station",
+    "block",
+}
+
+
 class RelationParseError(Exception):
-    """Raised when relation.txt contains invalid syntax or references."""
+    """Raised when relation.twin contains invalid syntax or references."""
 
     def __init__(self, message, line_number=None, line=None):
         self.message = message
@@ -32,6 +40,91 @@ class RelationParseError(Exception):
             super().__init__(message)
 
 
+def parse_modifiers(modifier_text, node_type, line_number, line):
+    """
+    Parse unordered node modifiers.
+
+    Supported modifiers:
+
+        %tag
+        @level=<integer>
+
+    Tags and @level may appear in any order.
+
+    Examples:
+
+        Floor1:floor @level=1 %public {
+        Floor1:floor %public @level=1 {
+        Floor1:floor %public %accessible @level=1 {
+        Floor1:floor @level=1 %public %accessible {
+
+    @level is only valid for floor nodes.
+    A floor must have exactly one @level attribute.
+    """
+
+    tags = []
+    levels = []
+
+    if modifier_text:
+        tokens = re.findall(
+            r"%\w+|@level\s*=\s*-?\d+",
+            modifier_text,
+        )
+
+        for token in tokens:
+            token = token.strip()
+
+            if token.startswith("%"):
+                tags.append(token[1:])
+                continue
+
+            if token.startswith("@level"):
+                match = re.fullmatch(
+                    r"@level\s*=\s*(-?\d+)",
+                    token,
+                )
+
+                if match:
+                    levels.append(int(match.group(1)))
+
+    # -------------------------------------------------------------
+    # Validate @level
+    # -------------------------------------------------------------
+
+    if node_type == "floor":
+
+        if not levels:
+            raise RelationParseError(
+                "Floor is missing required '@level' attribute. "
+                "Expected syntax: Name:floor @level=<integer> {",
+                line_number,
+                line,
+            )
+
+        if len(levels) > 1:
+            raise RelationParseError(
+                "A floor may only have one '@level' attribute.",
+                line_number,
+                line,
+            )
+
+        level = levels[0]
+
+    else:
+
+        if levels:
+            raise RelationParseError(
+                f"Only a floor can use the '@level' attribute. "
+                f"'{node_type}' does not support '@level'.",
+                line_number,
+                line,
+            )
+
+        level = None
+
+    return tags, level
+
+
 def parse_relation_file(filename):
     root = None
     stack = []
@@ -43,6 +136,20 @@ def parse_relation_file(filename):
     # Connections are parsed first and validated after all nodes
     # have been discovered.
     connections = []
+
+    # Tracks floor levels within each immediate parent.
+    #
+    # Key:
+    #     id(parent_node)
+    #
+    # Value:
+    #     {level: floor_name}
+    #
+    # Floor names remain globally unique through `nodes`.
+    #
+    # Floor levels are only unique within their immediate
+    # station/block parent.
+    floor_levels = {}
 
     with open(filename, "r", encoding="utf-8") as f:
 
@@ -72,21 +179,34 @@ def parse_relation_file(filename):
             # ---------------------------------------------------------
             # Container
             #
+            # Normal:
+            #
+            # Name:type {
             # Name:type %tag %tag {
             #
-            # Example:
-            # MainGrid:system %critical {
+            # Floor:
+            #
+            # Name:floor @level=1 {
+            # Name:floor %tag @level=1 {
+            # Name:floor @level=1 %tag {
+            #
+            # Tags and @level are intentionally unordered.
             # ---------------------------------------------------------
 
             m = re.match(
-                r"^(\w+):(\w+)(?:\s+((?:%\w+\s*)+))?\s*\{$",
+                r"^(\w+):(\w+)"
+                r"((?:\s+(?:%\w+|@level\s*=\s*-?\d+))*)"
+                r"\s*\{$",
                 line,
             )
 
             if m:
-                name, node_type, tag_text = m.groups()
+                name, node_type, modifier_text = m.groups()
 
-                # A block declaration must use a container type.
+                # -----------------------------------------------------
+                # Container type validation
+                # -----------------------------------------------------
+
                 if node_type not in CONTAINER_TYPES:
                     raise RelationParseError(
                         f"Type '{node_type}' cannot contain children. "
@@ -96,7 +216,53 @@ def parse_relation_file(filename):
                         line,
                     )
 
-                # Global identifier uniqueness.
+                # -----------------------------------------------------
+                # Floor-specific parent validation
+                # -----------------------------------------------------
+
+                if node_type == "floor":
+
+                    # A floor cannot exist at the top level.
+                    if not stack:
+                        raise RelationParseError(
+                            "A floor must be directly nested inside "
+                            "a station or block.",
+                            line_number,
+                            line,
+                        )
+
+                    parent = stack[-1]
+
+                    # A floor may only be directly inside a station/block.
+                    if parent["type"] not in FLOOR_PARENT_TYPES:
+                        raise RelationParseError(
+                            f"A floor cannot be nested inside "
+                            f"'{parent['type']}'. "
+                            f"Floors may only be directly nested inside "
+                            f"a station or block.",
+                            line_number,
+                            line,
+                        )
+
+                # -----------------------------------------------------
+                # Parse tags and @level
+                #
+                # They may appear in any order.
+                # -----------------------------------------------------
+
+                tags, level = parse_modifiers(
+                    modifier_text,
+                    node_type,
+                    line_number,
+                    line,
+                )
+
+                # -----------------------------------------------------
+                # Global identifier uniqueness
+                #
+                # This applies to floors as well.
+                # -----------------------------------------------------
+
                 if name in nodes:
                     previous = nodes[name]["line"]
 
@@ -108,7 +274,9 @@ def parse_relation_file(filename):
                         line,
                     )
 
-                tags = re.findall(r"%(\w+)", tag_text or "")
+                # -----------------------------------------------------
+                # Create node
+                # -----------------------------------------------------
 
                 node = {
                     "name": name,
@@ -118,8 +286,17 @@ def parse_relation_file(filename):
                     "line": line_number,
                 }
 
+                # Only floors receive a level property.
+                if node_type == "floor":
+                    node["level"] = level
+
+                # -----------------------------------------------------
+                # Add node to hierarchy
+                # -----------------------------------------------------
+
                 if stack:
                     stack[-1]["children"].append(node)
+
                 else:
                     if root is not None:
                         raise RelationParseError(
@@ -132,6 +309,44 @@ def parse_relation_file(filename):
                     root = node
 
                 nodes[name] = node
+
+                # -----------------------------------------------------
+                # Validate/register floor level
+                #
+                # Level uniqueness is scoped to the immediate parent.
+                #
+                # Levels do NOT need to be consecutive.
+                #
+                # Example:
+                #
+                #   FloorA @level=1
+                #   FloorB @level=4
+                #
+                # is valid.
+                # -----------------------------------------------------
+
+                if node_type == "floor":
+
+                    parent = stack[-1]
+                    parent_id = id(parent)
+
+                    if parent_id not in floor_levels:
+                        floor_levels[parent_id] = {}
+
+                    if level in floor_levels[parent_id]:
+                        previous_floor = floor_levels[parent_id][level]
+
+                        raise RelationParseError(
+                            f"Duplicate floor level '{level}' inside "
+                            f"'{parent['name']}:{parent['type']}'. "
+                            f"Floor '{previous_floor}' already uses "
+                            f"this level.",
+                            line_number,
+                            line,
+                        )
+
+                    floor_levels[parent_id][level] = name
+
                 stack.append(node)
 
                 continue
@@ -139,19 +354,22 @@ def parse_relation_file(filename):
             # ---------------------------------------------------------
             # Component
             #
+            # Name:type
+            # Name:type %tag
             # Name:type %tag %tag
             #
-            # Example:
-            # VoltageSensor:sensor %monitoring
+            # Components cannot use @level.
             # ---------------------------------------------------------
 
             m = re.match(
-                r"^(\w+):(\w+)(?:\s+((?:%\w+\s*)+))?$",
+                r"^(\w+):(\w+)"
+                r"((?:\s+%\w+)*)"
+                r"\s*$",
                 line,
             )
 
             if m:
-                name, node_type, tag_text = m.groups()
+                name, node_type, modifier_text = m.groups()
 
                 if not stack:
                     raise RelationParseError(
@@ -161,7 +379,18 @@ def parse_relation_file(filename):
                         line,
                     )
 
-                # Global identifier uniqueness.
+                # Give a clear error for @level on a component.
+                if "@level" in line:
+                    raise RelationParseError(
+                        "The '@level' attribute is only valid for floors.",
+                        line_number,
+                        line,
+                    )
+
+                # -----------------------------------------------------
+                # Global identifier uniqueness
+                # -----------------------------------------------------
+
                 if name in nodes:
                     previous = nodes[name]["line"]
 
@@ -173,7 +402,12 @@ def parse_relation_file(filename):
                         line,
                     )
 
-                tags = re.findall(r"%(\w+)", tag_text or "")
+                tags, _ = parse_modifiers(
+                    modifier_text,
+                    node_type,
+                    line_number,
+                    line,
+                )
 
                 node = {
                     "name": name,
@@ -198,6 +432,7 @@ def parse_relation_file(filename):
             # Whitespace around the arrow and @ is allowed.
             #
             # Examples:
+            #
             # A-->B@controls
             # A --> B @ controls
             # A<-->B@communicates
@@ -226,7 +461,8 @@ def parse_relation_file(filename):
             # ---------------------------------------------------------
 
             if ":" not in line and any(
-                arrow in line for arrow in ("-->", "<-->", "-.->", "<-->")
+                arrow in line
+                for arrow in ("-->", "<-->", "-.->", "<-->")
             ):
                 raise RelationParseError(
                     "Invalid connection syntax. "
@@ -238,7 +474,8 @@ def parse_relation_file(filename):
             if ":" in line:
                 raise RelationParseError(
                     "Invalid node syntax. "
-                    "Expected: Name:type or Name:type {",
+                    "Expected: Name:type, optionally followed by "
+                    "%tags and/or @level=<integer>, then '{' for containers.",
                     line_number,
                     line,
                 )
@@ -258,19 +495,35 @@ def parse_relation_file(filename):
         unclosed = stack[-1]
 
         raise RelationParseError(
-            f"Unclosed block for '{unclosed['name']}:{unclosed['type']}'. "
+            f"Unclosed block for "
+            f"'{unclosed['name']}:{unclosed['type']}'. "
             f"Expected '}}' before the end of the file.",
             unclosed["line"],
         )
 
+
     # -------------------------------------------------------------
     # Validate connection references.
+    #
+    # Connections may NOT have a floor node as either endpoint.
+    #
+    # Examples that are INVALID:
+    #
+    # Floor1-->SystemA@controls
+    # SystemA-->Floor1@controls
+    # Floor1<-->Floor2@communicates
+    #
+    # Connections between all other node types are allowed.
     # -------------------------------------------------------------
 
     for connection in connections:
         source = connection["source"]
         target = connection["target"]
         line_number = connection["line"]
+
+        # ---------------------------------------------------------
+        # Validate source reference
+        # ---------------------------------------------------------
 
         if source not in nodes:
             raise RelationParseError(
@@ -281,6 +534,10 @@ def parse_relation_file(filename):
                 f"{target}@{connection['type']}",
             )
 
+        # ---------------------------------------------------------
+        # Validate target reference
+        # ---------------------------------------------------------
+
         if target not in nodes:
             raise RelationParseError(
                 f"Unknown target identifier '{target}' in connection. "
@@ -289,6 +546,36 @@ def parse_relation_file(filename):
                 f"{source}{connection['direction']}"
                 f"{target}@{connection['type']}",
             )
+
+        # ---------------------------------------------------------
+        # Floors cannot participate in connections.
+        #
+        # This checks BOTH source and target.
+        # ---------------------------------------------------------
+
+        source_node = nodes[source]
+        target_node = nodes[target]
+
+        if source_node["type"] == "floor":
+            raise RelationParseError(
+                f"Invalid connection: floor node '{source}' cannot be "
+                f"used as a connection endpoint. "
+                f"Connections cannot have a floor as either source or target.",
+                line_number,
+                f"{source}{connection['direction']}"
+                f"{target}@{connection['type']}",
+            )
+
+        if target_node["type"] == "floor":
+            raise RelationParseError(
+                f"Invalid connection: floor node '{target}' cannot be "
+                f"used as a connection endpoint. "
+                f"Connections cannot have a floor as either source or target.",
+                line_number,
+                f"{source}{connection['direction']}"
+                f"{target}@{connection['type']}",
+            )
+
 
     # -------------------------------------------------------------
     # Fallback root.
@@ -302,7 +589,10 @@ def parse_relation_file(filename):
             "children": [],
         }
 
-    # Remove internal parser-only line information before writing JSON.
+    # -------------------------------------------------------------
+    # Remove internal parser-only line information.
+    # -------------------------------------------------------------
+
     def clean_node(node):
         node.pop("line", None)
 

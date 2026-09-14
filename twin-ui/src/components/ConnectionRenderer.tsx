@@ -79,28 +79,89 @@ const UnifiedConnection: React.FC<UnifiedConnectionProps> = ({ connection }) => 
   return (
     <group visible={!isHidden}>
       {/* One box per path segment */}
-      {segments.map((seg, i) => (
-        <group key={`seg-${i}`} position={seg.midPos.toArray() as [number, number, number]} quaternion={seg.quaternion}>
-          {/* HITBOX MESH: Constant size, invisible to eye, contains userData */}
-          <mesh userData={userData}>
-            <boxGeometry args={[beamWidth, beamThickness, seg.length]} />
-            <meshBasicMaterial transparent opacity={0} depthWrite={false} color="#ff0000" />
-          </mesh>
-          {/* VISUAL MESH: Scales up on hover, ignored by raycaster (no userData) */}
-          <mesh renderOrder={renderOrd}>
-            <boxGeometry args={[currentBeamWidth, currentBeamThickness, seg.length]} />
-            <meshStandardMaterial
-              color={matColor}
-              metalness={0.05}
-              roughness={0.95}
-              transparent
-              opacity={isHighlighted ? 1 : 0.88}
-              depthWrite={false}
-              depthTest={!isHighlighted}
-            />
-          </mesh>
-        </group>
-      ))}
+      {segments.map((seg, i) => {
+        if (type === 'ladder') {
+          // A procedural ladder: two side rails and rungs every 0.3 units
+          const rungsCount = Math.max(1, Math.floor(seg.length / 0.3));
+          const rungs = Array.from({ length: rungsCount }).map((_, r) => (r + 0.5) * (seg.length / rungsCount) - seg.length / 2);
+          const railWidth = currentBeamThickness * 0.5;
+          return (
+            <group key={`seg-${i}`} position={seg.midPos.toArray() as [number, number, number]} quaternion={seg.quaternion}>
+              <mesh userData={userData}>
+                <boxGeometry args={[currentBeamWidth, currentBeamThickness, seg.length]} />
+                <meshBasicMaterial transparent opacity={0} depthWrite={false} color="#ff0000" />
+              </mesh>
+              <group renderOrder={renderOrd}>
+                {/* Left Rail */}
+                <mesh position={[-currentBeamWidth / 2, 0, 0]}>
+                  <boxGeometry args={[railWidth, currentBeamThickness, seg.length]} />
+                  <meshStandardMaterial color={matColor} metalness={0.6} roughness={0.4} />
+                </mesh>
+                {/* Right Rail */}
+                <mesh position={[currentBeamWidth / 2, 0, 0]}>
+                  <boxGeometry args={[railWidth, currentBeamThickness, seg.length]} />
+                  <meshStandardMaterial color={matColor} metalness={0.6} roughness={0.4} />
+                </mesh>
+                {/* Rungs */}
+                {rungs.map((z, ri) => (
+                  <mesh key={ri} position={[0, 0, z]}>
+                    <boxGeometry args={[currentBeamWidth, railWidth, railWidth]} />
+                    <meshStandardMaterial color={matColor} metalness={0.6} roughness={0.4} />
+                  </mesh>
+                ))}
+              </group>
+            </group>
+          );
+        }
+
+        if (type === 'lift') {
+          // A procedural lift shaft: a hollow-looking or ribbed box
+          return (
+            <group key={`seg-${i}`} position={seg.midPos.toArray() as [number, number, number]} quaternion={seg.quaternion}>
+              <mesh userData={userData}>
+                <boxGeometry args={[currentBeamWidth, currentBeamThickness, seg.length]} />
+                <meshBasicMaterial transparent opacity={0} depthWrite={false} color="#ff0000" />
+              </mesh>
+              {/* Main Shaft Core */}
+              <mesh renderOrder={renderOrd}>
+                <boxGeometry args={[currentBeamWidth * 0.9, currentBeamThickness * 0.9, seg.length]} />
+                <meshStandardMaterial color={matColor} metalness={0.3} roughness={0.7} transparent opacity={0.6} depthWrite={false} />
+              </mesh>
+              {/* Shaft Framework (four corners) */}
+              <group renderOrder={renderOrd}>
+                <mesh position={[-currentBeamWidth/2, -currentBeamThickness/2, 0]}><boxGeometry args={[0.1, 0.1, seg.length]} /><meshStandardMaterial color="#334155" /></mesh>
+                <mesh position={[currentBeamWidth/2, -currentBeamThickness/2, 0]}><boxGeometry args={[0.1, 0.1, seg.length]} /><meshStandardMaterial color="#334155" /></mesh>
+                <mesh position={[-currentBeamWidth/2, currentBeamThickness/2, 0]}><boxGeometry args={[0.1, 0.1, seg.length]} /><meshStandardMaterial color="#334155" /></mesh>
+                <mesh position={[currentBeamWidth/2, currentBeamThickness/2, 0]}><boxGeometry args={[0.1, 0.1, seg.length]} /><meshStandardMaterial color="#334155" /></mesh>
+              </group>
+            </group>
+          );
+        }
+
+        // Default standard beam connection
+        return (
+          <group key={`seg-${i}`} position={seg.midPos.toArray() as [number, number, number]} quaternion={seg.quaternion}>
+            {/* HITBOX MESH: Constant size, invisible to eye, contains userData */}
+            <mesh userData={userData}>
+              <boxGeometry args={[beamWidth, beamThickness, seg.length]} />
+              <meshBasicMaterial transparent opacity={0} depthWrite={false} color="#ff0000" />
+            </mesh>
+            {/* VISUAL MESH: Scales up on hover, ignored by raycaster (no userData) */}
+            <mesh renderOrder={renderOrd}>
+              <boxGeometry args={[currentBeamWidth, currentBeamThickness, seg.length]} />
+              <meshStandardMaterial
+                color={matColor}
+                metalness={0.05}
+                roughness={0.95}
+                transparent
+                opacity={isHighlighted ? 1 : 0.88}
+                depthWrite={false}
+                depthTest={!isHighlighted}
+              />
+            </mesh>
+          </group>
+        );
+      })}
 
       {/* Square corner joints at every bend point to eliminate gaps */}
       {path.slice(1, -1).map((pt, i) => (
