@@ -37,7 +37,7 @@
 
 import React, { useContext, useMemo, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Text, Html, Edges } from '@react-three/drei';
+import { Edges } from '@react-three/drei';
 import type { NodeLayout } from '../lib/layout';
 import { resolveMaterial, isContainer } from '../lib/materials';
 import { lookupMesh } from '../lib/meshRegistry';
@@ -49,12 +49,14 @@ import { useSelection } from './SelectionContext';
 // ─── container slab ───────────────────────────────────────────────────────────
 
 interface ContainerMeshProps {
+  name: string;
   dims: { width: number; height: number; depth: number };
   color: string;
   metalness: number;
   roughness: number;
   opacity: number;
   userData: Record<string, unknown>;
+  showDoor?: boolean;
 }
 
 /**
@@ -65,102 +67,66 @@ interface ContainerMeshProps {
  * ensures a deeper nested component always wins over this surface.
  */
 const ContainerMesh: React.FC<ContainerMeshProps> = ({
-  dims, color, metalness, roughness, opacity, userData,
-}) => (
-  <mesh receiveShadow position={[0, dims.height / 2, 0]} userData={userData}>
-    <boxGeometry args={[dims.width, dims.height, dims.depth]} />
-    <meshStandardMaterial
-      color={color}
-      metalness={metalness}
-      roughness={roughness}
-      opacity={opacity}
-      transparent
-      depthWrite={false}
-      side={2}  /* THREE.DoubleSide — works from all camera angles */
-    />
-    <Edges scale={1} threshold={15} color={color} opacity={0.6} transparent />
-  </mesh>
-);
+  name, dims, color, metalness, roughness, opacity, userData, showDoor
+}) => {
+  let doorNode = null;
+  if (showDoor) {
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) hash = Math.imul(31, hash) + name.charCodeAt(i);
+    const wallIndex = Math.abs(hash) % 4;
+    
+    const doorW = Math.min(1.0, (wallIndex % 2 === 0 ? dims.width : dims.depth) * 0.4);
+    const doorH = Math.min(2.0, dims.height * 0.8);
+    
+    let pos = [0, doorH / 2 - dims.height / 2, 0];
+    let args = [doorW, doorH, 0.05];
+    
+    switch(wallIndex) {
+      case 0: // Front (+Z)
+        pos[2] = dims.depth / 2 + 0.02;
+        break;
+      case 1: // Back (-Z)
+        pos[2] = -dims.depth / 2 - 0.02;
+        break;
+      case 2: // Right (+X)
+        pos[0] = dims.width / 2 + 0.02;
+        args = [0.05, doorH, doorW];
+        break;
+      case 3: // Left (-X)
+        pos[0] = -dims.width / 2 - 0.02;
+        args = [0.05, doorH, doorW];
+        break;
+    }
+    
+    doorNode = (
+      <mesh position={pos as [number, number, number]}>
+        <boxGeometry args={args as [number, number, number]} />
+        <meshStandardMaterial color="#0f172a" metalness={0.5} roughness={0.8} opacity={opacity} transparent={opacity < 1.0} depthWrite={opacity === 1.0} />
+      </mesh>
+    );
+  }
+
+  return (
+    <mesh receiveShadow position={[0, dims.height / 2, 0]} userData={userData}>
+      <boxGeometry args={[dims.width, dims.height, dims.depth]} />
+      <meshStandardMaterial
+        color={color}
+        metalness={metalness}
+        roughness={roughness}
+        opacity={opacity}
+        transparent={opacity < 1.0}
+        depthWrite={opacity === 1.0}
+        side={2}  /* THREE.DoubleSide — works from all camera angles */
+      />
+      {doorNode}
+      <Edges scale={1} threshold={15} color={color} opacity={0.6} transparent />
+    </mesh>
+  );
+};
 
 // ─── hover detail panel ───────────────────────────────────────────────────────
 
-interface HoverInfoProps {
-  layout: NodeLayout;
-  liveStateRef: React.MutableRefObject<Record<string, unknown>>;
-  visible: boolean;
-  panelY: number;
-}
 
-const HoverInfo: React.FC<HoverInfoProps> = ({
-  layout, liveStateRef, visible, panelY,
-}) => {
-  const [metrics, setMetrics] = useState<[string, unknown][]>([]);
-
-  useFrame(() => {
-    if (!visible) return;
-    const state = (liveStateRef.current?.[layout.name] ?? {}) as Record<string, unknown>;
-    const newMetrics = Object.entries(state)
-      .filter(([k]) => k !== 'inputs')
-      .slice(0, 4);
-      
-    if (JSON.stringify(newMetrics) !== JSON.stringify(metrics)) {
-      setMetrics(newMetrics);
-    }
-  });
-
-  if (!visible) return null;
-
-  return (
-    <Html position={[0, panelY + 0.8, 0]} center style={{ pointerEvents: 'none' }}>
-      <div style={{
-        background: 'rgba(10,12,20,0.94)',
-        backdropFilter: 'blur(8px)',
-        border: '1px solid rgba(147,197,253,0.3)',
-        borderRadius: 8,
-        padding: '10px 14px',
-        color: '#f1f5f9',
-        minWidth: 160,
-        maxWidth: 220,
-        fontFamily: 'system-ui, sans-serif',
-        fontSize: 12,
-        boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
-      }}>
-        <div style={{
-          fontWeight: 700,
-          fontSize: 13,
-          marginBottom: 6,
-          color: '#93c5fd',
-          borderBottom: '1px solid rgba(255,255,255,0.1)',
-          paddingBottom: 4,
-        }}>
-          {layout.name}
-        </div>
-        <div style={{ color: '#94a3b8', marginBottom: 4, fontSize: 11 }}>
-          type: <span style={{ color: '#cbd5e1' }}>{layout.type}</span>
-        </div>
-        {metrics.length > 0 ? (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: 4,
-            marginTop: 4,
-          }}>
-            {metrics.map(([k, v]) => (
-              <React.Fragment key={k}>
-                <span style={{ color: '#64748b', fontSize: 10 }}>{k}</span>
-                <span style={{ color: '#e2e8f0' }}>
-                  {typeof v === 'number' ? v.toFixed(2) : String(v)}
-                </span>
-              </React.Fragment>
-            ))}
-          </div>
-        ) : (
-          <div style={{ color: '#475569', fontSize: 10, marginTop: 4 }}>no live data</div>
-        )}
-      </div>
-    </Html>
-  );
-};
 
 // ─── main renderer component ──────────────────────────────────────────────────
 
@@ -170,17 +136,20 @@ interface TwinNodeRendererProps {
   /** Nesting depth from root (root = 0).  Passed down to children as depth+1.
    *  HoverManager uses this to pick the most-specific hovered component. */
   depth?: number;
+  containerOcclusion?: 'off' | 'off_on_hover';
 }
 
 export const TwinNodeRenderer: React.FC<TwinNodeRendererProps> = React.memo(({
-  layout, liveStateRef, depth = 0,
+  layout, liveStateRef, depth = 0, containerOcclusion = 'off',
 }) => {
   // ── Read hover state from the centralized HoverContext ──────────────────
-  const { hoveredName } = useContext(HoverContext);
-  const hovered = hoveredName === layout.name;
+  const { hoveredNodes, hoveredAncestors, selectedAncestors } = useContext(HoverContext);
+  const hovered = hoveredNodes.has(layout.name);
+  const descendantHovered = hoveredAncestors?.has(layout.name) ?? false;
+  const descendantSelected = selectedAncestors?.has(layout.name) ?? false;
 
   // ── Read / write selection state ────────────────────────────────────────
-  const { selectedName, setSelectedName } = useSelection();
+  const { selectedName, hiddenSet } = useSelection();
   const selected = selectedName === layout.name;
 
   const [failed, setFailed] = useState(false);
@@ -194,8 +163,8 @@ export const TwinNodeRenderer: React.FC<TwinNodeRendererProps> = React.memo(({
   });
 
   const mat = useMemo(
-    () => resolveMaterial(layout.type, { hovered, failed }),
-    [layout.type, hovered, failed]
+    () => resolveMaterial(layout.type, { hovered, failed, selected }),
+    [layout.type, hovered, failed, selected]
   );
 
   const container = isContainer(layout.type) && layout.children.length > 0;
@@ -211,22 +180,29 @@ export const TwinNodeRenderer: React.FC<TwinNodeRendererProps> = React.memo(({
     [layout.name, depth]
   );
 
-  const topY = layout.dims.height;
+  const isHidden = hiddenSet.has(layout.name);
+
+  const isOffOnHover = containerOcclusion === 'off_on_hover';
+  const containerOpacity = isOffOnHover
+    ? (depth === 0 || hovered || descendantHovered || descendantSelected || selected ? mat.opacity : 1.0)
+    : mat.opacity;
 
   return (
     <group
       position={layout.position}
-      onClick={(e) => { e.stopPropagation(); setSelectedName(selected ? null : layout.name); }}
+      visible={!isHidden}
     >
       {container ? (
         // ── Container: full DoubleSide slab (walls + top + bottom all raycastable)
         <ContainerMesh
+          name={layout.name}
           dims={layout.dims}
           color={hovered ? '#93c5fd' : mat.color}
           metalness={mat.metalness}
           roughness={mat.roughness}
-          opacity={mat.opacity}
+          opacity={containerOpacity}
           userData={meshUserData}
+          showDoor={layout.type !== 'system'}
         />
       ) : (
         // ── Leaf: invisible DoubleSide bounding box carries the userData for
@@ -259,29 +235,8 @@ export const TwinNodeRenderer: React.FC<TwinNodeRendererProps> = React.memo(({
         </mesh>
       )}
 
-      {/* Name label — only appears on hover */}
-      {hovered && (
-        <Text
-          position={[0, topY + 0.35, 0]}
-          fontSize={0.22}
-          color="#93c5fd"
-          anchorX="center"
-          anchorY="bottom"
-          outlineColor="#0f172a"
-          outlineWidth={0.012}
-          renderOrder={1}
-        >
-          {layout.name}
-        </Text>
-      )}
 
-      {/* Live-telemetry hover panel */}
-      <HoverInfo
-        layout={layout}
-        liveStateRef={liveStateRef}
-        visible={hovered}
-        panelY={topY}
-      />
+
 
       {/* Recursively render children — depth increments at each level */}
       {layout.children.map((child) => (
@@ -290,6 +245,7 @@ export const TwinNodeRenderer: React.FC<TwinNodeRendererProps> = React.memo(({
           layout={child}
           liveStateRef={liveStateRef}
           depth={depth + 1}
+          containerOcclusion={containerOcclusion}
         />
       ))}
     </group>

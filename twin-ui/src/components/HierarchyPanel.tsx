@@ -1,30 +1,22 @@
-/**
- * HierarchyPanel.tsx
- *
- * IDE-style hierarchy panel.  Displays the topology tree in a collapsible
- * tree view (similar to VS Code's file explorer) and shows a property
- * inspector for the selected component.
- *
- * Data is derived entirely from the existing NodeLayout tree and
- * ConnectionLayout list produced by buildSceneLayout — no duplicate model.
- *
- * Hierarchy ↔ viewport synchronization is handled through SelectionContext,
- * which is shared with TwinNodeRenderer so clicking a node here highlights
- * the matching 3D object and vice-versa.
- */
-
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import type { NodeLayout, ConnectionLayout } from '../lib/layout';
 import { useSelection } from './SelectionContext';
+import { TypeIcon } from './TypeIcon';
+import { ConnectionsList } from './ConnectionsList';
+import { Network, Link2, Sliders, ChevronRight, Eye, EyeOff, Focus } from 'lucide-react';
 
-// ─── styles (inline — no extra CSS file needed) ────────────────────────────────
+const PANEL_BORDER = '1px solid rgba(255,255,255,0.08)';
+const ITEM_HEIGHT = 26;
+const ICON_INDENT = 16;
 
-const PANEL_BG      = 'rgba(10, 14, 23, 0.97)';
-const PANEL_BORDER  = '1px solid rgba(148,163,184,0.1)';
-const ITEM_HEIGHT   = 26;
-const ICON_INDENT   = 16;
-
-// ─── tree node ────────────────────────────────────────────────────────────────
+function findPath(root: NodeLayout, targetName: string): string[] | null {
+  if (root.name === targetName) return [root.name];
+  for (const child of root.children) {
+    const path = findPath(child, targetName);
+    if (path) return [root.name, ...path];
+  }
+  return null;
+}
 
 interface TreeNodeProps {
   node: NodeLayout;
@@ -34,7 +26,7 @@ interface TreeNodeProps {
 }
 
 const TreeNode: React.FC<TreeNodeProps> = ({ node, depth, expandedSet, toggleExpanded }) => {
-  const { selectedName, setSelectedName } = useSelection();
+  const { selectedName, setSelectedName, hiddenSet, toggleVisibility } = useSelection();
   const isSelected = selectedName === node.name;
   const isExpanded = expandedSet.has(node.name);
   const hasChildren = node.children.length > 0;
@@ -59,9 +51,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, depth, expandedSet, toggleExp
           height: ITEM_HEIGHT,
           paddingLeft: depth * ICON_INDENT + 6,
           cursor: 'pointer',
-          background: isSelected
-            ? 'rgba(34,211,238,0.15)'
-            : undefined,
+          background: isSelected ? 'rgba(34,211,238,0.15)' : undefined,
           borderLeft: isSelected ? '2px solid #22d3ee' : '2px solid transparent',
           userSelect: 'none',
           fontSize: 12,
@@ -71,51 +61,42 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, depth, expandedSet, toggleExp
         onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; }}
         onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = ''; }}
       >
-        {/* Expand/collapse arrow */}
         <span
           onClick={handleToggle}
           style={{
-            display: 'inline-flex',
-            width: 14,
-            height: 14,
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-            color: '#475569',
-            fontSize: 9,
+            display: 'inline-flex', width: 14, height: 14,
+            alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0, color: '#475569', fontSize: 9,
             transform: isExpanded ? 'rotate(90deg)' : 'none',
             transition: 'transform 0.15s ease',
             visibility: hasChildren ? 'visible' : 'hidden',
           }}
         >
-          ▶
+          <ChevronRight size={14} />
         </span>
-
-        {/* Type icon */}
         <TypeIcon type={node.type} />
-
-        {/* Name */}
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {node.name}
         </span>
-
-        {/* Type badge */}
         <span style={{ color: '#475569', fontSize: 10, marginLeft: 'auto', paddingRight: 6, flexShrink: 0 }}>
           {node.type}
         </span>
+        <span
+          onClick={(e) => { e.stopPropagation(); toggleVisibility(node.name); }}
+          style={{
+            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2px 4px',
+            color: hiddenSet.has(node.name) ? '#475569' : '#94a3b8',
+            opacity: hiddenSet.has(node.name) ? 0.5 : 1,
+          }}
+          title={hiddenSet.has(node.name) ? 'Show component' : 'Hide component'}
+        >
+          {hiddenSet.has(node.name) ? <EyeOff size={14} /> : <Eye size={14} />}
+        </span>
       </div>
-
-      {/* Children */}
       {hasChildren && isExpanded && (
         <div>
           {node.children.map(child => (
-            <TreeNode
-              key={child.name}
-              node={child}
-              depth={depth + 1}
-              expandedSet={expandedSet}
-              toggleExpanded={toggleExpanded}
-            />
+            <TreeNode key={child.name} node={child} depth={depth + 1} expandedSet={expandedSet} toggleExpanded={toggleExpanded} />
           ))}
         </div>
       )}
@@ -123,287 +104,256 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, depth, expandedSet, toggleExp
   );
 };
 
-// ─── type icon ────────────────────────────────────────────────────────────────
-
-const TYPE_ICONS: Record<string, string> = {
-  campus: '🏙',
-  station: '🏭',
-  block: '📦',
-  system: '⚙',
-  subsystem: '🔧',
-  generator: '⚡',
-  sensor: '📡',
-  controller: '🎛',
-  battery: '🔋',
-  motor: '🔩',
-  pump: '💧',
-  tank: '🫙',
-  alarm: '🔔',
-  toggle: '🔘',
-  thermometer: '🌡',
-};
-
-const TypeIcon: React.FC<{ type: string }> = ({ type }) => {
-  const t = (type || '').toLowerCase();
-  let icon = '◼';
-  for (const [key, val] of Object.entries(TYPE_ICONS)) {
-    if (t.includes(key)) { icon = val; break; }
-  }
-  return <span style={{ fontSize: 11, flexShrink: 0 }}>{icon}</span>;
-};
-
-// ─── property inspector ───────────────────────────────────────────────────────
-
-interface InspectorProps {
-  node: NodeLayout;
-  connections: ConnectionLayout[];
-}
-
-const PropertyInspector: React.FC<InspectorProps> = ({ node, connections }) => {
-  const nodeConnections = connections.filter(
-    c => c.source === node.name || c.target === node.name
-  );
-
-  const specEntries = Object.entries(node.spec).filter(
-    ([k]) => !['dummy'].includes(k)
-  );
-
-  return (
-    <div style={{
-      padding: '12px 14px',
-      fontSize: 12,
-      color: '#94a3b8',
-      fontFamily: 'monospace',
-    }}>
-      {/* Header */}
-      <div style={{
-        fontWeight: 700,
-        fontSize: 13,
-        color: '#e2e8f0',
-        marginBottom: 8,
-        paddingBottom: 8,
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: 6,
-      }}>
-        <TypeIcon type={node.type} />
-        {node.name}
-      </div>
-
-      <Row label="Type" value={node.type} />
-
-      {/* Position */}
-      <SectionHeader>Position</SectionHeader>
-      <Row label="X" value={node.position[0].toFixed(2)} />
-      <Row label="Y" value={node.position[1].toFixed(2)} />
-      <Row label="Z" value={node.position[2].toFixed(2)} />
-
-      {/* Dimensions */}
-      <SectionHeader>Dimensions</SectionHeader>
-      <Row label="Width"  value={node.dims.width.toFixed(2)} />
-      <Row label="Height" value={node.dims.height.toFixed(2)} />
-      <Row label="Depth"  value={node.dims.depth.toFixed(2)} />
-
-      {/* Spec properties */}
-      {specEntries.length > 0 && (
-        <>
-          <SectionHeader>Properties</SectionHeader>
-          {specEntries.map(([k, v]) => (
-            <Row key={k} label={k} value={String(v)} />
-          ))}
-        </>
-      )}
-
-      {/* Connections */}
-      {nodeConnections.length > 0 && (
-        <>
-          <SectionHeader>Connections</SectionHeader>
-          {nodeConnections.map(c => (
-            <div key={c.id} style={{ paddingLeft: 8, marginBottom: 3, color: '#64748b', fontSize: 11 }}>
-              <span style={{ color: '#b87333' }}>
-                {c.visual === 'wire' ? '━' : c.visual === 'hallway' ? '▬' : '▭'}
-              </span>{' '}
-              {c.source === node.name ? `→ ${c.target}` : `← ${c.source}`}
-              <span style={{ color: '#475569' }}> ({c.connectionType})</span>
-            </div>
-          ))}
-        </>
-      )}
-
-      {/* Tags */}
-      {node.tags.length > 0 && (
-        <>
-          <SectionHeader>Tags</SectionHeader>
-          <div style={{ paddingLeft: 8, color: '#64748b', fontSize: 11 }}>
-            {node.tags.join(', ')}
-          </div>
-        </>
-      )}
-    </div>
-  );
-};
-
-const SectionHeader: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <div style={{
-    marginTop: 10,
-    marginBottom: 4,
-    fontSize: 10,
-    textTransform: 'uppercase',
-    letterSpacing: '0.08em',
-    color: '#475569',
-    borderBottom: '1px solid rgba(255,255,255,0.05)',
-    paddingBottom: 3,
-  }}>
-    {children}
-  </div>
-);
-
-const Row: React.FC<{ label: string; value: string }> = ({ label, value }) => (
-  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 3, gap: 8 }}>
-    <span style={{ color: '#64748b', flexShrink: 0 }}>{label}</span>
-    <span style={{ color: '#cbd5e1', textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-      {value}
-    </span>
-  </div>
-);
-
-// ─── find node by name ────────────────────────────────────────────────────────
-
-function findNode(root: NodeLayout, name: string): NodeLayout | null {
-  if (root.name === name) return root;
-  for (const child of root.children) {
-    const found = findNode(child, name);
-    if (found) return found;
-  }
-  return null;
-}
-
-// ─── main panel ───────────────────────────────────────────────────────────────
-
 export interface HierarchyPanelProps {
   root: NodeLayout;
   connections: ConnectionLayout[];
+  componentsInteractable: boolean;
+  connectionsInteractable: boolean;
+  onComponentsInteractableChange?: (val: boolean) => void;
+  onConnectionsInteractableChange?: (val: boolean) => void;
+  hideAllComponents?: boolean;
+  hideAllConnections?: boolean;
+  onHideAllComponentsChange?: (val: boolean) => void;
+  onHideAllConnectionsChange?: (val: boolean) => void;
   collapsed?: boolean;
   onToggleCollapse?: () => void;
+  liveStateRef?: any;
+  onResetCamera?: () => void;
 }
 
 export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
-  root, connections, collapsed = false, onToggleCollapse,
+  root, connections, componentsInteractable, connectionsInteractable,
+  onComponentsInteractableChange, onConnectionsInteractableChange,
+  hideAllComponents, hideAllConnections,
+  onHideAllComponentsChange, onHideAllConnectionsChange,
+  onResetCamera
 }) => {
+  const [activeView, setActiveView] = useState<'hierarchy' | 'connections' | 'interactivity' | null>('hierarchy');
   const { selectedName } = useSelection();
-  const selectedNode = useMemo(
-    () => (selectedName ? findNode(root, selectedName) : null),
-    [root, selectedName]
-  );
+  const isOpen = activeView !== null;
 
-  // All nodes start collapsed; root expanded by default.
-  const [expandedSet, setExpandedSet] = useState<Set<string>>(
-    () => new Set([root.name])
-  );
+  const [panelWidth, setPanelWidth] = useState(300);
+  const isResizing = React.useRef(false);
+
+  useEffect(() => {
+    const handlePointerMove = (e: PointerEvent) => {
+      if (!isResizing.current) return;
+      const newWidth = window.innerWidth - e.clientX;
+      if (newWidth >= 200 && newWidth <= 600) {
+        setPanelWidth(newWidth);
+      }
+    };
+    const handlePointerUp = () => {
+      if (isResizing.current) {
+        isResizing.current = false;
+        document.body.style.cursor = '';
+      }
+    };
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+    };
+  }, []);
+
+  const startResizing = (e: React.PointerEvent) => {
+    e.preventDefault();
+    isResizing.current = true;
+    document.body.style.cursor = 'col-resize';
+  };
+
+  const [expandedSet, setExpandedSet] = useState<Set<string>>(new Set([root.name]));
 
   const toggleExpanded = useCallback((name: string) => {
     setExpandedSet(prev => {
       const next = new Set(prev);
-      if (next.has(name)) next.delete(name); else next.add(name);
+      if (next.has(name)) next.delete(name);
+      else next.add(name);
       return next;
     });
   }, []);
 
-  const panelWidth = collapsed ? 40 : 280;
+  const getAllNodesWithChildren = (node: any, set: Set<string>) => {
+    if (node.children && node.children.length > 0) {
+      set.add(node.name);
+      for (const child of node.children) {
+        getAllNodesWithChildren(child, set);
+      }
+    }
+  };
+
+  const expandAllHierarchy = () => {
+    const next = new Set<string>();
+    getAllNodesWithChildren(root, next);
+    setExpandedSet(next);
+  };
+
+  const collapseAllHierarchy = () => {
+    setExpandedSet(new Set([root.name]));
+  };
+
+  const allExpandableNodes = useMemo(() => {
+    const set = new Set<string>();
+    getAllNodesWithChildren(root, set);
+    return set;
+  }, [root]);
+
+  const allHierarchyExpanded = allExpandableNodes.size > 0 && 
+    Array.from<string>(allExpandableNodes).every(name => expandedSet.has(name));
+
+  // Context-aware auto-expand
+  useEffect(() => {
+    if (selectedName && activeView === 'hierarchy' && isOpen) {
+      const path = findPath(root, selectedName);
+      if (path) {
+        setExpandedSet(prev => {
+          const next = new Set(prev);
+          let changed = false;
+          for (const p of path) {
+            if (!next.has(p)) {
+              next.add(p);
+              changed = true;
+            }
+          }
+          return changed ? next : prev;
+        });
+      }
+    }
+  }, [selectedName, root, activeView, isOpen]);
+
+  const toggleView = (view: 'hierarchy' | 'connections' | 'interactivity') => {
+    if (activeView === view) setActiveView(null);
+    else setActiveView(view);
+  };
+
+  const IconBtn = ({ icon, active, onClick, title }: any) => (
+    <div 
+      onClick={onClick}
+      title={title}
+      style={{
+        width: '100%', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        cursor: 'pointer', color: active ? '#e2e8f0' : '#475569',
+        borderLeft: active ? '2px solid #38bdf8' : '2px solid transparent',
+        background: active ? 'rgba(255,255,255,0.05)' : 'transparent',
+      }}
+    >
+      {icon}
+    </div>
+  );
 
   return (
     <div style={{
-      position: 'absolute',
-      top: 0,
-      right: 0,
-      bottom: 0,
-      width: panelWidth,
-      display: 'flex',
-      flexDirection: 'column',
-      background: PANEL_BG,
-      borderLeft: PANEL_BORDER,
-      backdropFilter: 'blur(12px)',
-      zIndex: 10,
-      transition: 'width 0.2s ease',
-      overflow: 'hidden',
+      position: 'absolute', right: 0, top: 0, bottom: 0,
+      display: 'flex', flexDirection: 'row', zIndex: 20,
+      pointerEvents: 'none',
     }}>
-      {/* Panel header */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '10px 12px',
-        borderBottom: PANEL_BORDER,
-        flexShrink: 0,
-      }}>
-        {!collapsed && (
-          <span style={{ color: '#93c5fd', fontSize: 12, fontWeight: 700, fontFamily: 'system-ui', letterSpacing: '0.04em' }}>
-            HIERARCHY
-          </span>
-        )}
-        <button
-          onClick={onToggleCollapse}
-          title={collapsed ? 'Expand panel' : 'Collapse panel'}
-          style={{
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            color: '#475569',
-            fontSize: 14,
-            padding: '2px 4px',
-            marginLeft: 'auto',
-            lineHeight: 1,
-          }}
-        >
-          {collapsed ? '«' : '»'}
-        </button>
-      </div>
-
-      {!collapsed && (
-        <>
-          {/* Tree area */}
-          <div style={{
-            flex: selectedNode ? '0 0 55%' : '1 1 auto',
-            overflowY: 'auto',
-            overflowX: 'hidden',
-            paddingTop: 4,
-            paddingBottom: 8,
-          }}>
-            <TreeNode
-              node={root}
-              depth={0}
-              expandedSet={expandedSet}
-              toggleExpanded={toggleExpanded}
-            />
+      {/* Panel Area */}
+      {isOpen && (
+        <div style={{
+          position: 'relative', width: panelWidth, background: 'rgba(15, 23, 42, 0.95)', backdropFilter: 'blur(8px)',
+          borderLeft: PANEL_BORDER, display: 'flex', flexDirection: 'column',
+          pointerEvents: 'auto', boxShadow: '-4px 0 15px rgba(0,0,0,0.3)',
+        }}>
+          {/* Resizer Handle */}
+          <div
+            onPointerDown={startResizing}
+            onMouseEnter={(e) => { (e.target as HTMLDivElement).style.background = 'rgba(56, 189, 248, 0.4)'; }}
+            onMouseLeave={(e) => { (e.target as HTMLDivElement).style.background = 'transparent'; }}
+            style={{
+              position: 'absolute', left: 0, top: 0, bottom: 0, width: 5,
+              cursor: 'col-resize', zIndex: 30, background: 'transparent',
+              transition: 'background 0.2s',
+            }}
+          />
+          <div style={{ padding: '10px 14px', borderBottom: PANEL_BORDER, fontWeight: 600, fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+             <span>
+               {activeView === 'hierarchy' ? 'Hierarchy Tree' : 
+                activeView === 'connections' ? 'Connections List' : 
+                'Settings'}
+             </span>
+             {activeView === 'hierarchy' && (
+               <div style={{ display: 'flex', gap: 4, textTransform: 'none', letterSpacing: 'normal', fontWeight: 500 }}>
+                  {allHierarchyExpanded ? (
+                    <button onClick={collapseAllHierarchy} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', color: '#94a3b8', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}>Collapse All</button>
+                  ) : (
+                    <button onClick={expandAllHierarchy} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', color: '#94a3b8', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}>Expand All</button>
+                  )}
+               </div>
+             )}
           </div>
-
-          {/* Inspector area — visible only when something is selected */}
-          {selectedNode && (
-            <div style={{
-              flex: '1 1 auto',
-              borderTop: PANEL_BORDER,
-              overflowY: 'auto',
-              overflowX: 'hidden',
-            }}>
-              {/* Inspector header */}
-              <div style={{
-                padding: '6px 14px',
-                fontSize: 10,
-                color: '#475569',
-                textTransform: 'uppercase',
-                letterSpacing: '0.08em',
-                borderBottom: '1px solid rgba(255,255,255,0.05)',
-                flexShrink: 0,
-                background: 'rgba(255,255,255,0.02)',
-              }}>
-                Inspector
-              </div>
-              <PropertyInspector node={selectedNode} connections={connections} />
-            </div>
-          )}
-        </>
+          <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
+             {activeView === 'hierarchy' && <TreeNode node={root} depth={0} expandedSet={expandedSet} toggleExpanded={toggleExpanded} />}
+             {activeView === 'connections' && <ConnectionsList connections={connections} />}
+             {activeView === 'interactivity' && (
+               <div style={{ padding: '16px 14px', fontSize: 13, color: '#e2e8f0', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                 <div style={{ fontWeight: 600, color: '#94a3b8', fontSize: 11, textTransform: 'uppercase', marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                   <span>Interactivity</span>
+                   <input 
+                     type="checkbox" 
+                     checked={componentsInteractable && connectionsInteractable} 
+                     onChange={(e) => {
+                       const checked = e.target.checked;
+                       onComponentsInteractableChange?.(checked);
+                       onConnectionsInteractableChange?.(checked);
+                     }}
+                     style={{ cursor: 'pointer', accentColor: '#2563eb' }}
+                   />
+                 </div>
+                 <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                   <span>Components Interactable</span>
+                   <input type="checkbox" checked={componentsInteractable} onChange={(e) => onComponentsInteractableChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: '#38bdf8' }} />
+                 </label>
+                 <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                   <span>Connections Interactable</span>
+                   <input type="checkbox" checked={connectionsInteractable} onChange={(e) => onConnectionsInteractableChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: '#38bdf8' }} />
+                 </label>
+                 
+                 <div style={{ fontWeight: 600, color: '#94a3b8', fontSize: 11, textTransform: 'uppercase', marginTop: 12, marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                   <span>View</span>
+                   <input 
+                     type="checkbox" 
+                     checked={!!hideAllComponents && !!hideAllConnections} 
+                     onChange={(e) => {
+                       const checked = e.target.checked;
+                       onHideAllComponentsChange?.(checked);
+                       onHideAllConnectionsChange?.(checked);
+                     }}
+                     style={{ cursor: 'pointer', accentColor: '#2563eb' }}
+                   />
+                 </div>
+                 <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                   <span>Hide All Components</span>
+                   <input type="checkbox" checked={!!hideAllComponents} onChange={(e) => onHideAllComponentsChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: '#38bdf8' }} />
+                 </label>
+                 <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                   <span>Hide All Connections</span>
+                   <input type="checkbox" checked={!!hideAllConnections} onChange={(e) => onHideAllConnectionsChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: '#38bdf8' }} />
+                 </label>
+               </div>
+             )}
+          </div>
+        </div>
       )}
+      
+      {/* Activity Bar */}
+      <div style={{
+        width: 48, background: 'rgba(15, 23, 42, 1)', borderLeft: PANEL_BORDER,
+        display: 'flex', flexDirection: 'column', alignItems: 'center',
+        paddingTop: 8, pointerEvents: 'auto',
+      }}>
+        <IconBtn icon={<Network size={20} />} active={activeView === 'hierarchy'} onClick={() => toggleView('hierarchy')} title="Hierarchy" />
+        <IconBtn icon={<Link2 size={20} />} active={activeView === 'connections'} onClick={() => toggleView('connections')} title="Connections" />
+        <IconBtn icon={<Sliders size={20} />} active={activeView === 'interactivity'} onClick={() => toggleView('interactivity')} title="Settings" />
+        
+        <div style={{ flex: 1 }} /> {/* spacer */}
+        
+        {onResetCamera && (
+          <div style={{ marginBottom: 16 }}>
+            <IconBtn icon={<Focus size={20} />} onClick={onResetCamera} title="Reset View" />
+          </div>
+        )}
+      </div>
     </div>
   );
 };

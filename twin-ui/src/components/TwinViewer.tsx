@@ -118,9 +118,20 @@ const SceneLights: React.FC<SceneLightsProps> = ({ mode }) => {
 
 // ─── hover manager ────────────────────────────────────────────────────────────
 
-const HoverManager: React.FC<{ children: ReactNode }> = ({ children }) => {
+interface HoverManagerProps {
+  children: ReactNode;
+  onHoverChange?: (name: string | null) => void;
+  hoveredNameRef: React.MutableRefObject<string | null>;
+  componentsInteractable: boolean;
+  connectionsInteractable: boolean;
+}
+
+const HoverManager: React.FC<HoverManagerProps> = ({ 
+  children, onHoverChange, hoveredNameRef, componentsInteractable, connectionsInteractable 
+}) => {
   const [hoveredName, setHoveredName] = useState<string | null>(null);
-  const prevRef = useRef<string | null>(null);
+  const { gl } = useThree();
+  const { selectedName, setSelectedName } = React.useContext(SelectionContext);
 
   useFrame(({ raycaster, scene }) => {
     const intersects = raycaster.intersectObjects(scene.children, true);
@@ -129,34 +140,82 @@ const HoverManager: React.FC<{ children: ReactNode }> = ({ children }) => {
     let bestName: string | null = null;
 
     for (const hit of intersects) {
+      let curr: any = hit.object;
+      let isVisible = true;
+      while (curr) {
+        if (curr.visible === false) {
+          isVisible = false;
+          break;
+        }
+        curr = curr.parent;
+      }
+      if (!isVisible) continue;
+
       const ud = hit.object.userData;
       if (typeof ud?.componentName !== 'string') continue;
       if (typeof ud?.depth !== 'number') continue;
+      
+      const isConn = !!ud.isConnection;
+      if (isConn && !connectionsInteractable) continue;
+      if (!isConn && !componentsInteractable) continue;
+
       if (ud.depth > maxDepth) {
         maxDepth = ud.depth;
         bestName = ud.componentName;
       }
     }
 
-    if (bestName !== prevRef.current) {
-      prevRef.current = bestName;
+    if (bestName !== hoveredNameRef.current) {
+      hoveredNameRef.current = bestName;
       setHoveredName(bestName);
+      if (onHoverChange) onHoverChange(bestName);
     }
   });
+
+  // Pointer drag check (delta distance)
+  useEffect(() => {
+    const el = gl.domElement;
+    let downPos = { x: 0, y: 0 };
+
+    const onPointerDown = (e: PointerEvent) => {
+      downPos = { x: e.clientX, y: e.clientY };
+    };
+
+    const onClick = (e: MouseEvent) => {
+      const dx = e.clientX - downPos.x;
+      const dy = e.clientY - downPos.y;
+      if (Math.sqrt(dx * dx + dy * dy) > 4) {
+        return; // Dragged, so ignore click
+      }
+      const clickedName = hoveredNameRef.current;
+      if (clickedName === selectedName) {
+        setSelectedName(null);
+      } else {
+        setSelectedName(clickedName);
+      }
+    };
+
+    el.addEventListener('pointerdown', onPointerDown);
+    el.addEventListener('click', onClick);
+    return () => {
+      el.removeEventListener('pointerdown', onPointerDown);
+      el.removeEventListener('click', onClick);
+    };
+  }, [gl, setSelectedName, selectedName, hoveredNameRef]);
 
   useEffect(() => {
     document.body.style.cursor = hoveredName ? 'pointer' : '';
     return () => { document.body.style.cursor = ''; };
   }, [hoveredName]);
 
-  return (
-    <HoverContext.Provider value={{ hoveredName }}>
-      {children}
-    </HoverContext.Provider>
-  );
+  return <>{children}</>;
 };
 
 // ─── viewer ───────────────────────────────────────────────────────────────────
+
+import { SelectionProvider } from './SelectionContext';
+import { LeftUIStack } from './LeftUIStack';
+import { HoverCard } from './HoverCard';
 
 interface TwinViewerProps {
   topology: any;
@@ -165,6 +224,14 @@ interface TwinViewerProps {
   lightingMode?: LightingMode;
   selectedName?: string | null;
   onSelectName?: (name: string | null) => void;
+  onHoverChange?: (name: string | null) => void;
+  onConnectionHoverChange?: (conn: any | null) => void;
+  componentsInteractable?: boolean;
+  connectionsInteractable?: boolean;
+  onComponentsInteractableChange?: (val: boolean) => void;
+  onConnectionsInteractableChange?: (val: boolean) => void;
+  containerOcclusion?: 'off' | 'off_on_hover';
+  children?: ReactNode; // For the HUD overlay
 }
 
 export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
@@ -172,71 +239,230 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
   lightingMode = 'dynamic',
   selectedName = null,
   onSelectName,
+  onHoverChange,
+  onConnectionHoverChange,
+  componentsInteractable = true,
+  connectionsInteractable = true,
+  onComponentsInteractableChange,
+  onConnectionsInteractableChange,
+  containerOcclusion = 'off',
+  children,
 }) => {
-  if (!topology) {
-    return <div style={{ color: 'white', padding: 24 }}>No topology provided.</div>;
-  }
-
-  // Build layout + connections once; recompute only when topology / spec change.
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const sceneLayout = useMemo(
-    () => buildSceneLayout(topology, specification),
+    () => {
+      try {
+        return buildSceneLayout(topology, specification);
+      } catch (err) {
+        console.error("Layout error:", err);
+        return { root: null, connections: [], allNodes: new Map<string, any>() };
+      }
+    },
     [topology, specification]
   );
 
-  // Internal selection state (if no external handler provided).
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  const [internalSelected, setInternalSelected] = useState<string | null>(null);
-  const effectiveSelected = onSelectName ? selectedName : internalSelected;
-  const effectiveSetSelected = onSelectName ?? setInternalSelected;
 
-  const selectionValue = useMemo(
-    () => ({ selectedName: effectiveSelected, setSelectedName: effectiveSetSelected }),
-    [effectiveSelected, effectiveSetSelected]
-  );
+  const hoveredNameRef = useRef<string | null>(null);
+  const [internalHoveredName, setInternalHoveredName] = useState<string | null>(null);
 
-  const [hierarchyCollapsed, setHierarchyCollapsed] = useState(false);
+  const [internalComponentsInteractable, setInternalComponentsInteractable] = useState(true);
+  const [internalConnectionsInteractable, setInternalConnectionsInteractable] = useState(true);
+
+  const controlsRef = useRef<any>(null);
+
+  const handleResetCamera = React.useCallback(() => {
+    if (controlsRef.current) {
+      controlsRef.current.reset();
+    }
+  }, []);
+
+  const [hideAllComponents, setHideAllComponents] = useState(false);
+  const [hideAllConnections, setHideAllConnections] = useState(false);
+
+  const activeComponentsInteractable = onComponentsInteractableChange ? componentsInteractable : internalComponentsInteractable;
+  const activeConnectionsInteractable = onConnectionsInteractableChange ? connectionsInteractable : internalConnectionsInteractable;
+  
+  const handleComponentsInteractable = onComponentsInteractableChange || setInternalComponentsInteractable;
+  const handleConnectionsInteractable = onConnectionsInteractableChange || setInternalConnectionsInteractable;
+
+  const handleHoverChange = useMemo(() => (name: string | null) => {
+    setInternalHoveredName(name);
+    if (name && sceneLayout.connections.some((c: any) => c.id === name)) {
+      if (onConnectionHoverChange) onConnectionHoverChange(sceneLayout.connections.find((c: any) => c.id === name));
+      if (onHoverChange) onHoverChange(null);
+    } else {
+      if (onConnectionHoverChange) onConnectionHoverChange(null);
+      if (onHoverChange) onHoverChange(name);
+    }
+  }, [sceneLayout, onHoverChange, onConnectionHoverChange]);
+
+  const hoveredNodes = useMemo(() => {
+    const set = new Set<string>();
+    if (internalHoveredName) {
+      set.add(internalHoveredName);
+      const conn = sceneLayout.connections.find((c: any) => c.id === internalHoveredName);
+      if (conn) {
+        set.add(conn.source);
+        set.add(conn.target);
+      }
+    }
+    return set;
+  }, [internalHoveredName, sceneLayout.connections]);
+
+  const hoveredAncestors = useMemo(() => {
+    const set = new Set<string>();
+    if (internalHoveredName) {
+      const node = sceneLayout.allNodes.get(internalHoveredName);
+      if (node && node.ancestors) {
+        for (const anc of node.ancestors) {
+          set.add(anc);
+        }
+      }
+      const relatedConns = sceneLayout.connections.filter(
+        (c: any) => c.id === internalHoveredName || c.source === internalHoveredName || c.target === internalHoveredName
+      );
+      for (const conn of relatedConns) {
+        const srcNode = sceneLayout.allNodes.get(conn.source);
+        if (srcNode && srcNode.ancestors) {
+          for (const anc of srcNode.ancestors) set.add(anc);
+        }
+        const tgtNode = sceneLayout.allNodes.get(conn.target);
+        if (tgtNode && tgtNode.ancestors) {
+          for (const anc of tgtNode.ancestors) set.add(anc);
+        }
+      }
+    }
+    return set;
+  }, [internalHoveredName, sceneLayout.allNodes, sceneLayout.connections]);
+
+  const internalSelected = null;
+  const effectiveSelected = onSelectName !== undefined ? selectedName : internalSelected;
+  
+  const selectionNodes = useMemo(() => {
+    const set = new Set<string>();
+    if (effectiveSelected) {
+      set.add(effectiveSelected);
+      const conn = sceneLayout.connections.find((c: any) => c.id === effectiveSelected);
+      if (conn) {
+        set.add(conn.source);
+        set.add(conn.target);
+      }
+    }
+    return set;
+  }, [effectiveSelected, sceneLayout.connections]);
+
+  const selectedAncestors = useMemo(() => {
+    const set = new Set<string>();
+    if (effectiveSelected) {
+      const node = sceneLayout.allNodes.get(effectiveSelected);
+      if (node && node.ancestors) {
+        for (const anc of node.ancestors) {
+          set.add(anc);
+        }
+      }
+      const relatedConns = sceneLayout.connections.filter(
+        (c: any) => c.id === effectiveSelected || c.source === effectiveSelected || c.target === effectiveSelected
+      );
+      for (const conn of relatedConns) {
+        const srcNode = sceneLayout.allNodes.get(conn.source);
+        if (srcNode && srcNode.ancestors) {
+          for (const anc of srcNode.ancestors) set.add(anc);
+        }
+        const tgtNode = sceneLayout.allNodes.get(conn.target);
+        if (tgtNode && tgtNode.ancestors) {
+          for (const anc of tgtNode.ancestors) set.add(anc);
+        }
+      }
+    }
+    return set;
+  }, [effectiveSelected, sceneLayout.allNodes, sceneLayout.connections]);
+
+  if (!topology || !sceneLayout.root) {
+    return <div style={{ color: 'white', padding: 24 }}>No topology provided.</div>;
+  }
 
   return (
-    <SelectionContext.Provider value={selectionValue}>
-      <div style={{ width: '100%', height: '100%', background: '#0f172a', position: 'relative' }}>
-        <Canvas
-          camera={{ position: [14, 10, 14], fov: 50 }}
-          shadows={lightingMode !== 'off'}
-          gl={{ antialias: true }}
-        >
-          <color attach="background" args={['#0f172a']} />
+    <SelectionProvider externalSelection={onSelectName !== undefined ? [selectedName, onSelectName] : undefined}>
+      {/* Expose both HoverContext and update hoveredNodes to highlight selected connection source/targets */}
+      <HoverContext.Provider value={{ hoveredName: internalHoveredName, hoveredNodes: new Set([...hoveredNodes, ...selectionNodes]), hoveredAncestors, selectedAncestors }}>
+        <div style={{ width: '100%', height: '100%', background: '#0f172a', position: 'relative' }}>
+          <Canvas
+            camera={{ position: [35, 25, 35], fov: 50 }}
+            shadows={lightingMode !== 'off'}
+            gl={{ antialias: true }}
+          >
+            <color attach="background" args={['#0f172a']} />
 
-          <RaycasterConfig />
+            <RaycasterConfig />
 
-          {/* Key-driven: switching lightingMode unmounts the old lights cleanly */}
-          <SceneLights key={lightingMode} mode={lightingMode} />
+            <SceneLights key={lightingMode} mode={lightingMode} />
 
-          <Suspense fallback={null}>
-            <Environment preset="warehouse" />
-            <HoverManager>
-              <Bounds fit clip observe margin={1.3}>
-                <TwinNodeRenderer
-                  layout={sceneLayout.root}
-                  liveStateRef={liveStateRef}
-                  depth={0}
-                />
-                <ConnectionRenderer connections={sceneLayout.connections} />
-              </Bounds>
-            </HoverManager>
-          </Suspense>
+            <Suspense fallback={null}>
+              <Environment preset="warehouse" />
+              <HoverManager 
+                hoveredNameRef={hoveredNameRef} 
+                onHoverChange={handleHoverChange}
+                componentsInteractable={activeComponentsInteractable}
+                connectionsInteractable={activeConnectionsInteractable}
+              >
+                <Bounds fit clip margin={1.3}>
+                  {!hideAllComponents && (
+                    <TwinNodeRenderer
+                      layout={sceneLayout.root}
+                      depth={0}
+                      liveStateRef={liveStateRef}
+                      containerOcclusion={containerOcclusion}
+                    />
+                  )}
+                  {!hideAllConnections && (
+                    <ConnectionRenderer
+                      connections={sceneLayout.connections}
+                      root={sceneLayout.root}
+                    />
+                  )}
+                </Bounds>
+              </HoverManager>
+            </Suspense>
 
-          <OrbitControls makeDefault enablePan enableRotate enableZoom />
-          <gridHelper args={[60, 60, '#1e293b', '#0f172a']} position={[0, -0.02, 0]} />
-        </Canvas>
-        
-        <HierarchyPanel 
-          root={sceneLayout.root}
-          connections={sceneLayout.connections}
-          collapsed={hierarchyCollapsed}
-          onToggleCollapse={() => setHierarchyCollapsed(c => !c)}
-        />
-      </div>
-    </SelectionContext.Provider>
+            <OrbitControls ref={controlsRef} makeDefault enablePan enableRotate enableZoom />
+            <gridHelper args={[60, 60, '#1e293b', '#0f172a']} position={[0, -0.02, 0]} />
+          </Canvas>
+          
+          <LeftUIStack root={sceneLayout.root} connections={sceneLayout.connections} liveStateRef={liveStateRef}>
+            {children}
+          </LeftUIStack>
+
+          {effectiveSelected && (
+            <div style={{
+              position: 'absolute',
+              top: 16,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              zIndex: 100,
+            }}>
+              <HoverCard
+                root={sceneLayout.root}
+                connections={sceneLayout.connections}
+                liveStateRef={liveStateRef}
+                explicitName={effectiveSelected}
+              />
+            </div>
+          )}
+
+          <HierarchyPanel 
+            root={sceneLayout.root}
+            connections={sceneLayout.connections}
+            componentsInteractable={activeComponentsInteractable}
+            connectionsInteractable={activeConnectionsInteractable}
+            onComponentsInteractableChange={handleComponentsInteractable}
+            onConnectionsInteractableChange={handleConnectionsInteractable}
+            hideAllComponents={hideAllComponents}
+            hideAllConnections={hideAllConnections}
+            onHideAllComponentsChange={setHideAllComponents}
+            onHideAllConnectionsChange={setHideAllConnections}
+            onResetCamera={handleResetCamera}
+          />
+        </div>
+      </HoverContext.Provider>
+    </SelectionProvider>
   );
 });

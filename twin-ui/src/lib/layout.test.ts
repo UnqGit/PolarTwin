@@ -21,7 +21,6 @@ import { describe, it, expect } from 'vitest';
 import {
   buildLayout,
   buildSceneLayout,
-  resolveConnectionVisual,
   type NodeLayout,
 } from '../lib/layout';
 

@@ -1,39 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo, useContext } from 'react';
 import * as THREE from 'three';
-import { Html, Text } from '@react-three/drei';
-import type { ConnectionLayout } from '../lib/layout';
 
-// ─── path utilities ───────────────────────────────────────────────────────────
-
-/** Compute the midpoint of a multi-segment path for tooltip placement. */
-function pathMidpoint(path: [number, number, number][]): [number, number, number] {
-  if (path.length === 0) return [0, 0, 0];
-  if (path.length === 1) return path[0];
-  // Compute total length and find the halfway point.
-  let totalLen = 0;
-  const segLens: number[] = [];
-  for (let i = 0; i < path.length - 1; i++) {
-    const dx = path[i + 1][0] - path[i][0];
-    const dy = path[i + 1][1] - path[i][1];
-    const dz = path[i + 1][2] - path[i][2];
-    const len = Math.sqrt(dx * dx + dy * dy + dz * dz);
-    segLens.push(len);
-    totalLen += len;
-  }
-  let target = totalLen / 2;
-  for (let i = 0; i < segLens.length; i++) {
-    if (target <= segLens[i]) {
-      const t = segLens[i] > 0 ? target / segLens[i] : 0;
-      return [
-        path[i][0] + (path[i + 1][0] - path[i][0]) * t,
-        path[i][1] + (path[i + 1][1] - path[i][1]) * t,
-        path[i][2] + (path[i + 1][2] - path[i][2]) * t,
-      ];
-    }
-    target -= segLens[i];
-  }
-  return path[path.length - 1];
-}
+import type { ConnectionLayout, NodeLayout } from '../lib/layout';
+import { useSelection } from './SelectionContext';
+import { HoverContext } from './HoverContext';
 
 /** Build per-segment geometry data for beam connections. */
 interface SegmentData {
@@ -58,46 +28,6 @@ function buildSegments(path: [number, number, number][]): SegmentData[] {
   return segs;
 }
 
-// ─── shared tooltip ───────────────────────────────────────────────────────────
-
-interface TooltipProps {
-  connection: ConnectionLayout;
-  accentColor: string;
-  midPos: [number, number, number];
-}
-
-const ConnectionTooltip: React.FC<TooltipProps> = ({
-  connection, accentColor, midPos,
-}) => (
-  <Html
-    position={[midPos[0], midPos[1] + 1.0, midPos[2]]}
-    center
-    style={{ pointerEvents: 'none' }}
-  >
-    <div style={{
-      background: 'rgba(10,12,20,0.94)',
-      backdropFilter: 'blur(10px)',
-      border: `1px solid ${accentColor}55`,
-      borderRadius: 7,
-      padding: '7px 12px',
-      color: '#f1f5f9',
-      fontFamily: 'system-ui, sans-serif',
-      fontSize: 11,
-      whiteSpace: 'nowrap',
-      boxShadow: '0 6px 24px rgba(0,0,0,0.5)',
-    }}>
-      <div style={{ fontWeight: 700, color: accentColor, marginBottom: 3 }}>
-        {connection.connectionType} connection
-      </div>
-      <div style={{ color: '#cbd5e1' }}>
-        {connection.source}{' '}
-        <span style={{ color: '#475569' }}>{connection.direction}</span>{' '}
-        {connection.target}
-      </div>
-    </div>
-  </Html>
-);
-
 // ─── unified connection geometry ──────────────────────────────────────────────
 
 interface UnifiedConnectionProps {
@@ -105,101 +35,130 @@ interface UnifiedConnectionProps {
 }
 
 const UnifiedConnection: React.FC<UnifiedConnectionProps> = ({ connection }) => {
-  const [hovered, setHovered] = useState(false);
+  const { hoveredName } = useContext(HoverContext);
+  const { selectedName, hiddenSet } = useSelection();
+  
+  const hovered = hoveredName === connection.id;
+  const selected = selectedName === connection.id;
+  const isHidden = hiddenSet.has(connection.id);
+
   const path = connection.path;
   const profile = connection.profile;
   const beamWidth = profile.width;
   const beamThickness = profile.height as number;
 
-  const { segments, mid, capSize } = useMemo(() => {
+  const { segments, capSize } = useMemo(() => {
     return {
       segments: buildSegments(path),
-      mid: pathMidpoint(path),
       capSize: beamWidth,
     };
   }, [path, beamWidth]);
 
   const color = profile.color ?? '#6b7280';
-  const hoverColor = '#93c5fd';
-  const matColor = hovered ? hoverColor : color;
+  const hoverColor = '#fde047'; // yellow for hover
+  const selectedColor = '#f59e0b'; // amber for selected
+  const matColor = selected ? selectedColor : hovered ? hoverColor : color;
+  
+  // To ensure hovered/selected connections are clearly visible even when overlapping:
+  // 1. Draw them last (higher renderOrder)
+  // 2. Disable depthTest so they draw over everything
+  // 3. Make them slightly thicker
+  const renderOrd = hovered || selected ? 10 : 0;
+  const isHighlighted = hovered || selected;
+  const type = (connection.connectionType || '').toLowerCase();
+  const expandWidth = type !== 'road';
+  const expandHeight = type !== 'hallway';
+  
+  const currentBeamWidth = isHighlighted && expandWidth ? beamWidth * 1.6 : beamWidth;
+  const currentBeamThickness = isHighlighted && expandHeight ? beamThickness * 1.6 : beamThickness;
+  const currentCapSize = isHighlighted && expandWidth ? capSize * 1.6 : capSize;
+
+  // Add userData to participate in TwinViewer's global HoverManager raycast loop
+  const userData = useMemo(() => ({ componentName: connection.id, depth: 999, isConnection: true }), [connection.id]);
 
   return (
-    <group
-      onPointerOver={(e) => { e.stopPropagation(); setHovered(true); }}
-      onPointerOut={(e)  => { e.stopPropagation(); setHovered(false); }}
-    >
+    <group visible={!isHidden}>
       {/* One box per path segment */}
       {segments.map((seg, i) => (
-        <mesh
-          key={`seg-${i}`}
-          position={seg.midPos.toArray() as [number, number, number]}
-          quaternion={seg.quaternion}
-        >
-          <boxGeometry args={[beamWidth, beamThickness, seg.length]} />
-          <meshStandardMaterial
-            color={matColor}
-            metalness={0.05}
-            roughness={0.95}
-            transparent
-            opacity={0.88}
-            depthWrite={false}
-          />
-        </mesh>
+        <group key={`seg-${i}`} position={seg.midPos.toArray() as [number, number, number]} quaternion={seg.quaternion}>
+          {/* HITBOX MESH: Constant size, invisible to eye, contains userData */}
+          <mesh userData={userData}>
+            <boxGeometry args={[beamWidth, beamThickness, seg.length]} />
+            <meshBasicMaterial transparent opacity={0} depthWrite={false} color="#ff0000" />
+          </mesh>
+          {/* VISUAL MESH: Scales up on hover, ignored by raycaster (no userData) */}
+          <mesh renderOrder={renderOrd}>
+            <boxGeometry args={[currentBeamWidth, currentBeamThickness, seg.length]} />
+            <meshStandardMaterial
+              color={matColor}
+              metalness={0.05}
+              roughness={0.95}
+              transparent
+              opacity={isHighlighted ? 1 : 0.88}
+              depthWrite={false}
+              depthTest={!isHighlighted}
+            />
+          </mesh>
+        </group>
       ))}
 
       {/* Square corner joints at every bend point to eliminate gaps */}
       {path.slice(1, -1).map((pt, i) => (
-        <mesh
-          key={`joint-${i}`}
-          position={pt}
-        >
-          <boxGeometry args={[capSize, beamThickness, capSize]} />
-          <meshStandardMaterial
-            color={matColor}
-            metalness={0.05}
-            roughness={0.95}
-            transparent
-            opacity={0.88}
-            depthWrite={false}
-          />
-        </mesh>
+        <group key={`joint-${i}`} position={pt}>
+          {/* HITBOX MESH */}
+          <mesh userData={userData}>
+            <boxGeometry args={[capSize, beamThickness, capSize]} />
+            <meshBasicMaterial transparent opacity={0} depthWrite={false} color="#ff0000" />
+          </mesh>
+          {/* VISUAL MESH */}
+          <mesh renderOrder={renderOrd}>
+            <boxGeometry args={[currentCapSize, currentBeamThickness, currentCapSize]} />
+            <meshStandardMaterial
+              color={matColor}
+              metalness={0.05}
+              roughness={0.95}
+              transparent
+              opacity={isHighlighted ? 1 : 0.88}
+              depthWrite={false}
+              depthTest={!isHighlighted}
+            />
+          </mesh>
+        </group>
       ))}
-
-      {/* 3D Label attached to the geometry */}
-      <Text
-        position={[mid[0], mid[1] + (beamThickness / 2) + 0.05, mid[2]]}
-        rotation={[-Math.PI / 2, 0, 0]}
-        fontSize={Math.max(0.2, beamWidth * 0.4)}
-        color={hovered ? '#ffffff' : '#e2e8f0'}
-        anchorX="center"
-        anchorY="middle"
-        outlineWidth={0.02}
-        outlineColor="#000000"
-      >
-        {connection.connectionType}
-      </Text>
-
-      {hovered && (
-        <ConnectionTooltip
-          connection={connection}
-          accentColor={hoverColor}
-          midPos={mid}
-        />
-      )}
     </group>
   );
 };
 
-// ─── public component ─────────────────────────────────────────────────────────
-
 export interface ConnectionRendererProps {
   connections: ConnectionLayout[];
+  root: NodeLayout;
 }
 
-export const ConnectionRenderer: React.FC<ConnectionRendererProps> = ({ connections }) => (
-  <>
-    {connections.map((conn) => (
-      <UnifiedConnection key={conn.id} connection={conn} />
-    ))}
-  </>
-);
+export const ConnectionRenderer: React.FC<ConnectionRendererProps> = ({ connections, root }) => {
+  const { hiddenSet } = useSelection();
+  
+  const hiddenAndDescendants = useMemo(() => {
+    const set = new Set<string>();
+    const traverse = (node: NodeLayout, implicitlyHidden: boolean) => {
+      const isHidden = implicitlyHidden || hiddenSet.has(node.name);
+      if (isHidden) {
+        set.add(node.name);
+      }
+      node.children.forEach(c => traverse(c, isHidden));
+    };
+    traverse(root, false);
+    return set;
+  }, [root, hiddenSet]);
+
+  const visibleConnections = useMemo(() => {
+    return connections.filter(c => !hiddenAndDescendants.has(c.source) && !hiddenAndDescendants.has(c.target));
+  }, [connections, hiddenAndDescendants]);
+
+  return (
+    <group name="ConnectionRendererGroup">
+      {visibleConnections.map((conn) => (
+        <UnifiedConnection key={conn.id} connection={conn} />
+      ))}
+    </group>
+  );
+};

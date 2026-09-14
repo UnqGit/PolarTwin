@@ -96,30 +96,31 @@ export interface ConnectionLayout {
 export interface SceneLayout {
   root: NodeLayout;
   connections: ConnectionLayout[];
+  allNodes: Map<string, NodeInfo>;
 }
 
 // ─── constants ────────────────────────────────────────────────────────────────
 
 const CHILD_GAP = 0.6;   // XZ spacing between siblings inside a container
-const PADDING   = 0.8;   // extra space added around children when sizing parent
+const PADDING = 0.8;   // extra space added around children when sizing parent
 
 /** Y coordinate of the ground / connection plane.
  *  gridHelper sits at Y = -0.02 so ground is definitively Y = 0. */
 const GROUND_Y = 0;
 
 /** Margin added around each component AABB when treating it as a routing obstacle.
- *  Keeps connections clear of component walls rather than flush against them. */
-const OBSTACLE_MARGIN = 0.25;
+ *  Reduced to 0.1 to allow tight routing between components without choking gaps. */
+const OBSTACLE_MARGIN = 0.1;
 
 /** Grid cell size in world units for the A* router. */
-const GRID_CELL = 0.8;
+const GRID_CELL = 0.4;
 
 /** Extra bends are acceptable but gently penalised. */
 const BEND_COST = 2;
 
 /** Cost for entering a cell that overlaps with an existing connection path.
  *  Secondary — avoidance is preferable but not mandatory. */
-const OVERLAP_COST = 3;
+const OVERLAP_COST = 0;
 
 /**
  * Type-specific leaf dimensions.
@@ -127,15 +128,15 @@ const OVERLAP_COST = 3;
  * Keys are matched as substrings of the component type (case-insensitive).
  */
 const TYPE_DEFAULTS: Record<string, Dims> = {
-  generator:   { width: 2.4, height: 1.8, depth: 1.6 },
-  sensor:      { width: 0.6, height: 0.6, depth: 0.6 },
-  controller:  { width: 1.2, height: 0.8, depth: 1.0 },
-  battery:     { width: 1.0, height: 1.6, depth: 0.8 },
-  motor:       { width: 1.2, height: 1.2, depth: 1.4 },
-  pump:        { width: 1.0, height: 1.0, depth: 1.0 },
-  tank:        { width: 1.4, height: 2.0, depth: 1.4 },
-  alarm:       { width: 0.5, height: 0.5, depth: 0.3 },
-  toggle:      { width: 0.4, height: 0.4, depth: 0.2 },
+  generator: { width: 2.4, height: 1.8, depth: 1.6 },
+  sensor: { width: 0.6, height: 0.6, depth: 0.6 },
+  controller: { width: 1.2, height: 0.8, depth: 1.0 },
+  battery: { width: 1.0, height: 1.6, depth: 0.8 },
+  motor: { width: 1.2, height: 1.2, depth: 1.4 },
+  pump: { width: 1.0, height: 1.0, depth: 1.0 },
+  tank: { width: 1.4, height: 2.0, depth: 1.4 },
+  alarm: { width: 0.5, height: 0.5, depth: 0.3 },
+  toggle: { width: 0.4, height: 0.4, depth: 0.2 },
   thermometer: { width: 0.5, height: 0.5, depth: 0.3 },
 };
 
@@ -151,12 +152,12 @@ export interface ConnectionProfile {
 }
 
 export const CONNECTION_PROFILES: Record<string, ConnectionProfile> = {
-  road:    { width: 1.2, height: 0.05, elevation: 'ground', clearance: 4.0 },
+  road: { width: 1.2, height: 0.05, elevation: 'ground', clearance: 4.0 },
   hallway: { width: 1.0, height: 'min-block', elevation: 'ground', clearance: 3.0 },
-  power:   { width: 0.15, height: 0.15, elevation: 0.075, clearance: 1.0 },
-  data:    { width: 0.1,  height: 0.1,  elevation: 0.05,  clearance: 0.8 },
-  water:   { width: 0.2,  height: 0.2,  elevation: 0.1,   clearance: 1.0 },
-  control: { width: 0.1,  height: 0.1,  elevation: 0.05,  clearance: 0.8 },
+  power: { width: 0.15, height: 0.15, elevation: 0.075, clearance: 1.0 },
+  data: { width: 0.1, height: 0.1, elevation: 0.05, clearance: 0.8 },
+  water: { width: 0.2, height: 0.2, elevation: 0.1, clearance: 1.0 },
+  control: { width: 0.1, height: 0.1, elevation: 0.05, clearance: 0.8 },
   // Default fallback for unknown types
   default: { width: 0.1, height: 0.1, elevation: 0.05, clearance: 1.0 },
 };
@@ -192,7 +193,7 @@ function resolveExplicitDims(spec: Record<string, unknown>): Dims | null {
   const height = typeof spec.height === 'number' ? spec.height : null;
   const length = typeof spec.length === 'number' ? spec.length : null;
 
-  const hasWidth   = typeof spec.width   === 'number';
+  const hasWidth = typeof spec.width === 'number';
   const hasBreadth = typeof spec.breadth === 'number';
 
   if (hasWidth && hasBreadth) {
@@ -264,7 +265,7 @@ type TypeTier = 'station' | 'block' | 'leaf';
 function classifyTypeTier(type: string): TypeTier {
   const t = (type || '').toLowerCase();
   if (t.includes('station')) return 'station';
-  if (t.includes('block'))   return 'block';
+  if (t.includes('block')) return 'block';
   return 'leaf';
 }
 
@@ -342,17 +343,22 @@ function buildNodeMap(
  * with the direction toward `to`).  The attachment point is the centre of
  * that face.
  */
-function wallAttachPoint(from: NodeInfo, to: NodeInfo): [number, number, number] {
+export interface AttachPoint {
+  pt: [number, number, number];
+  normal: [number, number];
+}
+
+function wallAttachPoint(from: NodeInfo, to: NodeInfo): AttachPoint {
   // Direction from `from` centre to `to` centre on the XZ plane.
   const dx = (to.worldOrigin[0]) - (from.worldOrigin[0]);
   const dz = (to.worldOrigin[2]) - (from.worldOrigin[2]);
 
-  // The four candidate face centres (world space, ground level).
-  const candidates: [number, number, number][] = [
-    [from.xMax, GROUND_Y, from.worldOrigin[2]],  // +X face (east wall)
-    [from.xMin, GROUND_Y, from.worldOrigin[2]],  // -X face (west wall)
-    [from.worldOrigin[0], GROUND_Y, from.zMax],  // +Z face (south wall)
-    [from.worldOrigin[0], GROUND_Y, from.zMin],  // -Z face (north wall)
+  // The four candidate face centres (world space, ground level) and their normals.
+  const candidates: AttachPoint[] = [
+    { pt: [from.xMax, GROUND_Y, from.worldOrigin[2]], normal: [1, 0] },  // +X face (east wall)
+    { pt: [from.xMin, GROUND_Y, from.worldOrigin[2]], normal: [-1, 0] },  // -X face (west wall)
+    { pt: [from.worldOrigin[0], GROUND_Y, from.zMax], normal: [0, 1] },  // +Z face (south wall)
+    { pt: [from.worldOrigin[0], GROUND_Y, from.zMin], normal: [0, -1] },  // -Z face (north wall)
   ];
   // Dot products with direction vector.
   const dots = [dx, -dx, dz, -dz];
@@ -382,7 +388,7 @@ function cellKey(gx: number, gz: number): string {
 function isInsideAny(wx: number, wz: number, obstacles: AABB[]): boolean {
   for (const obs of obstacles) {
     if (wx >= obs.xMin && wx <= obs.xMax &&
-        wz >= obs.zMin && wz <= obs.zMax) {
+      wz >= obs.zMin && wz <= obs.zMax) {
       return true;
     }
   }
@@ -403,13 +409,13 @@ function isInsideAny(wx: number, wz: number, obstacles: AABB[]): boolean {
  */
 function aStarRoute(
   startW: [number, number],
-  endW:   [number, number],
+  endW: [number, number],
   obstacles: AABB[],
   usedCells: Set<string>,
   bounds: { xMin: number; xMax: number; zMin: number; zMax: number },
 ): [number, number][] | null {
 
-  // Convert world → grid coords.
+  // Convert world -> grid coords.
   const toGrid = (wx: number, wz: number): [number, number] => [
     Math.round(wx / GRID_CELL),
     Math.round(wz / GRID_CELL),
@@ -420,7 +426,7 @@ function aStarRoute(
   ];
 
   const [sgx, sgz] = toGrid(startW[0], startW[1]);
-  const [egx, egz] = toGrid(endW[0],   endW[1]);
+  const [egx, egz] = toGrid(endW[0], endW[1]);
 
   if (sgx === egx && sgz === egz) {
     return [startW, endW];
@@ -449,10 +455,10 @@ function aStarRoute(
   };
   open.set(cellKey(sgx, sgz), startNode);
 
-  const dirs: [number, number][] = [[1,0],[-1,0],[0,1],[0,-1]];
+  const dirs: [number, number][] = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 
   let iterations = 0;
-  const MAX_ITER = 8000;
+  const MAX_ITER = 32000;
 
   while (open.size > 0 && iterations++ < MAX_ITER) {
     // Pick lowest f from open list.
@@ -487,7 +493,7 @@ function aStarRoute(
       // Bounds check.
       const [wx, wz] = toWorld(nx, nz);
       if (wx < bounds.xMin || wx > bounds.xMax ||
-          wz < bounds.zMin || wz > bounds.zMax) continue;
+        wz < bounds.zMin || wz > bounds.zMax) continue;
 
       // Obstacle check.
       const blocked = isInsideAny(wx, wz, obstacles);
@@ -535,6 +541,15 @@ function simplifyPath(pts: [number, number][]): [number, number][] {
     const prev = result[result.length - 1];
     const curr = pts[i];
     const next = pts[i + 1];
+    
+    // If the three points form a perfectly straight orthogonal line, we can skip the middle one.
+    // This perfectly collapses collinear segments, including U-turns caused by grid snapping.
+    const isCollinearX = prev[1] === curr[1] && curr[1] === next[1];
+    const isCollinearZ = prev[0] === curr[0] && curr[0] === next[0];
+    if (isCollinearX || isCollinearZ) {
+      continue;
+    }
+
     // Keep point only if it introduces a bend.
     const sameDirX = (curr[0] - prev[0]) * (next[0] - curr[0]);
     const sameDirZ = (curr[1] - prev[1]) * (next[1] - curr[1]);
@@ -559,7 +574,7 @@ function findLCA(src: NodeInfo, tgt: NodeInfo, allNodes: Map<string, NodeInfo>):
     srcAncestors.add(curr);
     curr = allNodes.get(curr)?.parentName || null;
   }
-  
+
   curr = tgt.name;
   while (curr) {
     if (srcAncestors.has(curr)) return curr;
@@ -580,29 +595,70 @@ function routeConnection(
   usedCells: Set<string>,
 ): [number, number, number][] {
 
-  const attachSrc = wallAttachPoint(srcInfo, tgtInfo);
-  const attachTgt = wallAttachPoint(tgtInfo, srcInfo);
+  const srcAttach = wallAttachPoint(srcInfo, tgtInfo);
+  const tgtAttach = wallAttachPoint(tgtInfo, srcInfo);
+
+  // To prevent the path from clipping inside the component, we push the A* start/end
+  // outward by enough distance to clear the OBSTACLE_MARGIN (0.1).
+  // 0.15 ensures it is safely outside the obstacle bounds so the router doesn't get trapped.
+  const PUSH_OUT = 0.15;
+  const startW: [number, number] = [
+    srcAttach.pt[0] + srcAttach.normal[0] * PUSH_OUT,
+    srcAttach.pt[2] + srcAttach.normal[1] * PUSH_OUT,
+  ];
+  const endW: [number, number] = [
+    tgtAttach.pt[0] + tgtAttach.normal[0] * PUSH_OUT,
+    tgtAttach.pt[2] + tgtAttach.normal[1] * PUSH_OUT,
+  ];
 
   const lcaName = findLCA(srcInfo, tgtInfo, allNodes);
   const lca = lcaName ? allNodes.get(lcaName) : null;
 
   // Build obstacle list
-  // Obstacles are all nodes EXCEPT the source, target, and their ancestors.
-  // The LCA and its ancestors are also excluded (they are open space for this route).
+  // Obstacles are all nodes EXCEPT the ancestors of source and target (e.g. rooms).
+  // IMPORTANT: The source and target components themselves ARE treated as obstacles!
+  // This prevents the path from routing backwards directly through the component.
   const obstacles: AABB[] = [];
   const srcAnc = srcInfo.ancestors;
   const tgtAnc = tgtInfo.ancestors;
 
   for (const [name, info] of allNodes) {
-    if (name === srcName || name === tgtName) continue;
     if (srcAnc.has(name) || tgtAnc.has(name)) continue;
-    
+
     obstacles.push({
       xMin: info.xMin - OBSTACLE_MARGIN,
       xMax: info.xMax + OBSTACLE_MARGIN,
       zMin: info.zMin - OBSTACLE_MARGIN,
       zMax: info.zMax + OBSTACLE_MARGIN,
     });
+  }
+
+  // Helper to check if a straight orthogonal segment is clear of obstacles
+  const isSegmentClear = (sx: number, sz: number, ex: number, ez: number): boolean => {
+    const xMin = Math.min(sx, ex);
+    const xMax = Math.max(sx, ex);
+    const zMin = Math.min(sz, ez);
+    const zMax = Math.max(sz, ez);
+    for (const obs of obstacles) {
+      if (xMin <= obs.xMax && xMax >= obs.xMin &&
+          zMin <= obs.zMax && zMax >= obs.zMin) {
+        return false;
+      }
+    }
+    return true;
+  };
+
+  let rawPath: [number, number][] | null = null;
+
+  // Direct Line-of-Sight Check:
+  // If the components are close or perfectly aligned, try a simple L-shape (or straight line)
+  // bypass to avoid detouring to the global grid tracks.
+  if (isSegmentClear(startW[0], startW[1], endW[0], startW[1]) && 
+      isSegmentClear(endW[0], startW[1], endW[0], endW[1])) {
+    rawPath = [startW, [endW[0], startW[1]], endW];
+  } else if (isSegmentClear(startW[0], startW[1], startW[0], endW[1]) && 
+             isSegmentClear(startW[0], endW[1], endW[0], endW[1])) {
+    rawPath = [startW, [startW[0], endW[1]], endW];
   }
 
   // Bounds for the route: start with the LCA bounds
@@ -613,42 +669,42 @@ function routeConnection(
     zMin: lca.zMin - GRID_CELL,
     zMax: lca.zMax + GRID_CELL,
   } : {
-    xMin: Math.min(attachSrc[0], attachTgt[0]) - 8,
-    xMax: Math.max(attachSrc[0], attachTgt[0]) + 8,
-    zMin: Math.min(attachSrc[2], attachTgt[2]) - 8,
-    zMax: Math.max(attachSrc[2], attachTgt[2]) + 8,
+    xMin: Math.min(startW[0], endW[0]) - 8,
+    xMax: Math.max(startW[0], endW[0]) + 8,
+    zMin: Math.min(startW[1], endW[1]) - 8,
+    zMax: Math.max(startW[1], endW[1]) + 8,
   };
 
   // Attempt 1: normal bounds and all unrelated obstacles.
-  let rawPath = aStarRoute(
-    [attachSrc[0], attachSrc[2]],
-    [attachTgt[0], attachTgt[2]],
-    obstacles,
-    usedCells,
-    bounds,
-  );
+  if (!rawPath) {
+    rawPath = aStarRoute(
+      startW,
+      endW,
+      obstacles,
+      usedCells,
+      bounds,
+    );
+  }
+
+  // Build leaf obstacles for relaxed attempts
+  const leafObstacles: AABB[] = [];
+  for (const [name, info] of allNodes) {
+    if (srcAnc.has(name) || tgtAnc.has(name)) continue;
+    if (classifyTypeTier(info.type) === 'leaf') {
+      leafObstacles.push({
+        xMin: info.xMin - OBSTACLE_MARGIN,
+        xMax: info.xMax + OBSTACLE_MARGIN,
+        zMin: info.zMin - OBSTACLE_MARGIN,
+        zMax: info.zMax + OBSTACLE_MARGIN,
+      });
+    }
+  }
 
   // Attempt 2: Relax obstacles (only leaf components are obstacles, ignore unrelated containers)
   if (!rawPath) {
-    const leafObstacles: AABB[] = [];
-    for (const [name, info] of allNodes) {
-      if (name === srcName || name === tgtName) continue;
-      if (srcAnc.has(name) || tgtAnc.has(name)) continue;
-      
-      // If it's a leaf component (has no children in nodeMap logic, but we can't easily check children here)
-      // Actually we can check if it's a 'leaf' type
-      if (classifyTypeTier(info.type) === 'leaf') {
-        leafObstacles.push({
-          xMin: info.xMin - OBSTACLE_MARGIN,
-          xMax: info.xMax + OBSTACLE_MARGIN,
-          zMin: info.zMin - OBSTACLE_MARGIN,
-          zMax: info.zMax + OBSTACLE_MARGIN,
-        });
-      }
-    }
     rawPath = aStarRoute(
-      [attachSrc[0], attachSrc[2]],
-      [attachTgt[0], attachTgt[2]],
+      startW,
+      endW,
       leafObstacles,
       usedCells,
       bounds,
@@ -656,6 +712,7 @@ function routeConnection(
   }
 
   // Attempt 3: Relax bounds by expanding search area (in case LCA is too tight)
+  // We MUST continue to respect leafObstacles so we don't draw wires straight through components!
   if (!rawPath) {
     const expandedBounds = {
       xMin: bounds.xMin - 4,
@@ -664,9 +721,9 @@ function routeConnection(
       zMax: bounds.zMax + 4,
     };
     rawPath = aStarRoute(
-      [attachSrc[0], attachSrc[2]],
-      [attachTgt[0], attachTgt[2]],
-      [], // No obstacles to force a path, but still avoids completely broken logic
+      startW,
+      endW,
+      leafObstacles, // Keep avoiding leaf components!
       usedCells,
       expandedBounds,
     );
@@ -677,7 +734,27 @@ function routeConnection(
     return []; // Empty path signals failure
   }
 
-  const simplified = simplifyPath(rawPath);
+  // To guarantee orthogonal lines (parallel to the grid), we must insert an intermediate point
+  // between the exact wall coordinate and the nearest grid coordinate.
+  const firstGrid = rawPath[0];
+  const srcIntermediate: [number, number] = srcAttach.normal[0] !== 0 
+    ? [firstGrid[0], srcAttach.pt[2]] 
+    : [srcAttach.pt[0], firstGrid[1]];
+
+  const lastGrid = rawPath[rawPath.length - 1];
+  const tgtIntermediate: [number, number] = tgtAttach.normal[0] !== 0
+    ? [lastGrid[0], tgtAttach.pt[2]]
+    : [tgtAttach.pt[0], lastGrid[1]];
+
+  const fullPath: [number, number][] = [
+    [srcAttach.pt[0], srcAttach.pt[2]],
+    srcIntermediate,
+    ...rawPath,
+    tgtIntermediate,
+    [tgtAttach.pt[0], tgtAttach.pt[2]]
+  ];
+
+  const simplified = simplifyPath(fullPath);
 
   // Register cells as used for subsequent connections (overlap avoidance).
   for (const [wx, wz] of simplified) {
@@ -697,8 +774,8 @@ function routeConnection(
  * @param spec  — the entire spec object (spec.json).
  */
 export function buildLayout(node: any, spec: any, rawConnections: any[] = []): NodeLayout {
-  const name: string   = node.name ?? '(unnamed)';
-  const type: string   = node.type ?? '';
+  const name: string = node.name ?? '(unnamed)';
+  const type: string = node.type ?? '';
   const tags: string[] = node.tags ?? [];
   const rawSpec: Record<string, unknown> = (spec?.components?.[name]?.spec) ?? {};
   const rawChildren: any[] = node.children ?? [];
@@ -708,7 +785,7 @@ export function buildLayout(node: any, spec: any, rawConnections: any[] = []): N
 
   // ── Resolve this node's dimensions ────────────────────────────────────────
   let dims: Dims;
-  
+
   // Compute dynamic gap based on connections between children
   let dynamicGap = 0.6; // fallback CHILD_GAP
   if (children.length > 0) {
@@ -733,9 +810,9 @@ export function buildLayout(node: any, spec: any, rawConnections: any[] = []): N
     const { packedWidth, packedDepth } = gridPack(children.map((c) => c.dims), dynamicGap);
     const maxChildHeight = children.reduce((m, c) => Math.max(m, c.dims.height), 0);
     dims = {
-      width:  packedWidth  + PADDING * 2,
+      width: packedWidth + PADDING * 2,
       height: maxChildHeight + PADDING,   // tall enough to fully enclose tallest child
-      depth:  packedDepth  + PADDING * 2,
+      depth: packedDepth + PADDING * 2,
     };
   } else {
     dims = resolveTypeDefault(type);
@@ -776,7 +853,7 @@ export function buildSceneLayout(topology: any, spec: any): SceneLayout {
   const usedCells = new Set<string>();
 
   const connections: ConnectionLayout[] = rawConnections
-    .map((c: any): ConnectionLayout | null => {
+    .map((c: any, index: number): ConnectionLayout | null => {
       const src = nodeMap.get(c.source);
       const tgt = nodeMap.get(c.target);
       if (!src || !tgt) {
@@ -794,7 +871,7 @@ export function buildSceneLayout(topology: any, spec: any): SceneLayout {
       const height = baseProfile.height === 'min-block'
         ? Math.min(src.dims.height, tgt.dims.height)
         : baseProfile.height;
-        
+
       const profile = { ...baseProfile, height };
 
       const path = routeConnection(
@@ -803,7 +880,7 @@ export function buildSceneLayout(topology: any, spec: any): SceneLayout {
         c.source, c.target,
         usedCells,
       );
-      
+
       if (path.length === 0) {
         return null;
       }
@@ -813,19 +890,19 @@ export function buildSceneLayout(topology: any, spec: any): SceneLayout {
       const elevatedPath = path.map(([x, y, z]) => [x, elevation as number, z] as [number, number, number]);
 
       return {
-        id:             `${c.source}--${c.target}`,
-        source:         c.source,
-        target:         c.target,
-        path:           elevatedPath,
+        id:             `${c.source}--${c.target}--${index}`,
+        source: c.source,
+        target: c.target,
+        path: elevatedPath,
         // Legacy aliases so ConnectionRenderer still works without changes.
-        startPos:       elevatedPath[0],
-        endPos:         elevatedPath[elevatedPath.length - 1],
+        startPos: elevatedPath[0],
+        endPos: elevatedPath[elevatedPath.length - 1],
         profile,
         connectionType,
-        direction:      c.direction ?? '-->',
+        direction: c.direction ?? '-->',
       };
     })
     .filter((c): c is ConnectionLayout => c !== null);
 
-  return { root, connections };
+  return { root, connections, allNodes: nodeMap };
 }
