@@ -67,10 +67,12 @@ export const PropertyInspector: React.FC<InspectorProps> = ({ node, connections,
 
   return (
     <div style={{
-      width: 320,
-      background: 'rgba(30, 41, 59, 0.95)',
+      minWidth: 320,
+      maxWidth: '40vw',
+      width: 'max-content',
+      background: 'var(--bg-panel)',
       backdropFilter: 'blur(8px)',
-      border: '1px solid #334155',
+      border: '1px solid var(--border-solid)',
       borderRadius: 8,
       boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3)',
       overflowY: 'auto',
@@ -81,10 +83,10 @@ export const PropertyInspector: React.FC<InspectorProps> = ({ node, connections,
       <div style={{
         padding: '8px 14px',
         fontSize: 11,
-        color: '#94a3b8',
+        color: 'var(--text-secondary)',
         textTransform: 'uppercase',
         letterSpacing: '0.08em',
-        borderBottom: '1px solid rgba(255,255,255,0.05)',
+        borderBottom: '1px solid var(--hover-overlay)',
         background: 'rgba(255,255,255,0.02)',
         display: 'flex',
         alignItems: 'center',
@@ -96,17 +98,17 @@ export const PropertyInspector: React.FC<InspectorProps> = ({ node, connections,
       <div style={{
         padding: '12px 14px',
         fontSize: 12,
-        color: '#94a3b8',
+        color: 'var(--text-secondary)',
         fontFamily: 'monospace',
       }}>
         {/* Header */}
         <div style={{
           fontWeight: 700,
           fontSize: 13,
-          color: '#e2e8f0',
+          color: 'var(--text-primary)',
           marginBottom: 8,
           paddingBottom: 8,
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          borderBottom: '1px solid var(--border-color)',
           display: 'flex',
           alignItems: 'center',
           gap: 6,
@@ -144,12 +146,12 @@ export const PropertyInspector: React.FC<InspectorProps> = ({ node, connections,
           <>
             <SectionHeader>Connections</SectionHeader>
             {nodeConnections.map(c => (
-              <div key={c.id} style={{ paddingLeft: 8, marginBottom: 3, color: '#64748b', fontSize: 11 }}>
+              <div key={c.id} style={{ paddingLeft: 8, marginBottom: 3, color: 'var(--text-tertiary)', fontSize: 11 }}>
                 <span style={{ color: '#b87333' }}>
                   {c.profile.width < 1.0 ? '━' : '▭'}
                 </span>{' '}
                 {c.source === node.name ? `→ ${c.target}` : `← ${c.source}`}
-                <span style={{ color: '#475569' }}> ({c.connectionType})</span>
+                <span style={{ color: 'var(--text-tertiary)' }}> ({c.connectionType})</span>
               </div>
             ))}
           </>
@@ -159,7 +161,7 @@ export const PropertyInspector: React.FC<InspectorProps> = ({ node, connections,
         {node.tags.length > 0 && (
           <>
             <SectionHeader>Tags</SectionHeader>
-            <div style={{ paddingLeft: 8, color: '#64748b', fontSize: 11 }}>
+            <div style={{ paddingLeft: 8, color: 'var(--text-tertiary)', fontSize: 11 }}>
               {node.tags.join(', ')}
             </div>
           </>
@@ -176,8 +178,8 @@ const SectionHeader: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     fontSize: 10,
     textTransform: 'uppercase',
     letterSpacing: '0.08em',
-    color: '#475569',
-    borderBottom: '1px solid rgba(255,255,255,0.05)',
+    color: 'var(--text-tertiary)',
+    borderBottom: '1px solid var(--hover-overlay)',
     paddingBottom: 4,
   }}>
     {children}
@@ -186,7 +188,7 @@ const SectionHeader: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
 const Row: React.FC<{ label: string; value: string }> = ({ label, value }) => (
   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, gap: 8 }}>
-    <span style={{ color: '#64748b' }}>{label}</span>
-    <span style={{ color: '#cbd5e1', textAlign: 'right', wordBreak: 'break-all' }}>{value}</span>
+    <span style={{ color: 'var(--text-tertiary)' }}>{label}</span>
+    <span style={{ color: 'var(--text-secondary)', textAlign: 'right', wordBreak: 'break-all' }}>{value}</span>
   </div>
 );

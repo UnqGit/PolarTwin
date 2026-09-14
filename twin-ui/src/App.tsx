@@ -57,48 +57,48 @@ function App() {
           >
           {/* Top-left title card */}
           <div style={{
-            background: 'rgba(15, 23, 42, 0.8)',
+            background: 'var(--bg-panel)',
             padding: '16px 20px',
             borderRadius: '12px',
-            border: '1px solid rgba(255,255,255,0.1)',
+            border: '1px solid var(--border-color)',
             backdropFilter: 'blur(10px)',
-            color: 'white',
+            color: 'var(--text-primary)',
             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)',
             display: 'flex',
             flexDirection: 'column',
             pointerEvents: 'auto',
           }}>
               <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ color: '#38bdf8', display: 'flex', alignItems: 'center' }}><Snowflake size={20} /></span> PolarTwin
+                <span style={{ color: 'var(--accent-blue)', display: 'flex', alignItems: 'center' }}><Snowflake size={20} /></span> PolarTwin
               </h1>
-            <div style={{ fontSize: 12, color: '#94a3b8', marginTop: 4, fontWeight: 500 }}>
+            <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4, fontWeight: 500 }}>
               3D Digital Twin Viewer
             </div>
           </div>
 
           {/* HUD overlay */}
           <div style={{
-            color: '#f1f5f9', fontFamily: 'system-ui, sans-serif',
-            background: 'rgba(15,23,42,0.85)',
+            color: 'var(--text-primary)', fontFamily: 'system-ui, sans-serif',
+            background: 'var(--bg-panel)',
             backdropFilter: 'blur(8px)',
             borderRadius: 10,
             padding: '14px 18px',
-            border: '1px solid rgba(148,163,184,0.15)',
+            border: '1px solid var(--border-color)',
             display: 'flex', flexDirection: 'column', gap: '8px',
             width: 280,
             boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)',
           }}>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-              <label htmlFor="twin-select" style={{ fontSize: 13, color: '#cbd5e1' }}>Select Twin:</label>
+              <label htmlFor="twin-select" style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Select Twin:</label>
               <select 
                 id="twin-select"
                 value={selectedTwin} 
                 onChange={(e) => setSelectedTwin(e.target.value)}
                 style={{ 
-                  background: 'rgba(30,41,59,0.8)', 
-                  color: 'white', 
-                  border: '1px solid #475569', 
+                  background: 'var(--bg-panel-secondary)', 
+                  color: 'var(--text-primary)', 
+                  border: '1px solid var(--border-solid)', 
                   borderRadius: '4px',
                   padding: '4px 8px',
                   outline: 'none',
@@ -112,15 +112,15 @@ function App() {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <label htmlFor="lighting-mode" style={{ fontSize: 13, color: '#cbd5e1' }}>Lighting:</label>
+              <label htmlFor="lighting-mode" style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Lighting:</label>
               <select 
                 id="lighting-mode"
                 value={lightingMode} 
                 onChange={(e) => setLightingMode(e.target.value as LightingMode)}
                 style={{ 
-                  background: 'rgba(30,41,59,0.8)', 
-                  color: 'white', 
-                  border: '1px solid #475569', 
+                  background: 'var(--bg-panel-secondary)', 
+                  color: 'var(--text-primary)', 
+                  border: '1px solid var(--border-solid)', 
                   borderRadius: '4px',
                   padding: '4px 8px',
                   outline: 'none',
@@ -134,15 +134,15 @@ function App() {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <label htmlFor="occlusion-mode" style={{ fontSize: 13, color: '#cbd5e1' }}>Occlusion:</label>
+              <label htmlFor="occlusion-mode" style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Occlusion:</label>
               <select 
                 id="occlusion-mode"
                 value={containerOcclusion} 
                 onChange={(e) => setContainerOcclusion(e.target.value as 'off' | 'off_on_hover')}
                 style={{ 
-                  background: 'rgba(30,41,59,0.8)', 
-                  color: 'white', 
-                  border: '1px solid #475569', 
+                  background: 'var(--bg-panel-secondary)', 
+                  color: 'var(--text-primary)', 
+                  border: '1px solid var(--border-solid)', 
                   borderRadius: '4px',
                   padding: '4px 8px',
                   outline: 'none',
@@ -154,10 +154,10 @@ function App() {
               </select>
             </div>
 
-            <p style={{ margin: '6px 0 0', fontSize: 12, color: '#94a3b8' }}>
+            <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--text-secondary)' }}>
               Hover over any component to inspect live telemetry.
             </p>
-            <p style={{ margin: '4px 0 0', fontSize: 11, color: '#64748b' }}>
+            <p style={{ margin: '4px 0 0', fontSize: 11, color: 'var(--text-tertiary)' }}>
               Drag to rotate · Scroll to zoom · Right-drag to pan
             </p>
           </div>

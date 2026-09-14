@@ -3,9 +3,10 @@ import type { NodeLayout, ConnectionLayout } from '../lib/layout';
 import { useSelection } from './SelectionContext';
 import { TypeIcon } from './TypeIcon';
 import { ConnectionsList } from './ConnectionsList';
-import { Network, Link2, Sliders, ChevronRight, Eye, EyeOff, Focus } from 'lucide-react';
+import { Network, Link2, Sliders, ChevronRight, Eye, EyeOff, Focus, Sun, Moon } from 'lucide-react';
+import { useTheme } from './ThemeContext';
 
-const PANEL_BORDER = '1px solid rgba(255,255,255,0.08)';
+const PANEL_BORDER = '1px solid var(--border-color)';
 const ITEM_HEIGHT = 26;
 const ICON_INDENT = 16;
 
@@ -52,13 +53,13 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, depth, expandedSet, toggleExp
           paddingLeft: depth * ICON_INDENT + 6,
           cursor: 'pointer',
           background: isSelected ? 'rgba(34,211,238,0.15)' : undefined,
-          borderLeft: isSelected ? '2px solid #22d3ee' : '2px solid transparent',
+          borderLeft: isSelected ? '2px solid var(--accent-cyan)' : '2px solid transparent',
           userSelect: 'none',
           fontSize: 12,
-          color: isSelected ? '#e2e8f0' : '#94a3b8',
+          color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)',
           gap: 5,
         }}
-        onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; }}
+        onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = 'var(--hover-overlay)'; }}
         onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = ''; }}
       >
         <span
@@ -66,7 +67,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, depth, expandedSet, toggleExp
           style={{
             display: 'inline-flex', width: 14, height: 14,
             alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0, color: '#475569', fontSize: 9,
+            flexShrink: 0, color: 'var(--text-tertiary)', fontSize: 9,
             transform: isExpanded ? 'rotate(90deg)' : 'none',
             transition: 'transform 0.15s ease',
             visibility: hasChildren ? 'visible' : 'hidden',
@@ -78,14 +79,14 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, depth, expandedSet, toggleExp
         <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {node.name}
         </span>
-        <span style={{ color: '#475569', fontSize: 10, marginLeft: 'auto', paddingRight: 6, flexShrink: 0 }}>
+        <span style={{ color: 'var(--text-tertiary)', fontSize: 10, marginLeft: 'auto', paddingRight: 6, flexShrink: 0 }}>
           {node.type}
         </span>
         <span
           onClick={(e) => { e.stopPropagation(); toggleVisibility(node.name); }}
           style={{
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2px 4px',
-            color: hiddenSet.has(node.name) ? '#475569' : '#94a3b8',
+            color: hiddenSet.has(node.name) ? 'var(--text-tertiary)' : 'var(--text-secondary)',
             opacity: hiddenSet.has(node.name) ? 0.5 : 1,
           }}
           title={hiddenSet.has(node.name) ? 'Show component' : 'Hide component'}
@@ -122,6 +123,7 @@ export interface HierarchyPanelProps {
   availableLayers?: number[];
   activeLayer?: number | null;
   setActiveLayer?: (layer: number | null) => void;
+  onShowGraph?: () => void;
 }
 
 export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
@@ -129,10 +131,12 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
   onComponentsInteractableChange, onConnectionsInteractableChange,
   hideAllComponents, hideAllConnections,
   onHideAllComponentsChange, onHideAllConnectionsChange,
-  onResetCamera, availableLayers = [], activeLayer = null, setActiveLayer
+  onResetCamera, availableLayers = [], activeLayer = null, setActiveLayer,
+  onShowGraph
 }) => {
   const [activeView, setActiveView] = useState<'hierarchy' | 'connections' | 'interactivity' | null>('hierarchy');
   const { selectedName } = useSelection();
+  const { theme, toggleTheme } = useTheme();
   const isOpen = activeView !== null;
 
   const [panelWidth, setPanelWidth] = useState(300);
@@ -236,9 +240,9 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
       title={title}
       style={{
         width: '100%', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        cursor: 'pointer', color: active ? '#e2e8f0' : '#475569',
-        borderLeft: active ? '2px solid #38bdf8' : '2px solid transparent',
-        background: active ? 'rgba(255,255,255,0.05)' : 'transparent',
+        cursor: 'pointer', color: active ? 'var(--text-primary)' : 'var(--text-tertiary)',
+        borderLeft: active ? '2px solid var(--accent-blue)' : '2px solid transparent',
+        background: active ? 'var(--hover-overlay)' : 'transparent',
       }}
     >
       {icon}
@@ -254,7 +258,7 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
       {/* Panel Area */}
       {isOpen && (
         <div style={{
-          position: 'relative', width: panelWidth, background: 'rgba(15, 23, 42, 0.95)', backdropFilter: 'blur(8px)',
+          position: 'relative', width: panelWidth, background: 'var(--bg-panel)', backdropFilter: 'blur(8px)',
           borderLeft: PANEL_BORDER, display: 'flex', flexDirection: 'column',
           pointerEvents: 'auto', boxShadow: '-4px 0 15px rgba(0,0,0,0.3)',
         }}>
@@ -269,7 +273,7 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
               transition: 'background 0.2s',
             }}
           />
-          <div style={{ padding: '10px 14px', borderBottom: PANEL_BORDER, fontWeight: 600, fontSize: 11, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.05em', flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ padding: '10px 14px', borderBottom: PANEL_BORDER, fontWeight: 600, fontSize: 11, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
              <span>
                {activeView === 'hierarchy' ? 'Hierarchy Tree' : 
                 activeView === 'connections' ? 'Connections List' : 
@@ -278,19 +282,19 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
              {activeView === 'hierarchy' && (
                <div style={{ display: 'flex', gap: 4, textTransform: 'none', letterSpacing: 'normal', fontWeight: 500 }}>
                   {allHierarchyExpanded ? (
-                    <button onClick={collapseAllHierarchy} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', color: '#94a3b8', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}>Collapse All</button>
+                    <button onClick={collapseAllHierarchy} style={{ background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}>Collapse All</button>
                   ) : (
-                    <button onClick={expandAllHierarchy} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', color: '#94a3b8', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}>Expand All</button>
+                    <button onClick={expandAllHierarchy} style={{ background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}>Expand All</button>
                   )}
                </div>
              )}
           </div>
           <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
              {activeView === 'hierarchy' && <TreeNode node={root} depth={0} expandedSet={expandedSet} toggleExpanded={toggleExpanded} />}
-             {activeView === 'connections' && <ConnectionsList connections={connections} />}
+             {activeView === 'connections' && <ConnectionsList connections={connections} onShowGraph={onShowGraph} />}
              {activeView === 'interactivity' && (
-               <div style={{ padding: '16px 14px', fontSize: 13, color: '#e2e8f0', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                 <div style={{ fontWeight: 600, color: '#94a3b8', fontSize: 11, textTransform: 'uppercase', marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+               <div style={{ padding: '16px 14px', fontSize: 13, color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                 <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: 11, textTransform: 'uppercase', marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                    <span>Interactivity</span>
                    <input 
                      type="checkbox" 
@@ -300,16 +304,16 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                        onComponentsInteractableChange?.(checked);
                        onConnectionsInteractableChange?.(checked);
                      }}
-                     style={{ cursor: 'pointer', accentColor: '#2563eb' }}
+                     style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }}
                    />
                  </div>
                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
                    <span>Components Interactable</span>
-                   <input type="checkbox" checked={componentsInteractable} onChange={(e) => onComponentsInteractableChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: '#38bdf8' }} />
+                   <input type="checkbox" checked={componentsInteractable} onChange={(e) => onComponentsInteractableChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
                  </label>
                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
                    <span>Connections Interactable</span>
-                   <input type="checkbox" checked={connectionsInteractable} onChange={(e) => onConnectionsInteractableChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: '#38bdf8' }} />
+                   <input type="checkbox" checked={connectionsInteractable} onChange={(e) => onConnectionsInteractableChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
                  </label>
                  
                  {availableLayers && availableLayers.length > 0 && (
@@ -318,7 +322,7 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                      <select 
                        value={activeLayer === null ? '' : activeLayer} 
                        onChange={(e) => setActiveLayer?.(e.target.value === '' ? null : Number(e.target.value))}
-                       style={{ background: '#1e293b', color: '#e2e8f0', border: '1px solid #334155', borderRadius: 4, padding: '2px 4px', outline: 'none', cursor: 'pointer' }}
+                       style={{ background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-solid)', borderRadius: 4, padding: '2px 4px', outline: 'none', cursor: 'pointer' }}
                      >
                        <option value="">All Layers</option>
                        {availableLayers.map(l => (
@@ -328,7 +332,7 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                    </label>
                  )}
                  
-                 <div style={{ fontWeight: 600, color: '#94a3b8', fontSize: 11, textTransform: 'uppercase', marginTop: 12, marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                 <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: 11, textTransform: 'uppercase', marginTop: 12, marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                    <span>View</span>
                    <input 
                      type="checkbox" 
@@ -338,16 +342,16 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                        onHideAllComponentsChange?.(checked);
                        onHideAllConnectionsChange?.(checked);
                      }}
-                     style={{ cursor: 'pointer', accentColor: '#2563eb' }}
+                     style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }}
                    />
                  </div>
                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
                    <span>Hide All Components</span>
-                   <input type="checkbox" checked={!!hideAllComponents} onChange={(e) => onHideAllComponentsChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: '#38bdf8' }} />
+                   <input type="checkbox" checked={!!hideAllComponents} onChange={(e) => onHideAllComponentsChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
                  </label>
                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
                    <span>Hide All Connections</span>
-                   <input type="checkbox" checked={!!hideAllConnections} onChange={(e) => onHideAllConnectionsChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: '#38bdf8' }} />
+                   <input type="checkbox" checked={!!hideAllConnections} onChange={(e) => onHideAllConnectionsChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
                  </label>
                </div>
              )}
@@ -357,7 +361,7 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
       
       {/* Activity Bar */}
       <div style={{
-        width: 48, background: 'rgba(15, 23, 42, 1)', borderLeft: PANEL_BORDER,
+        width: 48, background: 'var(--bg-panel-solid)', borderLeft: PANEL_BORDER,
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         paddingTop: 8, pointerEvents: 'auto',
       }}>
@@ -367,11 +371,16 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
         
         <div style={{ flex: 1 }} /> {/* spacer */}
         
-        {onResetCamera && (
-          <div style={{ marginBottom: 16 }}>
+        <div style={{ marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <IconBtn 
+            icon={theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />} 
+            onClick={toggleTheme} 
+            title="Toggle Theme" 
+          />
+          {onResetCamera && (
             <IconBtn icon={<Focus size={20} />} onClick={onResetCamera} title="Reset View" />
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

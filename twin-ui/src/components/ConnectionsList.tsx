@@ -4,9 +4,10 @@ import { useSelection } from './SelectionContext';
 
 interface ConnectionsListProps {
   connections: ConnectionLayout[];
+  onShowGraph?: () => void;
 }
 
-export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections }) => {
+export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, onShowGraph }) => {
   const { selectedName, setSelectedName, hiddenSet, toggleVisibility } = useSelection();
   const [search, setSearch] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
@@ -62,7 +63,7 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections })
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', fontFamily: 'system-ui, sans-serif' }}>
-      <div style={{ padding: '8px 12px', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
+      <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
         <input 
           type="text" 
           placeholder="Search connections..." 
@@ -70,25 +71,44 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections })
           onChange={e => setSearch(e.target.value)}
           style={{
             width: '100%',
-            background: 'rgba(15,23,42,0.5)',
-            border: '1px solid #334155',
+            background: 'var(--bg-input)',
+            border: '1px solid var(--border-solid)',
             borderRadius: 4,
-            color: '#e2e8f0',
+            color: 'var(--text-primary)',
             padding: '6px 10px',
             fontSize: 12,
             outline: 'none',
             marginBottom: 8,
           }}
         />
+        {onShowGraph && (
+          <button
+            onClick={onShowGraph}
+            style={{
+              width: '100%',
+              marginBottom: 8,
+              padding: '6px',
+              backgroundColor: 'var(--accent-blue)',
+              color: 'white',
+              border: 'none',
+              borderRadius: 4,
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: 12,
+            }}
+          >
+            Show Graph
+          </button>
+        )}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: '#94a3b8' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--text-secondary)' }}>
             <span>Sort By:</span>
             <select 
               value={sortBy} 
               onChange={(e) => setSortBy(e.target.value as 'source' | 'target')}
               style={{ 
-                background: 'rgba(15,23,42,0.8)', color: '#e2e8f0', border: '1px solid #334155', 
-                borderRadius: 4, padding: '2px 4px', fontSize: 11, outline: 'none'
+                background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-solid)', 
+                borderRadius: 4, padding: '2px 4px', fontSize: 11, outline: 'none', cursor: 'pointer' 
               }}
             >
               <option value="source">source</option>
@@ -99,14 +119,14 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections })
             {sortedKeys.length > 0 && collapsedGroups.size === 0 ? (
               <button 
                 onClick={collapseAll}
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', color: '#94a3b8', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}
+                style={{ background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}
               >
                 Collapse All
               </button>
             ) : (
               <button 
                 onClick={expandAll}
-                style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid #334155', color: '#94a3b8', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}
+                style={{ background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}
               >
                 Expand All
               </button>
@@ -117,7 +137,7 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections })
 
       <div ref={containerRef} style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
         {sortedKeys.length === 0 ? (
-          <div style={{ padding: 16, color: '#475569', fontSize: 12 }}>No connections match search.</div>
+          <div style={{ padding: 16, color: 'var(--text-tertiary)', fontSize: 12 }}>No connections match search.</div>
         ) : (
           sortedKeys.map((groupKey, idx) => {
             const groupConnections = grouped.get(groupKey)!;
@@ -138,20 +158,20 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections })
                   style={{ 
                     padding: '6px 16px', 
                     fontSize: 12, 
-                    color: '#e2e8f0',
+                    color: 'var(--text-primary)',
                     display: 'flex',
                     alignItems: 'center',
                     cursor: 'pointer',
                     userSelect: 'none'
                   }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--hover-overlay)'; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
                 >
                   <span
                     style={{
                       display: 'inline-flex', width: 14, height: 14,
                       alignItems: 'center', justifyContent: 'center',
-                      flexShrink: 0, color: '#475569', fontSize: 9,
+                      flexShrink: 0, color: 'var(--text-tertiary)', fontSize: 9,
                       transform: isCollapsed ? 'none' : 'rotate(90deg)',
                       transition: 'transform 0.15s ease',
                       marginRight: 4
@@ -159,7 +179,7 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections })
                   >
                     ▶
                   </span>
-                  <span style={{ color: '#64748b', marginRight: 4, fontWeight: 500 }}>{headingLabel}</span>
+                  <span style={{ color: 'var(--text-tertiary)', marginRight: 4, fontWeight: 500 }}>{headingLabel}</span>
                   <span style={{ fontWeight: 600 }}>{groupKey}</span>
                 </div>
                 
@@ -182,20 +202,20 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections })
                             padding: '6px 16px 6px 36px',
                             cursor: 'pointer',
                             background: isSelected ? 'rgba(34, 211, 238, 0.15)' : 'transparent',
-                            borderLeft: `2px solid ${isSelected ? '#22d3ee' : 'transparent'}`,
+                            borderLeft: `2px solid ${isSelected ? 'var(--accent-cyan)' : 'transparent'}`,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
                           }}
-                          onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.04)'; }}
+                          onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = 'var(--hover-overlay)'; }}
                           onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
                         >
                           <div style={{ display: 'flex', alignItems: 'center', flex: 1, overflow: 'hidden', justifyContent: 'space-between' }}>
-                            <div style={{ color: isSelected ? '#e2e8f0' : '#cbd5e1', fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              <span style={{ color: '#64748b', marginRight: 4, fontWeight: 500 }}>{innerLabel}</span>
+                            <div style={{ color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)', fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              <span style={{ color: 'var(--text-tertiary)', marginRight: 4, fontWeight: 500 }}>{innerLabel}</span>
                               <span style={{ fontWeight: 600 }}>{innerValue}</span>
                             </div>
-                            <div style={{ color: '#94a3b8', fontSize: 10, textTransform: 'uppercase', flexShrink: 0, paddingLeft: 8, paddingRight: 8 }}>
+                            <div style={{ color: 'var(--text-secondary)', fontSize: 10, textTransform: 'uppercase', flexShrink: 0, paddingLeft: 8, paddingRight: 8 }}>
                               [{c.connectionType}]
                             </div>
                           </div>
@@ -203,7 +223,7 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections })
                             onClick={(e) => { e.stopPropagation(); toggleVisibility(c.id); }}
                             style={{
                               cursor: 'pointer', fontSize: 12, padding: '2px 4px',
-                              color: hiddenSet.has(c.id) ? '#475569' : '#94a3b8',
+                              color: hiddenSet.has(c.id) ? 'var(--text-tertiary)' : 'var(--text-secondary)',
                               opacity: hiddenSet.has(c.id) ? 0.5 : 1,
                             }}
                             title={hiddenSet.has(c.id) ? 'Show connection' : 'Hide connection'}
@@ -217,7 +237,7 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections })
                 )}
                 
                 {idx < sortedKeys.length - 1 && (
-                  <div style={{ margin: '6px 16px 2px', borderBottom: '1px solid rgba(255,255,255,0.05)' }} />
+                  <div style={{ margin: '6px 16px 2px', borderBottom: '1px solid var(--hover-overlay)' }} />
                 )}
               </div>
             );

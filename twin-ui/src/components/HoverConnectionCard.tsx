@@ -29,9 +29,9 @@ export const HoverConnectionCard: React.FC<HoverConnectionCardProps> = ({ connec
         </svg>
         {connection.connectionType} connection
       </div>
-      <div style={{ color: '#cbd5e1' }}>
+      <div style={{ color: 'var(--text-secondary)' }}>
         {connection.source}{' '}
-        <span style={{ color: '#475569' }}>{connection.direction}</span>{' '}
+        <span style={{ color: 'var(--text-tertiary)' }}>{connection.direction}</span>{' '}
         {connection.target}
       </div>
     </div>

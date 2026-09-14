@@ -29,7 +29,7 @@ export const ControllerMesh: React.FC<MeshProps> = ({
       <mesh position={[0, h * 0.65, -d / 2 - 0.005]}>
         <boxGeometry args={[w * 0.70, h * 0.40, 0.01]} />
         <meshStandardMaterial
-          color="#0f172a"
+          color='var(--bg-main)'
           emissive="#1e3a5f"
           emissiveIntensity={0.5}
         />

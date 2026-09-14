@@ -16,7 +16,7 @@ export interface MaterialProps {
 }
 
 /** Base material for each component type.  Ordered by specificity. */
-const TYPE_MATERIALS: Array<{ match: string; mat: MaterialProps }> = [
+export const TYPE_MATERIALS: Array<{ match: string; mat: MaterialProps }> = [
   // containers / systems
   { match: 'campus',  mat: { color: '#2a2a3a', metalness: 0.1, roughness: 0.9, opacity: 0.08, transparent: true } },
   { match: 'station', mat: { color: '#3a3a4a', metalness: 0.1, roughness: 0.9, opacity: 0.12, transparent: true } },
@@ -36,7 +36,7 @@ const TYPE_MATERIALS: Array<{ match: string; mat: MaterialProps }> = [
   { match: 'toggle',      mat: { color: '#1e3a5f', metalness: 0.3, roughness: 0.7, opacity: 1, transparent: false } },
 ];
 
-const GENERIC_MATERIAL: MaterialProps = {
+export const GENERIC_MATERIAL: MaterialProps = {
   color: '#5a5a6a', metalness: 0.3, roughness: 0.7, opacity: 1, transparent: false,
 };
 

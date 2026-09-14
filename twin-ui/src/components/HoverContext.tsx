@@ -29,6 +29,8 @@ export interface HoverState {
   /** Global interactivity flags */
   componentsInteractable: boolean;
   connectionsInteractable: boolean;
+  /** Callback to programmatically set the hovered name (e.g. from the Graph view) */
+  setHoveredName: (name: string | null) => void;
 }
 
 export const HoverContext = createContext<HoverState>({ 
@@ -39,4 +41,5 @@ export const HoverContext = createContext<HoverState>({
   activeLayer: null,
   componentsInteractable: true,
   connectionsInteractable: true,
+  setHoveredName: () => {},
 });

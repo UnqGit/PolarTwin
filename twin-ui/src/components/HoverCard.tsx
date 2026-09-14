@@ -32,7 +32,7 @@ export const HoverCard: React.FC<HoverCardProps> = ({ root, connections, liveSta
     return (
       <div style={cardStyle}>
         <div style={headerStyle}>
-          <Link2 size={14} color="#fbbf24" style={{ marginRight: 6 }} />
+          <Link2 size={14} color='var(--accent-amber)' style={{ marginRight: 6 }} />
           CONNECTION
         </div>
         <div style={titleStyle}>
@@ -62,7 +62,7 @@ export const HoverCard: React.FC<HoverCardProps> = ({ root, connections, liveSta
     return (
       <div style={cardStyle}>
         <div style={headerStyle}>
-          <span style={{ color: '#38bdf8', marginRight: 6, display: 'flex', alignItems: 'center' }}><TypeIcon type={node.type} /></span>
+          <span style={{ color: 'var(--accent-blue)', marginRight: 6, display: 'flex', alignItems: 'center' }}><TypeIcon type={node.type} /></span>
           COMPONENT
         </div>
         <div style={titleStyle}>
@@ -82,9 +82,9 @@ export const HoverCard: React.FC<HoverCardProps> = ({ root, connections, liveSta
 
 const cardStyle: React.CSSProperties = {
   width: 280,
-  background: 'rgba(15, 23, 42, 0.95)',
+  background: 'var(--bg-panel)',
   backdropFilter: 'blur(8px)',
-  border: '1px solid #334155',
+  border: '1px solid var(--border-solid)',
   borderRadius: 8,
   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)',
   padding: '12px 14px',
@@ -94,7 +94,7 @@ const cardStyle: React.CSSProperties = {
 const headerStyle: React.CSSProperties = {
   fontSize: 10,
   fontWeight: 700,
-  color: '#94a3b8',
+  color: 'var(--text-secondary)',
   textTransform: 'uppercase',
   letterSpacing: '0.08em',
   marginBottom: 8,
@@ -105,9 +105,9 @@ const headerStyle: React.CSSProperties = {
 const titleStyle: React.CSSProperties = {
   fontSize: 14,
   fontWeight: 600,
-  color: '#e2e8f0',
+  color: 'var(--text-primary)',
   marginBottom: 10,
-  borderBottom: '1px solid rgba(255,255,255,0.08)',
+  borderBottom: '1px solid var(--border-color)',
   paddingBottom: 8,
 };
 
@@ -118,8 +118,8 @@ const bodyStyle: React.CSSProperties = {
 
 const Row: React.FC<{ label: string; value: string }> = ({ label, value }) => (
   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-    <span style={{ color: '#64748b' }}>{label}</span>
-    <span style={{ color: '#cbd5e1', textAlign: 'right' }}>
+    <span style={{ color: 'var(--text-tertiary)' }}>{label}</span>
+    <span style={{ color: 'var(--text-secondary)', textAlign: 'right' }}>
       {value === 'Active' ? <span style={{ color: '#4ade80' }}>Active</span> : value}
     </span>
   </div>

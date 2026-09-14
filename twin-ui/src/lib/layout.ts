@@ -161,6 +161,7 @@ export const CONNECTION_PROFILES: Record<string, ConnectionProfile> = {
   control: { width: 0.1, height: 0.1, elevation: 0.05, clearance: 0.8, color: '#eab308' }, // yellow
   ladder: { width: 0.6, height: 0.1, elevation: 0, clearance: 1.0, color: '#b45309' }, // orange-brown
   lift: { width: 1.2, height: 1.2, elevation: 0, clearance: 1.0, color: '#475569' }, // dark slate
+  wire: { width: 0.1, height: 0.1, elevation: 0.05, clearance: 1.0, color: '#0ea5e9' }, // brand-friendly cyan
   // Default fallback for unknown types
   default: { width: 0.1, height: 0.1, elevation: 0.05, clearance: 1.0, color: '#6b7280' },
 };
@@ -276,7 +277,7 @@ function classifyTypeTier(type: string): TypeTier {
 
 // ─── world-space node info ────────────────────────────────────────────────────
 
-interface NodeInfo {
+export interface NodeInfo {
   name: string;
   parentName: string | null;
   /** Set of all ancestor names, including parent, up to root */

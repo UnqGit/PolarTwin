@@ -33,8 +33,8 @@ export const SensorMesh: React.FC<MeshProps> = ({
       <mesh position={[0, h + indicatorR, 0]}>
         <sphereGeometry args={[indicatorR, 8, 8]} />
         <meshStandardMaterial
-          color="#22d3ee"
-          emissive="#22d3ee"
+          color='var(--accent-cyan)'
+          emissive='var(--accent-cyan)'
           emissiveIntensity={0.7}
         />
       </mesh>

@@ -40,7 +40,7 @@ export const EmbeddedOverview: React.FC<EmbeddedOverviewProps> = ({ embeddedNode
         boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
         fontFamily: 'sans-serif'
       }}>
-        <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '4px' }}>
+        <h4 style={{ margin: '0 0 8px 0', fontSize: '14px', borderBottom: '1px solid var(--border-color)', paddingBottom: '4px' }}>
           Embedded Subsystems
         </h4>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>

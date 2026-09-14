@@ -34,6 +34,8 @@ import { ConnectionRenderer } from './ConnectionRenderer';
 import { HoverContext } from './HoverContext';
 import { SelectionContext } from './SelectionContext';
 import { HierarchyPanel } from './HierarchyPanel';
+import { GraphModal } from './GraphModal';
+import { useTheme } from './ThemeContext';
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
@@ -56,6 +58,7 @@ const RaycasterConfig: React.FC = () => {
 
 interface SceneLightsProps {
   mode: LightingMode;
+  theme: 'light' | 'dark';
 }
 
 /**
@@ -66,7 +69,10 @@ interface SceneLightsProps {
  * 'static'  — same lights but shadows are baked (frozen after first render via BakeShadows).
  * 'off'     — ambient-only, no shadows, maximum performance.
  */
-const SceneLights: React.FC<SceneLightsProps> = ({ mode }) => {
+const SceneLights: React.FC<SceneLightsProps> = ({ mode, theme }) => {
+  const skyColor = theme === 'light' ? '#cbd5e1' : '#1e293b';
+  const groundColor = theme === 'light' ? '#f8fafc' : '#0f172a';
+
   if (mode === 'off') {
     return (
       <>
@@ -87,7 +93,7 @@ const SceneLights: React.FC<SceneLightsProps> = ({ mode }) => {
           shadow-mapSize={[2048, 2048]}
         />
         <directionalLight position={[-10, 10, -8]} intensity={0.4} />
-        <hemisphereLight args={['#1e293b', '#0f172a', 0.3]} />
+        <hemisphereLight args={[skyColor, groundColor, 0.3]} />
         {/*
           BakeShadows freezes the shadow map after the first render pass.
           It does NOT perform physical lightmap baking — it simply calls
@@ -111,7 +117,7 @@ const SceneLights: React.FC<SceneLightsProps> = ({ mode }) => {
         shadow-mapSize={[2048, 2048]}
       />
       <directionalLight position={[-10, 10, -8]} intensity={0.4} />
-      <hemisphereLight args={['#1e293b', '#0f172a', 0.3]} />
+      <hemisphereLight args={[skyColor, groundColor, 0.3]} />
     </>
   );
 };
@@ -250,6 +256,10 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
   containerOcclusion = 'off',
   children,
 }) => {
+  const { theme } = useTheme();
+  const bgMain = theme === 'light' ? '#f8fafc' : '#0f172a';
+  const gridLine = theme === 'light' ? '#cbd5e1' : '#1e293b';
+
   const sceneLayout = useMemo(
     () => {
       try {
@@ -291,6 +301,7 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
 
   const [hideAllComponents, setHideAllComponents] = useState(false);
   const [hideAllConnections, setHideAllConnections] = useState(false);
+  const [isGraphOpen, setIsGraphOpen] = useState(false);
 
   const activeComponentsInteractable = onComponentsInteractableChange ? componentsInteractable : internalComponentsInteractable;
   const activeConnectionsInteractable = onConnectionsInteractableChange ? connectionsInteractable : internalConnectionsInteractable;
@@ -403,19 +414,20 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
         selectedAncestors, 
         activeLayer,
         componentsInteractable: activeComponentsInteractable,
-        connectionsInteractable: activeConnectionsInteractable 
+        connectionsInteractable: activeConnectionsInteractable,
+        setHoveredName: handleHoverChange,
       }}>
-        <div style={{ width: '100%', height: '100%', background: '#0f172a', position: 'relative' }}>
+        <div style={{ width: '100%', height: '100%', background: 'var(--bg-main)', position: 'relative' }}>
           <Canvas
             camera={{ position: [35, 25, 35], fov: 50 }}
             shadows={lightingMode !== 'off'}
             gl={{ antialias: true }}
           >
-            <color attach="background" args={['#0f172a']} />
+            <color attach="background" args={[bgMain]} />
 
             <RaycasterConfig />
 
-            <SceneLights key={lightingMode} mode={lightingMode} />
+            <SceneLights key={`${lightingMode}-${theme}`} mode={lightingMode} theme={theme} />
 
             <Suspense fallback={null}>
               <Environment preset="warehouse" />
@@ -445,7 +457,15 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
             </Suspense>
 
             <OrbitControls ref={controlsRef} makeDefault enablePan enableRotate enableZoom />
-            <gridHelper args={[60, 60, '#1e293b', '#0f172a']} position={[0, -0.02, 0]} />
+            
+            {/* Floor / Reference Grid */}
+            <group position={[0, -0.01, 0]}>
+              <gridHelper args={[60, 60, gridLine, bgMain]} position={[0, -0.02, 0]} />
+              <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]} receiveShadow>
+                <planeGeometry args={[100, 100]} />
+                <shadowMaterial transparent opacity={0.2} />
+              </mesh>
+            </group>
           </Canvas>
           
           <LeftUIStack root={sceneLayout.root} connections={sceneLayout.connections} liveStateRef={liveStateRef}>
@@ -480,11 +500,23 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
             hideAllConnections={hideAllConnections}
             onHideAllComponentsChange={setHideAllComponents}
             onHideAllConnectionsChange={setHideAllConnections}
+            liveStateRef={liveStateRef}
             onResetCamera={handleResetCamera}
-            availableLayers={availableLayers}
+            availableLayers={Array.from(availableLayers).sort((a,b)=>a-b)}
             activeLayer={activeLayer}
             setActiveLayer={setActiveLayer}
+            onShowGraph={() => setIsGraphOpen(true)}
           />
+
+          {isGraphOpen && (
+            <GraphModal 
+              onClose={() => setIsGraphOpen(false)}
+              connections={sceneLayout.connections}
+              allNodes={sceneLayout.allNodes}
+              root={sceneLayout.root}
+              liveStateRef={liveStateRef}
+            />
+          )}
         </div>
       </HoverContext.Provider>
     </SelectionProvider>

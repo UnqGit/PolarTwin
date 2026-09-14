@@ -26,5 +26,5 @@ export const TypeIcon: React.FC<{ type: string }> = ({ type }) => {
   else if (t.includes('toggle')) IconComponent = ToggleRight;
   else if (t.includes('thermometer')) IconComponent = Thermometer;
 
-  return <IconComponent size={14} style={{ flexShrink: 0, color: '#94a3b8' }} />;
+  return <IconComponent size={14} style={{ flexShrink: 0, color: 'var(--text-secondary)' }} />;
 };
