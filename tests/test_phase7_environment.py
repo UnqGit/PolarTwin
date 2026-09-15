@@ -16,7 +16,7 @@ def read_json(path):
 class Phase7EnvironmentTests(unittest.TestCase):
     def setUp(self):
         root = ROOT / "data/compiled/maitri"
-        self.graph = compile_model(read_json(root / "relation.json"), read_json(root / "spec.json"))
+        self.graph = compile_model(read_json(root / "relation.json"), read_json(root / "connection.json"), read_json(root / "spec.json"))
 
     def test_environment_has_defaults_and_preserves_custom_variables(self):
         environment = EnvironmentState({"temperature": -25, "storm_level": 0.4})

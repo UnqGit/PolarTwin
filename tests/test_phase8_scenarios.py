@@ -19,7 +19,7 @@ def read_json(path):
 class Phase8ScenarioTests(unittest.TestCase):
     def setUp(self):
         root = ROOT / "examples/minimal"
-        self.graph = compile_model(read_json(root / "topology.json"), read_json(root / "specification.json"))
+        self.graph = compile_model(read_json(root / "topology.json"), read_json(Path(str(root / "topology.json").replace("topology.json", "connections.json"))), read_json(root / "specification.json"))
 
     def test_loader_sorts_events_and_rejects_duplicate_ids(self):
         with tempfile.TemporaryDirectory() as directory:

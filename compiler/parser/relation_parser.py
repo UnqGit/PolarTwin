@@ -133,10 +133,6 @@ def parse_relation_file(filename):
     # Names MUST be globally unique.
     nodes = {}
 
-    # Connections are parsed first and validated after all nodes
-    # have been discovered.
-    connections = []
-
     # Tracks floor levels within each immediate parent.
     #
     # Key:
@@ -423,53 +419,8 @@ def parse_relation_file(filename):
                 continue
 
             # ---------------------------------------------------------
-            # Connection
-            #
-            # Source-->Target@relation
-            # Source<-->Target@relation
-            # Source-.->Target@relation
-            #
-            # Whitespace around the arrow and @ is allowed.
-            #
-            # Examples:
-            #
-            # A-->B@controls
-            # A --> B @ controls
-            # A<-->B@communicates
-            # ---------------------------------------------------------
-
-            m = re.match(
-                r"^(\w+)\s*(-->|<-->|-\.\->)\s*(\w+)\s*@\s*(\w+)\s*$",
-                line,
-            )
-
-            if m:
-                source, direction, target, relation = m.groups()
-
-                connections.append({
-                    "source": source,
-                    "target": target,
-                    "type": relation,
-                    "direction": direction,
-                    "line": line_number,
-                })
-
-                continue
-
-            # ---------------------------------------------------------
             # Better syntax errors
             # ---------------------------------------------------------
-
-            if ":" not in line and any(
-                arrow in line
-                for arrow in ("-->", "<-->", "-.->", "<-->")
-            ):
-                raise RelationParseError(
-                    "Invalid connection syntax. "
-                    "Expected: Source-->Target@relation",
-                    line_number,
-                    line,
-                )
 
             if ":" in line:
                 raise RelationParseError(
@@ -502,79 +453,6 @@ def parse_relation_file(filename):
         )
 
 
-    # -------------------------------------------------------------
-    # Validate connection references.
-    #
-    # Connections may NOT have a floor node as either endpoint.
-    #
-    # Examples that are INVALID:
-    #
-    # Floor1-->SystemA@controls
-    # SystemA-->Floor1@controls
-    # Floor1<-->Floor2@communicates
-    #
-    # Connections between all other node types are allowed.
-    # -------------------------------------------------------------
-
-    for connection in connections:
-        source = connection["source"]
-        target = connection["target"]
-        line_number = connection["line"]
-
-        # ---------------------------------------------------------
-        # Validate source reference
-        # ---------------------------------------------------------
-
-        if source not in nodes:
-            raise RelationParseError(
-                f"Unknown source identifier '{source}' in connection. "
-                f"Every connection endpoint must reference a defined node.",
-                line_number,
-                f"{source}{connection['direction']}"
-                f"{target}@{connection['type']}",
-            )
-
-        # ---------------------------------------------------------
-        # Validate target reference
-        # ---------------------------------------------------------
-
-        if target not in nodes:
-            raise RelationParseError(
-                f"Unknown target identifier '{target}' in connection. "
-                f"Every connection endpoint must reference a defined node.",
-                line_number,
-                f"{source}{connection['direction']}"
-                f"{target}@{connection['type']}",
-            )
-
-        # ---------------------------------------------------------
-        # Floors cannot participate in connections.
-        #
-        # This checks BOTH source and target.
-        # ---------------------------------------------------------
-
-        source_node = nodes[source]
-        target_node = nodes[target]
-
-        if source_node["type"] == "floor":
-            raise RelationParseError(
-                f"Invalid connection: floor node '{source}' cannot be "
-                f"used as a connection endpoint. "
-                f"Connections cannot have a floor as either source or target.",
-                line_number,
-                f"{source}{connection['direction']}"
-                f"{target}@{connection['type']}",
-            )
-
-        if target_node["type"] == "floor":
-            raise RelationParseError(
-                f"Invalid connection: floor node '{target}' cannot be "
-                f"used as a connection endpoint. "
-                f"Connections cannot have a floor as either source or target.",
-                line_number,
-                f"{source}{connection['direction']}"
-                f"{target}@{connection['type']}",
-            )
 
 
     # -------------------------------------------------------------
@@ -600,12 +478,6 @@ def parse_relation_file(filename):
             clean_node(child)
 
     clean_node(root)
-
-    # Remove parser-only line information from connections.
-    for connection in connections:
-        connection.pop("line", None)
-
-    root["connections"] = connections
 
     return root
 

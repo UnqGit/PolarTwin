@@ -27,18 +27,3 @@ Campus:campus {
         }
     }
 }
-
-# Component-level connections (wires)
-MainGenerator-->PowerSensor@power
-PowerSensor-->MainController@data
-MainController-->MainGenerator@control
-TankSensor-->MainController@data
-MainController-->MainPump@control
-MainPump-->WaterTank@water
-
-# Station-level connections (roads)
-StationA<-->StationB@road
-
-# Block-level connections (hallways)
-BlockA1<-->BlockA2@hallway
-BlockB1<-->BlockB2@hallway

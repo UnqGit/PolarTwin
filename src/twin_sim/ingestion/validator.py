@@ -41,7 +41,7 @@ def _string(value: Any, path: str) -> str:
 def validate_topology(document: Any, validation_config: dict[str, str] | None = None) -> dict[str, Any]:
     validation_config = validation_config or {}
     root = _object(document, "topology")
-    for field in ("name", "type", "tags", "children", "connections"):
+    for field in ("name", "type", "tags", "children"):
         if field not in root:
             raise ValidationError(f"topology is missing required field '{field}'")
     _string(root["name"], "topology.name")
@@ -52,8 +52,6 @@ def validate_topology(document: Any, validation_config: dict[str, str] | None = 
         raise ValidationError("topology.tags must not contain duplicates")
     if not isinstance(root["children"], list):
         raise ValidationError("topology.children must be an array")
-    if not isinstance(root["connections"], list):
-        raise ValidationError("topology.connections must be an array")
 
     names: dict[str, str] = {}
 
@@ -75,8 +73,15 @@ def validate_topology(document: Any, validation_config: dict[str, str] | None = 
             visit(child, f"{path}.children[{index}]")
 
     visit(root, "topology")
-    for index, connection in enumerate(root["connections"]):
-        path = f"topology.connections[{index}]"
+    return root, names
+
+def validate_connections(document: Any, names: dict[str, str], validation_config: dict[str, str] | None = None) -> list[dict[str, Any]]:
+    validation_config = validation_config or {}
+    if not isinstance(document, list):
+        raise ValidationError("connections must be an array")
+        
+    for index, connection in enumerate(document):
+        path = f"connections[{index}]"
         item = _object(connection, path)
         for field in ("source", "target", "type", "direction"):
             if field not in item:
@@ -93,8 +98,8 @@ def validate_topology(document: Any, validation_config: dict[str, str] | None = 
             if severity == "error":
                 raise ValidationError(msg)
             elif severity == "warning":
-                pass  # We could log or append to a diagnostics list but right now this returns the dict
-    return root
+                pass
+    return document
 
 
 def validate_specification(document: Any) -> dict[str, Any]:
@@ -119,9 +124,10 @@ def validate_specification(document: Any) -> dict[str, Any]:
     return spec
 
 
-def validate_documents(topology: Any, specification: Any, validation_config: dict[str, str] | None = None) -> tuple[dict[str, Any], dict[str, Any]]:
+def validate_documents(topology: Any, connections: Any, specification: Any, validation_config: dict[str, str] | None = None) -> tuple[dict[str, Any], list[dict[str, Any]], dict[str, Any]]:
     """Validate both documents and their component/type cross references."""
-    valid_topology = validate_topology(topology, validation_config)
+    valid_topology, names = validate_topology(topology, validation_config)
+    valid_connections = validate_connections(connections, names, validation_config)
     valid_specification = validate_specification(specification)
     relation_types: dict[str, str] = {}
 
@@ -137,4 +143,4 @@ def validate_documents(topology: Any, specification: Any, validation_config: dic
             raise ValidationError(f"component '{name}' has no specification")
         if component["type"] != relation_type:
             raise ValidationError(f"type mismatch for '{name}': topology has '{relation_type}', specification has '{component['type']}'")
-    return valid_topology, valid_specification
+    return valid_topology, valid_connections, valid_specification

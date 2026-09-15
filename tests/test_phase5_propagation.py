@@ -40,7 +40,7 @@ class Phase5PropagationTests(unittest.TestCase):
         root = ROOT / "examples/minimal"
         topology = read_json(root / "topology.json")
         specification = read_json(root / "specification.json")
-        self.graph = compile_model(topology, specification)
+        self.graph = compile_model(topology, connections, specification)
         self.graph.get("Generator").behavior = SourceBehavior()
         self.graph.get("FuelSensor").behavior = ControllerBehavior()
 
@@ -67,7 +67,7 @@ class Phase5PropagationTests(unittest.TestCase):
         topology = read_json(ROOT / "examples/minimal/topology.json")
         topology["connections"][0]["direction"] = "<-->"
         specification = read_json(ROOT / "examples/minimal/specification.json")
-        graph = compile_model(topology, specification)
+        graph = compile_model(topology, connections, specification)
         graph.get("Generator").behavior = SourceBehavior()
         graph.get("FuelSensor").behavior = ControllerBehavior()
         SimulationEngine(graph).step()

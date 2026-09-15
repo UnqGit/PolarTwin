@@ -30,28 +30,7 @@ COMPONENT_RE = re.compile(
     re.VERBOSE,
 )
 
-# Relationship:
-#
-#   A-->B@signal
-#   A <--> B @ signal
-#
-RELATION_RE = re.compile(
-    r"""
-    ^
-    (?P<source>[A-Za-z_]\w*)
-    \s*
-    (?P<operator><-->|-->)
-    \s*
-    (?P<target>[A-Za-z_]\w*)
-    \s*
-    @
-    \s*
-    (?P<signal>[A-Za-z_]\w*)
-    \s*
-    $
-    """,
-    re.VERBOSE,
-)
+
 
 # Tag:
 #
@@ -182,29 +161,7 @@ def normalize_component(line: str) -> str | None:
     return result
 
 
-def normalize_relationship(line: str) -> str | None:
-    """
-    Normalize a relationship.
 
-        A --> B @ signal
-        A-->B@signal
-
-    become:
-
-        A-->B@signal
-    """
-
-    match = RELATION_RE.match(line.strip())
-
-    if not match:
-        return None
-
-    source = match.group("source")
-    operator = match.group("operator")
-    target = match.group("target")
-    signal = match.group("signal")
-
-    return f"{source}{operator}{target}@{signal}"
 
 
 def normalize_property(line: str) -> str:
@@ -308,11 +265,7 @@ def normalize_code(line: str) -> str:
     if component is not None:
         return component
 
-    # Relationship.
-    relationship = normalize_relationship(stripped)
 
-    if relationship is not None:
-        return relationship
 
     # Property or unknown code.
     return normalize_property(stripped)
@@ -338,8 +291,7 @@ def classify_line(code: str, comment: str) -> str:
     if stripped.endswith("{"):
         return "open"
 
-    if RELATION_RE.match(stripped):
-        return "relationship"
+
 
     if stripped.startswith("%"):
         return "tag"
@@ -475,29 +427,7 @@ def format_spec(text: str) -> str:
             previous_kind = kind
             continue
 
-        # ---------------------------------------------------------------
-        # Relationships
-        # ---------------------------------------------------------------
 
-        if kind == "relationship":
-
-            # Relationships are generally separated from declarations.
-            if (
-                previous_kind in {"declaration", "property", "open"}
-                and output
-                and output[-1] != ""
-            ):
-                output.append("")
-
-            line = f"{INDENT * depth}{code}"
-
-            if comment:
-                line += f" {comment}"
-
-            output.append(line)
-
-            previous_kind = kind
-            continue
 
         # ---------------------------------------------------------------
         # Normal declaration/property

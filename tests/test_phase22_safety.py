@@ -19,10 +19,11 @@ class Phase22SafetyTests(unittest.TestCase):
     def setUp(self):
         self.minimal_root = ROOT / "examples/minimal"
         self.topology = read_json(self.minimal_root / "topology.json")
+        self.connections = read_json(self.minimal_root / "connections.json")
         self.specification = read_json(self.minimal_root / "specification.json")
 
     def test_negative_fuel_error_raises_exception(self):
-        graph = compile_model(self.topology, self.specification)
+        graph = compile_model(self.topology, self.connections, self.specification)
         # Set validation config with error
         engine = SimulationEngine(graph, validation_config={"negative_fuel": "error"})
         
@@ -35,7 +36,7 @@ class Phase22SafetyTests(unittest.TestCase):
         self.assertIn("fuel level -10.0 is less than 0", str(ctx.exception))
 
     def test_negative_fuel_warning_does_not_raise(self):
-        graph = compile_model(self.topology, self.specification)
+        graph = compile_model(self.topology, self.connections, self.specification)
         engine = SimulationEngine(graph, validation_config={"negative_fuel": "warning"})
         
         engine.graph.get("Generator").runtime_state.values["fuel_level"] = -10.0
@@ -45,7 +46,7 @@ class Phase22SafetyTests(unittest.TestCase):
         self.assertEqual(violations[0].rule, "negative_fuel")
 
     def test_negative_fuel_ignore_is_silent(self):
-        graph = compile_model(self.topology, self.specification)
+        graph = compile_model(self.topology, self.connections, self.specification)
         engine = SimulationEngine(graph, validation_config={"negative_fuel": "ignore"})
         
         engine.graph.get("Generator").runtime_state.values["fuel_level"] = -10.0
@@ -54,7 +55,7 @@ class Phase22SafetyTests(unittest.TestCase):
         self.assertEqual(len(violations), 0)
 
     def test_generator_overload_is_detected(self):
-        graph = compile_model(self.topology, self.specification)
+        graph = compile_model(self.topology, self.connections, self.specification)
         engine = SimulationEngine(graph, validation_config={"generator_overload": "error"})
         
         engine.graph.get("Generator").runtime_state.values["power_output"] = 5000.0  # rating is 500
@@ -64,7 +65,7 @@ class Phase22SafetyTests(unittest.TestCase):
         self.assertIn("generator_overload", str(ctx.exception))
 
     def test_temperature_out_of_range(self):
-        graph = compile_model(self.topology, self.specification)
+        graph = compile_model(self.topology, self.connections, self.specification)
         engine = SimulationEngine(graph, validation_config={"temperature_out_of_range": "error"})
         
         engine.environment.values["temperature"] = -150.0
@@ -76,7 +77,7 @@ class Phase22SafetyTests(unittest.TestCase):
 
     def test_invalid_connection_error_raises_validation_error(self):
         topology = dict(self.topology)
-        topology["connections"].append({
+        connections.append({
             "source": "Generator",
             "target": "DoesNotExist",
             "type": "power",
@@ -88,7 +89,7 @@ class Phase22SafetyTests(unittest.TestCase):
 
     def test_invalid_connection_warning_suppresses_error(self):
         topology = dict(self.topology)
-        topology["connections"].append({
+        connections.append({
             "source": "Generator",
             "target": "DoesNotExist",
             "type": "power",

@@ -17,10 +17,11 @@ def read_json(path):
 class Phase2GraphTests(unittest.TestCase):
     def setUp(self):
         self.topology = read_json(ROOT / "examples/minimal/topology.json")
+        self.connections = read_json(ROOT / "examples/minimal/connections.json")
         self.specification = read_json(ROOT / "examples/minimal/specification.json")
 
     def test_compiles_containment_and_functional_indexes(self):
-        graph = compile_model(self.topology, self.specification)
+        graph = compile_model(self.topology, self.connections, self.specification)
         self.assertEqual(graph.root.name, "MiniStation")
         # MiniStation -> EnergySystem -> {Generator, FuelSensor, Controller}
         self.assertEqual([child.name for child in graph.children_of("MiniStation")], ["EnergySystem"])
@@ -36,7 +37,7 @@ class Phase2GraphTests(unittest.TestCase):
         self.assertTrue(any(c.source == "Generator" for c in graph.incoming("FuelSensor")))
 
     def test_compiled_component_has_independent_runtime_state(self):
-        graph = compile_model(self.topology, self.specification)
+        graph = compile_model(self.topology, self.connections, self.specification)
         generator = graph.get("Generator")
         generator.runtime_state.values["power"] = 10
         self.assertNotIn("power", graph.get("FuelSensor").runtime_state.values)
@@ -49,7 +50,7 @@ class Phase2GraphTests(unittest.TestCase):
             if conn["source"] == "Generator" and conn["target"] == "FuelSensor":
                 conn["direction"] = "<-->"
                 break
-        graph = compile_model(topology, self.specification)
+        graph = compile_model(topology, self.connections, self.specification)
         # Bidirectional should create reverse indexing
         self.assertTrue(any(c.source == "FuelSensor" and c.target == "Generator" for c in graph.incoming("Generator")))
         self.assertTrue(any(c.target == "Generator" for c in graph.outgoing("FuelSensor")))
@@ -69,7 +70,7 @@ class Phase2GraphTests(unittest.TestCase):
     def test_maitri_compiles_without_station_specific_code(self):
         topology = read_json(ROOT / "data/compiled/maitri/relation.json")
         specification = read_json(ROOT / "data/compiled/maitri/spec.json")
-        graph = compile_model(topology, specification)
+        graph = compile_model(topology, connections, specification)
         self.assertGreater(len(graph.components), 1)
         self.assertEqual(graph.get("Maitri").type, "station")
 

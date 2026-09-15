@@ -1,38 +1,42 @@
 {
   "name": "MiniStation",
   "type": "station",
-  "tags": ["test"],
+  "tags": [
+    "test"
+  ],
   "children": [
     {
       "name": "EnergySystem",
       "type": "system",
-      "tags": ["energy"],
+      "tags": [
+        "energy"
+      ],
       "children": [
         {
           "name": "Generator",
           "type": "generator",
-          "tags": ["primary"],
+          "tags": [
+            "primary"
+          ],
           "children": []
         },
         {
           "name": "FuelSensor",
           "type": "sensor",
-          "tags": ["monitoring"],
+          "tags": [
+            "monitoring"
+          ],
           "children": []
         },
         {
           "name": "Controller",
           "type": "controller",
-          "tags": ["control"],
+          "tags": [
+            "control"
+          ],
           "children": []
         }
       ]
     }
-  ],
-  "connections": [
-    {"source": "Generator", "target": "Controller", "type": "power_data", "direction": "-->"},
-    {"source": "FuelSensor", "target": "Controller", "type": "fuel_data", "direction": "-->"},
-    {"source": "Controller", "target": "Generator", "type": "command", "direction": "-->"},
-    {"source": "Generator", "target": "FuelSensor", "type": "fuel", "direction": "-->"}
   ]
 }

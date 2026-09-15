@@ -17,17 +17,18 @@ def read_json(path):
 class Phase1ContractTests(unittest.TestCase):
     def setUp(self):
         self.topology = read_json(ROOT / "examples/minimal/topology.json")
+        self.connections = read_json(ROOT / "examples/minimal/connections.json")
         self.specification = read_json(ROOT / "examples/minimal/specification.json")
 
     def test_minimal_inputs_validate_and_preserve_unknown_fields(self):
-        topology, specification = validate_documents(self.topology, self.specification)
+        topology, specification = validate_documents(self.topology, self.connections, self.specification)
         self.assertEqual(topology["name"], "MiniStation")
         self.assertTrue(specification["components"]["MiniStation"]["spec"]["future_field"]["enabled"])
 
     def test_existing_twins_validate(self):
         for twin in ("bharati", "maitri"):
             with self.subTest(twin=twin):
-                load_model_inputs(ROOT / f"data/compiled/{twin}/relation.json", ROOT / f"data/compiled/{twin}/spec.json")
+                load_model_inputs(ROOT / f"data/compiled/{twin}/relation.json", str(ROOT / f"data/compiled/{twin}/relation.json").replace("relation.json", "connection.json").replace("topology.json", "connections.json"), ROOT / f"data/compiled/{twin}/spec.json")
 
     def test_unknown_connection_reference_is_rejected(self):
         invalid = copy.deepcopy(self.topology)
@@ -52,7 +53,7 @@ class Phase1ContractTests(unittest.TestCase):
         invalid = copy.deepcopy(self.specification)
         invalid["components"]["Generator"]["type"] = "battery"
         with self.assertRaisesRegex(ValidationError, "type mismatch"):
-            validate_documents(self.topology, invalid)
+            validate_documents(self.topology, self.connections, invalid)
 
 
 if __name__ == "__main__":

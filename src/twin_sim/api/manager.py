@@ -31,11 +31,12 @@ class SimulationManager:
     def create_run(
         self,
         topology: Dict[str, Any],
+        connections: List[Dict[str, Any]],
         specification: Dict[str, Any],
         scenario: Optional[Dict[str, Any]] = None,
         config: Optional[Dict[str, Any]] = None
     ) -> str:
-        graph = compile_model(topology, specification)
+        graph = compile_model(topology, connections, specification)
         
         run_id = f"run-{uuid.uuid4().hex[:8]}"
         

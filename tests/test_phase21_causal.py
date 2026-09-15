@@ -21,7 +21,7 @@ class Phase21CausalTests(unittest.TestCase):
     def setUp(self):
         self.minimal_root = ROOT / "examples/minimal"
         self.maitri_root = ROOT / "data/compiled/maitri"
-        self.maitri_example = ROOT / "examples/maitri"
+        self.maitri_example = ROOT / "data/compiled/maitri"
         
         self.minimal_graph = compile_model(
             read_json(self.minimal_root / "topology.json"),

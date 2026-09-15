@@ -3,12 +3,16 @@ from pathlib import Path
 try:
     from .validate_twin import validate_twin
     from .relation_parser import generate_relation_json
+    from .connection_parser import generate_connection_json
     from .spec_parser import generate_spec_json
 except ImportError:
     from validate_twin import validate_twin
     from relation_parser import generate_relation_json
+    from connection_parser import generate_connection_json
     from spec_parser import generate_spec_json
 
+
+import json
 
 # -----------------------------------------------------------------
 # Paths
@@ -42,9 +46,11 @@ def main():
     output_dir = TWINS_DIR / twin_name
 
     relation_file = description_dir / "relation.twin"
+    connection_file = description_dir / "connection.twin"
     spec_file = description_dir / "spec.twin"
 
     relation_output = output_dir / "relation.json"
+    connection_output = output_dir / "connection.json"
     spec_output = output_dir / "spec.json"
 
     # -----------------------------------------------------------------
@@ -58,13 +64,17 @@ def main():
     if not relation_file.is_file():
         print(f"Error: relation.twin not found: {relation_file}")
         raise SystemExit(1)
+        
+    if not connection_file.is_file():
+        print(f"Error: connection.twin not found: {connection_file}")
+        raise SystemExit(1)
 
     if not spec_file.is_file():
         print(f"Error: spec.twin not found: {spec_file}")
         raise SystemExit(1)
 
     # -----------------------------------------------------------------
-    # Parse relation.txt
+    # Parse relation.twin
     # -----------------------------------------------------------------
 
     print(f"Parsing relation file: {relation_file}")
@@ -79,7 +89,26 @@ def main():
         raise SystemExit(1)
 
     # -----------------------------------------------------------------
-    # Parse spec.txt
+    # Parse connection.twin
+    # -----------------------------------------------------------------
+
+    print(f"Parsing connection file: {connection_file}")
+
+    try:
+        with open(relation_output, 'r', encoding='utf-8') as f:
+            topology_data = json.load(f)
+            
+        generate_connection_json(
+            connection_file,
+            topology_data,
+            connection_output
+        )
+    except Exception as e:
+        print(f"Failed to generate connection.json: {e}")
+        raise SystemExit(1)
+
+    # -----------------------------------------------------------------
+    # Parse spec.twin
     # -----------------------------------------------------------------
 
     print(f"Parsing spec file: {spec_file}")
@@ -100,6 +129,7 @@ def main():
 
     result = validate_twin(
         relation_output,
+        connection_output,
         spec_output,
     )
 

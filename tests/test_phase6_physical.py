@@ -23,7 +23,7 @@ def read_json(path):
 class Phase6PhysicalTests(unittest.TestCase):
     def setUp(self):
         root = ROOT / "data/compiled/maitri"
-        self.graph = compile_model(read_json(root / "relation.json"), read_json(root / "spec.json"))
+        self.graph = compile_model(read_json(root / "relation.json"), read_json(root / "connection.json"), read_json(root / "spec.json"))
         self.context = BehaviorContext({"random": RandomSource(42), "inputs": {}})
 
     def test_generator_respects_rating_and_depletes_fuel(self):

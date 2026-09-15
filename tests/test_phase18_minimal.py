@@ -29,6 +29,8 @@ from twin_sim.simulation import SimulationEngine
 
 EXAMPLES = Path(__file__).resolve().parent.parent / "examples" / "minimal"
 TOPOLOGY = EXAMPLES / "topology.json"
+CONNECTIONS = EXAMPLES / "connections.json"
+#("topology.json", "connections.json")
 SPECIFICATION = EXAMPLES / "specification.json"
 BLIZZARD_SCENARIO = EXAMPLES / "blizzard.scenario.json"
 EMPTY_SCENARIO = EXAMPLES / "scenario.json"
@@ -36,8 +38,9 @@ EMPTY_SCENARIO = EXAMPLES / "scenario.json"
 
 def _build_engine(seed=42, **kwargs):
     topology = load_json(TOPOLOGY)
+    connections = load_json(CONNECTIONS)
     specification = load_json(SPECIFICATION)
-    graph = compile_model(topology, specification)
+    graph = compile_model(topology, connections, specification)
     return SimulationEngine(graph, seed=seed, run_id="phase18", **kwargs)
 
 
@@ -212,8 +215,9 @@ class Phase18MinimalTests(unittest.TestCase):
 
     def test_graph_structure_is_correct(self):
         topology = load_json(TOPOLOGY)
+        connections = load_json(CONNECTIONS)
         specification = load_json(SPECIFICATION)
-        graph = compile_model(topology, specification)
+        graph = compile_model(topology, connections, specification)
         self.assertEqual(graph.root.name, "MiniStation")
         self.assertIn("Generator", graph.components)
         self.assertIn("FuelSensor", graph.components)
@@ -229,8 +233,9 @@ class Phase18MinimalTests(unittest.TestCase):
 
     def test_behaviors_are_specialized_not_generic_for_known_types(self):
         topology = load_json(TOPOLOGY)
+        connections = load_json(CONNECTIONS)
         specification = load_json(SPECIFICATION)
-        graph = compile_model(topology, specification)
+        graph = compile_model(topology, connections, specification)
         gen = graph.get("Generator")
         sensor = graph.get("FuelSensor")
         ctrl = graph.get("Controller")
@@ -258,6 +263,7 @@ class Phase18MinimalTests(unittest.TestCase):
         """A component with an unrecognized type should get GenericBehavior
         rather than crashing."""
         topology = load_json(TOPOLOGY)
+        connections = load_json(CONNECTIONS)
         specification = load_json(SPECIFICATION)
         # Inject an unknown type into the topology
         unknown = {
@@ -271,11 +277,11 @@ class Phase18MinimalTests(unittest.TestCase):
             "type": "quantum_widget",
             "spec": {"provides": "mysterious thing"}
         }
-        topology["connections"].append({
+        connections.append({
             "source": "QuantumWidget", "target": "Controller",
             "type": "quantum_data", "direction": "-->"
         })
-        graph = compile_model(topology, specification)
+        graph = compile_model(topology, connections, specification)
         qw = graph.get("QuantumWidget")
         self.assertEqual(qw.behavior.level, "generic",
                          "unknown type must get generic behavior")
@@ -294,7 +300,7 @@ class Phase18MinimalTests(unittest.TestCase):
         try:
             result = main([
                 "inspect",
-                "--topology", str(TOPOLOGY),
+                "--topology", str(TOPOLOGY), "--connection", str(CONNECTIONS),
                 "--spec", str(SPECIFICATION),
             ])
         finally:

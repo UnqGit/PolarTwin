@@ -407,17 +407,45 @@ function isInsideAny(wx: number, wz: number, obstacles: AABB[]): boolean {
  * @param obstacles Inflated AABBs to treat as blocked
  * @param usedCells Set of already-used grid cell keys (for overlap penalty)
  * @param bounds   Search bounds to limit grid size: { xMin, xMax, zMin, zMax }
+ * @param allNodes Map of all nodes
+ * @param lcaName  Name of Lowest Common Ancestor
+ * @param onlyLeaves Whether to only treat leaf nodes as obstacles
+ * @param srcName  Source node name to exclude
+ * @param tgtName  Target node name to exclude
+ * @param usedCells Set of already-used grid cell keys (for overlap penalty)
  *
  * Returns an array of world-space [x, z] waypoints (including start and end),
  * or null if no path was found within the search area.
  */
 function aStarRoute(
+  srcAncestors: Set<string>,
+  tgtAncestors: Set<string>,
   startW: [number, number],
   endW: [number, number],
-  obstacles: AABB[],
-  usedCells: Set<string>,
   bounds: { xMin: number; xMax: number; zMin: number; zMax: number },
+  allNodes: Map<string, NodeInfo>,
+  lcaName: string | null,
+  onlyLeaves: boolean = false,
+  srcName?: string,
+  tgtName?: string,
+  usedCells: Set<string> = new Set(),
 ): [number, number][] | null {
+
+  // Build obstacles internally
+  const obstacles: AABB[] = [];
+  for (const [name, info] of allNodes) {
+    if (name === lcaName || srcAncestors.has(name) || tgtAncestors.has(name)) continue;
+    if (srcName && name === srcName) continue;
+    if (tgtName && name === tgtName) continue;
+    if (onlyLeaves && classifyTypeTier(info.type) !== 'leaf') continue;
+
+    obstacles.push({
+      xMin: info.xMin - OBSTACLE_MARGIN,
+      xMax: info.xMax + OBSTACLE_MARGIN,
+      zMin: info.zMin - OBSTACLE_MARGIN,
+      zMax: info.zMax + OBSTACLE_MARGIN,
+    });
+  }
 
   // Convert world -> grid coords.
   const toGrid = (wx: number, wz: number): [number, number] => [
@@ -615,27 +643,11 @@ function routeConnection(
     tgtAttach.pt[2] + tgtAttach.normal[1] * PUSH_OUT,
   ];
 
-  const lcaName = findLCA(srcInfo, tgtInfo, allNodes);
-  const lca = lcaName ? allNodes.get(lcaName) : null;
-
-  // Build obstacle list
-  // Obstacles are all nodes EXCEPT the ancestors of source and target (e.g. rooms).
-  // IMPORTANT: The source and target components themselves ARE treated as obstacles!
-  // This prevents the path from routing backwards directly through the component.
-  const obstacles: AABB[] = [];
   const srcAnc = srcInfo.ancestors;
   const tgtAnc = tgtInfo.ancestors;
 
-  for (const [name, info] of allNodes) {
-    if (srcAnc.has(name) || tgtAnc.has(name)) continue;
-
-    obstacles.push({
-      xMin: info.xMin - OBSTACLE_MARGIN,
-      xMax: info.xMax + OBSTACLE_MARGIN,
-      zMin: info.zMin - OBSTACLE_MARGIN,
-      zMax: info.zMax + OBSTACLE_MARGIN,
-    });
-  }
+  const lcaName = findLCA(srcInfo, tgtInfo, allNodes);
+  const lca = lcaName ? allNodes.get(lcaName) : null;
 
   // Helper to check if a straight orthogonal segment is clear of obstacles
   const isSegmentClear = (sx: number, sz: number, ex: number, ez: number): boolean => {
@@ -643,9 +655,11 @@ function routeConnection(
     const xMax = Math.max(sx, ex);
     const zMin = Math.min(sz, ez);
     const zMax = Math.max(sz, ez);
-    for (const obs of obstacles) {
-      if (xMin <= obs.xMax && xMax >= obs.xMin &&
-          zMin <= obs.zMax && zMax >= obs.zMin) {
+    for (const [name, info] of allNodes) {
+      if (name === lcaName || srcAnc.has(name) || tgtAnc.has(name)) continue;
+      if (name === srcName || name === tgtName) continue;
+      if (xMin <= info.xMax + OBSTACLE_MARGIN && xMax >= info.xMin - OBSTACLE_MARGIN &&
+          zMin <= info.zMax + OBSTACLE_MARGIN && zMax >= info.zMin - OBSTACLE_MARGIN) {
         return false;
       }
     }
@@ -682,36 +696,34 @@ function routeConnection(
   // Attempt 1: normal bounds and all unrelated obstacles.
   if (!rawPath) {
     rawPath = aStarRoute(
+      srcAnc,
+      tgtAnc,
       startW,
       endW,
-      obstacles,
-      usedCells,
       bounds,
+      allNodes,
+      lcaName,
+      false,
+      srcName,
+      tgtName,
+      usedCells,
     );
-  }
-
-  // Build leaf obstacles for relaxed attempts
-  const leafObstacles: AABB[] = [];
-  for (const [name, info] of allNodes) {
-    if (srcAnc.has(name) || tgtAnc.has(name)) continue;
-    if (classifyTypeTier(info.type) === 'leaf') {
-      leafObstacles.push({
-        xMin: info.xMin - OBSTACLE_MARGIN,
-        xMax: info.xMax + OBSTACLE_MARGIN,
-        zMin: info.zMin - OBSTACLE_MARGIN,
-        zMax: info.zMax + OBSTACLE_MARGIN,
-      });
-    }
   }
 
   // Attempt 2: Relax obstacles (only leaf components are obstacles, ignore unrelated containers)
   if (!rawPath) {
     rawPath = aStarRoute(
+      srcAnc,
+      tgtAnc,
       startW,
       endW,
-      leafObstacles,
-      usedCells,
       bounds,
+      allNodes,
+      lcaName,
+      true,
+      srcName,
+      tgtName,
+      usedCells,
     );
   }
 
@@ -725,11 +737,17 @@ function routeConnection(
       zMax: bounds.zMax + 4,
     };
     rawPath = aStarRoute(
+      srcAnc,
+      tgtAnc,
       startW,
       endW,
-      leafObstacles, // Keep avoiding leaf components!
-      usedCells,
       expandedBounds,
+      allNodes,
+      lcaName,
+      true,
+      srcName,
+      tgtName,
+      usedCells,
     );
   }
 
@@ -929,10 +947,10 @@ export function buildLayout(node: any, spec: any, rawConnections: any[] = []): N
  * @param topology — raw topology/relation JSON (relation.json).
  * @param spec     — raw specification JSON (spec.json).
  */
-export function buildSceneLayout(topology: any, spec: any): SceneLayout {
-  const root = buildLayout(topology, spec);
+export function buildSceneLayout(topology: any, connectionsData: any, spec: any): SceneLayout {
+  const root = buildLayout(topology, spec, connectionsData);
   const nodeMap = buildNodeMap(root);
-  const rawConnections: any[] = topology?.connections ?? [];
+  const rawConnections: any[] = Array.isArray(connectionsData) ? connectionsData : [];
   
   // Discover floors and generate synthetic connections (ladders/lifts)
   const floorContainers = new Map<string, NodeLayout[]>();

@@ -1,0 +1,175 @@
+
+# ============================================================
+
+# RELATIONSHIPS
+
+# ============================================================
+
+# -------------------- ENERGY -------------------------------
+
+Generator1-->EnergyController@status
+Generator2-->EnergyController@status
+
+PowerSensor-->EnergyController@power_data
+FuelLevelSensor-->EnergyController@fuel_data
+BatterySensor-->EnergyController@battery_data
+
+EnergyController-->Generator1@command
+EnergyController-->Generator2@command
+
+EnergyController-->BatteryBank@charge_control
+EnergyController-->PowerInverter@power_control
+
+BatteryBank-->PowerInverter@stored_power
+PowerInverter-->ControlServer@power_status
+
+# -------------------- HVAC ---------------------------------
+
+IndoorTemperatureSensor-->HeatingController@temperature
+OutdoorTemperatureSensor-->HeatingController@outside_temperature
+
+HeatingController-->MainHeater@control
+HeatingController-->BackupHeater@backup_control
+
+AirQualitySensor-->VentilationController@air_quality
+AirflowSensor-->VentilationController@airflow
+
+VentilationController-->SupplyFan@control
+VentilationController-->ExhaustFan@control
+
+CoolingTemperatureSensor-->CoolingController@temperature
+CoolingController-->CoolingUnit@control
+
+# -------------------- HVAC TO CONTROL ----------------------
+
+HeatingController-->MainController@heating_status
+VentilationController-->MainController@ventilation_status
+CoolingController-->MainController@cooling_status
+
+MainController-->HeatingController@command
+MainController-->VentilationController@command
+MainController-->CoolingController@command
+
+# -------------------- RESEARCH -----------------------------
+
+LabTemperatureSensor-->LabController@temperature
+LabHumiditySensor-->LabController@humidity
+LabGasSensor-->LabController@gas_data
+
+LabController-->WetLab@control
+LabController-->DryLab@control
+
+GPS-->MainController@location
+WeatherSensor-->MainController@weather_data
+
+ResearchRobot-->ControlServer@telemetry
+SnowVehicle-->ControlServer@telemetry
+
+# -------------------- CONTROL ------------------------------
+
+SystemHealthSensor-->MainController@health
+NetworkSensor-->MainController@network_status
+
+MainController-->ControlServer@system_data
+BackupController-->ControlServer@backup_data
+
+ControlServer-->MainController@commands
+ControlServer-->DataServer@data
+
+# -------------------- ALARMS -------------------------------
+
+FireAlarm-->AlarmController@alarm
+SmokeAlarm-->AlarmController@alarm
+EmergencyAlarm-->AlarmController@alarm
+
+FireSensor-->FireSafetyController@fire_detection
+SmokeSensor-->FireSafetyController@smoke_detection
+
+FireSafetyController-->FireAlarm2@activate_alarm
+FireSafetyController-->AlarmController@emergency_status
+
+EmergencySensor-->EmergencyController@emergency_data
+
+EmergencyController-->EmergencyBeacon@activate
+EmergencyController-->EmergencyRadio@broadcast
+
+# -------------------- COMMUNICATION ------------------------
+
+MainRouter-->CommunicationServer@network_data
+BackupRouter-->CommunicationServer@backup_network
+
+SatelliteAntenna-->CommunicationServer@satellite_link
+RadioAntenna-->CommunicationServer@radio_link
+
+CommunicationServer-->ControlServer@communication
+ControlServer-->CommunicationServer@commands
+
+MainRouter<-->BackupRouter@network_backup
+
+# -------------------- INVENTORY ----------------------------
+
+FoodTemperatureSensor-->InventoryController@food_temperature
+FuelLevelSensor2-->InventoryController@fuel_level
+
+InventoryController-->FoodStorage@inventory_status
+InventoryController-->FuelStorage@fuel_status
+InventoryController-->EquipmentStorage@equipment_status
+
+LogisticsController-->SupplyVehicle@dispatch
+LogisticsController-->CargoVehicle@dispatch
+
+SupplyVehicle-->LogisticsController@location
+CargoVehicle-->LogisticsController@location
+
+# -------------------- PERSONNEL ----------------------------
+
+AccessSensor-->PersonnelController@access_event
+
+PersonnelController-->PersonnelDatabase@personnel_data
+PersonnelDatabase-->PersonnelServer@personnel_records
+
+PersonnelServer-->ControlServer@personnel_status
+ControlServer-->PersonnelServer@access_request
+
+# -------------------- WATER -------------------------------
+
+WaterLevelSensor-->WaterController@water_level
+WaterQualitySensor-->WaterController@water_quality
+
+WaterController-->WaterPump@pump_control
+WaterPump-->WaterTank@water_flow
+
+WaterController-->ControlServer@water_status
+
+# -------------------- WASTE -------------------------------
+
+WasteLevelSensor-->WasteController@waste_level
+
+WasteController-->WastePump@pump_control
+WastePump-->WasteStorage@waste_flow
+
+WasteController-->ControlServer@waste_status
+
+# -------------------- CROSS-SYSTEM SAFETY ------------------
+
+FireSafetyController-->MainController@fire_status
+EmergencyController-->MainController@emergency_status
+
+MainController-->EmergencyController@emergency_command
+MainController-->AlarmController@alarm_command
+
+EmergencyBeacon-->CommunicationServer@emergency_signal
+EmergencyRadio-->CommunicationServer@emergency_broadcast
+
+# -------------------- CENTRAL CONTROL ----------------------
+
+EnergyController-->MainController@energy_status
+MainController-->EnergyController@energy_command
+
+InventoryController-->MainController@inventory_status
+PersonnelController-->MainController@personnel_status
+WaterController-->MainController@water_status
+WasteController-->MainController@waste_status
+
+MainController-->ControlServer@central_status
+ControlServer-->MainController@central_command

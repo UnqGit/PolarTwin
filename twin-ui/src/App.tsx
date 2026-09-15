@@ -3,6 +3,7 @@ import { Snowflake } from 'lucide-react';
 import { TwinViewer, type LightingMode } from './components/TwinViewer';
 
 const relationFiles = import.meta.glob('../../data/compiled/*/relation.json', { eager: true, import: 'default' });
+const connectionFiles = import.meta.glob('../../data/compiled/*/connection.json', { eager: true, import: 'default' });
 const specFiles = import.meta.glob('../../data/compiled/*/spec.json', { eager: true, import: 'default' });
 
 // Extract twin names from paths
@@ -40,14 +41,16 @@ function App() {
   }, []);
 
   const relation = selectedTwin ? relationFiles[`../../data/compiled/${selectedTwin}/relation.json`] : null;
+  const connections = selectedTwin ? connectionFiles[`../../data/compiled/${selectedTwin}/connection.json`] : null;
   const spec = selectedTwin ? specFiles[`../../data/compiled/${selectedTwin}/spec.json`] : null;
 
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative' }}>
-      {relation && spec ? (
+      {relation && connections && spec ? (
         <div style={{ width: '100%', height: '100%', position: 'relative' }}>
           <TwinViewer 
             topology={relation} 
+            connections={connections}
             specification={spec} 
             liveStateRef={liveStateRef} 
             lightingMode={lightingMode}

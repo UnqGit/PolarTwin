@@ -10,6 +10,7 @@ Expected files:
     └── twins/
         └── <twin>/
             ├── relation.json
+            ├── connection.json
             └── spec.json
 
 Usage:
@@ -130,7 +131,6 @@ def validate_relation_structure(relation, result):
         "type",
         "tags",
         "children",
-        "connections",
     }
 
     missing = required_root_fields - relation.keys()
@@ -151,11 +151,6 @@ def validate_relation_structure(relation, result):
 
     if "children" in relation and not isinstance(relation["children"], list):
         result.error("relation.json root 'children' must be a list.")
-
-    if "connections" in relation and not isinstance(
-        relation["connections"], list
-    ):
-        result.error("relation.json 'connections' must be a list.")
 
     nodes = []
 
@@ -221,10 +216,9 @@ def validate_relation_structure(relation, result):
     return nodes
 
 
-def validate_relation_connections(relation, node_map, result):
-    connections = relation.get("connections", [])
-
+def validate_connections(connections, node_map, result):
     if not isinstance(connections, list):
+        result.error("connection.json root must be a list.")
         return
 
     required_fields = {
@@ -579,12 +573,10 @@ def validate_measurements(spec, result):
 # Graph validation
 # ---------------------------------------------------------------------------
 
-def validate_graph(relation, node_map, result):
+def validate_graph(connections, node_map, result):
     """
     Perform graph-level consistency checks.
     """
-
-    connections = relation.get("connections", [])
 
     incoming = Counter()
     outgoing = Counter()
@@ -623,7 +615,7 @@ def validate_graph(relation, node_map, result):
 # Full validation
 # ---------------------------------------------------------------------------
 
-def validate_twin(relation_file, spec_file):
+def validate_twin(relation_file, connection_file, spec_file):
     result = ValidationResult()
 
     # ------------------------------------------------------------------
@@ -632,6 +624,12 @@ def validate_twin(relation_file, spec_file):
 
     try:
         relation = load_json(relation_file)
+    except ValueError as e:
+        result.error(str(e))
+        return result
+
+    try:
+        connections = load_json(connection_file)
     except ValueError as e:
         result.error(str(e))
         return result
@@ -677,8 +675,8 @@ def validate_twin(relation_file, spec_file):
     # Connection validation.
     # ------------------------------------------------------------------
 
-    validate_relation_connections(
-        relation,
+    validate_connections(
+        connections,
         node_map,
         result,
     )
@@ -704,7 +702,7 @@ def validate_twin(relation_file, spec_file):
     )
 
     validate_graph(
-        relation,
+        connections,
         node_map,
         result,
     )
@@ -736,6 +734,7 @@ def main():
     twin_dir = TWINS_DIR / twin_name
 
     relation_file = twin_dir / "relation.json"
+    connection_file = twin_dir / "connection.json"
     spec_file = twin_dir / "spec.json"
 
     if not twin_dir.is_dir():
@@ -743,11 +742,13 @@ def main():
         raise SystemExit(1)
 
     print(f"Validating twin: {twin_name}")
-    print(f"Relation JSON: {relation_file}")
-    print(f"Spec JSON:     {spec_file}")
+    print(f"Relation JSON:   {relation_file}")
+    print(f"Connection JSON: {connection_file}")
+    print(f"Spec JSON:       {spec_file}")
 
     result = validate_twin(
         relation_file,
+        connection_file,
         spec_file,
     )
 

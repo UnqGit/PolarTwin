@@ -19,10 +19,11 @@ class Phase20QualityTests(unittest.TestCase):
     def setUp(self):
         root = ROOT / "examples/minimal"
         self.topology = read_json(root / "topology.json")
+        self.connections = read_json(root / "connections.json")
         self.specification = read_json(root / "specification.json")
 
     def test_report_counts_components_behaviors_and_isolated_nodes(self):
-        report = build_quality_report(compile_model(self.topology, self.specification))
+        report = build_quality_report(compile_model(self.topology, self.connections, self.specification))
         self.assertEqual(report.components, 5)
         self.assertEqual(report.connections, 4)
         self.assertEqual(report.specialized_behaviors, 3)  # generator, sensor, controller
@@ -34,13 +35,13 @@ class Phase20QualityTests(unittest.TestCase):
         topology = json.loads(json.dumps(self.topology))
         # The enriched topology already has a cycle: Generator→Controller→Generator
         # Adding FuelSensor→Generator creates a bigger SCC
-        topology["connections"].append({
+        connections.append({
             "source": "FuelSensor",
             "target": "Generator",
             "type": "feedback",
             "direction": "-->",
         })
-        report = build_quality_report(compile_model(topology, self.specification))
+        report = build_quality_report(compile_model(topology, self.connections, self.specification))
         # The cycle now includes Controller, FuelSensor, Generator
         self.assertTrue(
             any("Generator" in cycle and "Controller" in cycle for cycle in report.potential_cycles),
@@ -49,7 +50,7 @@ class Phase20QualityTests(unittest.TestCase):
 
     def test_maitri_report_is_topology_agnostic(self):
         root = ROOT / "data/compiled/maitri"
-        report = build_quality_report(compile_model(read_json(root / "relation.json"), read_json(root / "spec.json")))
+        report = build_quality_report(compile_model(read_json(root / "relation.json"), read_json(root / "connection.json"), read_json(root / "spec.json")))
         self.assertEqual(report.components, 102)
         self.assertEqual(report.connections, 96)
         self.assertGreater(report.specialized_behaviors, 0)

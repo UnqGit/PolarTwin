@@ -5,10 +5,12 @@ from pathlib import Path
 try:
     # When run as a module (e.g., python -m compiler.formatter.format_twin)
     from .relation_formatter import format_file as format_relation_file
+    from .connection_formatter import format_file as format_connection_file
     from .spec_formatter import format_file as format_spec_file
 except ImportError:
     # When run directly as a script (e.g., python format_twin.py)
     from relation_formatter import format_file as format_relation_file
+    from connection_formatter import format_file as format_connection_file
     from spec_formatter import format_file as format_spec_file
 
 
@@ -26,7 +28,7 @@ DESCRIPTION_DIR = COMPILER_DIR.parent / "data" / "source"
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Format relation.twin and spec.twin for a digital twin."
+        description="Format relation.twin, connection.twin, and spec.twin for a digital twin."
     )
 
     parser.add_argument(
@@ -40,6 +42,7 @@ def main():
     twin_dir = DESCRIPTION_DIR / twin_name
 
     relation_file = twin_dir / "relation.twin"
+    connection_file = twin_dir / "connection.twin"
     spec_file = twin_dir / "spec.twin"
 
     # -----------------------------------------------------------------
@@ -67,10 +70,32 @@ def main():
     print(f"Formatting file: {relation_file}")
 
     try:
-        format_relation_file(relation_file, relation_file)
+        format_relation_file(relation_file, relation_file, in_place=True)
     except Exception as e:
         print(
             f"Error formatting {relation_file}: {e}",
+            file=sys.stderr
+        )
+        sys.exit(1)
+
+    # -----------------------------------------------------------------
+    # Format connection.twin
+    # -----------------------------------------------------------------
+
+    if not connection_file.is_file():
+        print(
+            f"Error: connection.twin not found: {connection_file}",
+            file=sys.stderr
+        )
+        sys.exit(1)
+
+    print(f"Formatting file: {connection_file}")
+
+    try:
+        format_connection_file(connection_file, connection_file, in_place=True)
+    except Exception as e:
+        print(
+            f"Error formatting {connection_file}: {e}",
             file=sys.stderr
         )
         sys.exit(1)

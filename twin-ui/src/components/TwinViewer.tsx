@@ -227,6 +227,7 @@ import { HoverCard } from './HoverCard';
 
 interface TwinViewerProps {
   topology: any;
+  connections: any;
   specification: any;
   liveStateRef: React.MutableRefObject<Record<string, unknown>>;
   lightingMode?: LightingMode;
@@ -243,7 +244,7 @@ interface TwinViewerProps {
 }
 
 export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
-  topology, specification, liveStateRef,
+  topology, connections, specification, liveStateRef,
   lightingMode = 'dynamic',
   selectedName = null,
   onSelectName,
@@ -263,13 +264,13 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
   const sceneLayout = useMemo(
     () => {
       try {
-        return buildSceneLayout(topology, specification);
+        return buildSceneLayout(topology, connections, specification);
       } catch (err) {
         console.error("Layout error:", err);
         return { root: null, connections: [], allNodes: new Map<string, any>() };
       }
     },
-    [topology, specification]
+    [topology, connections, specification]
   );
 
 

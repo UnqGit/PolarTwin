@@ -1,0 +1,56 @@
+[
+  {
+    "source": "MainGenerator",
+    "target": "PowerSensor",
+    "type": "power",
+    "direction": "-->"
+  },
+  {
+    "source": "PowerSensor",
+    "target": "MainController",
+    "type": "data",
+    "direction": "-->"
+  },
+  {
+    "source": "MainController",
+    "target": "MainGenerator",
+    "type": "control",
+    "direction": "-->"
+  },
+  {
+    "source": "TankSensor",
+    "target": "MainController",
+    "type": "data",
+    "direction": "-->"
+  },
+  {
+    "source": "MainController",
+    "target": "MainPump",
+    "type": "control",
+    "direction": "-->"
+  },
+  {
+    "source": "MainPump",
+    "target": "WaterTank",
+    "type": "water",
+    "direction": "-->"
+  },
+  {
+    "source": "StationA",
+    "target": "StationB",
+    "type": "road",
+    "direction": "<-->"
+  },
+  {
+    "source": "BlockA1",
+    "target": "BlockA2",
+    "type": "hallway",
+    "direction": "<-->"
+  },
+  {
+    "source": "BlockB1",
+    "target": "BlockB2",
+    "type": "hallway",
+    "direction": "<-->"
+  }
+]

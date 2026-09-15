@@ -1,0 +1,26 @@
+[
+  {
+    "source": "Generator",
+    "target": "Controller",
+    "type": "power_data",
+    "direction": "-->"
+  },
+  {
+    "source": "FuelSensor",
+    "target": "Controller",
+    "type": "fuel_data",
+    "direction": "-->"
+  },
+  {
+    "source": "Controller",
+    "target": "Generator",
+    "type": "command",
+    "direction": "-->"
+  },
+  {
+    "source": "Generator",
+    "target": "FuelSensor",
+    "type": "fuel",
+    "direction": "-->"
+  }
+]

@@ -10,9 +10,9 @@ from twin_sim.observability import SafetyError
 from twin_sim.model import Component, ComponentGraph, Connection
 
 
-def compile_model(topology: Any, specification: Any, validation_config: dict[str, str] | None = None) -> ComponentGraph:
+def compile_model(topology: Any, raw_connections: Any, specification: Any, validation_config: dict[str, str] | None = None) -> ComponentGraph:
     """Build a reusable graph without referring to topology-specific names."""
-    valid_topology, valid_specification = validate_documents(topology, specification, validation_config)
+    valid_topology, valid_connections, valid_specification = validate_documents(topology, raw_connections, specification, validation_config)
     components: dict[str, Component] = {}
 
     def build(node: dict[str, Any], parent: Component | None = None) -> Component:
@@ -29,7 +29,7 @@ def compile_model(topology: Any, specification: Any, validation_config: dict[str
         return component
 
     root = build(valid_topology)
-    connections = [Connection(**connection) for connection in valid_topology["connections"]]
+    connections = [Connection(**connection) for connection in valid_connections]
     graph = ComponentGraph(root, components, connections)
     graph.rebuild_indexes()
 

@@ -270,7 +270,7 @@ describe('buildSceneLayout', () => {
       ],
       connections: [{ source: 'A', target: 'B', type: 'data', direction: '-->' }],
     };
-    const result = buildSceneLayout(topo, emptySpec);
+    const result = buildSceneLayout(topo, (topo as any).connections || [], emptySpec);
     expect(result.root.name).toBe('Sys');
     expect(result.connections).toHaveLength(1);
   });
@@ -284,7 +284,7 @@ describe('buildSceneLayout', () => {
       ],
       connections: [{ source: 'A', target: 'B', type: 'signal', direction: '-->' }],
     };
-    const result = buildSceneLayout(topo, emptySpec);
+    const result = buildSceneLayout(topo, (topo as any).connections || [], emptySpec);
     expect(result.connections[0].connectionType).toBe('signal');
   });
 
@@ -297,7 +297,7 @@ describe('buildSceneLayout', () => {
       ],
       connections: [{ source: 'A', target: 'B', type: 'fuel_data', direction: '-->' }],
     };
-    const result = buildSceneLayout(topo, emptySpec);
+    const result = buildSceneLayout(topo, (topo as any).connections || [], emptySpec);
     expect(result.connections[0].connectionType).toBe('fuel_data');
     expect(result.connections[0].direction).toBe('-->');
   });
@@ -308,13 +308,13 @@ describe('buildSceneLayout', () => {
       children: [{ name: 'A', type: 'sensor', tags: [], children: [] }],
       connections: [{ source: 'A', target: 'MISSING', type: 'data', direction: '-->' }],
     };
-    const result = buildSceneLayout(topo, emptySpec);
+    const result = buildSceneLayout(topo, (topo as any).connections || [], emptySpec);
     expect(result.connections).toHaveLength(0);
   });
 
   it('handles missing connections array gracefully', () => {
     const topo = { name: 'X', type: 'generator', children: [] };
-    const result = buildSceneLayout(topo, emptySpec);
+    const result = buildSceneLayout(topo, (topo as any).connections || [], emptySpec);
     expect(result.connections).toHaveLength(0);
   });
 
@@ -327,8 +327,8 @@ describe('buildSceneLayout', () => {
       ],
       connections: [{ source: 'A', target: 'B', type: 'power', direction: '-->' }],
     };
-    const r1 = buildSceneLayout(topo, emptySpec);
-    const r2 = buildSceneLayout(topo, emptySpec);
+    const r1 = buildSceneLayout(topo, (topo as any).connections || [], emptySpec);
+    const r2 = buildSceneLayout(topo, (topo as any).connections || [], emptySpec);
     expect(r1.root.children[0].position).toEqual(r2.root.children[0].position);
     expect(r1.connections[0].startPos).toEqual(r2.connections[0].startPos);
     expect(r1.connections[0].endPos).toEqual(r2.connections[0].endPos);
@@ -343,7 +343,7 @@ describe('buildSceneLayout', () => {
       ],
       connections: [{ source: 'Sub', target: 'Sub2', type: 'exotic_link', direction: '-->' }],
     };
-    const result = buildSceneLayout(topo, emptySpec);
+    const result = buildSceneLayout(topo, (topo as any).connections || [], emptySpec);
     expect(result.root.name).toBe('Future');
     expect(result.root.children).toHaveLength(2);
   });
@@ -357,7 +357,7 @@ describe('buildSceneLayout', () => {
       ],
       connections: [{ source: 'A', target: 'B', type: 'cmd', direction: '-->' }],
     };
-    const result = buildSceneLayout(topo, emptySpec);
+    const result = buildSceneLayout(topo, (topo as any).connections || [], emptySpec);
     const c = result.connections[0];
     expect(c.startPos).not.toEqual(c.endPos);
   });

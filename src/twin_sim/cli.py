@@ -19,7 +19,7 @@ from twin_sim.storage import SQLiteAdapter
 
 
 def _inputs(args):
-    return load_model_inputs(args.topology, args.spec)
+    return load_model_inputs(args.topology, args.connection, args.spec)
 
 
 def _scenario(engine, paths):
@@ -52,8 +52,8 @@ def command_validate(args) -> int:
 
 
 def command_inspect(args) -> int:
-    topology, specification = _inputs(args)
-    graph = compile_model(topology, specification)
+    topology, connections, specification = _inputs(args)
+    graph = compile_model(topology, connections, specification)
     behavior_counts: dict[str, int] = {}
     for component in graph.components.values():
         name = component.behavior.name if component.behavior else "none"
@@ -69,16 +69,16 @@ def command_inspect(args) -> int:
 
 
 def command_graph(args) -> int:
-    topology, specification = _inputs(args)
-    graph = compile_model(topology, specification)
+    topology, connections, specification = _inputs(args)
+    graph = compile_model(topology, connections, specification)
     for connection in graph.connections:
         print(f"{connection.source}{connection.direction}{connection.target}@{connection.type}")
     return 0
 
 
 def command_quality(args) -> int:
-    topology, specification = _inputs(args)
-    report = build_quality_report(compile_model(topology, specification))
+    topology, connections, specification = _inputs(args)
+    report = build_quality_report(compile_model(topology, connections, specification))
     print(json.dumps(report.to_dict(), sort_keys=True))
     return 0
 
@@ -147,7 +147,7 @@ def _write_messages(messages, output_file):
 def _run_engine(args, _get=None, seed: int | None = None, run_id: str | None = None):
     if _get is None:
         _, _get = _merge_config(args)
-    topology, specification = _inputs(args)
+    topology, connections, specification = _inputs(args)
     
     val_arg = _get("validation")
     validation_config = None
@@ -159,7 +159,7 @@ def _run_engine(args, _get=None, seed: int | None = None, run_id: str | None = N
         from twin_sim.plugins import load_plugins_from_directory
         load_plugins_from_directory(plugins_dir)
 
-    graph = compile_model(topology, specification, validation_config)
+    graph = compile_model(topology, connections, specification, validation_config)
     
     env_arg = _get("environment")
     environment = None
@@ -250,9 +250,9 @@ def command_generate(args) -> int:
 
 
 def command_validate_simulation(args) -> int:
-    topology, specification = _inputs(args)
+    topology, connections, specification = _inputs(args)
     validation_config = json.loads(args.validation) if getattr(args, "validation", None) else None
-    graph = compile_model(topology, specification, validation_config)
+    graph = compile_model(topology, connections, specification, validation_config)
     scenario_paths = getattr(args, "scenario", None) or []
     if isinstance(scenario_paths, str):
         scenario_paths = [scenario_paths]
@@ -346,6 +346,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     def add_inputs(command):
         command.add_argument("--topology", required=True)
+        command.add_argument("--connection", required=True)
         command.add_argument("--spec", required=True)
         command.add_argument(
             "--validation",
@@ -404,7 +405,7 @@ def build_parser() -> argparse.ArgumentParser:
     experiment.set_defaults(handler=command_experiment)
 
     generate = subparsers.add_parser("generate")
-    for action in ("topology", "spec"):
+    for action in ("topology", "connection", "spec"):
         generate.add_argument(f"--{action}", required=True)
     generate.add_argument("--scenario", action="append", help="Scenario JSON file(s)")
     generate.add_argument("--config", help="Runtime configuration JSON file")

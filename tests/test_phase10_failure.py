@@ -17,7 +17,7 @@ def read_json(path):
 class Phase10FailureTests(unittest.TestCase):
     def setUp(self):
         root = ROOT / "data/compiled/maitri"
-        self.graph = compile_model(read_json(root / "relation.json"), read_json(root / "spec.json"))
+        self.graph = compile_model(read_json(root / "relation.json"), read_json(root / "connection.json"), read_json(root / "spec.json"))
 
     def test_failed_primary_activates_backup_without_component_names(self):
         engine = SimulationEngine(self.graph)

@@ -17,10 +17,11 @@ def read_json(path):
 class Phase3BehaviorTests(unittest.TestCase):
     def setUp(self):
         self.topology = read_json(ROOT / "examples/minimal/topology.json")
+        self.connections = read_json(ROOT / "examples/minimal/connections.json")
         self.specification = read_json(ROOT / "examples/minimal/specification.json")
 
     def test_type_inference_attaches_specialized_behaviors(self):
-        graph = compile_model(self.topology, self.specification)
+        graph = compile_model(self.topology, self.connections, self.specification)
         self.assertEqual(graph.get("Generator").behavior.name, "generator")
         self.assertEqual(graph.get("FuelSensor").behavior.name, "sensor")
         self.assertEqual(graph.get("Generator").behavior.level, "specialized")
@@ -30,7 +31,7 @@ class Phase3BehaviorTests(unittest.TestCase):
         specification = copy.deepcopy(self.specification)
         topology["children"].append({"name": "QuantumWidget", "type": "quantum_widget", "tags": [], "children": []})
         specification["components"]["QuantumWidget"] = {"type": "quantum_widget", "spec": {"provides": "unknown"}}
-        graph = compile_model(topology, specification)
+        graph = compile_model(topology, connections, specification)
         self.assertIsInstance(graph.get("QuantumWidget").behavior, GenericBehavior)
         self.assertTrue(any("QuantumWidget" in item and "generic fallback" in item for item in graph.diagnostics))
 
@@ -54,11 +55,11 @@ class Phase3BehaviorTests(unittest.TestCase):
         topology["children"][0]["children"][0]["type"] = "unknown_type"
         specification["components"]["Generator"]["type"] = "unknown_type"
         specification["components"]["Generator"]["spec"]["behavior_type"] = "generator"
-        graph = compile_model(topology, specification)
+        graph = compile_model(topology, connections, specification)
         self.assertEqual(graph.get("Generator").behavior.name, "generator")
 
     def test_custom_registry_behavior_is_supported(self):
-        graph = compile_model(self.topology, self.specification)
+        graph = compile_model(self.topology, self.connections, self.specification)
         registry = BehaviorRegistry()
 
         class CustomBehavior(GenericBehavior):

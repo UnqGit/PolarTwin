@@ -1,0 +1,1658 @@
+[
+  {
+    "source": "CHPUnit1",
+    "target": "MainGeneratorController",
+    "type": "status",
+    "direction": "-->"
+  },
+  {
+    "source": "CHPUnit2",
+    "target": "MainGeneratorController",
+    "type": "status",
+    "direction": "-->"
+  },
+  {
+    "source": "CHPUnit3",
+    "target": "MainGeneratorController",
+    "type": "status",
+    "direction": "-->"
+  },
+  {
+    "source": "Generator1Sensor",
+    "target": "MainGeneratorController",
+    "type": "generator1_data",
+    "direction": "-->"
+  },
+  {
+    "source": "Generator2Sensor",
+    "target": "MainGeneratorController",
+    "type": "generator2_data",
+    "direction": "-->"
+  },
+  {
+    "source": "Generator3Sensor",
+    "target": "MainGeneratorController",
+    "type": "generator3_data",
+    "direction": "-->"
+  },
+  {
+    "source": "FuelConsumptionSensor",
+    "target": "MainGeneratorController",
+    "type": "fuel_consumption",
+    "direction": "-->"
+  },
+  {
+    "source": "PowerOutputSensor",
+    "target": "MainGeneratorController",
+    "type": "power_output",
+    "direction": "-->"
+  },
+  {
+    "source": "MainGeneratorController",
+    "target": "CHPUnit1",
+    "type": "control",
+    "direction": "-->"
+  },
+  {
+    "source": "MainGeneratorController",
+    "target": "CHPUnit2",
+    "type": "control",
+    "direction": "-->"
+  },
+  {
+    "source": "MainGeneratorController",
+    "target": "CHPUnit3",
+    "type": "control",
+    "direction": "-->"
+  },
+  {
+    "source": "MainGeneratorController",
+    "target": "PowerController",
+    "type": "generation_status",
+    "direction": "-->"
+  },
+  {
+    "source": "PowerController",
+    "target": "MainSwitchboard",
+    "type": "power_distribution",
+    "direction": "-->"
+  },
+  {
+    "source": "PowerController",
+    "target": "EmergencySwitchboard",
+    "type": "emergency_power",
+    "direction": "-->"
+  },
+  {
+    "source": "BatterySensor",
+    "target": "PowerController",
+    "type": "battery_status",
+    "direction": "-->"
+  },
+  {
+    "source": "PowerController",
+    "target": "BatteryBank",
+    "type": "charge_control",
+    "direction": "-->"
+  },
+  {
+    "source": "PowerController",
+    "target": "PowerInverter",
+    "type": "inverter_control",
+    "direction": "-->"
+  },
+  {
+    "source": "BatteryBank",
+    "target": "PowerInverter",
+    "type": "stored_power",
+    "direction": "-->"
+  },
+  {
+    "source": "PowerInverter",
+    "target": "MainSwitchboard",
+    "type": "backup_power",
+    "direction": "-->"
+  },
+  {
+    "source": "UPS",
+    "target": "ControlServer",
+    "type": "critical_power",
+    "direction": "-->"
+  },
+  {
+    "source": "FuelLevelSensor",
+    "target": "FuelFarmController",
+    "type": "fuel_level",
+    "direction": "-->"
+  },
+  {
+    "source": "FuelPressureSensor",
+    "target": "FuelFarmController",
+    "type": "pressure",
+    "direction": "-->"
+  },
+  {
+    "source": "FuelLeakSensor",
+    "target": "FuelFarmController",
+    "type": "leak_detection",
+    "direction": "-->"
+  },
+  {
+    "source": "FuelFarmController",
+    "target": "FuelTransferPump",
+    "type": "pump_control",
+    "direction": "-->"
+  },
+  {
+    "source": "FuelFarmController",
+    "target": "MainFuelTank",
+    "type": "fuel_status",
+    "direction": "-->"
+  },
+  {
+    "source": "FuelFarmController",
+    "target": "BackupFuelTank",
+    "type": "backup_status",
+    "direction": "-->"
+  },
+  {
+    "source": "FuelTransferPump",
+    "target": "FuelStationController",
+    "type": "fuel_supply",
+    "direction": "-->"
+  },
+  {
+    "source": "FuelStationController",
+    "target": "FuelDispenser",
+    "type": "dispensing",
+    "direction": "-->"
+  },
+  {
+    "source": "FuelMeter",
+    "target": "FuelStationController",
+    "type": "fuel_data",
+    "direction": "-->"
+  },
+  {
+    "source": "FuelFarmController",
+    "target": "MainController",
+    "type": "fuel_status",
+    "direction": "-->"
+  },
+  {
+    "source": "LabTemperatureSensor",
+    "target": "LaboratoryController",
+    "type": "temperature",
+    "direction": "-->"
+  },
+  {
+    "source": "LabHumiditySensor",
+    "target": "LaboratoryController",
+    "type": "humidity",
+    "direction": "-->"
+  },
+  {
+    "source": "LabAirQualitySensor",
+    "target": "LaboratoryController",
+    "type": "air_quality",
+    "direction": "-->"
+  },
+  {
+    "source": "LabPowerSensor",
+    "target": "LaboratoryController",
+    "type": "power",
+    "direction": "-->"
+  },
+  {
+    "source": "LaboratoryController",
+    "target": "AtmosphericLab",
+    "type": "environment_control",
+    "direction": "-->"
+  },
+  {
+    "source": "LaboratoryController",
+    "target": "GeologyLab",
+    "type": "environment_control",
+    "direction": "-->"
+  },
+  {
+    "source": "LaboratoryController",
+    "target": "BiologyLab",
+    "type": "environment_control",
+    "direction": "-->"
+  },
+  {
+    "source": "LaboratoryController",
+    "target": "OceanScienceLab",
+    "type": "environment_control",
+    "direction": "-->"
+  },
+  {
+    "source": "LaboratoryController",
+    "target": "EnvironmentalLab",
+    "type": "environment_control",
+    "direction": "-->"
+  },
+  {
+    "source": "LaboratoryController",
+    "target": "ResearchDataServer",
+    "type": "laboratory_data",
+    "direction": "-->"
+  },
+  {
+    "source": "GroundStorageSystem",
+    "target": "LaboratoryController",
+    "type": "equipment_status",
+    "direction": "-->"
+  },
+  {
+    "source": "WorkshopPowerSensor",
+    "target": "WorkshopController",
+    "type": "power",
+    "direction": "-->"
+  },
+  {
+    "source": "WorkshopTemperatureSensor",
+    "target": "WorkshopController",
+    "type": "temperature",
+    "direction": "-->"
+  },
+  {
+    "source": "WorkshopController",
+    "target": "MechanicalWorkshop",
+    "type": "control",
+    "direction": "-->"
+  },
+  {
+    "source": "WorkshopController",
+    "target": "ElectricalWorkshop",
+    "type": "control",
+    "direction": "-->"
+  },
+  {
+    "source": "WorkshopController",
+    "target": "InstrumentWorkshop",
+    "type": "control",
+    "direction": "-->"
+  },
+  {
+    "source": "WorkshopController",
+    "target": "MainController",
+    "type": "maintenance_status",
+    "direction": "-->"
+  },
+  {
+    "source": "StorageTemperatureSensor",
+    "target": "StorageController",
+    "type": "temperature",
+    "direction": "-->"
+  },
+  {
+    "source": "StorageHumiditySensor",
+    "target": "StorageController",
+    "type": "humidity",
+    "direction": "-->"
+  },
+  {
+    "source": "StorageController",
+    "target": "ColdStore",
+    "type": "temperature_control",
+    "direction": "-->"
+  },
+  {
+    "source": "StorageController",
+    "target": "EquipmentStore",
+    "type": "inventory_status",
+    "direction": "-->"
+  },
+  {
+    "source": "StorageController",
+    "target": "ScientificStore",
+    "type": "inventory_status",
+    "direction": "-->"
+  },
+  {
+    "source": "StorageController",
+    "target": "SparePartsStore",
+    "type": "inventory_status",
+    "direction": "-->"
+  },
+  {
+    "source": "StorageController",
+    "target": "CargoInventorySensor",
+    "type": "storage_status",
+    "direction": "-->"
+  },
+  {
+    "source": "IndoorTemperatureSensor",
+    "target": "HVACController",
+    "type": "temperature",
+    "direction": "-->"
+  },
+  {
+    "source": "OutdoorTemperatureSensor",
+    "target": "HVACController",
+    "type": "outside_temperature",
+    "direction": "-->"
+  },
+  {
+    "source": "AirPressureSensor",
+    "target": "HVACController",
+    "type": "pressure",
+    "direction": "-->"
+  },
+  {
+    "source": "AirQualitySensor",
+    "target": "HVACController",
+    "type": "air_quality",
+    "direction": "-->"
+  },
+  {
+    "source": "HVACController",
+    "target": "HeatingUnit",
+    "type": "heating_control",
+    "direction": "-->"
+  },
+  {
+    "source": "HVACController",
+    "target": "BackupHeatingUnit",
+    "type": "backup_control",
+    "direction": "-->"
+  },
+  {
+    "source": "HVACController",
+    "target": "AirHandlingUnit",
+    "type": "air_control",
+    "direction": "-->"
+  },
+  {
+    "source": "HVACController",
+    "target": "VentilationFan",
+    "type": "ventilation_control",
+    "direction": "-->"
+  },
+  {
+    "source": "HVACController",
+    "target": "ExhaustFan",
+    "type": "exhaust_control",
+    "direction": "-->"
+  },
+  {
+    "source": "HVACController",
+    "target": "MainController",
+    "type": "thermal_status",
+    "direction": "-->"
+  },
+  {
+    "source": "RoomTemperatureSensor",
+    "target": "ResidentialController",
+    "type": "temperature",
+    "direction": "-->"
+  },
+  {
+    "source": "RoomAirQualitySensor",
+    "target": "ResidentialController",
+    "type": "air_quality",
+    "direction": "-->"
+  },
+  {
+    "source": "ResidentialController",
+    "target": "ScientistQuarters",
+    "type": "environment",
+    "direction": "-->"
+  },
+  {
+    "source": "ResidentialController",
+    "target": "EngineerQuarters",
+    "type": "environment",
+    "direction": "-->"
+  },
+  {
+    "source": "ResidentialController",
+    "target": "MedicalQuarters",
+    "type": "environment",
+    "direction": "-->"
+  },
+  {
+    "source": "ResidentialController",
+    "target": "CommonRoom",
+    "type": "environment",
+    "direction": "-->"
+  },
+  {
+    "source": "ResidentialController",
+    "target": "Library",
+    "type": "environment",
+    "direction": "-->"
+  },
+  {
+    "source": "ResidentialController",
+    "target": "MainController",
+    "type": "living_status",
+    "direction": "-->"
+  },
+  {
+    "source": "FoodTemperatureSensor",
+    "target": "FoodServiceController",
+    "type": "temperature",
+    "direction": "-->"
+  },
+  {
+    "source": "KitchenAirQualitySensor",
+    "target": "FoodServiceController",
+    "type": "air_quality",
+    "direction": "-->"
+  },
+  {
+    "source": "FoodServiceController",
+    "target": "Kitchen",
+    "type": "control",
+    "direction": "-->"
+  },
+  {
+    "source": "FoodServiceController",
+    "target": "DiningHall",
+    "type": "service",
+    "direction": "-->"
+  },
+  {
+    "source": "FoodServiceController",
+    "target": "FoodPreparationRoom",
+    "type": "control",
+    "direction": "-->"
+  },
+  {
+    "source": "FoodServiceController",
+    "target": "FoodColdStorage",
+    "type": "temperature_control",
+    "direction": "-->"
+  },
+  {
+    "source": "FoodServiceController",
+    "target": "MainController",
+    "type": "food_status",
+    "direction": "-->"
+  },
+  {
+    "source": "MedicalTemperatureSensor",
+    "target": "MedicalController",
+    "type": "temperature",
+    "direction": "-->"
+  },
+  {
+    "source": "MedicalAirQualitySensor",
+    "target": "MedicalController",
+    "type": "air_quality",
+    "direction": "-->"
+  },
+  {
+    "source": "MedicalController",
+    "target": "MedicalRoom",
+    "type": "environment",
+    "direction": "-->"
+  },
+  {
+    "source": "MedicalController",
+    "target": "FirstAidRoom",
+    "type": "environment",
+    "direction": "-->"
+  },
+  {
+    "source": "MedicalController",
+    "target": "HypothermiaTreatmentRoom",
+    "type": "environment",
+    "direction": "-->"
+  },
+  {
+    "source": "MedicalController",
+    "target": "MedicalEmergencyController",
+    "type": "medical_status",
+    "direction": "-->"
+  },
+  {
+    "source": "MedicalEmergencyController",
+    "target": "MainController",
+    "type": "medical_status",
+    "direction": "-->"
+  },
+  {
+    "source": "PersonnelDatabase",
+    "target": "PersonnelServer",
+    "type": "personnel_records",
+    "direction": "-->"
+  },
+  {
+    "source": "PersonnelServer",
+    "target": "AdministrationController",
+    "type": "personnel_data",
+    "direction": "-->"
+  },
+  {
+    "source": "AdministrationController",
+    "target": "StationOffice",
+    "type": "administration",
+    "direction": "-->"
+  },
+  {
+    "source": "AdministrationController",
+    "target": "ExpeditionOffice",
+    "type": "logistics",
+    "direction": "-->"
+  },
+  {
+    "source": "AdministrationController",
+    "target": "ConferenceRoom",
+    "type": "coordination",
+    "direction": "-->"
+  },
+  {
+    "source": "AdministrationController",
+    "target": "RecordsRoom",
+    "type": "records",
+    "direction": "-->"
+  },
+  {
+    "source": "AdministrationController",
+    "target": "MainController",
+    "type": "personnel_status",
+    "direction": "-->"
+  },
+  {
+    "source": "IntakePressureSensor",
+    "target": "SeaWaterController",
+    "type": "pressure",
+    "direction": "-->"
+  },
+  {
+    "source": "IntakeFlowSensor",
+    "target": "SeaWaterController",
+    "type": "flow",
+    "direction": "-->"
+  },
+  {
+    "source": "SeaWaterController",
+    "target": "SeaWaterPump",
+    "type": "pump_control",
+    "direction": "-->"
+  },
+  {
+    "source": "SeaWaterController",
+    "target": "SeaWaterBackupPump",
+    "type": "backup_control",
+    "direction": "-->"
+  },
+  {
+    "source": "SeaWaterPump",
+    "target": "DesalinationUnit",
+    "type": "seawater_supply",
+    "direction": "-->"
+  },
+  {
+    "source": "DesalinationUnit",
+    "target": "FreshWaterTank",
+    "type": "fresh_water",
+    "direction": "-->"
+  },
+  {
+    "source": "DesalinationUnit",
+    "target": "WaterTreatmentController",
+    "type": "treated_water",
+    "direction": "-->"
+  },
+  {
+    "source": "WaterQualitySensor",
+    "target": "WaterTreatmentController",
+    "type": "quality",
+    "direction": "-->"
+  },
+  {
+    "source": "WaterLevelSensor",
+    "target": "WaterTreatmentController",
+    "type": "level",
+    "direction": "-->"
+  },
+  {
+    "source": "WaterTemperatureSensor",
+    "target": "WaterTreatmentController",
+    "type": "temperature",
+    "direction": "-->"
+  },
+  {
+    "source": "WaterTreatmentController",
+    "target": "FreshWaterTank",
+    "type": "storage_control",
+    "direction": "-->"
+  },
+  {
+    "source": "WaterTreatmentController",
+    "target": "HotWaterTank",
+    "type": "hot_water_control",
+    "direction": "-->"
+  },
+  {
+    "source": "FreshWaterTank",
+    "target": "MainWaterPump",
+    "type": "fresh_water",
+    "direction": "-->"
+  },
+  {
+    "source": "HotWaterTank",
+    "target": "HotWaterPipeline",
+    "type": "hot_water",
+    "direction": "-->"
+  },
+  {
+    "source": "WaterPressureSensor",
+    "target": "WaterDistributionController",
+    "type": "pressure",
+    "direction": "-->"
+  },
+  {
+    "source": "WaterFlowSensor",
+    "target": "WaterDistributionController",
+    "type": "flow",
+    "direction": "-->"
+  },
+  {
+    "source": "WaterDistributionController",
+    "target": "MainWaterPump",
+    "type": "pump_control",
+    "direction": "-->"
+  },
+  {
+    "source": "WaterDistributionController",
+    "target": "BackupWaterPump",
+    "type": "backup_control",
+    "direction": "-->"
+  },
+  {
+    "source": "MainWaterPump",
+    "target": "FreshWaterPipeline",
+    "type": "water_supply",
+    "direction": "-->"
+  },
+  {
+    "source": "BackupWaterPump",
+    "target": "FreshWaterPipeline",
+    "type": "backup_supply",
+    "direction": "-->"
+  },
+  {
+    "source": "FreshWaterPipeline",
+    "target": "Kitchen",
+    "type": "water",
+    "direction": "-->"
+  },
+  {
+    "source": "FreshWaterPipeline",
+    "target": "MedicalRoom",
+    "type": "water",
+    "direction": "-->"
+  },
+  {
+    "source": "FreshWaterPipeline",
+    "target": "Washrooms",
+    "type": "water",
+    "direction": "-->"
+  },
+  {
+    "source": "WaterDistributionController",
+    "target": "MainController",
+    "type": "water_status",
+    "direction": "-->"
+  },
+  {
+    "source": "WasteWaterLevelSensor",
+    "target": "WasteWaterController",
+    "type": "level",
+    "direction": "-->"
+  },
+  {
+    "source": "WasteWaterQualitySensor",
+    "target": "WasteWaterController",
+    "type": "quality",
+    "direction": "-->"
+  },
+  {
+    "source": "WasteWaterController",
+    "target": "WasteWaterCollection",
+    "type": "collection",
+    "direction": "-->"
+  },
+  {
+    "source": "WasteWaterController",
+    "target": "WasteWaterTreatment",
+    "type": "treatment",
+    "direction": "-->"
+  },
+  {
+    "source": "WasteWaterTreatment",
+    "target": "TreatedWaterTank",
+    "type": "treated_water",
+    "direction": "-->"
+  },
+  {
+    "source": "WasteWaterController",
+    "target": "MainController",
+    "type": "wastewater_status",
+    "direction": "-->"
+  },
+  {
+    "source": "WasteLevelSensor",
+    "target": "WasteController",
+    "type": "level",
+    "direction": "-->"
+  },
+  {
+    "source": "WasteProcessingSensor",
+    "target": "WasteController",
+    "type": "processing_status",
+    "direction": "-->"
+  },
+  {
+    "source": "WasteController",
+    "target": "WasteCollection",
+    "type": "collection",
+    "direction": "-->"
+  },
+  {
+    "source": "WasteController",
+    "target": "WasteProcessingUnit",
+    "type": "processing",
+    "direction": "-->"
+  },
+  {
+    "source": "WasteController",
+    "target": "WasteStorage",
+    "type": "storage",
+    "direction": "-->"
+  },
+  {
+    "source": "WasteController",
+    "target": "MainController",
+    "type": "waste_status",
+    "direction": "-->"
+  },
+  {
+    "source": "StationHealthSensor",
+    "target": "MainController",
+    "type": "station_health",
+    "direction": "-->"
+  },
+  {
+    "source": "NetworkHealthSensor",
+    "target": "MainController",
+    "type": "network_health",
+    "direction": "-->"
+  },
+  {
+    "source": "MainController",
+    "target": "ControlServer",
+    "type": "station_data",
+    "direction": "-->"
+  },
+  {
+    "source": "MainController",
+    "target": "BackupServer",
+    "type": "backup_data",
+    "direction": "-->"
+  },
+  {
+    "source": "ControlServer",
+    "target": "MainController",
+    "type": "commands",
+    "direction": "-->"
+  },
+  {
+    "source": "BackupController",
+    "target": "ControlServer",
+    "type": "backup_control",
+    "direction": "-->"
+  },
+  {
+    "source": "ControlServer",
+    "target": "DataSystem",
+    "type": "data_services",
+    "direction": "-->"
+  },
+  {
+    "source": "DataSystem",
+    "target": "ControlServer",
+    "type": "processed_data",
+    "direction": "-->"
+  },
+  {
+    "source": "DataTemperatureSensor",
+    "target": "DataController",
+    "type": "temperature",
+    "direction": "-->"
+  },
+  {
+    "source": "DataPowerSensor",
+    "target": "DataController",
+    "type": "power",
+    "direction": "-->"
+  },
+  {
+    "source": "DataController",
+    "target": "ResearchDataServer",
+    "type": "server_control",
+    "direction": "-->"
+  },
+  {
+    "source": "DataController",
+    "target": "ScienceDatabase",
+    "type": "database_control",
+    "direction": "-->"
+  },
+  {
+    "source": "DataController",
+    "target": "DataStorage",
+    "type": "storage_control",
+    "direction": "-->"
+  },
+  {
+    "source": "DataController",
+    "target": "DataProcessingCluster",
+    "type": "processing_control",
+    "direction": "-->"
+  },
+  {
+    "source": "ResearchDataServer",
+    "target": "ScienceDatabase",
+    "type": "research_data",
+    "direction": "-->"
+  },
+  {
+    "source": "ScienceDatabase",
+    "target": "DataStorage",
+    "type": "archival_data",
+    "direction": "-->"
+  },
+  {
+    "source": "DataProcessingCluster",
+    "target": "ResearchDataServer",
+    "type": "processed_results",
+    "direction": "-->"
+  },
+  {
+    "source": "ResearchDataServer",
+    "target": "CommunicationServer",
+    "type": "remote_data",
+    "direction": "-->"
+  },
+  {
+    "source": "CommunicationServer",
+    "target": "ResearchDataServer",
+    "type": "external_data",
+    "direction": "-->"
+  },
+  {
+    "source": "SatelliteSignalSensor",
+    "target": "SatelliteController",
+    "type": "signal_strength",
+    "direction": "-->"
+  },
+  {
+    "source": "SatelliteController",
+    "target": "SatelliteModem",
+    "type": "control",
+    "direction": "-->"
+  },
+  {
+    "source": "SatelliteController",
+    "target": "SatelliteBackupModem",
+    "type": "backup_control",
+    "direction": "-->"
+  },
+  {
+    "source": "SatelliteModem",
+    "target": "SatelliteTerminal",
+    "type": "satellite_data",
+    "direction": "-->"
+  },
+  {
+    "source": "SatelliteBackupModem",
+    "target": "SatelliteTerminal",
+    "type": "backup_data",
+    "direction": "-->"
+  },
+  {
+    "source": "SatelliteTerminal",
+    "target": "CommunicationServer",
+    "type": "voice_video_data",
+    "direction": "-->"
+  },
+  {
+    "source": "SatelliteTerminal",
+    "target": "ResearchDataServer",
+    "type": "research_link",
+    "direction": "-->"
+  },
+  {
+    "source": "SatelliteController",
+    "target": "MainController",
+    "type": "satellite_status",
+    "direction": "-->"
+  },
+  {
+    "source": "RadioSignalSensor",
+    "target": "RadioController",
+    "type": "signal_status",
+    "direction": "-->"
+  },
+  {
+    "source": "RadioController",
+    "target": "BaseRadio",
+    "type": "control",
+    "direction": "-->"
+  },
+  {
+    "source": "RadioController",
+    "target": "EmergencyRadio",
+    "type": "control",
+    "direction": "-->"
+  },
+  {
+    "source": "RadioController",
+    "target": "FieldRadio",
+    "type": "control",
+    "direction": "-->"
+  },
+  {
+    "source": "EmergencyRadio",
+    "target": "MainController",
+    "type": "emergency_communication",
+    "direction": "-->"
+  },
+  {
+    "source": "FieldRadio",
+    "target": "MainController",
+    "type": "field_communication",
+    "direction": "-->"
+  },
+  {
+    "source": "EarthStationSensor",
+    "target": "EarthStationController",
+    "type": "station_health",
+    "direction": "-->"
+  },
+  {
+    "source": "SignalStrengthSensor",
+    "target": "EarthStationController",
+    "type": "signal",
+    "direction": "-->"
+  },
+  {
+    "source": "EarthStationController",
+    "target": "SatelliteTrackingUnit",
+    "type": "tracking",
+    "direction": "-->"
+  },
+  {
+    "source": "EarthStationController",
+    "target": "SatelliteDataReceiver",
+    "type": "data_reception",
+    "direction": "-->"
+  },
+  {
+    "source": "EarthStationController",
+    "target": "SatelliteCommandTerminal",
+    "type": "command",
+    "direction": "-->"
+  },
+  {
+    "source": "EarthStationController",
+    "target": "RemoteSensingServer",
+    "type": "processing",
+    "direction": "-->"
+  },
+  {
+    "source": "SatelliteDataReceiver",
+    "target": "RemoteSensingServer",
+    "type": "remote_sensing_data",
+    "direction": "-->"
+  },
+  {
+    "source": "RemoteSensingServer",
+    "target": "ResearchDataServer",
+    "type": "satellite_data",
+    "direction": "-->"
+  },
+  {
+    "source": "RemoteSensingServer",
+    "target": "CommunicationServer",
+    "type": "remote_sensing_status",
+    "direction": "-->"
+  },
+  {
+    "source": "WindSensor",
+    "target": "MeteorologyController",
+    "type": "wind",
+    "direction": "-->"
+  },
+  {
+    "source": "AirTemperatureSensor",
+    "target": "MeteorologyController",
+    "type": "temperature",
+    "direction": "-->"
+  },
+  {
+    "source": "AtmosphericPressureSensor",
+    "target": "MeteorologyController",
+    "type": "pressure",
+    "direction": "-->"
+  },
+  {
+    "source": "SolarRadiationSensor",
+    "target": "MeteorologyController",
+    "type": "solar_radiation",
+    "direction": "-->"
+  },
+  {
+    "source": "MeteorologyController",
+    "target": "AutomaticWeatherStation",
+    "type": "weather_control",
+    "direction": "-->"
+  },
+  {
+    "source": "AutomaticWeatherStation",
+    "target": "ResearchDataServer",
+    "type": "weather_data",
+    "direction": "-->"
+  },
+  {
+    "source": "MeteorologyController",
+    "target": "MainController",
+    "type": "weather_status",
+    "direction": "-->"
+  },
+  {
+    "source": "SeismicSensor",
+    "target": "GeophysicsController",
+    "type": "seismic_data",
+    "direction": "-->"
+  },
+  {
+    "source": "MagneticSensor",
+    "target": "GeophysicsController",
+    "type": "magnetic_data",
+    "direction": "-->"
+  },
+  {
+    "source": "GeophysicsController",
+    "target": "SeismicStation",
+    "type": "seismic_control",
+    "direction": "-->"
+  },
+  {
+    "source": "GeophysicsController",
+    "target": "Magnetometer",
+    "type": "magnetic_control",
+    "direction": "-->"
+  },
+  {
+    "source": "GeophysicsController",
+    "target": "GPSReferenceStation",
+    "type": "gps_data",
+    "direction": "-->"
+  },
+  {
+    "source": "SeismicStation",
+    "target": "ResearchDataServer",
+    "type": "seismic_data",
+    "direction": "-->"
+  },
+  {
+    "source": "Magnetometer",
+    "target": "ResearchDataServer",
+    "type": "magnetic_data",
+    "direction": "-->"
+  },
+  {
+    "source": "GPSReferenceStation",
+    "target": "ResearchDataServer",
+    "type": "reference_data",
+    "direction": "-->"
+  },
+  {
+    "source": "SnowDepthSensor",
+    "target": "EnvironmentalController",
+    "type": "snow_depth",
+    "direction": "-->"
+  },
+  {
+    "source": "IceTemperatureSensor",
+    "target": "EnvironmentalController",
+    "type": "ice_temperature",
+    "direction": "-->"
+  },
+  {
+    "source": "EnvironmentalSensor",
+    "target": "EnvironmentalController",
+    "type": "environment",
+    "direction": "-->"
+  },
+  {
+    "source": "EnvironmentalController",
+    "target": "SnowMonitoringStation",
+    "type": "monitoring",
+    "direction": "-->"
+  },
+  {
+    "source": "EnvironmentalController",
+    "target": "IceMonitoringUnit",
+    "type": "ice_monitoring",
+    "direction": "-->"
+  },
+  {
+    "source": "EnvironmentalController",
+    "target": "EnvironmentalDataLogger",
+    "type": "data_logging",
+    "direction": "-->"
+  },
+  {
+    "source": "EnvironmentalDataLogger",
+    "target": "ResearchDataServer",
+    "type": "environmental_data",
+    "direction": "-->"
+  },
+  {
+    "source": "CargoInventorySensor",
+    "target": "CargoController",
+    "type": "inventory",
+    "direction": "-->"
+  },
+  {
+    "source": "CargoTemperatureSensor",
+    "target": "CargoController",
+    "type": "temperature",
+    "direction": "-->"
+  },
+  {
+    "source": "CargoController",
+    "target": "CargoStorage",
+    "type": "inventory_status",
+    "direction": "-->"
+  },
+  {
+    "source": "CargoController",
+    "target": "EquipmentCargoStore",
+    "type": "equipment_status",
+    "direction": "-->"
+  },
+  {
+    "source": "CargoController",
+    "target": "ExpeditionSupplyStore",
+    "type": "supply_status",
+    "direction": "-->"
+  },
+  {
+    "source": "VehicleGPS",
+    "target": "LogisticsController",
+    "type": "gps",
+    "direction": "-->"
+  },
+  {
+    "source": "VehicleTelemetry",
+    "target": "LogisticsController",
+    "type": "telemetry",
+    "direction": "-->"
+  },
+  {
+    "source": "LogisticsController",
+    "target": "SnowVehicle",
+    "type": "dispatch",
+    "direction": "-->"
+  },
+  {
+    "source": "LogisticsController",
+    "target": "UtilityVehicle",
+    "type": "dispatch",
+    "direction": "-->"
+  },
+  {
+    "source": "LogisticsController",
+    "target": "FieldTrailer",
+    "type": "dispatch",
+    "direction": "-->"
+  },
+  {
+    "source": "SnowVehicle",
+    "target": "LogisticsController",
+    "type": "location",
+    "direction": "-->"
+  },
+  {
+    "source": "UtilityVehicle",
+    "target": "LogisticsController",
+    "type": "location",
+    "direction": "-->"
+  },
+  {
+    "source": "LogisticsController",
+    "target": "MainController",
+    "type": "logistics_status",
+    "direction": "-->"
+  },
+  {
+    "source": "FireSensor",
+    "target": "FireSafetyController",
+    "type": "fire_detection",
+    "direction": "-->"
+  },
+  {
+    "source": "SmokeSensor",
+    "target": "FireSafetyController",
+    "type": "smoke_detection",
+    "direction": "-->"
+  },
+  {
+    "source": "HeatSensor",
+    "target": "FireSafetyController",
+    "type": "heat_detection",
+    "direction": "-->"
+  },
+  {
+    "source": "FireSafetyController",
+    "target": "FireAlarm",
+    "type": "alarm",
+    "direction": "-->"
+  },
+  {
+    "source": "FireSafetyController",
+    "target": "FireSuppression",
+    "type": "suppression",
+    "direction": "-->"
+  },
+  {
+    "source": "FireSafetyController",
+    "target": "MainController",
+    "type": "fire_status",
+    "direction": "-->"
+  },
+  {
+    "source": "FireSafetyController",
+    "target": "EmergencyController",
+    "type": "emergency_status",
+    "direction": "-->"
+  },
+  {
+    "source": "EmergencySensor",
+    "target": "EmergencyController",
+    "type": "emergency_detection",
+    "direction": "-->"
+  },
+  {
+    "source": "EmergencyController",
+    "target": "EmergencyAlarm",
+    "type": "alarm",
+    "direction": "-->"
+  },
+  {
+    "source": "EmergencyController",
+    "target": "EmergencyBeacon",
+    "type": "activate",
+    "direction": "-->"
+  },
+  {
+    "source": "EmergencyController",
+    "target": "EmergencyLighting",
+    "type": "activate",
+    "direction": "-->"
+  },
+  {
+    "source": "EmergencyController",
+    "target": "EmergencyRadio",
+    "type": "broadcast",
+    "direction": "-->"
+  },
+  {
+    "source": "EmergencyController",
+    "target": "MainController",
+    "type": "emergency_status",
+    "direction": "-->"
+  },
+  {
+    "source": "MedicalEmergencyController",
+    "target": "MedicalAlarm",
+    "type": "alarm",
+    "direction": "-->"
+  },
+  {
+    "source": "MedicalEmergencyController",
+    "target": "EmergencyMedicalKit",
+    "type": "emergency_access",
+    "direction": "-->"
+  },
+  {
+    "source": "MedicalEmergencyController",
+    "target": "EvacuationEquipment",
+    "type": "evacuation",
+    "direction": "-->"
+  },
+  {
+    "source": "MedicalEmergencyController",
+    "target": "MainController",
+    "type": "medical_emergency",
+    "direction": "-->"
+  },
+  {
+    "source": "ShelterTemperatureSensor",
+    "target": "ShelterController",
+    "type": "temperature",
+    "direction": "-->"
+  },
+  {
+    "source": "ShelterPowerSensor",
+    "target": "ShelterController",
+    "type": "power",
+    "direction": "-->"
+  },
+  {
+    "source": "ShelterWaterSensor",
+    "target": "ShelterController",
+    "type": "water",
+    "direction": "-->"
+  },
+  {
+    "source": "ShelterController",
+    "target": "ShelterGenerator",
+    "type": "power",
+    "direction": "-->"
+  },
+  {
+    "source": "ShelterController",
+    "target": "ShelterWaterTank",
+    "type": "water",
+    "direction": "-->"
+  },
+  {
+    "source": "ShelterController",
+    "target": "ShelterWasteUnit",
+    "type": "waste",
+    "direction": "-->"
+  },
+  {
+    "source": "ShelterController",
+    "target": "ShelterAccommodation",
+    "type": "environment",
+    "direction": "-->"
+  },
+  {
+    "source": "ShelterController",
+    "target": "ShelterKitchen",
+    "type": "operation",
+    "direction": "-->"
+  },
+  {
+    "source": "ShelterController",
+    "target": "ShelterCommunicationRoom",
+    "type": "communication",
+    "direction": "-->"
+  },
+  {
+    "source": "ShelterController",
+    "target": "MainController",
+    "type": "shelter_status",
+    "direction": "-->"
+  },
+  {
+    "source": "SummerCampController",
+    "target": "SummerAccommodation",
+    "type": "accommodation",
+    "direction": "-->"
+  },
+  {
+    "source": "SummerCampController",
+    "target": "SummerDining",
+    "type": "dining",
+    "direction": "-->"
+  },
+  {
+    "source": "SummerCampController",
+    "target": "SummerStorage",
+    "type": "storage",
+    "direction": "-->"
+  },
+  {
+    "source": "SummerCampController",
+    "target": "MainController",
+    "type": "summer_camp_status",
+    "direction": "-->"
+  },
+  {
+    "source": "MainGeneratorController",
+    "target": "MainController",
+    "type": "energy_status",
+    "direction": "-->"
+  },
+  {
+    "source": "MainController",
+    "target": "MainGeneratorController",
+    "type": "energy_command",
+    "direction": "-->"
+  },
+  {
+    "source": "PowerController",
+    "target": "MainController",
+    "type": "power_status",
+    "direction": "-->"
+  },
+  {
+    "source": "MainController",
+    "target": "PowerController",
+    "type": "power_command",
+    "direction": "-->"
+  },
+  {
+    "source": "HVACController",
+    "target": "MainController",
+    "type": "hvac_status",
+    "direction": "-->"
+  },
+  {
+    "source": "MainController",
+    "target": "HVACController",
+    "type": "hvac_command",
+    "direction": "-->"
+  },
+  {
+    "source": "WaterTreatmentController",
+    "target": "MainController",
+    "type": "water_treatment_status",
+    "direction": "-->"
+  },
+  {
+    "source": "MainController",
+    "target": "WaterTreatmentController",
+    "type": "water_command",
+    "direction": "-->"
+  },
+  {
+    "source": "WasteWaterController",
+    "target": "MainController",
+    "type": "wastewater_status",
+    "direction": "-->"
+  },
+  {
+    "source": "WasteController",
+    "target": "MainController",
+    "type": "waste_status",
+    "direction": "-->"
+  },
+  {
+    "source": "LaboratoryController",
+    "target": "MainController",
+    "type": "research_status",
+    "direction": "-->"
+  },
+  {
+    "source": "MainController",
+    "target": "LaboratoryController",
+    "type": "research_command",
+    "direction": "-->"
+  },
+  {
+    "source": "CommunicationController",
+    "target": "MainController",
+    "type": "communication_status",
+    "direction": "-->"
+  },
+  {
+    "source": "MainController",
+    "target": "CommunicationController",
+    "type": "communication_command",
+    "direction": "-->"
+  },
+  {
+    "source": "EarthStationController",
+    "target": "MainController",
+    "type": "earth_station_status",
+    "direction": "-->"
+  },
+  {
+    "source": "MeteorologyController",
+    "target": "MainController",
+    "type": "meteorology_status",
+    "direction": "-->"
+  },
+  {
+    "source": "GeophysicsController",
+    "target": "MainController",
+    "type": "geophysics_status",
+    "direction": "-->"
+  },
+  {
+    "source": "EnvironmentalController",
+    "target": "MainController",
+    "type": "environment_status",
+    "direction": "-->"
+  },
+  {
+    "source": "MainController",
+    "target": "ResearchDataServer",
+    "type": "station_telemetry",
+    "direction": "-->"
+  },
+  {
+    "source": "MainController",
+    "target": "ControlServer",
+    "type": "central_status",
+    "direction": "-->"
+  },
+  {
+    "source": "ControlServer",
+    "target": "MainController",
+    "type": "central_command",
+    "direction": "-->"
+  },
+  {
+    "source": "ResearchDataServer",
+    "target": "ControlServer",
+    "type": "research_status",
+    "direction": "-->"
+  },
+  {
+    "source": "ControlServer",
+    "target": "ResearchDataServer",
+    "type": "data_command",
+    "direction": "-->"
+  },
+  {
+    "source": "CommunicationServer",
+    "target": "ControlServer",
+    "type": "communication",
+    "direction": "-->"
+  },
+  {
+    "source": "ControlServer",
+    "target": "CommunicationServer",
+    "type": "communication_command",
+    "direction": "-->"
+  },
+  {
+    "source": "RemoteSensingServer",
+    "target": "ControlServer",
+    "type": "satellite_status",
+    "direction": "-->"
+  },
+  {
+    "source": "ControlServer",
+    "target": "RemoteSensingServer",
+    "type": "remote_sensing_command",
+    "direction": "-->"
+  },
+  {
+    "source": "MainRouter",
+    "target": "BackupRouter",
+    "type": "network_backup",
+    "direction": "<-->"
+  },
+  {
+    "source": "SatelliteModem",
+    "target": "SatelliteBackupModem",
+    "type": "satellite_redundancy",
+    "direction": "<-->"
+  },
+  {
+    "source": "BackupRouter",
+    "target": "CommunicationServer",
+    "type": "network_data",
+    "direction": "-->"
+  },
+  {
+    "source": "SatelliteController",
+    "target": "CommunicationServer",
+    "type": "satellite_status",
+    "direction": "-->"
+  },
+  {
+    "source": "MainController",
+    "target": "EmergencyController",
+    "type": "emergency_command",
+    "direction": "-->"
+  },
+  {
+    "source": "MainController",
+    "target": "FireSafetyController",
+    "type": "fire_command",
+    "direction": "-->"
+  },
+  {
+    "source": "MainController",
+    "target": "MedicalEmergencyController",
+    "type": "medical_command",
+    "direction": "-->"
+  },
+  {
+    "source": "EmergencyController",
+    "target": "CommunicationServer",
+    "type": "emergency_signal",
+    "direction": "-->"
+  },
+  {
+    "source": "FireSafetyController",
+    "target": "CommunicationServer",
+    "type": "fire_alert",
+    "direction": "-->"
+  },
+  {
+    "source": "MedicalEmergencyController",
+    "target": "CommunicationServer",
+    "type": "medical_alert",
+    "direction": "-->"
+  },
+  {
+    "source": "CommunicationServer",
+    "target": "EmergencyRadio",
+    "type": "emergency_broadcast",
+    "direction": "-->"
+  },
+  {
+    "source": "CommunicationServer",
+    "target": "FieldRadio",
+    "type": "field_alert",
+    "direction": "-->"
+  }
+]

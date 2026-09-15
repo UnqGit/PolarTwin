@@ -17,7 +17,7 @@ def read_json(path):
 class Phase9BlizzardTests(unittest.TestCase):
     def setUp(self):
         root = ROOT / "examples/minimal"
-        self.graph = compile_model(read_json(root / "topology.json"), read_json(root / "specification.json"))
+        self.graph = compile_model(read_json(root / "topology.json"), read_json(Path(str(root / "topology.json").replace("topology.json", "connections.json"))), read_json(root / "specification.json"))
         self.events = load_scenario_events(root / "blizzard.scenario.json")
 
     def test_blizzard_changes_environment_at_event_time(self):
@@ -51,7 +51,7 @@ class Phase9BlizzardTests(unittest.TestCase):
 
     def test_blizzard_scenario_is_topology_agnostic(self):
         root = ROOT / "data/compiled/maitri"
-        graph = compile_model(read_json(root / "relation.json"), read_json(root / "spec.json"))
+        graph = compile_model(read_json(root / "relation.json"), read_json(root / "connection.json"), read_json(root / "spec.json"))
         engine = SimulationEngine(graph, environment={"temperature": -25})
         ScenarioScheduler().schedule(engine, self.events)
         engine.step()

@@ -10,6 +10,7 @@ manager = SimulationManager()
 
 class RunRequest(BaseModel):
     topology: Dict[str, Any]
+    connections: List[Dict[str, Any]]
     specification: Dict[str, Any]
     scenario: Optional[Dict[str, Any]] = None
     config: Optional[Dict[str, Any]] = None
@@ -27,6 +28,7 @@ def create_run(request: RunRequest):
     try:
         run_id = manager.create_run(
             topology=request.topology,
+            connections=request.connections,
             specification=request.specification,
             scenario=request.scenario,
             config=request.config
