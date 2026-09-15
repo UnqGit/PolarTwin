@@ -27,7 +27,7 @@ class Phase1ContractTests(unittest.TestCase):
     def test_existing_twins_validate(self):
         for twin in ("bharati", "maitri"):
             with self.subTest(twin=twin):
-                load_model_inputs(ROOT / f"config/twins/{twin}/relation.json", ROOT / f"config/twins/{twin}/spec.json")
+                load_model_inputs(ROOT / f"data/compiled/{twin}/relation.json", ROOT / f"data/compiled/{twin}/spec.json")
 
     def test_unknown_connection_reference_is_rejected(self):
         invalid = copy.deepcopy(self.topology)

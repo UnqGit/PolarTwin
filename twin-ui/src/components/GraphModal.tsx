@@ -381,7 +381,7 @@ export const GraphModal: React.FC<GraphModalProps> = ({ onClose, connections, al
         backgroundColor: 'var(--bg-main)',
         border: '1px solid var(--border-color)',
         borderRadius: 8,
-        boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)',
+        boxShadow: 'var(--shadow-lg)',
         zIndex: 9999,
         display: 'flex',
         flexDirection: 'column',
@@ -465,7 +465,7 @@ export const GraphModal: React.FC<GraphModalProps> = ({ onClose, connections, al
             background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)',
             border: '1px solid var(--border-color)', borderRadius: '50%',
             width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.3)',
+            cursor: 'pointer', boxShadow: 'var(--shadow-md)',
             zIndex: 100
           }}
         >

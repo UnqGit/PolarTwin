@@ -2,12 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import { Snowflake } from 'lucide-react';
 import { TwinViewer, type LightingMode } from './components/TwinViewer';
 
-const relationFiles = import.meta.glob('./data/twins/*/relation.json', { eager: true, import: 'default' });
-const specFiles = import.meta.glob('./data/twins/*/spec.json', { eager: true, import: 'default' });
+const relationFiles = import.meta.glob('../../data/compiled/*/relation.json', { eager: true, import: 'default' });
+const specFiles = import.meta.glob('../../data/compiled/*/spec.json', { eager: true, import: 'default' });
 
 // Extract twin names from paths
 const availableTwins = Object.keys(relationFiles).map((path) => {
-  const match = path.match(/\.\/data\/twins\/(.+)\/relation\.json/);
+  const match = path.match(/\.\.\/\.\.\/data\/compiled\/(.+)\/relation\.json/);
   return match ? match[1] : '';
 }).filter(Boolean);
 
@@ -39,8 +39,8 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  const relation = selectedTwin ? relationFiles[`./data/twins/${selectedTwin}/relation.json`] : null;
-  const spec = selectedTwin ? specFiles[`./data/twins/${selectedTwin}/spec.json`] : null;
+  const relation = selectedTwin ? relationFiles[`../../data/compiled/${selectedTwin}/relation.json`] : null;
+  const spec = selectedTwin ? specFiles[`../../data/compiled/${selectedTwin}/spec.json`] : null;
 
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative' }}>
@@ -56,14 +56,9 @@ function App() {
             onSelectName={setSelectedComponentName}
           >
           {/* Top-left title card */}
-          <div style={{
-            background: 'var(--bg-panel)',
+          <div className="glass-panel" style={{
             padding: '16px 20px',
-            borderRadius: '12px',
-            border: '1px solid var(--border-color)',
-            backdropFilter: 'blur(10px)',
             color: 'var(--text-primary)',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)',
             display: 'flex',
             flexDirection: 'column',
             pointerEvents: 'auto',
@@ -77,16 +72,11 @@ function App() {
           </div>
 
           {/* HUD overlay */}
-          <div style={{
-            color: 'var(--text-primary)', fontFamily: 'system-ui, sans-serif',
-            background: 'var(--bg-panel)',
-            backdropFilter: 'blur(8px)',
-            borderRadius: 10,
+          <div className="glass-panel" style={{
+            color: 'var(--text-primary)', 
             padding: '14px 18px',
-            border: '1px solid var(--border-color)',
             display: 'flex', flexDirection: 'column', gap: '8px',
             width: 280,
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)',
           }}>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>

@@ -30,7 +30,7 @@ export const HoverCard: React.FC<HoverCardProps> = ({ root, connections, liveSta
   const conn = connections.find(c => c.id === activeName);
   if (conn) {
     return (
-      <div style={cardStyle}>
+      <div className="glass-panel" style={cardStyle}>
         <div style={headerStyle}>
           <Link2 size={14} color='var(--accent-amber)' style={{ marginRight: 6 }} />
           CONNECTION
@@ -60,7 +60,7 @@ export const HoverCard: React.FC<HoverCardProps> = ({ root, connections, liveSta
     }
 
     return (
-      <div style={cardStyle}>
+      <div className="glass-panel" style={cardStyle}>
         <div style={headerStyle}>
           <span style={{ color: 'var(--accent-blue)', marginRight: 6, display: 'flex', alignItems: 'center' }}><TypeIcon type={node.type} /></span>
           COMPONENT
@@ -82,11 +82,6 @@ export const HoverCard: React.FC<HoverCardProps> = ({ root, connections, liveSta
 
 const cardStyle: React.CSSProperties = {
   width: 280,
-  background: 'var(--bg-panel)',
-  backdropFilter: 'blur(8px)',
-  border: '1px solid var(--border-solid)',
-  borderRadius: 8,
-  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)',
   padding: '12px 14px',
   pointerEvents: 'none', // Hover card should not interfere with clicks
 };

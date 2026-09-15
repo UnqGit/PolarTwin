@@ -20,7 +20,7 @@ def read_json(path):
 class Phase21CausalTests(unittest.TestCase):
     def setUp(self):
         self.minimal_root = ROOT / "examples/minimal"
-        self.maitri_root = ROOT / "config/twins/maitri"
+        self.maitri_root = ROOT / "data/compiled/maitri"
         self.maitri_example = ROOT / "examples/maitri"
         
         self.minimal_graph = compile_model(

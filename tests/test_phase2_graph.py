@@ -67,8 +67,8 @@ class Phase2GraphTests(unittest.TestCase):
             compile_model(self.topology, specification)
 
     def test_maitri_compiles_without_station_specific_code(self):
-        topology = read_json(ROOT / "config/twins/maitri/relation.json")
-        specification = read_json(ROOT / "config/twins/maitri/spec.json")
+        topology = read_json(ROOT / "data/compiled/maitri/relation.json")
+        specification = read_json(ROOT / "data/compiled/maitri/spec.json")
         graph = compile_model(topology, specification)
         self.assertGreater(len(graph.components), 1)
         self.assertEqual(graph.get("Maitri").type, "station")

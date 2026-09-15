@@ -22,7 +22,7 @@ def read_json(path):
 
 class Phase6PhysicalTests(unittest.TestCase):
     def setUp(self):
-        root = ROOT / "config/twins/maitri"
+        root = ROOT / "data/compiled/maitri"
         self.graph = compile_model(read_json(root / "relation.json"), read_json(root / "spec.json"))
         self.context = BehaviorContext({"random": RandomSource(42), "inputs": {}})
 

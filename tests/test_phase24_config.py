@@ -13,7 +13,7 @@ ROOT = Path(__file__).parent.parent
 
 class Phase24ConfigTests(unittest.TestCase):
     def setUp(self):
-        self.maitri_root = ROOT / "config" / "twins" / "maitri"
+        self.maitri_root = ROOT / "data" / "compiled" / "maitri"
         self.maitri_example = ROOT / "examples" / "maitri" / "scenarios" / "blizzard"
         
         self.temp_dir = tempfile.TemporaryDirectory()

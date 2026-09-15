@@ -18,7 +18,7 @@ def read_json(path):
 
 class Phase19MaitriTests(unittest.TestCase):
     def setUp(self):
-        twin_root = ROOT / "config/twins/maitri"
+        twin_root = ROOT / "data/compiled/maitri"
         example_root = ROOT / "examples/maitri"
         self.graph = compile_model(
             read_json(twin_root / "relation.json"),
@@ -51,9 +51,9 @@ class Phase19MaitriTests(unittest.TestCase):
             "twin_sim.cli",
             "run",
             "--topology",
-            "config/twins/maitri/relation.json",
+            "data/compiled/maitri/relation.json",
             "--spec",
-            "config/twins/maitri/spec.json",
+            "data/compiled/maitri/spec.json",
             "--scenario",
             "examples/maitri/scenario.json",
             "--duration",

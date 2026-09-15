@@ -1,0 +1,1776 @@
+# ============================================================
+# BHARATI ANTARCTIC RESEARCH STATION
+# SPECIFICATION REGISTRY
+# ============================================================
+# ============================================================
+# DEFAULT DEFINITIONS
+# ============================================================
+
+default:station {
+    status=operational
+    environment=polar
+    location=antarctica
+    criticality=critical
+}
+
+default:block {
+    status=operational
+    criticality=high
+}
+
+default:floor {
+    status=operational
+}
+
+default:system {
+    status=operational
+    criticality=high
+}
+
+default:laboratory {
+    status=operational
+    criticality=high
+    temperature_controlled=true
+}
+
+default:workshop {
+    status=operational
+    criticality=medium
+}
+
+default:storage {
+    status=operational
+    criticality=medium
+}
+
+default:controller {
+    status=operational
+    criticality=high
+    redundant=true
+}
+
+default:sensor {
+    status=operational
+    accuracy=high
+}
+
+default:server {
+    status=operational
+    redundant=true
+    criticality=high
+}
+
+default:database {
+    status=operational
+    redundant=true
+    criticality=high
+}
+
+default:accommodation {
+    status=operational
+    occupied=true
+}
+
+default:lounge {
+    status=operational
+}
+
+default:library {
+    status=operational
+}
+
+default:kitchen {
+    status=operational
+}
+
+default:dining {
+    status=operational
+}
+
+default:food_room {
+    status=operational
+    temperature_controlled=true
+}
+
+default:medical_room {
+    status=operational
+    criticality=high
+}
+
+default:treatment_room {
+    status=operational
+    criticality=high
+}
+
+default:office {
+    status=operational
+}
+
+default:conference {
+    status=operational
+}
+
+default:archive {
+    status=operational
+}
+
+default:sanitation {
+    status=operational
+}
+
+default:sauna {
+    status=operational
+}
+
+default:laundry {
+    status=operational
+}
+
+default:electrical_room {
+    status=operational
+    criticality=critical
+}
+
+default:pump_room {
+    status=operational
+    criticality=high
+}
+
+default:computer_cluster {
+    status=operational
+    criticality=high
+}
+
+default:console {
+    status=operational
+    criticality=high
+}
+
+default:router {
+    status=operational
+    redundant=true
+}
+
+default:satellite_terminal {
+    status=operational
+    criticality=high
+}
+
+default:antenna {
+    status=operational
+}
+
+default:radio {
+    status=operational
+    criticality=high
+}
+
+default:tracking_unit {
+    status=operational
+    criticality=high
+}
+
+default:data_receiver {
+    status=operational
+    criticality=high
+}
+
+default:terminal {
+    status=operational
+    criticality=high
+}
+
+default:heater {
+    status=operational
+    redundant=true
+}
+
+default:air_handler {
+    status=operational
+}
+
+default:fan {
+    status=operational
+    redundant=true
+}
+
+default:chp {
+    status=operational
+    criticality=critical
+}
+
+default:generator {
+    status=operational
+    criticality=critical
+}
+
+default:switchboard {
+    status=operational
+    criticality=critical
+}
+
+default:transformer {
+    status=operational
+    criticality=critical
+}
+
+default:ups {
+    status=operational
+    criticality=critical
+}
+
+default:battery {
+    status=operational
+    criticality=high
+}
+
+default:inverter {
+    status=operational
+    criticality=high
+}
+
+default:tank {
+    status=operational
+    criticality=high
+}
+
+default:pump {
+    status=operational
+    redundant=true
+}
+
+default:pipeline {
+    status=operational
+}
+
+default:treatment_unit {
+    status=operational
+    criticality=high
+}
+
+default:intake {
+    status=operational
+    criticality=high
+}
+
+default:dispenser {
+    status=operational
+}
+
+default:vehicle {
+    status=operational
+}
+
+default:trailer {
+    status=operational
+}
+
+default:weather_station {
+    status=operational
+    criticality=medium
+}
+
+default:instrument {
+    status=operational
+    criticality=medium
+}
+
+default:station_module {
+    status=operational
+}
+
+default:data_logger {
+    status=operational
+}
+
+default:modem {
+    status=operational
+    redundant=true
+}
+
+default:suppression_system {
+    status=operational
+    criticality=critical
+}
+
+default:alarm {
+    status=operational
+    criticality=critical
+}
+
+default:beacon {
+    status=operational
+    criticality=critical
+}
+
+default:lighting {
+    status=operational
+    criticality=high
+}
+
+default:medical_storage {
+    status=operational
+    criticality=high
+}
+
+default:equipment {
+    status=operational
+}
+
+default:communication_room {
+    status=operational
+    criticality=high
+}
+
+# ============================================================
+# STATION
+# ============================================================
+
+Bharati:station {
+    name="Bharati Antarctic Research Station"
+    latitude=-69.4068
+    longitude=76.1953
+    elevation=35 unit=m
+    commissioned=2012
+    capacity=47
+    summer_capacity=72
+    location="Larsemann Hills, Antarctica"
+    environment="polar"
+    main_building_floor_area=2162 unit=m2
+    floors=3
+}
+
+# ============================================================
+# MAIN BUILDING
+# ============================================================
+
+MainBuilding:block {
+    dimensions="30 m x 50 m"
+    floor_area=2162 unit=m2
+    capacity=47
+    floors=3
+    construction="prefabricated"
+    status=operational
+}
+
+OperationsFloor:floor {
+    level=1
+    function="laboratory and service"
+}
+
+LivingFloor:floor {
+    level=2
+    function="living and administration"
+}
+
+TechnicalFloor:floor {
+    level=3
+    function="technical and communications"
+}
+
+# ============================================================
+# LABORATORY SYSTEM
+# ============================================================
+
+LaboratorySystem:system {
+    function="scientific research"
+    criticality=high
+}
+
+AtmosphericLab:laboratory {
+    discipline="atmospheric science"
+    temperature_range=-50:30 unit=C
+}
+
+GeologyLab:laboratory {
+    discipline="geology"
+}
+
+BiologyLab:laboratory {
+    discipline="biology"
+}
+
+OceanScienceLab:laboratory {
+    discipline="ocean science"
+}
+
+EnvironmentalLab:laboratory {
+    discipline="environmental science"
+}
+
+LabTemperatureSensor:sensor {
+    measurement="temperature"
+    range=-50:50 unit=C
+}
+
+LabHumiditySensor:sensor {
+    measurement="relative humidity"
+    range=0:100 unit=%
+}
+
+LabAirQualitySensor:sensor {
+    measurement="air quality"
+}
+
+LabPowerSensor:sensor {
+    measurement="electrical power"
+    range=0:100 unit=kW
+}
+
+LaboratoryController:controller {
+    function="laboratory monitoring and control"
+}
+
+# ============================================================
+# WORKSHOP SYSTEM
+# ============================================================
+
+WorkshopSystem:system {
+    function="maintenance and fabrication"
+}
+
+MechanicalWorkshop:workshop {
+    function="mechanical maintenance"
+}
+
+ElectricalWorkshop:workshop {
+    function="electrical maintenance"
+}
+
+InstrumentWorkshop:workshop {
+    function="scientific instrument maintenance"
+}
+
+WorkshopPowerSensor:sensor {
+    measurement="electrical power"
+}
+
+WorkshopTemperatureSensor:sensor {
+    measurement="temperature"
+    range=-50:50 unit=C
+}
+
+WorkshopController:controller {
+    function="workshop monitoring and control"
+}
+
+# ============================================================
+# GROUND STORAGE
+# ============================================================
+
+GroundStorageSystem:system {
+    function="equipment and scientific storage"
+}
+
+EquipmentStore:storage {
+    purpose="equipment"
+}
+
+ScientificStore:storage {
+    purpose="scientific supplies"
+}
+
+SparePartsStore:storage {
+    purpose="spare parts"
+}
+
+ColdStore:storage {
+    purpose="cold storage"
+    temperature_range=-30:10 unit=C
+}
+
+StorageTemperatureSensor:sensor {
+    measurement="temperature"
+    range=-40:30 unit=C
+}
+
+StorageHumiditySensor:sensor {
+    measurement="relative humidity"
+    range=0:100 unit=%
+}
+
+StorageController:controller {
+    function="storage monitoring"
+}
+
+# ============================================================
+# UTILITY ROOMS
+# ============================================================
+
+UtilityRoomSystem:system {
+    function="building utilities"
+    criticality=critical
+}
+
+MainElectricalRoom:electrical_room {
+    function="main electrical distribution"
+    criticality=critical
+}
+
+PumpRoom:pump_room {
+    function="water pumping"
+}
+
+WasteTreatmentRoom:treatment_room {
+    function="wastewater treatment"
+}
+
+TechnicalWorkshop:workshop {
+    function="technical maintenance"
+}
+
+UtilityTemperatureSensor:sensor {
+    measurement="utility room temperature"
+    range=-50:50 unit=C
+}
+
+UtilitySmokeSensor:sensor {
+    measurement="smoke"
+}
+
+UtilityController:controller {
+    function="utility monitoring and control"
+}
+
+# ============================================================
+# RESIDENTIAL SYSTEM
+# ============================================================
+
+ResidentialSystem:system {
+    function="personnel accommodation"
+}
+
+ScientistQuarters:accommodation {
+    capacity=20
+    purpose="scientists"
+}
+
+EngineerQuarters:accommodation {
+    capacity=15
+    purpose="engineers"
+}
+
+MedicalQuarters:accommodation {
+    capacity=12
+    purpose="medical and support personnel"
+}
+
+CommonRoom:lounge {
+    function="recreation"
+}
+
+Library:library {
+    function="reading and reference"
+}
+
+RoomTemperatureSensor:sensor {
+    measurement="room temperature"
+    range=-50:40 unit=C
+}
+
+RoomAirQualitySensor:sensor {
+    measurement="indoor air quality"
+}
+
+ResidentialController:controller {
+    function="residential monitoring and control"
+}
+
+# ============================================================
+# FOOD SERVICE
+# ============================================================
+
+FoodServiceSystem:system {
+    function="food preparation and dining"
+}
+
+Kitchen:kitchen {
+    function="food preparation"
+}
+
+DiningHall:dining {
+    capacity=47
+    function="dining"
+}
+
+FoodPreparationRoom:food_room {
+    function="food preparation and handling"
+}
+
+FoodColdStorage:storage {
+    purpose="food"
+    temperature_range=-25:10 unit=C
+}
+
+FoodTemperatureSensor:sensor {
+    measurement="food storage temperature"
+    range=-30:30 unit=C
+}
+
+KitchenAirQualitySensor:sensor {
+    measurement="kitchen air quality"
+}
+
+FoodServiceController:controller {
+    function="food service monitoring"
+}
+
+# ============================================================
+# MEDICAL SYSTEM
+# ============================================================
+
+MedicalSystem:system {
+    function="medical support"
+    criticality=critical
+}
+
+MedicalRoom:medical_room {
+    function="primary medical care"
+}
+
+FirstAidRoom:medical_room {
+    function="first aid"
+}
+
+HypothermiaTreatmentRoom:treatment_room {
+    function="hypothermia treatment"
+}
+
+MedicalTemperatureSensor:sensor {
+    measurement="medical room temperature"
+    range=-20:40 unit=C
+}
+
+MedicalAirQualitySensor:sensor {
+    measurement="medical room air quality"
+}
+
+MedicalController:controller {
+    function="medical system monitoring"
+}
+
+# ============================================================
+# ADMINISTRATION
+# ============================================================
+
+AdministrationSystem:system {
+    function="station administration"
+}
+
+StationOffice:office {
+    function="station administration"
+}
+
+ExpeditionOffice:office {
+    function="expedition planning"
+}
+
+ConferenceRoom:conference {
+    capacity=20
+}
+
+RecordsRoom:archive {
+    function="records storage"
+}
+
+PersonnelDatabase:database {
+    function="personnel records"
+}
+
+PersonnelServer:server {
+    function="personnel information services"
+}
+
+AdministrationController:controller {
+    function="administrative monitoring"
+}
+
+# ============================================================
+# PERSONAL SERVICES
+# ============================================================
+
+PersonalServicesSystem:system {
+    function="personnel services"
+}
+
+Washrooms:sanitation {
+    function="sanitation"
+}
+
+Sauna:sauna {
+    function="personnel wellness"
+}
+
+LaundryRoom:laundry {
+    function="laundry"
+}
+
+WaterConsumptionSensor:sensor {
+    measurement="water consumption"
+    range=0:1000 unit=L/h
+}
+
+HotWaterSensor:sensor {
+    measurement="hot water temperature"
+    range=0:100 unit=C
+}
+
+PersonalServicesController:controller {
+    function="personal services monitoring"
+}
+
+# ============================================================
+# STATION CONTROL
+# ============================================================
+
+StationControlSystem:system {
+    function="central station control"
+    criticality=critical
+}
+
+MainController:controller {
+    function="primary station controller"
+    criticality=critical
+}
+
+BackupController:controller {
+    function="backup station controller"
+    criticality=critical
+}
+
+ControlServer:server {
+    function="station control services"
+}
+
+BackupServer:server {
+    function="backup control services"
+}
+
+StationHealthSensor:sensor {
+    measurement="station health"
+}
+
+NetworkHealthSensor:sensor {
+    measurement="network health"
+}
+
+ControlConsole:console {
+    function="operator control"
+}
+
+# ============================================================
+# DATA SYSTEM
+# ============================================================
+
+DataSystem:system {
+    function="research data management"
+    criticality=high
+}
+
+ResearchDataServer:server {
+    function="research data storage"
+}
+
+ScienceDatabase:database {
+    function="scientific data"
+}
+
+BackupDatabase:database {
+    function="scientific data backup"
+}
+
+DataStorage:storage {
+    capacity=100 unit=TB
+}
+
+DataProcessingCluster:computer_cluster {
+    function="scientific data processing"
+}
+
+DataTemperatureSensor:sensor {
+    measurement="data room temperature"
+    range=-20:40 unit=C
+}
+
+DataPowerSensor:sensor {
+    measurement="data system power"
+}
+
+DataController:controller {
+    function="data system monitoring"
+}
+
+# ============================================================
+# COMMUNICATION SYSTEM
+# ============================================================
+
+CommunicationSystem:system {
+    function="station communications"
+    criticality=critical
+}
+
+MainRouter:router {
+    function="primary network routing"
+}
+
+BackupRouter:router {
+    function="backup network routing"
+}
+
+SatelliteTerminal:satellite_terminal {
+    function="satellite communications"
+}
+
+SatelliteAntenna:antenna {
+    function="satellite communications"
+}
+
+RadioTerminal:radio {
+    function="radio communications"
+}
+
+HFTransceiver:radio {
+    frequency_range="HF"
+}
+
+VHFTransceiver:radio {
+    frequency_range="VHF"
+}
+
+CommunicationServer:server {
+    function="communications services"
+}
+
+CommunicationController:controller {
+    function="communication monitoring and control"
+}
+
+# ============================================================
+# EARTH STATION
+# ============================================================
+
+EarthStationSystem:system {
+    function="remote sensing and satellite data"
+    criticality=high
+}
+
+SatelliteTrackingUnit:tracking_unit {
+    function="satellite tracking"
+}
+
+SatelliteDataReceiver:data_receiver {
+    function="remote sensing data reception"
+}
+
+SatelliteCommandTerminal:terminal {
+    function="satellite command and control"
+}
+
+RemoteSensingServer:server {
+    function="remote sensing data services"
+}
+
+EarthStationSensor:sensor {
+    measurement="earth station health"
+}
+
+SignalStrengthSensor:sensor {
+    measurement="satellite signal strength"
+    range=0:100 unit=%
+}
+
+EarthStationController:controller {
+    function="earth station monitoring"
+}
+
+# ============================================================
+# HVAC SYSTEM
+# ============================================================
+
+HVACSystem:system {
+    function="heating ventilation and air conditioning"
+    criticality=critical
+}
+
+HeatingUnit:heater {
+    function="primary heating"
+}
+
+BackupHeatingUnit:heater {
+    function="backup heating"
+}
+
+AirHandlingUnit:air_handler {
+    function="air handling"
+}
+
+VentilationFan:fan {
+    function="ventilation"
+}
+
+ExhaustFan:fan {
+    function="exhaust"
+}
+
+IndoorTemperatureSensor:sensor {
+    measurement="indoor temperature"
+    range=-50:50 unit=C
+}
+
+OutdoorTemperatureSensor:sensor {
+    measurement="outdoor temperature"
+    range=-100:30 unit=C
+}
+
+AirPressureSensor:sensor {
+    measurement="air pressure"
+}
+
+AirQualitySensor:sensor {
+    measurement="air quality"
+}
+
+HVACController:controller {
+    function="HVAC monitoring and control"
+}
+
+# ============================================================
+# ENERGY BLOCK
+# ============================================================
+
+EnergyBlock:block {
+    function="energy generation and distribution"
+    criticality=critical
+}
+
+# ============================================================
+# POWER GENERATION
+# ============================================================
+
+PowerGenerationSystem:system {
+    function="combined heat and power generation"
+    criticality=critical
+}
+
+CHPUnit1:chp {
+    rating=100 unit=kVA
+    voltage=400 unit=V
+    frequency=50 unit=Hz
+    status=operational
+}
+
+CHPUnit2:chp {
+    rating=100 unit=kVA
+    voltage=400 unit=V
+    frequency=50 unit=Hz
+    status=operational
+}
+
+CHPUnit3:chp {
+    rating=100 unit=kVA
+    voltage=400 unit=V
+    frequency=50 unit=Hz
+    status=operational
+}
+
+MainGeneratorController:controller {
+    function="generator monitoring and control"
+    criticality=critical
+}
+
+Generator1Sensor:sensor {
+    measurement="generator 1 health"
+}
+
+Generator2Sensor:sensor {
+    measurement="generator 2 health"
+}
+
+Generator3Sensor:sensor {
+    measurement="generator 3 health"
+}
+
+FuelConsumptionSensor:sensor {
+    measurement="fuel consumption"
+    range=0:1000 unit=L/h
+}
+
+PowerOutputSensor:sensor {
+    measurement="power output"
+    range=0:300 unit=kW
+}
+
+# ============================================================
+# POWER DISTRIBUTION
+# ============================================================
+
+PowerDistributionSystem:system {
+    function="electrical power distribution"
+    criticality=critical
+}
+
+MainSwitchboard:switchboard {
+    function="main electrical distribution"
+}
+
+EmergencySwitchboard:switchboard {
+    function="emergency electrical distribution"
+}
+
+Transformer:transformer {
+    function="voltage transformation"
+    voltage=400 unit=V
+}
+
+UPS:ups {
+    function="uninterruptible power supply"
+    backup_time=30 unit=min
+}
+
+BatteryBank:battery {
+    function="backup energy storage"
+}
+
+PowerInverter:inverter {
+    function="DC to AC conversion"
+}
+
+DistributionSensor:sensor {
+    measurement="distribution power"
+}
+
+BatterySensor:sensor {
+    measurement="battery state"
+    range=0:100 unit=%
+}
+
+PowerController:controller {
+    function="power distribution monitoring and control"
+    criticality=critical
+}
+
+# ============================================================
+# FUEL BLOCK
+# ============================================================
+
+FuelBlock:block {
+    function="fuel storage and distribution"
+    criticality=critical
+}
+
+# ============================================================
+# FUEL FARM
+# ============================================================
+
+FuelFarm:system {
+    function="bulk fuel storage"
+    capacity=300000 unit=L
+    criticality=critical
+}
+
+MainFuelTank:tank {
+    capacity=200000 unit=L
+    purpose="primary fuel storage"
+}
+
+BackupFuelTank:tank {
+    capacity=100000 unit=L
+    purpose="backup fuel storage"
+}
+
+FuelTransferPump:pump {
+    function="fuel transfer"
+}
+
+FuelLevelSensor:sensor {
+    measurement="fuel level"
+    range=0:100 unit=%
+}
+
+FuelPressureSensor:sensor {
+    measurement="fuel pressure"
+}
+
+FuelLeakSensor:sensor {
+    measurement="fuel leakage"
+}
+
+FuelFarmController:controller {
+    function="fuel farm monitoring and control"
+    criticality=critical
+}
+
+# ============================================================
+# FUEL STATION
+# ============================================================
+
+FuelStation:system {
+    function="fuel dispensing"
+}
+
+FuelDispenser:dispenser {
+    function="vehicle and equipment fueling"
+}
+
+FuelTransferLine:pipeline {
+    function="fuel transfer"
+}
+
+FuelMeter:sensor {
+    measurement="fuel flow"
+}
+
+FuelStationController:controller {
+    function="fuel station monitoring"
+}
+
+# ============================================================
+# WATER BLOCK
+# ============================================================
+
+WaterBlock:block {
+    function="water supply and treatment"
+    criticality=critical
+}
+
+# ============================================================
+# SEA WATER SYSTEM
+# ============================================================
+
+SeaWaterSystem:system {
+    function="seawater intake"
+    criticality=high
+}
+
+SeaWaterIntake:intake {
+    function="seawater collection"
+}
+
+SeaWaterPump:pump {
+    function="primary seawater pumping"
+}
+
+SeaWaterBackupPump:pump {
+    function="backup seawater pumping"
+}
+
+IntakePressureSensor:sensor {
+    measurement="intake pressure"
+}
+
+IntakeFlowSensor:sensor {
+    measurement="intake flow"
+}
+
+SeaWaterController:controller {
+    function="seawater intake monitoring"
+}
+
+# ============================================================
+# WATER TREATMENT
+# ============================================================
+
+WaterTreatmentSystem:system {
+    function="fresh water production"
+    criticality=critical
+}
+
+DesalinationUnit:treatment_unit {
+    function="seawater desalination"
+}
+
+FreshWaterTank:tank {
+    capacity=100000 unit=L
+    purpose="fresh water storage"
+}
+
+HotWaterTank:tank {
+    capacity=20000 unit=L
+    purpose="hot water storage"
+}
+
+WaterQualitySensor:sensor {
+    measurement="water quality"
+}
+
+WaterLevelSensor:sensor {
+    measurement="water level"
+    range=0:100 unit=%
+}
+
+WaterTemperatureSensor:sensor {
+    measurement="water temperature"
+    range=0:100 unit=C
+}
+
+WaterTreatmentController:controller {
+    function="water treatment monitoring and control"
+    criticality=critical
+}
+
+# ============================================================
+# WATER DISTRIBUTION
+# ============================================================
+
+WaterDistributionSystem:system {
+    function="water distribution"
+    criticality=high
+}
+
+MainWaterPump:pump {
+    function="primary water distribution"
+}
+
+BackupWaterPump:pump {
+    function="backup water distribution"
+}
+
+FreshWaterPipeline:pipeline {
+    function="fresh water distribution"
+}
+
+HotWaterPipeline:pipeline {
+    function="hot water distribution"
+}
+
+WaterPressureSensor:sensor {
+    measurement="water pressure"
+}
+
+WaterFlowSensor:sensor {
+    measurement="water flow"
+}
+
+WaterDistributionController:controller {
+    function="water distribution monitoring"
+}
+
+# ============================================================
+# WASTE BLOCK
+# ============================================================
+
+WasteBlock:block {
+    function="waste management"
+    criticality=high
+}
+
+# ============================================================
+# WASTEWATER SYSTEM
+# ============================================================
+
+WasteWaterSystem:system {
+    function="wastewater collection and treatment"
+    criticality=high
+}
+
+WasteWaterCollection:treatment_unit {
+    function="wastewater collection"
+}
+
+WasteWaterTreatment:treatment_unit {
+    function="wastewater treatment"
+}
+
+TreatedWaterTank:tank {
+    purpose="treated water storage"
+}
+
+WasteWaterLevelSensor:sensor {
+    measurement="wastewater level"
+    range=0:100 unit=%
+}
+
+WasteWaterQualitySensor:sensor {
+    measurement="wastewater quality"
+}
+
+WasteWaterController:controller {
+    function="wastewater monitoring and control"
+}
+
+# ============================================================
+# SOLID WASTE
+# ============================================================
+
+SolidWasteSystem:system {
+    function="solid waste management"
+}
+
+WasteCollection:storage {
+    purpose="solid waste collection"
+}
+
+WasteProcessingUnit:treatment_unit {
+    function="solid waste processing"
+}
+
+WasteStorage:storage {
+    purpose="processed waste storage"
+}
+
+WasteLevelSensor:sensor {
+    measurement="waste level"
+    range=0:100 unit=%
+}
+
+WasteProcessingSensor:sensor {
+    measurement="waste processing status"
+}
+
+WasteController:controller {
+    function="solid waste monitoring and control"
+}
+
+# ============================================================
+# LOGISTICS BLOCK
+# ============================================================
+
+LogisticsBlock:block {
+    function="cargo and field logistics"
+}
+
+# ============================================================
+# CARGO SYSTEM
+# ============================================================
+
+CargoSystem:system {
+    function="cargo management"
+}
+
+CargoStorage:storage {
+    purpose="general cargo"
+}
+
+EquipmentCargoStore:storage {
+    purpose="equipment cargo"
+}
+
+ExpeditionSupplyStore:storage {
+    purpose="expedition supplies"
+}
+
+CargoInventorySensor:sensor {
+    measurement="cargo inventory"
+}
+
+CargoTemperatureSensor:sensor {
+    measurement="cargo temperature"
+    range=-50:40 unit=C
+}
+
+CargoController:controller {
+    function="cargo monitoring and inventory"
+}
+
+# ============================================================
+# FIELD LOGISTICS
+# ============================================================
+
+FieldLogisticsSystem:system {
+    function="field transportation"
+}
+
+SnowVehicle:vehicle {
+    function="snow transport"
+}
+
+UtilityVehicle:vehicle {
+    function="utility transport"
+}
+
+FieldTrailer:trailer {
+    function="field cargo transport"
+}
+
+VehicleGPS:sensor {
+    measurement="vehicle position"
+}
+
+VehicleTelemetry:sensor {
+    measurement="vehicle telemetry"
+}
+
+LogisticsController:controller {
+    function="field logistics monitoring"
+}
+
+# ============================================================
+# FIELD RESEARCH BLOCK
+# ============================================================
+
+FieldResearchBlock:block {
+    function="remote scientific research"
+}
+
+# ============================================================
+# METEOROLOGY
+# ============================================================
+
+MeteorologySystem:system {
+    function="meteorological observation"
+}
+
+AutomaticWeatherStation:weather_station {
+    function="automatic weather observation"
+}
+
+WindSensor:sensor {
+    measurement="wind speed and direction"
+}
+
+AirTemperatureSensor:sensor {
+    measurement="air temperature"
+    range=-100:30 unit=C
+}
+
+AtmosphericPressureSensor:sensor {
+    measurement="atmospheric pressure"
+}
+
+SolarRadiationSensor:sensor {
+    measurement="solar radiation"
+    range=0:1500 unit=W/m2
+}
+
+MeteorologyController:controller {
+    function="meteorological monitoring"
+}
+
+# ============================================================
+# GEOPHYSICS
+# ============================================================
+
+GeophysicsSystem:system {
+    function="geophysical observation"
+}
+
+SeismicStation:instrument {
+    function="seismic monitoring"
+}
+
+Magnetometer:instrument {
+    function="magnetic field monitoring"
+}
+
+GPSReferenceStation:instrument {
+    function="geodetic reference"
+}
+
+SeismicSensor:sensor {
+    measurement="seismic activity"
+}
+
+MagneticSensor:sensor {
+    measurement="magnetic field"
+}
+
+GeophysicsController:controller {
+    function="geophysical monitoring"
+}
+
+# ============================================================
+# ENVIRONMENTAL MONITORING
+# ============================================================
+
+EnvironmentalMonitoringSystem:system {
+    function="environmental observation"
+}
+
+SnowMonitoringStation:station_module {
+    function="snow monitoring"
+}
+
+IceMonitoringUnit:instrument {
+    function="ice monitoring"
+}
+
+EnvironmentalDataLogger:data_logger {
+    function="environmental data logging"
+}
+
+SnowDepthSensor:sensor {
+    measurement="snow depth"
+}
+
+IceTemperatureSensor:sensor {
+    measurement="ice temperature"
+    range=-80:10 unit=C
+}
+
+EnvironmentalSensor:sensor {
+    measurement="environmental conditions"
+}
+
+EnvironmentalController:controller {
+    function="environmental monitoring"
+}
+
+# ============================================================
+# COMMUNICATION BLOCK
+# ============================================================
+
+CommunicationBlock:block {
+    function="external and field communications"
+    criticality=critical
+}
+
+# ============================================================
+# EXTERNAL SATELLITE SYSTEM
+# ============================================================
+
+ExternalSatelliteSystem:system {
+    function="external satellite communication"
+    criticality=critical
+}
+
+PrimarySatelliteDish:antenna {
+    function="primary satellite communication"
+}
+
+BackupSatelliteDish:antenna {
+    function="backup satellite communication"
+}
+
+SatelliteModem:modem {
+    function="primary satellite data link"
+}
+
+SatelliteBackupModem:modem {
+    function="backup satellite data link"
+}
+
+SatelliteSignalSensor:sensor {
+    measurement="satellite signal strength"
+    range=0:100 unit=%
+}
+
+SatelliteController:controller {
+    function="satellite communications monitoring"
+}
+
+# ============================================================
+# FIELD RADIO SYSTEM
+# ============================================================
+
+FieldRadioSystem:system {
+    function="field radio communications"
+    criticality=high
+}
+
+BaseRadio:radio {
+    function="base station radio"
+}
+
+EmergencyRadio:radio {
+    function="emergency communication"
+    criticality=critical
+}
+
+FieldRadio:radio {
+    function="field communication"
+}
+
+RadioSignalSensor:sensor {
+    measurement="radio signal strength"
+    range=0:100 unit=%
+}
+
+RadioController:controller {
+    function="field radio monitoring"
+}
+
+# ============================================================
+# SAFETY BLOCK
+# ============================================================
+
+SafetyBlock:block {
+    function="station safety and emergency systems"
+    criticality=critical
+}
+
+# ============================================================
+# FIRE SAFETY
+# ============================================================
+
+FireSafetySystem:system {
+    function="fire detection and suppression"
+    criticality=critical
+}
+
+FireSensor:sensor {
+    measurement="fire"
+}
+
+SmokeSensor:sensor {
+    measurement="smoke"
+}
+
+HeatSensor:sensor {
+    measurement="heat"
+    range=-50:200 unit=C
+}
+
+FireAlarm:alarm {
+    function="fire alarm"
+}
+
+FireSuppression:suppression_system {
+    function="fire suppression"
+}
+
+FireSafetyController:controller {
+    function="fire safety monitoring and control"
+    criticality=critical
+}
+
+# ============================================================
+# EMERGENCY SYSTEM
+# ============================================================
+
+EmergencySystem:system {
+    function="general emergency response"
+    criticality=critical
+}
+
+EmergencyAlarm:alarm {
+    function="emergency alarm"
+}
+
+EmergencyBeacon:beacon {
+    function="emergency location beacon"
+}
+
+EmergencyLighting:lighting {
+    function="emergency lighting"
+}
+
+EmergencySensor:sensor {
+    measurement="emergency conditions"
+}
+
+EmergencyController:controller {
+    function="emergency monitoring and control"
+    criticality=critical
+}
+
+# ============================================================
+# MEDICAL EMERGENCY
+# ============================================================
+
+MedicalEmergencySystem:system {
+    function="medical emergency response"
+    criticality=critical
+}
+
+MedicalAlarm:alarm {
+    function="medical emergency alarm"
+}
+
+EmergencyMedicalKit:medical_storage {
+    function="emergency medical supplies"
+}
+
+EvacuationEquipment:equipment {
+    function="medical evacuation"
+}
+
+MedicalEmergencyController:controller {
+    function="medical emergency monitoring"
+    criticality=critical
+}
+
+# ============================================================
+# EMERGENCY CAMP BLOCK
+# ============================================================
+
+EmergencyCampBlock:block {
+    function="emergency and seasonal accommodation"
+}
+
+# ============================================================
+# EMERGENCY SHELTER
+# ============================================================
+
+EmergencyShelter:system {
+    function="emergency accommodation"
+    capacity=13
+    levels=2
+    distance_from_main_station=300 unit=m
+    criticality=critical
+}
+
+ShelterAccommodation:accommodation {
+    capacity=13
+    purpose="emergency accommodation"
+}
+
+ShelterKitchen:kitchen {
+    function="emergency food preparation"
+}
+
+ShelterOffice:office {
+    function="emergency administration"
+}
+
+ShelterCommunicationRoom:communication_room {
+    function="emergency communications"
+}
+
+ShelterGenerator:generator {
+    rating=25 unit=kVA
+    function="emergency power generation"
+    criticality=critical
+}
+
+ShelterWaterTank:tank {
+    purpose="emergency water storage"
+}
+
+ShelterWasteUnit:treatment_unit {
+    function="emergency waste management"
+}
+
+ShelterTemperatureSensor:sensor {
+    measurement="shelter temperature"
+    range=-50:40 unit=C
+}
+
+ShelterPowerSensor:sensor {
+    measurement="shelter power"
+}
+
+ShelterWaterSensor:sensor {
+    measurement="shelter water level"
+    range=0:100 unit=%
+}
+
+ShelterController:controller {
+    function="emergency shelter monitoring"
+    criticality=critical
+}
+
+# ============================================================
+# SUMMER CAMP
+# ============================================================
+
+SummerCampSystem:system {
+    function="seasonal accommodation"
+    status=seasonal
+}
+
+SummerAccommodation:accommodation {
+    capacity=25
+    purpose="summer personnel accommodation"
+}
+
+SummerDining:dining {
+    function="seasonal dining"
+}
+
+SummerStorage:storage {
+    purpose="seasonal supplies"
+}
+
+SummerCampController:controller {
+    function="summer camp monitoring"
+}

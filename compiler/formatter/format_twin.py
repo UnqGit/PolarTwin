@@ -2,16 +2,22 @@ import argparse
 import sys
 from pathlib import Path
 
-from relation_formatter import format_file as format_relation_file
-from spec_formatter import format_file as format_spec_file
+try:
+    # When run as a module (e.g., python -m compiler.formatter.format_twin)
+    from .relation_formatter import format_file as format_relation_file
+    from .spec_formatter import format_file as format_spec_file
+except ImportError:
+    # When run directly as a script (e.g., python format_twin.py)
+    from relation_formatter import format_file as format_relation_file
+    from spec_formatter import format_file as format_spec_file
 
 
 # -----------------------------------------------------------------
 # Paths
 # -----------------------------------------------------------------
 
-CONFIG_DIR = Path(__file__).resolve().parent.parent
-DESCRIPTION_DIR = CONFIG_DIR / "twins"
+COMPILER_DIR = Path(__file__).resolve().parent.parent
+DESCRIPTION_DIR = COMPILER_DIR.parent / "data" / "source"
 
 
 # -----------------------------------------------------------------

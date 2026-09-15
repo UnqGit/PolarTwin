@@ -50,7 +50,7 @@ class Phase9BlizzardTests(unittest.TestCase):
         self.assertEqual(engine.environment.get("heating_demand_multiplier"), None)
 
     def test_blizzard_scenario_is_topology_agnostic(self):
-        root = ROOT / "config/twins/maitri"
+        root = ROOT / "data/compiled/maitri"
         graph = compile_model(read_json(root / "relation.json"), read_json(root / "spec.json"))
         engine = SimulationEngine(graph, environment={"temperature": -25})
         ScenarioScheduler().schedule(engine, self.events)

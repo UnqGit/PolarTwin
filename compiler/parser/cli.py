@@ -1,18 +1,23 @@
 import argparse
 from pathlib import Path
-from .validate_twin import validate_twin
-from .relation_parser import generate_relation_json
-from .spec_parser import generate_spec_json
+try:
+    from .validate_twin import validate_twin
+    from .relation_parser import generate_relation_json
+    from .spec_parser import generate_spec_json
+except ImportError:
+    from validate_twin import validate_twin
+    from relation_parser import generate_relation_json
+    from spec_parser import generate_spec_json
 
 
 # -----------------------------------------------------------------
 # Paths
 # -----------------------------------------------------------------
 
-CONFIG_DIR = Path(__file__).resolve().parent.parent
+COMPILER_DIR = Path(__file__).resolve().parent.parent
 
-DESCRIPTION_DIR = CONFIG_DIR / "description" / "twins"
-TWINS_DIR = CONFIG_DIR.parent / "twin-ui" / "src" / "data" / "twins"
+DESCRIPTION_DIR = COMPILER_DIR.parent / "data" / "source"
+TWINS_DIR = COMPILER_DIR.parent / "data" / "compiled"
 
 
 # -----------------------------------------------------------------

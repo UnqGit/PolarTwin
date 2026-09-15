@@ -66,15 +66,10 @@ export const PropertyInspector: React.FC<InspectorProps> = ({ node, connections,
   };
 
   return (
-    <div style={{
+    <div className="glass-panel" style={{
       minWidth: 320,
       maxWidth: '40vw',
       width: 'max-content',
-      background: 'var(--bg-panel)',
-      backdropFilter: 'blur(8px)',
-      border: '1px solid var(--border-solid)',
-      borderRadius: 8,
-      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3)',
       overflowY: 'auto',
       maxHeight: 'calc(100vh - 40px)',
       pointerEvents: 'auto',

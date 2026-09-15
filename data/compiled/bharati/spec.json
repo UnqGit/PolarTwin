@@ -1,0 +1,2857 @@
+{
+  "components": {
+    "Bharati": {
+      "type": "station",
+      "spec": {
+        "status": "operational",
+        "environment": "polar",
+        "location": "Larsemann Hills, Antarctica",
+        "criticality": "critical",
+        "name": "Bharati Antarctic Research Station",
+        "latitude": -69.4068,
+        "longitude": 76.1953,
+        "elevation": {
+          "value": 35,
+          "unit": "m"
+        },
+        "commissioned": 2012,
+        "capacity": 47,
+        "summer_capacity": 72,
+        "main_building_floor_area": {
+          "value": 2162,
+          "unit": "m2"
+        },
+        "floors": 3
+      }
+    },
+    "MainBuilding": {
+      "type": "block",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "dimensions": "30 m x 50 m",
+        "floor_area": {
+          "value": 2162,
+          "unit": "m2"
+        },
+        "capacity": 47,
+        "floors": 3,
+        "construction": "prefabricated"
+      }
+    },
+    "OperationsFloor": {
+      "type": "floor",
+      "spec": {
+        "status": "operational",
+        "level": 1,
+        "function": "laboratory and service"
+      }
+    },
+    "LivingFloor": {
+      "type": "floor",
+      "spec": {
+        "status": "operational",
+        "level": 2,
+        "function": "living and administration"
+      }
+    },
+    "TechnicalFloor": {
+      "type": "floor",
+      "spec": {
+        "status": "operational",
+        "level": 3,
+        "function": "technical and communications"
+      }
+    },
+    "LaboratorySystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "scientific research"
+      }
+    },
+    "AtmosphericLab": {
+      "type": "laboratory",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "temperature_controlled": true,
+        "discipline": "atmospheric science",
+        "temperature_range": {
+          "min": -50,
+          "max": 30,
+          "unit": "C"
+        }
+      }
+    },
+    "GeologyLab": {
+      "type": "laboratory",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "temperature_controlled": true,
+        "discipline": "geology"
+      }
+    },
+    "BiologyLab": {
+      "type": "laboratory",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "temperature_controlled": true,
+        "discipline": "biology"
+      }
+    },
+    "OceanScienceLab": {
+      "type": "laboratory",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "temperature_controlled": true,
+        "discipline": "ocean science"
+      }
+    },
+    "EnvironmentalLab": {
+      "type": "laboratory",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "temperature_controlled": true,
+        "discipline": "environmental science"
+      }
+    },
+    "LabTemperatureSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "temperature",
+        "range": {
+          "min": -50,
+          "max": 50,
+          "unit": "C"
+        }
+      }
+    },
+    "LabHumiditySensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "relative humidity",
+        "range": {
+          "min": 0,
+          "max": 100,
+          "unit": "%"
+        }
+      }
+    },
+    "LabAirQualitySensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "air quality"
+      }
+    },
+    "LabPowerSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "electrical power",
+        "range": {
+          "min": 0,
+          "max": 100,
+          "unit": "kW"
+        }
+      }
+    },
+    "LaboratoryController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "laboratory monitoring and control"
+      }
+    },
+    "WorkshopSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "maintenance and fabrication"
+      }
+    },
+    "MechanicalWorkshop": {
+      "type": "workshop",
+      "spec": {
+        "status": "operational",
+        "criticality": "medium",
+        "function": "mechanical maintenance"
+      }
+    },
+    "ElectricalWorkshop": {
+      "type": "workshop",
+      "spec": {
+        "status": "operational",
+        "criticality": "medium",
+        "function": "electrical maintenance"
+      }
+    },
+    "InstrumentWorkshop": {
+      "type": "workshop",
+      "spec": {
+        "status": "operational",
+        "criticality": "medium",
+        "function": "scientific instrument maintenance"
+      }
+    },
+    "WorkshopPowerSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "electrical power"
+      }
+    },
+    "WorkshopTemperatureSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "temperature",
+        "range": {
+          "min": -50,
+          "max": 50,
+          "unit": "C"
+        }
+      }
+    },
+    "WorkshopController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "workshop monitoring and control"
+      }
+    },
+    "GroundStorageSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "equipment and scientific storage"
+      }
+    },
+    "EquipmentStore": {
+      "type": "storage",
+      "spec": {
+        "status": "operational",
+        "criticality": "medium",
+        "purpose": "equipment"
+      }
+    },
+    "ScientificStore": {
+      "type": "storage",
+      "spec": {
+        "status": "operational",
+        "criticality": "medium",
+        "purpose": "scientific supplies"
+      }
+    },
+    "SparePartsStore": {
+      "type": "storage",
+      "spec": {
+        "status": "operational",
+        "criticality": "medium",
+        "purpose": "spare parts"
+      }
+    },
+    "ColdStore": {
+      "type": "storage",
+      "spec": {
+        "status": "operational",
+        "criticality": "medium",
+        "purpose": "cold storage",
+        "temperature_range": {
+          "min": -30,
+          "max": 10,
+          "unit": "C"
+        }
+      }
+    },
+    "StorageTemperatureSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "temperature",
+        "range": {
+          "min": -40,
+          "max": 30,
+          "unit": "C"
+        }
+      }
+    },
+    "StorageHumiditySensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "relative humidity",
+        "range": {
+          "min": 0,
+          "max": 100,
+          "unit": "%"
+        }
+      }
+    },
+    "StorageController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "storage monitoring"
+      }
+    },
+    "UtilityRoomSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "building utilities"
+      }
+    },
+    "MainElectricalRoom": {
+      "type": "electrical_room",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "main electrical distribution"
+      }
+    },
+    "PumpRoom": {
+      "type": "pump_room",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "water pumping"
+      }
+    },
+    "WasteTreatmentRoom": {
+      "type": "treatment_room",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "wastewater treatment"
+      }
+    },
+    "TechnicalWorkshop": {
+      "type": "workshop",
+      "spec": {
+        "status": "operational",
+        "criticality": "medium",
+        "function": "technical maintenance"
+      }
+    },
+    "UtilityTemperatureSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "utility room temperature",
+        "range": {
+          "min": -50,
+          "max": 50,
+          "unit": "C"
+        }
+      }
+    },
+    "UtilitySmokeSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "smoke"
+      }
+    },
+    "UtilityController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "utility monitoring and control"
+      }
+    },
+    "ResidentialSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "personnel accommodation"
+      }
+    },
+    "ScientistQuarters": {
+      "type": "accommodation",
+      "spec": {
+        "status": "operational",
+        "occupied": true,
+        "capacity": 20,
+        "purpose": "scientists"
+      }
+    },
+    "EngineerQuarters": {
+      "type": "accommodation",
+      "spec": {
+        "status": "operational",
+        "occupied": true,
+        "capacity": 15,
+        "purpose": "engineers"
+      }
+    },
+    "MedicalQuarters": {
+      "type": "accommodation",
+      "spec": {
+        "status": "operational",
+        "occupied": true,
+        "capacity": 12,
+        "purpose": "medical and support personnel"
+      }
+    },
+    "CommonRoom": {
+      "type": "lounge",
+      "spec": {
+        "status": "operational",
+        "function": "recreation"
+      }
+    },
+    "Library": {
+      "type": "library",
+      "spec": {
+        "status": "operational",
+        "function": "reading and reference"
+      }
+    },
+    "RoomTemperatureSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "room temperature",
+        "range": {
+          "min": -50,
+          "max": 40,
+          "unit": "C"
+        }
+      }
+    },
+    "RoomAirQualitySensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "indoor air quality"
+      }
+    },
+    "ResidentialController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "residential monitoring and control"
+      }
+    },
+    "FoodServiceSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "food preparation and dining"
+      }
+    },
+    "Kitchen": {
+      "type": "kitchen",
+      "spec": {
+        "status": "operational",
+        "function": "food preparation"
+      }
+    },
+    "DiningHall": {
+      "type": "dining",
+      "spec": {
+        "status": "operational",
+        "capacity": 47,
+        "function": "dining"
+      }
+    },
+    "FoodPreparationRoom": {
+      "type": "food_room",
+      "spec": {
+        "status": "operational",
+        "temperature_controlled": true,
+        "function": "food preparation and handling"
+      }
+    },
+    "FoodColdStorage": {
+      "type": "storage",
+      "spec": {
+        "status": "operational",
+        "criticality": "medium",
+        "purpose": "food",
+        "temperature_range": {
+          "min": -25,
+          "max": 10,
+          "unit": "C"
+        }
+      }
+    },
+    "FoodTemperatureSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "food storage temperature",
+        "range": {
+          "min": -30,
+          "max": 30,
+          "unit": "C"
+        }
+      }
+    },
+    "KitchenAirQualitySensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "kitchen air quality"
+      }
+    },
+    "FoodServiceController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "food service monitoring"
+      }
+    },
+    "MedicalSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "medical support"
+      }
+    },
+    "MedicalRoom": {
+      "type": "medical_room",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "primary medical care"
+      }
+    },
+    "FirstAidRoom": {
+      "type": "medical_room",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "first aid"
+      }
+    },
+    "HypothermiaTreatmentRoom": {
+      "type": "treatment_room",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "hypothermia treatment"
+      }
+    },
+    "MedicalTemperatureSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "medical room temperature",
+        "range": {
+          "min": -20,
+          "max": 40,
+          "unit": "C"
+        }
+      }
+    },
+    "MedicalAirQualitySensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "medical room air quality"
+      }
+    },
+    "MedicalController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "medical system monitoring"
+      }
+    },
+    "AdministrationSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "station administration"
+      }
+    },
+    "StationOffice": {
+      "type": "office",
+      "spec": {
+        "status": "operational",
+        "function": "station administration"
+      }
+    },
+    "ExpeditionOffice": {
+      "type": "office",
+      "spec": {
+        "status": "operational",
+        "function": "expedition planning"
+      }
+    },
+    "ConferenceRoom": {
+      "type": "conference",
+      "spec": {
+        "status": "operational",
+        "capacity": 20
+      }
+    },
+    "RecordsRoom": {
+      "type": "archive",
+      "spec": {
+        "status": "operational",
+        "function": "records storage"
+      }
+    },
+    "PersonnelDatabase": {
+      "type": "database",
+      "spec": {
+        "status": "operational",
+        "redundant": true,
+        "criticality": "high",
+        "function": "personnel records"
+      }
+    },
+    "PersonnelServer": {
+      "type": "server",
+      "spec": {
+        "status": "operational",
+        "redundant": true,
+        "criticality": "high",
+        "function": "personnel information services"
+      }
+    },
+    "AdministrationController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "administrative monitoring"
+      }
+    },
+    "PersonalServicesSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "personnel services"
+      }
+    },
+    "Washrooms": {
+      "type": "sanitation",
+      "spec": {
+        "status": "operational",
+        "function": "sanitation"
+      }
+    },
+    "Sauna": {
+      "type": "sauna",
+      "spec": {
+        "status": "operational",
+        "function": "personnel wellness"
+      }
+    },
+    "LaundryRoom": {
+      "type": "laundry",
+      "spec": {
+        "status": "operational",
+        "function": "laundry"
+      }
+    },
+    "WaterConsumptionSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "water consumption",
+        "range": {
+          "min": 0,
+          "max": 1000,
+          "unit": "L/h"
+        }
+      }
+    },
+    "HotWaterSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "hot water temperature",
+        "range": {
+          "min": 0,
+          "max": 100,
+          "unit": "C"
+        }
+      }
+    },
+    "PersonalServicesController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "personal services monitoring"
+      }
+    },
+    "StationControlSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "central station control"
+      }
+    },
+    "MainController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "redundant": true,
+        "function": "primary station controller"
+      }
+    },
+    "BackupController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "redundant": true,
+        "function": "backup station controller"
+      }
+    },
+    "ControlServer": {
+      "type": "server",
+      "spec": {
+        "status": "operational",
+        "redundant": true,
+        "criticality": "high",
+        "function": "station control services"
+      }
+    },
+    "BackupServer": {
+      "type": "server",
+      "spec": {
+        "status": "operational",
+        "redundant": true,
+        "criticality": "high",
+        "function": "backup control services"
+      }
+    },
+    "StationHealthSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "station health"
+      }
+    },
+    "NetworkHealthSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "network health"
+      }
+    },
+    "ControlConsole": {
+      "type": "console",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "operator control"
+      }
+    },
+    "DataSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "research data management"
+      }
+    },
+    "ResearchDataServer": {
+      "type": "server",
+      "spec": {
+        "status": "operational",
+        "redundant": true,
+        "criticality": "high",
+        "function": "research data storage"
+      }
+    },
+    "ScienceDatabase": {
+      "type": "database",
+      "spec": {
+        "status": "operational",
+        "redundant": true,
+        "criticality": "high",
+        "function": "scientific data"
+      }
+    },
+    "BackupDatabase": {
+      "type": "database",
+      "spec": {
+        "status": "operational",
+        "redundant": true,
+        "criticality": "high",
+        "function": "scientific data backup"
+      }
+    },
+    "DataStorage": {
+      "type": "storage",
+      "spec": {
+        "status": "operational",
+        "criticality": "medium",
+        "capacity": {
+          "value": 100,
+          "unit": "TB"
+        }
+      }
+    },
+    "DataProcessingCluster": {
+      "type": "computer_cluster",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "scientific data processing"
+      }
+    },
+    "DataTemperatureSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "data room temperature",
+        "range": {
+          "min": -20,
+          "max": 40,
+          "unit": "C"
+        }
+      }
+    },
+    "DataPowerSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "data system power"
+      }
+    },
+    "DataController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "data system monitoring"
+      }
+    },
+    "CommunicationSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "station communications"
+      }
+    },
+    "MainRouter": {
+      "type": "router",
+      "spec": {
+        "status": "operational",
+        "redundant": true,
+        "function": "primary network routing"
+      }
+    },
+    "BackupRouter": {
+      "type": "router",
+      "spec": {
+        "status": "operational",
+        "redundant": true,
+        "function": "backup network routing"
+      }
+    },
+    "SatelliteTerminal": {
+      "type": "satellite_terminal",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "satellite communications"
+      }
+    },
+    "SatelliteAntenna": {
+      "type": "antenna",
+      "spec": {
+        "status": "operational",
+        "function": "satellite communications"
+      }
+    },
+    "RadioTerminal": {
+      "type": "radio",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "radio communications"
+      }
+    },
+    "HFTransceiver": {
+      "type": "radio",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "frequency_range": "HF"
+      }
+    },
+    "VHFTransceiver": {
+      "type": "radio",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "frequency_range": "VHF"
+      }
+    },
+    "CommunicationServer": {
+      "type": "server",
+      "spec": {
+        "status": "operational",
+        "redundant": true,
+        "criticality": "high",
+        "function": "communications services"
+      }
+    },
+    "CommunicationController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "communication monitoring and control"
+      }
+    },
+    "EarthStationSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "remote sensing and satellite data"
+      }
+    },
+    "SatelliteTrackingUnit": {
+      "type": "tracking_unit",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "satellite tracking"
+      }
+    },
+    "SatelliteDataReceiver": {
+      "type": "data_receiver",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "remote sensing data reception"
+      }
+    },
+    "SatelliteCommandTerminal": {
+      "type": "terminal",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "satellite command and control"
+      }
+    },
+    "RemoteSensingServer": {
+      "type": "server",
+      "spec": {
+        "status": "operational",
+        "redundant": true,
+        "criticality": "high",
+        "function": "remote sensing data services"
+      }
+    },
+    "EarthStationSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "earth station health"
+      }
+    },
+    "SignalStrengthSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "satellite signal strength",
+        "range": {
+          "min": 0,
+          "max": 100,
+          "unit": "%"
+        }
+      }
+    },
+    "EarthStationController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "earth station monitoring"
+      }
+    },
+    "HVACSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "heating ventilation and air conditioning"
+      }
+    },
+    "HeatingUnit": {
+      "type": "heater",
+      "spec": {
+        "status": "operational",
+        "redundant": true,
+        "function": "primary heating"
+      }
+    },
+    "BackupHeatingUnit": {
+      "type": "heater",
+      "spec": {
+        "status": "operational",
+        "redundant": true,
+        "function": "backup heating"
+      }
+    },
+    "AirHandlingUnit": {
+      "type": "air_handler",
+      "spec": {
+        "status": "operational",
+        "function": "air handling"
+      }
+    },
+    "VentilationFan": {
+      "type": "fan",
+      "spec": {
+        "status": "operational",
+        "redundant": true,
+        "function": "ventilation"
+      }
+    },
+    "ExhaustFan": {
+      "type": "fan",
+      "spec": {
+        "status": "operational",
+        "redundant": true,
+        "function": "exhaust"
+      }
+    },
+    "IndoorTemperatureSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "indoor temperature",
+        "range": {
+          "min": -50,
+          "max": 50,
+          "unit": "C"
+        }
+      }
+    },
+    "OutdoorTemperatureSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "outdoor temperature",
+        "range": {
+          "min": -100,
+          "max": 30,
+          "unit": "C"
+        }
+      }
+    },
+    "AirPressureSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "air pressure"
+      }
+    },
+    "AirQualitySensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "air quality"
+      }
+    },
+    "HVACController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "HVAC monitoring and control"
+      }
+    },
+    "EnergyBlock": {
+      "type": "block",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "energy generation and distribution"
+      }
+    },
+    "PowerGenerationSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "combined heat and power generation"
+      }
+    },
+    "CHPUnit1": {
+      "type": "chp",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "rating": {
+          "value": 100,
+          "unit": "kVA"
+        },
+        "voltage": {
+          "value": 400,
+          "unit": "V"
+        },
+        "frequency": {
+          "value": 50,
+          "unit": "Hz"
+        }
+      }
+    },
+    "CHPUnit2": {
+      "type": "chp",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "rating": {
+          "value": 100,
+          "unit": "kVA"
+        },
+        "voltage": {
+          "value": 400,
+          "unit": "V"
+        },
+        "frequency": {
+          "value": 50,
+          "unit": "Hz"
+        }
+      }
+    },
+    "CHPUnit3": {
+      "type": "chp",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "rating": {
+          "value": 100,
+          "unit": "kVA"
+        },
+        "voltage": {
+          "value": 400,
+          "unit": "V"
+        },
+        "frequency": {
+          "value": 50,
+          "unit": "Hz"
+        }
+      }
+    },
+    "MainGeneratorController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "redundant": true,
+        "function": "generator monitoring and control"
+      }
+    },
+    "Generator1Sensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "generator 1 health"
+      }
+    },
+    "Generator2Sensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "generator 2 health"
+      }
+    },
+    "Generator3Sensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "generator 3 health"
+      }
+    },
+    "FuelConsumptionSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "fuel consumption",
+        "range": {
+          "min": 0,
+          "max": 1000,
+          "unit": "L/h"
+        }
+      }
+    },
+    "PowerOutputSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "power output",
+        "range": {
+          "min": 0,
+          "max": 300,
+          "unit": "kW"
+        }
+      }
+    },
+    "PowerDistributionSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "electrical power distribution"
+      }
+    },
+    "MainSwitchboard": {
+      "type": "switchboard",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "main electrical distribution"
+      }
+    },
+    "EmergencySwitchboard": {
+      "type": "switchboard",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "emergency electrical distribution"
+      }
+    },
+    "Transformer": {
+      "type": "transformer",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "voltage transformation",
+        "voltage": {
+          "value": 400,
+          "unit": "V"
+        }
+      }
+    },
+    "UPS": {
+      "type": "ups",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "uninterruptible power supply",
+        "backup_time": {
+          "value": 30,
+          "unit": "min"
+        }
+      }
+    },
+    "BatteryBank": {
+      "type": "battery",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "backup energy storage"
+      }
+    },
+    "PowerInverter": {
+      "type": "inverter",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "DC to AC conversion"
+      }
+    },
+    "DistributionSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "distribution power"
+      }
+    },
+    "BatterySensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "battery state",
+        "range": {
+          "min": 0,
+          "max": 100,
+          "unit": "%"
+        }
+      }
+    },
+    "PowerController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "redundant": true,
+        "function": "power distribution monitoring and control"
+      }
+    },
+    "FuelBlock": {
+      "type": "block",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "fuel storage and distribution"
+      }
+    },
+    "FuelFarm": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "bulk fuel storage",
+        "capacity": {
+          "value": 300000,
+          "unit": "L"
+        }
+      }
+    },
+    "MainFuelTank": {
+      "type": "tank",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "capacity": {
+          "value": 200000,
+          "unit": "L"
+        },
+        "purpose": "primary fuel storage"
+      }
+    },
+    "BackupFuelTank": {
+      "type": "tank",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "capacity": {
+          "value": 100000,
+          "unit": "L"
+        },
+        "purpose": "backup fuel storage"
+      }
+    },
+    "FuelTransferPump": {
+      "type": "pump",
+      "spec": {
+        "status": "operational",
+        "redundant": true,
+        "function": "fuel transfer"
+      }
+    },
+    "FuelLevelSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "fuel level",
+        "range": {
+          "min": 0,
+          "max": 100,
+          "unit": "%"
+        }
+      }
+    },
+    "FuelPressureSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "fuel pressure"
+      }
+    },
+    "FuelLeakSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "fuel leakage"
+      }
+    },
+    "FuelFarmController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "redundant": true,
+        "function": "fuel farm monitoring and control"
+      }
+    },
+    "FuelStation": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "fuel dispensing"
+      }
+    },
+    "FuelDispenser": {
+      "type": "dispenser",
+      "spec": {
+        "status": "operational",
+        "function": "vehicle and equipment fueling"
+      }
+    },
+    "FuelTransferLine": {
+      "type": "pipeline",
+      "spec": {
+        "status": "operational",
+        "function": "fuel transfer"
+      }
+    },
+    "FuelMeter": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "fuel flow"
+      }
+    },
+    "FuelStationController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "fuel station monitoring"
+      }
+    },
+    "WaterBlock": {
+      "type": "block",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "water supply and treatment"
+      }
+    },
+    "SeaWaterSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "seawater intake"
+      }
+    },
+    "SeaWaterIntake": {
+      "type": "intake",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "seawater collection"
+      }
+    },
+    "SeaWaterPump": {
+      "type": "pump",
+      "spec": {
+        "status": "operational",
+        "redundant": true,
+        "function": "primary seawater pumping"
+      }
+    },
+    "SeaWaterBackupPump": {
+      "type": "pump",
+      "spec": {
+        "status": "operational",
+        "redundant": true,
+        "function": "backup seawater pumping"
+      }
+    },
+    "IntakePressureSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "intake pressure"
+      }
+    },
+    "IntakeFlowSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "intake flow"
+      }
+    },
+    "SeaWaterController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "seawater intake monitoring"
+      }
+    },
+    "WaterTreatmentSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "fresh water production"
+      }
+    },
+    "DesalinationUnit": {
+      "type": "treatment_unit",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "seawater desalination"
+      }
+    },
+    "FreshWaterTank": {
+      "type": "tank",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "capacity": {
+          "value": 100000,
+          "unit": "L"
+        },
+        "purpose": "fresh water storage"
+      }
+    },
+    "HotWaterTank": {
+      "type": "tank",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "capacity": {
+          "value": 20000,
+          "unit": "L"
+        },
+        "purpose": "hot water storage"
+      }
+    },
+    "WaterQualitySensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "water quality"
+      }
+    },
+    "WaterLevelSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "water level",
+        "range": {
+          "min": 0,
+          "max": 100,
+          "unit": "%"
+        }
+      }
+    },
+    "WaterTemperatureSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "water temperature",
+        "range": {
+          "min": 0,
+          "max": 100,
+          "unit": "C"
+        }
+      }
+    },
+    "WaterTreatmentController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "redundant": true,
+        "function": "water treatment monitoring and control"
+      }
+    },
+    "WaterDistributionSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "water distribution"
+      }
+    },
+    "MainWaterPump": {
+      "type": "pump",
+      "spec": {
+        "status": "operational",
+        "redundant": true,
+        "function": "primary water distribution"
+      }
+    },
+    "BackupWaterPump": {
+      "type": "pump",
+      "spec": {
+        "status": "operational",
+        "redundant": true,
+        "function": "backup water distribution"
+      }
+    },
+    "FreshWaterPipeline": {
+      "type": "pipeline",
+      "spec": {
+        "status": "operational",
+        "function": "fresh water distribution"
+      }
+    },
+    "HotWaterPipeline": {
+      "type": "pipeline",
+      "spec": {
+        "status": "operational",
+        "function": "hot water distribution"
+      }
+    },
+    "WaterPressureSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "water pressure"
+      }
+    },
+    "WaterFlowSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "water flow"
+      }
+    },
+    "WaterDistributionController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "water distribution monitoring"
+      }
+    },
+    "WasteBlock": {
+      "type": "block",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "waste management"
+      }
+    },
+    "WasteWaterSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "wastewater collection and treatment"
+      }
+    },
+    "WasteWaterCollection": {
+      "type": "treatment_unit",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "wastewater collection"
+      }
+    },
+    "WasteWaterTreatment": {
+      "type": "treatment_unit",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "wastewater treatment"
+      }
+    },
+    "TreatedWaterTank": {
+      "type": "tank",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "purpose": "treated water storage"
+      }
+    },
+    "WasteWaterLevelSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "wastewater level",
+        "range": {
+          "min": 0,
+          "max": 100,
+          "unit": "%"
+        }
+      }
+    },
+    "WasteWaterQualitySensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "wastewater quality"
+      }
+    },
+    "WasteWaterController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "wastewater monitoring and control"
+      }
+    },
+    "SolidWasteSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "solid waste management"
+      }
+    },
+    "WasteCollection": {
+      "type": "storage",
+      "spec": {
+        "status": "operational",
+        "criticality": "medium",
+        "purpose": "solid waste collection"
+      }
+    },
+    "WasteProcessingUnit": {
+      "type": "treatment_unit",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "solid waste processing"
+      }
+    },
+    "WasteStorage": {
+      "type": "storage",
+      "spec": {
+        "status": "operational",
+        "criticality": "medium",
+        "purpose": "processed waste storage"
+      }
+    },
+    "WasteLevelSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "waste level",
+        "range": {
+          "min": 0,
+          "max": 100,
+          "unit": "%"
+        }
+      }
+    },
+    "WasteProcessingSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "waste processing status"
+      }
+    },
+    "WasteController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "solid waste monitoring and control"
+      }
+    },
+    "LogisticsBlock": {
+      "type": "block",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "cargo and field logistics"
+      }
+    },
+    "CargoSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "cargo management"
+      }
+    },
+    "CargoStorage": {
+      "type": "storage",
+      "spec": {
+        "status": "operational",
+        "criticality": "medium",
+        "purpose": "general cargo"
+      }
+    },
+    "EquipmentCargoStore": {
+      "type": "storage",
+      "spec": {
+        "status": "operational",
+        "criticality": "medium",
+        "purpose": "equipment cargo"
+      }
+    },
+    "ExpeditionSupplyStore": {
+      "type": "storage",
+      "spec": {
+        "status": "operational",
+        "criticality": "medium",
+        "purpose": "expedition supplies"
+      }
+    },
+    "CargoInventorySensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "cargo inventory"
+      }
+    },
+    "CargoTemperatureSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "cargo temperature",
+        "range": {
+          "min": -50,
+          "max": 40,
+          "unit": "C"
+        }
+      }
+    },
+    "CargoController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "cargo monitoring and inventory"
+      }
+    },
+    "FieldLogisticsSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "field transportation"
+      }
+    },
+    "SnowVehicle": {
+      "type": "vehicle",
+      "spec": {
+        "status": "operational",
+        "function": "snow transport"
+      }
+    },
+    "UtilityVehicle": {
+      "type": "vehicle",
+      "spec": {
+        "status": "operational",
+        "function": "utility transport"
+      }
+    },
+    "FieldTrailer": {
+      "type": "trailer",
+      "spec": {
+        "status": "operational",
+        "function": "field cargo transport"
+      }
+    },
+    "VehicleGPS": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "vehicle position"
+      }
+    },
+    "VehicleTelemetry": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "vehicle telemetry"
+      }
+    },
+    "LogisticsController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "field logistics monitoring"
+      }
+    },
+    "FieldResearchBlock": {
+      "type": "block",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "remote scientific research"
+      }
+    },
+    "MeteorologySystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "meteorological observation"
+      }
+    },
+    "AutomaticWeatherStation": {
+      "type": "weather_station",
+      "spec": {
+        "status": "operational",
+        "criticality": "medium",
+        "function": "automatic weather observation"
+      }
+    },
+    "WindSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "wind speed and direction"
+      }
+    },
+    "AirTemperatureSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "air temperature",
+        "range": {
+          "min": -100,
+          "max": 30,
+          "unit": "C"
+        }
+      }
+    },
+    "AtmosphericPressureSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "atmospheric pressure"
+      }
+    },
+    "SolarRadiationSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "solar radiation",
+        "range": {
+          "min": 0,
+          "max": 1500,
+          "unit": "W/m2"
+        }
+      }
+    },
+    "MeteorologyController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "meteorological monitoring"
+      }
+    },
+    "GeophysicsSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "geophysical observation"
+      }
+    },
+    "SeismicStation": {
+      "type": "instrument",
+      "spec": {
+        "status": "operational",
+        "criticality": "medium",
+        "function": "seismic monitoring"
+      }
+    },
+    "Magnetometer": {
+      "type": "instrument",
+      "spec": {
+        "status": "operational",
+        "criticality": "medium",
+        "function": "magnetic field monitoring"
+      }
+    },
+    "GPSReferenceStation": {
+      "type": "instrument",
+      "spec": {
+        "status": "operational",
+        "criticality": "medium",
+        "function": "geodetic reference"
+      }
+    },
+    "SeismicSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "seismic activity"
+      }
+    },
+    "MagneticSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "magnetic field"
+      }
+    },
+    "GeophysicsController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "geophysical monitoring"
+      }
+    },
+    "EnvironmentalMonitoringSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "environmental observation"
+      }
+    },
+    "SnowMonitoringStation": {
+      "type": "station_module",
+      "spec": {
+        "status": "operational",
+        "function": "snow monitoring"
+      }
+    },
+    "IceMonitoringUnit": {
+      "type": "instrument",
+      "spec": {
+        "status": "operational",
+        "criticality": "medium",
+        "function": "ice monitoring"
+      }
+    },
+    "EnvironmentalDataLogger": {
+      "type": "data_logger",
+      "spec": {
+        "status": "operational",
+        "function": "environmental data logging"
+      }
+    },
+    "SnowDepthSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "snow depth"
+      }
+    },
+    "IceTemperatureSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "ice temperature",
+        "range": {
+          "min": -80,
+          "max": 10,
+          "unit": "C"
+        }
+      }
+    },
+    "EnvironmentalSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "environmental conditions"
+      }
+    },
+    "EnvironmentalController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "environmental monitoring"
+      }
+    },
+    "CommunicationBlock": {
+      "type": "block",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "external and field communications"
+      }
+    },
+    "ExternalSatelliteSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "external satellite communication"
+      }
+    },
+    "PrimarySatelliteDish": {
+      "type": "antenna",
+      "spec": {
+        "status": "operational",
+        "function": "primary satellite communication"
+      }
+    },
+    "BackupSatelliteDish": {
+      "type": "antenna",
+      "spec": {
+        "status": "operational",
+        "function": "backup satellite communication"
+      }
+    },
+    "SatelliteModem": {
+      "type": "modem",
+      "spec": {
+        "status": "operational",
+        "redundant": true,
+        "function": "primary satellite data link"
+      }
+    },
+    "SatelliteBackupModem": {
+      "type": "modem",
+      "spec": {
+        "status": "operational",
+        "redundant": true,
+        "function": "backup satellite data link"
+      }
+    },
+    "SatelliteSignalSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "satellite signal strength",
+        "range": {
+          "min": 0,
+          "max": 100,
+          "unit": "%"
+        }
+      }
+    },
+    "SatelliteController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "satellite communications monitoring"
+      }
+    },
+    "FieldRadioSystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "field radio communications"
+      }
+    },
+    "BaseRadio": {
+      "type": "radio",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "base station radio"
+      }
+    },
+    "EmergencyRadio": {
+      "type": "radio",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "emergency communication"
+      }
+    },
+    "FieldRadio": {
+      "type": "radio",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "field communication"
+      }
+    },
+    "RadioSignalSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "radio signal strength",
+        "range": {
+          "min": 0,
+          "max": 100,
+          "unit": "%"
+        }
+      }
+    },
+    "RadioController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "field radio monitoring"
+      }
+    },
+    "SafetyBlock": {
+      "type": "block",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "station safety and emergency systems"
+      }
+    },
+    "FireSafetySystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "fire detection and suppression"
+      }
+    },
+    "FireSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "fire"
+      }
+    },
+    "SmokeSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "smoke"
+      }
+    },
+    "HeatSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "heat",
+        "range": {
+          "min": -50,
+          "max": 200,
+          "unit": "C"
+        }
+      }
+    },
+    "FireAlarm": {
+      "type": "alarm",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "fire alarm"
+      }
+    },
+    "FireSuppression": {
+      "type": "suppression_system",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "fire suppression"
+      }
+    },
+    "FireSafetyController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "redundant": true,
+        "function": "fire safety monitoring and control"
+      }
+    },
+    "EmergencySystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "general emergency response"
+      }
+    },
+    "EmergencyAlarm": {
+      "type": "alarm",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "emergency alarm"
+      }
+    },
+    "EmergencyBeacon": {
+      "type": "beacon",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "emergency location beacon"
+      }
+    },
+    "EmergencyLighting": {
+      "type": "lighting",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "emergency lighting"
+      }
+    },
+    "EmergencySensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "emergency conditions"
+      }
+    },
+    "EmergencyController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "redundant": true,
+        "function": "emergency monitoring and control"
+      }
+    },
+    "MedicalEmergencySystem": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "medical emergency response"
+      }
+    },
+    "MedicalAlarm": {
+      "type": "alarm",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "medical emergency alarm"
+      }
+    },
+    "EmergencyMedicalKit": {
+      "type": "medical_storage",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "emergency medical supplies"
+      }
+    },
+    "EvacuationEquipment": {
+      "type": "equipment",
+      "spec": {
+        "status": "operational",
+        "function": "medical evacuation"
+      }
+    },
+    "MedicalEmergencyController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "redundant": true,
+        "function": "medical emergency monitoring"
+      }
+    },
+    "EmergencyCampBlock": {
+      "type": "block",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "emergency and seasonal accommodation"
+      }
+    },
+    "EmergencyShelter": {
+      "type": "system",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "function": "emergency accommodation",
+        "capacity": 13,
+        "levels": 2,
+        "distance_from_main_station": {
+          "value": 300,
+          "unit": "m"
+        }
+      }
+    },
+    "ShelterAccommodation": {
+      "type": "accommodation",
+      "spec": {
+        "status": "operational",
+        "occupied": true,
+        "capacity": 13,
+        "purpose": "emergency accommodation"
+      }
+    },
+    "ShelterKitchen": {
+      "type": "kitchen",
+      "spec": {
+        "status": "operational",
+        "function": "emergency food preparation"
+      }
+    },
+    "ShelterOffice": {
+      "type": "office",
+      "spec": {
+        "status": "operational",
+        "function": "emergency administration"
+      }
+    },
+    "ShelterCommunicationRoom": {
+      "type": "communication_room",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "emergency communications"
+      }
+    },
+    "ShelterGenerator": {
+      "type": "generator",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "rating": {
+          "value": 25,
+          "unit": "kVA"
+        },
+        "function": "emergency power generation"
+      }
+    },
+    "ShelterWaterTank": {
+      "type": "tank",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "purpose": "emergency water storage"
+      }
+    },
+    "ShelterWasteUnit": {
+      "type": "treatment_unit",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "function": "emergency waste management"
+      }
+    },
+    "ShelterTemperatureSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "shelter temperature",
+        "range": {
+          "min": -50,
+          "max": 40,
+          "unit": "C"
+        }
+      }
+    },
+    "ShelterPowerSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "shelter power"
+      }
+    },
+    "ShelterWaterSensor": {
+      "type": "sensor",
+      "spec": {
+        "status": "operational",
+        "accuracy": "high",
+        "measurement": "shelter water level",
+        "range": {
+          "min": 0,
+          "max": 100,
+          "unit": "%"
+        }
+      }
+    },
+    "ShelterController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "critical",
+        "redundant": true,
+        "function": "emergency shelter monitoring"
+      }
+    },
+    "SummerCampSystem": {
+      "type": "system",
+      "spec": {
+        "status": "seasonal",
+        "criticality": "high",
+        "function": "seasonal accommodation"
+      }
+    },
+    "SummerAccommodation": {
+      "type": "accommodation",
+      "spec": {
+        "status": "operational",
+        "occupied": true,
+        "capacity": 25,
+        "purpose": "summer personnel accommodation"
+      }
+    },
+    "SummerDining": {
+      "type": "dining",
+      "spec": {
+        "status": "operational",
+        "function": "seasonal dining"
+      }
+    },
+    "SummerStorage": {
+      "type": "storage",
+      "spec": {
+        "status": "operational",
+        "criticality": "medium",
+        "purpose": "seasonal supplies"
+      }
+    },
+    "SummerCampController": {
+      "type": "controller",
+      "spec": {
+        "status": "operational",
+        "criticality": "high",
+        "redundant": true,
+        "function": "summer camp monitoring"
+      }
+    }
+  },
+  "defaults": {
+    "station": {
+      "status": "operational",
+      "environment": "polar",
+      "location": "antarctica",
+      "criticality": "critical"
+    },
+    "block": {
+      "status": "operational",
+      "criticality": "high"
+    },
+    "floor": {
+      "status": "operational"
+    },
+    "system": {
+      "status": "operational",
+      "criticality": "high"
+    },
+    "laboratory": {
+      "status": "operational",
+      "criticality": "high",
+      "temperature_controlled": true
+    },
+    "workshop": {
+      "status": "operational",
+      "criticality": "medium"
+    },
+    "storage": {
+      "status": "operational",
+      "criticality": "medium"
+    },
+    "controller": {
+      "status": "operational",
+      "criticality": "high",
+      "redundant": true
+    },
+    "sensor": {
+      "status": "operational",
+      "accuracy": "high"
+    },
+    "server": {
+      "status": "operational",
+      "redundant": true,
+      "criticality": "high"
+    },
+    "database": {
+      "status": "operational",
+      "redundant": true,
+      "criticality": "high"
+    },
+    "accommodation": {
+      "status": "operational",
+      "occupied": true
+    },
+    "lounge": {
+      "status": "operational"
+    },
+    "library": {
+      "status": "operational"
+    },
+    "kitchen": {
+      "status": "operational"
+    },
+    "dining": {
+      "status": "operational"
+    },
+    "food_room": {
+      "status": "operational",
+      "temperature_controlled": true
+    },
+    "medical_room": {
+      "status": "operational",
+      "criticality": "high"
+    },
+    "treatment_room": {
+      "status": "operational",
+      "criticality": "high"
+    },
+    "office": {
+      "status": "operational"
+    },
+    "conference": {
+      "status": "operational"
+    },
+    "archive": {
+      "status": "operational"
+    },
+    "sanitation": {
+      "status": "operational"
+    },
+    "sauna": {
+      "status": "operational"
+    },
+    "laundry": {
+      "status": "operational"
+    },
+    "electrical_room": {
+      "status": "operational",
+      "criticality": "critical"
+    },
+    "pump_room": {
+      "status": "operational",
+      "criticality": "high"
+    },
+    "computer_cluster": {
+      "status": "operational",
+      "criticality": "high"
+    },
+    "console": {
+      "status": "operational",
+      "criticality": "high"
+    },
+    "router": {
+      "status": "operational",
+      "redundant": true
+    },
+    "satellite_terminal": {
+      "status": "operational",
+      "criticality": "high"
+    },
+    "antenna": {
+      "status": "operational"
+    },
+    "radio": {
+      "status": "operational",
+      "criticality": "high"
+    },
+    "tracking_unit": {
+      "status": "operational",
+      "criticality": "high"
+    },
+    "data_receiver": {
+      "status": "operational",
+      "criticality": "high"
+    },
+    "terminal": {
+      "status": "operational",
+      "criticality": "high"
+    },
+    "heater": {
+      "status": "operational",
+      "redundant": true
+    },
+    "air_handler": {
+      "status": "operational"
+    },
+    "fan": {
+      "status": "operational",
+      "redundant": true
+    },
+    "chp": {
+      "status": "operational",
+      "criticality": "critical"
+    },
+    "generator": {
+      "status": "operational",
+      "criticality": "critical"
+    },
+    "switchboard": {
+      "status": "operational",
+      "criticality": "critical"
+    },
+    "transformer": {
+      "status": "operational",
+      "criticality": "critical"
+    },
+    "ups": {
+      "status": "operational",
+      "criticality": "critical"
+    },
+    "battery": {
+      "status": "operational",
+      "criticality": "high"
+    },
+    "inverter": {
+      "status": "operational",
+      "criticality": "high"
+    },
+    "tank": {
+      "status": "operational",
+      "criticality": "high"
+    },
+    "pump": {
+      "status": "operational",
+      "redundant": true
+    },
+    "pipeline": {
+      "status": "operational"
+    },
+    "treatment_unit": {
+      "status": "operational",
+      "criticality": "high"
+    },
+    "intake": {
+      "status": "operational",
+      "criticality": "high"
+    },
+    "dispenser": {
+      "status": "operational"
+    },
+    "vehicle": {
+      "status": "operational"
+    },
+    "trailer": {
+      "status": "operational"
+    },
+    "weather_station": {
+      "status": "operational",
+      "criticality": "medium"
+    },
+    "instrument": {
+      "status": "operational",
+      "criticality": "medium"
+    },
+    "station_module": {
+      "status": "operational"
+    },
+    "data_logger": {
+      "status": "operational"
+    },
+    "modem": {
+      "status": "operational",
+      "redundant": true
+    },
+    "suppression_system": {
+      "status": "operational",
+      "criticality": "critical"
+    },
+    "alarm": {
+      "status": "operational",
+      "criticality": "critical"
+    },
+    "beacon": {
+      "status": "operational",
+      "criticality": "critical"
+    },
+    "lighting": {
+      "status": "operational",
+      "criticality": "high"
+    },
+    "medical_storage": {
+      "status": "operational",
+      "criticality": "high"
+    },
+    "equipment": {
+      "status": "operational"
+    },
+    "communication_room": {
+      "status": "operational",
+      "criticality": "high"
+    }
+  }
+}

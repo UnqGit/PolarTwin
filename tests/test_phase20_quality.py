@@ -48,7 +48,7 @@ class Phase20QualityTests(unittest.TestCase):
         )
 
     def test_maitri_report_is_topology_agnostic(self):
-        root = ROOT / "config/twins/maitri"
+        root = ROOT / "data/compiled/maitri"
         report = build_quality_report(compile_model(read_json(root / "relation.json"), read_json(root / "spec.json")))
         self.assertEqual(report.components, 102)
         self.assertEqual(report.connections, 96)
