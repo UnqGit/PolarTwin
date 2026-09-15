@@ -23,7 +23,7 @@ class Phase22SafetyTests(unittest.TestCase):
         self.specification = read_json(self.minimal_root / "specification.json")
 
     def test_negative_fuel_error_raises_exception(self):
-        graph = compile_model(self.topology, self.connections, self.specification)
+        graph = compile_model(self.topology, raw_connections=self.connections, specification=self.specification)
         # Set validation config with error
         engine = SimulationEngine(graph, validation_config={"negative_fuel": "error"})
         
@@ -36,7 +36,7 @@ class Phase22SafetyTests(unittest.TestCase):
         self.assertIn("fuel level -10.0 is less than 0", str(ctx.exception))
 
     def test_negative_fuel_warning_does_not_raise(self):
-        graph = compile_model(self.topology, self.connections, self.specification)
+        graph = compile_model(self.topology, raw_connections=self.connections, specification=self.specification)
         engine = SimulationEngine(graph, validation_config={"negative_fuel": "warning"})
         
         engine.graph.get("Generator").runtime_state.values["fuel_level"] = -10.0
@@ -46,7 +46,7 @@ class Phase22SafetyTests(unittest.TestCase):
         self.assertEqual(violations[0].rule, "negative_fuel")
 
     def test_negative_fuel_ignore_is_silent(self):
-        graph = compile_model(self.topology, self.connections, self.specification)
+        graph = compile_model(self.topology, raw_connections=self.connections, specification=self.specification)
         engine = SimulationEngine(graph, validation_config={"negative_fuel": "ignore"})
         
         engine.graph.get("Generator").runtime_state.values["fuel_level"] = -10.0
@@ -55,7 +55,7 @@ class Phase22SafetyTests(unittest.TestCase):
         self.assertEqual(len(violations), 0)
 
     def test_generator_overload_is_detected(self):
-        graph = compile_model(self.topology, self.connections, self.specification)
+        graph = compile_model(self.topology, raw_connections=self.connections, specification=self.specification)
         engine = SimulationEngine(graph, validation_config={"generator_overload": "error"})
         
         engine.graph.get("Generator").runtime_state.values["power_output"] = 5000.0  # rating is 500
@@ -65,7 +65,7 @@ class Phase22SafetyTests(unittest.TestCase):
         self.assertIn("generator_overload", str(ctx.exception))
 
     def test_temperature_out_of_range(self):
-        graph = compile_model(self.topology, self.connections, self.specification)
+        graph = compile_model(self.topology, raw_connections=self.connections, specification=self.specification)
         engine = SimulationEngine(graph, validation_config={"temperature_out_of_range": "error"})
         
         engine.environment.values["temperature"] = -150.0
@@ -86,7 +86,8 @@ class Phase22SafetyTests(unittest.TestCase):
             "direction": "-->"
         })
         with self.assertRaises(ValidationError) as ctx:
-            validate_topology(topology, {"invalid_connection": "error"})
+            from twin_sim.ingestion.validator import validate_documents
+            validate_documents(topology, connections, self.specification, {"invalid_connection": "error"})
         self.assertIn("references unknown component", str(ctx.exception))
 
     def test_invalid_connection_warning_suppresses_error(self):
@@ -99,8 +100,9 @@ class Phase22SafetyTests(unittest.TestCase):
             "relation": "power",
             "direction": "-->"
         })
-        # If set to warning, validate_topology does not raise.
-        valid_topology = validate_topology(topology, {"invalid_connection": "warning"})
+        # If set to warning, validate_documents does not raise.
+        from twin_sim.ingestion.validator import validate_documents
+        valid_topology, valid_connections, valid_spec = validate_documents(topology, connections, self.specification, {"invalid_connection": "warning"})
         self.assertEqual(valid_topology["name"], "MiniStation")
 
     def test_unknown_sensor_quantity_checked_during_compilation(self):
@@ -108,7 +110,7 @@ class Phase22SafetyTests(unittest.TestCase):
         spec["components"]["FuelSensor"]["spec"]["quantity"] = "magic_beans"
         
         with self.assertRaises(SafetyError) as ctx:
-            compile_model(self.topology, spec, {"unknown_sensor": "error"})
+            compile_model(self.topology, raw_connections=self.connections, specification=spec, validation_config={"unknown_sensor": "error"})
         self.assertIn("unknown_sensor", str(ctx.exception))
         self.assertIn("magic_beans", str(ctx.exception))
 
@@ -116,7 +118,7 @@ class Phase22SafetyTests(unittest.TestCase):
         spec = dict(self.specification)
         spec["components"]["FuelSensor"]["spec"]["quantity"] = "magic_beans"
         
-        graph = compile_model(self.topology, spec, {"unknown_sensor": "warning"})
+        graph = compile_model(self.topology, raw_connections=self.connections, specification=spec, validation_config={"unknown_sensor": "warning"})
         # Should not raise, but add a diagnostic
         self.assertTrue(any("magic_beans" in diag for diag in graph.diagnostics))
 

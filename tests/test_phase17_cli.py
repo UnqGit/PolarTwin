@@ -32,7 +32,7 @@ class Phase17CliTests(unittest.TestCase):
         self.assertEqual(report["components"], 5)
 
     def test_graph_and_run_output(self):
-        graph_output = self.run_cli("graph", "--topology", str(self.root / "topology.json"), "--spec", str(self.root / "specification.json"))
+        graph_output = self.run_cli("graph", "--topology", str(self.root / "topology.json"), "--connection", str(self.root / "connections.json"), "--spec", str(self.root / "specification.json"))
         self.assertIn("Generator-->FuelSensor@fuel", graph_output)
         output = self.run_cli("run", "--topology", str(self.root / "topology.json"), "--spec", str(self.root / "specification.json"), "--duration", "1")
         self.assertEqual(len(output.strip().splitlines()), 5)

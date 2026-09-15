@@ -1,0 +1,57 @@
+{
+  "weather": {
+    "outdoor_temperature": [
+      {"time": 0, "value": -15.0},
+      {"time": 3600, "value": -18.5},
+      {"time": 7200, "value": -22.0},
+      {"time": 10800, "value": -20.0}
+    ],
+    "wind_speed": [
+      {"time": 0, "value": 12.4},
+      {"time": 3600, "value": 25.0},
+      {"time": 7200, "value": 35.0},
+      {"time": 10800, "value": 15.0}
+    ],
+    "humidity": 65.0,
+    "pressure": 1013.25,
+    "visibility": 500,
+    "o2_level": 20.9,
+    "co2_level": 400.0,
+    "wind_direction": 180.0,
+    "dew_frost_point": -16.0
+  },
+  "network": {
+    "connectivity": [
+      {"time": 0, "value": 1.0},
+      {"time": 3600, "value": 0.3},
+      {"time": 7200, "value": 0.0},
+      {"time": 10800, "value": 1.0}
+    ],
+    "upload_speed_mbps": [
+      {"time": 0, "value": 10.0},
+      {"time": 3600, "value": 2.0},
+      {"time": 7200, "value": 0.0},
+      {"time": 10800, "value": 10.0}
+    ],
+    "connectivity_to_mainland": 1.0,
+    "bandwidth": 100.0,
+    "download_speed": 50.0,
+    "upload_window": "on"
+  },
+  "supplies": [
+    {
+      "eta": "2026-09-20T10:00:00Z",
+      "description": "Diesel fuel resupply",
+      "transportation_mode": "ship",
+      "quantity": 500,
+      "unit": "L"
+    },
+    {
+      "eta": "2026-09-25T14:00:00Z",
+      "description": "Medical supplies and food",
+      "transportation_mode": "helicopter",
+      "quantity": 50,
+      "unit": "kg"
+    }
+  ]
+}

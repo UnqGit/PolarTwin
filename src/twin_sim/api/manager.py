@@ -29,13 +29,15 @@ class SimulationManager:
         self._lock = threading.Lock()
 
     def create_run(
-        self,
-        topology: Dict[str, Any],
-        connections: List[Dict[str, Any]],
+        self, 
+        topology: Dict[str, Any], 
         specification: Dict[str, Any],
+        connections: Optional[List[Dict[str, Any]]] = None, 
         scenario: Optional[Dict[str, Any]] = None,
         config: Optional[Dict[str, Any]] = None
     ) -> str:
+        if connections is None:
+            connections = topology.get("connections", [])
         graph = compile_model(topology, connections, specification)
         
         run_id = f"run-{uuid.uuid4().hex[:8]}"

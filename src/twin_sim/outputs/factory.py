@@ -15,7 +15,7 @@ from .stdout import StdoutSink
 from twin_sim.storage import SQLiteAdapter
 
 
-def create_sink(configuration: dict[str, Any]) -> TelemetrySink:
+def create_sink(configuration: dict[str, Any], random_value: Any = None) -> TelemetrySink:
     sink_type = configuration.get("type")
     if sink_type == "stdout":
         return StdoutSink()
@@ -34,6 +34,9 @@ def create_sink(configuration: dict[str, Any]) -> TelemetrySink:
             retain=configuration.get("retain", False),
         )
     if sink_type == "mqtt_store_forward":
+        from .connectivity import ConnectivityPolicy
+        policy = ConnectivityPolicy(random_value=random_value) if random_value else None
+        
         return MqttStoreForwardSink(
             host=configuration["host"],
             outbox_path=configuration["outbox_path"],
@@ -41,5 +44,6 @@ def create_sink(configuration: dict[str, Any]) -> TelemetrySink:
             topic_prefix=configuration.get("topic_prefix", "twin/telemetry"),
             qos=configuration.get("qos", 1),
             retain=configuration.get("retain", False),
+            connectivity_policy=policy
         )
     raise ValueError(f"unsupported telemetry sink '{sink_type}'")

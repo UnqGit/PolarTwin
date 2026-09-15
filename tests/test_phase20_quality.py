@@ -23,7 +23,7 @@ class Phase20QualityTests(unittest.TestCase):
         self.specification = read_json(root / "specification.json")
 
     def test_report_counts_components_behaviors_and_isolated_nodes(self):
-        report = build_quality_report(compile_model(self.topology, self.connections, self.specification))
+        report = build_quality_report(compile_model(self.topology, raw_connections=self.connections, specification=self.specification))
         self.assertEqual(report.components, 5)
         self.assertEqual(report.connections, 4)
         self.assertEqual(report.specialized_behaviors, 3)  # generator, sensor, controller
@@ -35,6 +35,7 @@ class Phase20QualityTests(unittest.TestCase):
         topology = json.loads(json.dumps(self.topology))
         # The enriched topology already has a cycle: Generator→Controller→Generator
         # Adding FuelSensor→Generator creates a bigger SCC
+        connections = list(self.connections)
         connections.append({
             "source": "FuelSensor",
             "target": "Generator",

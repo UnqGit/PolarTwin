@@ -29,7 +29,8 @@ class Phase21CausalTests(unittest.TestCase):
         )
         self.maitri_graph = compile_model(
             read_json(self.maitri_root / "relation.json"),
-            read_json(self.maitri_root / "spec.json"),
+            raw_connections=read_json(self.maitri_root / "connection.json"),
+            specification=read_json(self.maitri_root / "spec.json"),
         )
 
     def test_causal_event_serialization_matches_spec(self):
@@ -90,6 +91,7 @@ class Phase21CausalTests(unittest.TestCase):
                 sys.executable, "-m", "twin_sim.cli", "explain",
                 "--topology", str(self.maitri_root / "relation.json"),
                 "--spec", str(self.maitri_root / "spec.json"),
+                "--connection", str(self.maitri_root / "connection.json"),
                 "--scenario", str(self.maitri_example / "scenario.json"),
                 "--component", "Generator2",
                 "--duration", "5"
@@ -109,6 +111,7 @@ class Phase21CausalTests(unittest.TestCase):
                 sys.executable, "-m", "twin_sim.cli", "explain",
                 "--topology", str(self.maitri_root / "relation.json"),
                 "--spec", str(self.maitri_root / "spec.json"),
+                "--connection", str(self.maitri_root / "connection.json"),
                 "--scenario", str(self.maitri_example / "scenario.json"),
                 "--component", "Generator2",
                 "--duration", "5",

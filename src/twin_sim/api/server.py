@@ -10,7 +10,7 @@ manager = SimulationManager()
 
 class RunRequest(BaseModel):
     topology: Dict[str, Any]
-    connections: List[Dict[str, Any]]
+    connections: Optional[List[Dict[str, Any]]] = None
     specification: Dict[str, Any]
     scenario: Optional[Dict[str, Any]] = None
     config: Optional[Dict[str, Any]] = None

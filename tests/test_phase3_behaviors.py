@@ -31,7 +31,7 @@ class Phase3BehaviorTests(unittest.TestCase):
         specification = copy.deepcopy(self.specification)
         topology["children"].append({"name": "QuantumWidget", "type": "quantum_widget", "tags": [], "children": []})
         specification["components"]["QuantumWidget"] = {"type": "quantum_widget", "spec": {"provides": "unknown"}}
-        graph = compile_model(topology, connections, specification)
+        graph = compile_model(topology, self.connections, specification)
         self.assertIsInstance(graph.get("QuantumWidget").behavior, GenericBehavior)
         self.assertTrue(any("QuantumWidget" in item and "generic fallback" in item for item in graph.diagnostics))
 
@@ -55,7 +55,7 @@ class Phase3BehaviorTests(unittest.TestCase):
         topology["children"][0]["children"][0]["type"] = "unknown_type"
         specification["components"]["Generator"]["type"] = "unknown_type"
         specification["components"]["Generator"]["spec"]["behavior_type"] = "generator"
-        graph = compile_model(topology, connections, specification)
+        graph = compile_model(topology, self.connections, specification)
         self.assertEqual(graph.get("Generator").behavior.name, "generator")
 
     def test_custom_registry_behavior_is_supported(self):

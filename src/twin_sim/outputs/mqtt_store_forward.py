@@ -42,6 +42,21 @@ class MqttStoreForwardSink(TelemetrySink):
         self.connected = False
         self.worker_enabled = worker
         self.connectivity_policy = connectivity_policy or ConnectivityPolicy()
+        self.available_capacity_bits = float('inf')
+        self._capacity_lock = threading.Lock()
+
+    def tick(self, dt: float, environment: dict) -> None:
+        upload_speed = float(environment.get("upload_speed_mbps", float('inf')))
+        bandwidth = float(environment.get("bandwidth", float('inf')))
+        effective_rate_mbps = min(upload_speed, bandwidth)
+        
+        with self._capacity_lock:
+            if effective_rate_mbps == float('inf'):
+                self.available_capacity_bits = float('inf')
+            else:
+                if self.available_capacity_bits == float('inf'):
+                    self.available_capacity_bits = 0.0
+                self.available_capacity_bits += effective_rate_mbps * 1_000_000 * dt
 
     def start(self) -> None:
         self.outbox.start()
@@ -77,8 +92,24 @@ class MqttStoreForwardSink(TelemetrySink):
             self.connectivity_policy.delay(environment)
             if not self.connectivity_policy.allow(environment):
                 raise ConnectionError("simulated network loss")
+                
+            payload_bytes = record.payload.encode("utf-8")
+            payload_bits = len(payload_bytes) * 8
+            
+            with self._capacity_lock:
+                if payload_bits > self.available_capacity_bits:
+                    # Not enough capacity this tick; leave pending without failing it
+                    self.outbox.connection.execute(
+                        "UPDATE mqtt_outbox SET status = 'PENDING' WHERE message_id = ?",
+                        (record.message_id,)
+                    )
+                    self.outbox.connection.commit()
+                    return False
+                
+                self.available_capacity_bits -= payload_bits
+
             self._connect()
-            self.client.publish(record.topic, record.payload, record.qos, record.retain)
+            self.client.publish(record.topic, payload_bytes, record.qos, record.retain)
             self.outbox.mark_delivered(record.message_id)
         except Exception as exc:
             self.connected = False
