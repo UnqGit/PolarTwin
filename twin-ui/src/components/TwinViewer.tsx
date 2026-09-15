@@ -259,7 +259,6 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
 }) => {
   const { theme } = useTheme();
   const bgMain = theme === 'light' ? '#f8fafc' : '#0f172a';
-  const gridLine = theme === 'light' ? '#cbd5e1' : '#1e293b';
 
   const sceneLayout = useMemo(
     () => {
@@ -282,19 +281,9 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
 
   const controlsRef = useRef<any>(null);
 
-  const [activeLayer, setActiveLayer] = useState<number | null>(null);
+  const [activeLayer, setActiveLayer] = useState<number | null>(0);
 
-  const availableLayers = useMemo(() => {
-    const layers = new Set<number>();
-    for (const node of sceneLayout.allNodes.values()) {
-      if (node.type === 'floor' && typeof node.level === 'number') {
-        layers.add(node.level);
-      }
-    }
-    return Array.from(layers).sort((a, b) => a - b);
-  }, [sceneLayout.allNodes]);
-
-  const handleResetCamera = React.useCallback(() => {
+    const handleResetCamera = React.useCallback(() => {
     if (controlsRef.current) {
       controlsRef.current.reset();
     }
@@ -459,9 +448,22 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
 
             <OrbitControls ref={controlsRef} makeDefault enablePan enableRotate enableZoom />
             
-            {/* Floor / Reference Grid */}
+            {/* Floor / Reference Plane + Axis Lines */}
             <group position={[0, -0.01, 0]}>
-              <gridHelper args={[60, 60, gridLine, bgMain]} position={[0, -0.02, 0]} />
+              {/* X axis line (red) */}
+              <line>
+                <bufferGeometry>
+                  <bufferAttribute attach="attributes-position" args={[new Float32Array([-30,0,0, 30,0,0]), 3]} />
+                </bufferGeometry>
+                <lineBasicMaterial color="#ef4444" opacity={0.5} transparent />
+              </line>
+              {/* Z axis line (blue) */}
+              <line>
+                <bufferGeometry>
+                  <bufferAttribute attach="attributes-position" args={[new Float32Array([0,0,-30, 0,0,30]), 3]} />
+                </bufferGeometry>
+                <lineBasicMaterial color="#3b82f6" opacity={0.5} transparent />
+              </line>
               <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]} receiveShadow>
                 <planeGeometry args={[100, 100]} />
                 <shadowMaterial transparent opacity={0.2} />
@@ -503,7 +505,6 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
             onHideAllConnectionsChange={setHideAllConnections}
             liveStateRef={liveStateRef}
             onResetCamera={handleResetCamera}
-            availableLayers={Array.from(availableLayers).sort((a,b)=>a-b)}
             activeLayer={activeLayer}
             setActiveLayer={setActiveLayer}
             onShowGraph={() => setIsGraphOpen(true)}

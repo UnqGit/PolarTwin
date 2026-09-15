@@ -200,19 +200,16 @@ export const TwinNodeRenderer: React.FC<TwinNodeRendererProps> = React.memo(({
   const isOffOnHover = containerOcclusion === 'off_on_hover';
   let containerOpacity = mat.opacity;
   
-  if (!componentsInteractable) {
-    // If global interaction is disabled, all floors use equal normal translucency
+  if (isOffOnHover) {
+    containerOpacity = (isOutermostNonCampus || hovered || descendantHovered || descendantSelected || selected ? mat.opacity : 1.0);
+  } else {
     containerOpacity = mat.opacity;
-  } else if (activeLayer !== null && containerOcclusion === 'off') {
-    // If a specific layer is active and we want emphasis (occlusion is off)
-    if (myEffectiveLayer !== null && activeLayer === myEffectiveLayer) {
-      containerOpacity = 1.0;
-    } else if (myEffectiveLayer !== null) {
+  }
+
+  if (componentsInteractable && activeLayer !== null) {
+    if (myEffectiveLayer !== null && activeLayer !== myEffectiveLayer) {
       containerOpacity = mat.opacity * 0.15; // subdued
     }
-  } else if (isOffOnHover) {
-    // Normal off_on_hover logic using outermost non-campus
-    containerOpacity = (isOutermostNonCampus || hovered || descendantHovered || descendantSelected || selected ? mat.opacity : 1.0);
   }
 
   const yOffset = layout.yOffset ?? 0;

@@ -35,8 +35,9 @@ export const HoverCard: React.FC<HoverCardProps> = ({ root, connections, liveSta
           <Link2 size={14} color='var(--accent-amber)' style={{ marginRight: 6 }} />
           CONNECTION
         </div>
-        <div style={titleStyle}>
-          {conn.source} → {conn.target}
+        <div style={{...titleStyle, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline'}}>
+          <span>{conn.source} → {conn.target}</span>
+          <span style={{fontSize: 10, color: 'var(--text-tertiary)', fontWeight: 'normal'}}>{conn.relation}</span>
         </div>
         <div style={bodyStyle}>
           <Row label="Source" value={conn.source} />

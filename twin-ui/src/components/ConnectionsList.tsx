@@ -47,10 +47,10 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
   // Sort groups alphabetically
   const sortedKeys = Array.from(grouped.keys()).sort();
 
-  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(new Set());
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   const toggleGroup = (key: string) => {
-    setCollapsedGroups(prev => {
+    setExpandedGroups(prev => {
       const next = new Set(prev);
       if (next.has(key)) next.delete(key);
       else next.add(key);
@@ -58,8 +58,8 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
     });
   };
 
-  const expandAll = () => setCollapsedGroups(new Set());
-  const collapseAll = () => setCollapsedGroups(new Set(sortedKeys));
+  const expandAll = () => setExpandedGroups(new Set(sortedKeys));
+  const collapseAll = () => setExpandedGroups(new Set());
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', fontFamily: 'system-ui, sans-serif' }}>
@@ -116,7 +116,7 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
             </select>
           </div>
           <div style={{ display: 'flex', gap: 4 }}>
-            {sortedKeys.length > 0 && collapsedGroups.size === 0 ? (
+            {sortedKeys.length > 0 && expandedGroups.size > 0 ? (
               <button 
                 onClick={collapseAll}
                 style={{ background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}
@@ -148,7 +148,7 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
               return valA.localeCompare(valB);
             });
 
-            const isCollapsed = collapsedGroups.has(groupKey);
+            const isCollapsed = !expandedGroups.has(groupKey);
             const headingLabel = sortBy === 'source' ? 'Source:' : 'Target:';
 
             return (

@@ -120,7 +120,6 @@ export interface HierarchyPanelProps {
   onToggleCollapse?: () => void;
   liveStateRef?: any;
   onResetCamera?: () => void;
-  availableLayers?: number[];
   activeLayer?: number | null;
   setActiveLayer?: (layer: number | null) => void;
   onShowGraph?: () => void;
@@ -131,7 +130,7 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
   onComponentsInteractableChange, onConnectionsInteractableChange,
   hideAllComponents, hideAllConnections,
   onHideAllComponentsChange, onHideAllConnectionsChange,
-  onResetCamera, availableLayers = [], activeLayer = null, setActiveLayer,
+  onResetCamera, activeLayer = null, setActiveLayer,
   onShowGraph
 }) => {
   const [activeView, setActiveView] = useState<'hierarchy' | 'connections' | 'interactivity' | null>('hierarchy');
@@ -316,21 +315,16 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                    <input type="checkbox" checked={connectionsInteractable} onChange={(e) => onConnectionsInteractableChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
                  </label>
                  
-                 {availableLayers && availableLayers.length > 0 && (
-                   <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', marginTop: 8 }}>
-                     <span>Active Floor Layer</span>
-                     <select 
-                       value={activeLayer === null ? '' : activeLayer} 
-                       onChange={(e) => setActiveLayer?.(e.target.value === '' ? null : Number(e.target.value))}
-                       style={{ background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-solid)', borderRadius: 4, padding: '2px 4px', outline: 'none', cursor: 'pointer' }}
-                     >
-                       <option value="">All Layers</option>
-                       {availableLayers.map(l => (
-                         <option key={l} value={l}>Level {l}</option>
-                       ))}
-                     </select>
+                 <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', marginTop: 8 }}>
+                     <span>Interactable Floor Level</span>
+                      <input 
+                        type="number"
+                        value={activeLayer === null ? '' : activeLayer} 
+                        onChange={(e) => setActiveLayer?.(e.target.value === '' ? null : Number(e.target.value))}
+                        style={{ background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-solid)', borderRadius: 4, padding: '2px 4px', outline: 'none', cursor: 'text', width: 60, textAlign: 'center' }}
+                        placeholder="0"
+                      />
                    </label>
-                 )}
                  
                  <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: 11, textTransform: 'uppercase', marginTop: 12, marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                    <span>View</span>

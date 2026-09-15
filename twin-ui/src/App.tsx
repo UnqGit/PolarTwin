@@ -87,7 +87,7 @@ function App() {
               <select 
                 id="twin-select"
                 value={selectedTwin} 
-                onChange={(e) => setSelectedTwin(e.target.value)}
+                onChange={(e) => { setSelectedComponentName(null); setSelectedTwin(e.target.value); }}
                 style={{ 
                   background: 'var(--bg-panel-secondary)', 
                   color: 'var(--text-primary)', 

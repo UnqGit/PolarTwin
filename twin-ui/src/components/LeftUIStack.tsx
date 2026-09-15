@@ -33,25 +33,29 @@ export const LeftUIStack: React.FC<LeftUIStackProps> = ({ children, root, connec
       position: 'absolute',
       top: 20,
       left: 20,
+      bottom: 20,
       zIndex: 10,
       display: 'flex',
       flexDirection: 'column',
       gap: 16,
       pointerEvents: 'none', // Allow clicking through empty space
+      overflowY: 'auto',
+      overflowX: 'hidden',
+      maxWidth: 'calc(40vw + 40px)',
     }}>
       {/* 1. HUD / Viewer Info (passed as children) */}
-      <div style={{ pointerEvents: 'auto' }}>
+      <div style={{ pointerEvents: 'auto', flexShrink: 0 }}>
         {children}
       </div>
 
       {/* 2. Hover Card */}
-      <div style={{ pointerEvents: 'auto' }}>
+      <div style={{ pointerEvents: 'auto', flexShrink: 0 }}>
         <HoverCard root={root} connections={connections} liveStateRef={liveStateRef} />
       </div>
 
       {/* 3. Selected Inspector */}
       {selectedNode && (
-        <div style={{ pointerEvents: 'auto' }}>
+        <div style={{ pointerEvents: 'auto', minHeight: 0, overflow: 'hidden' }}>
           <PropertyInspector node={selectedNode} connections={connections} liveStateRef={liveStateRef} />
         </div>
       )}

@@ -71,7 +71,7 @@ export const PropertyInspector: React.FC<InspectorProps> = ({ node, connections,
       maxWidth: '40vw',
       width: 'max-content',
       overflowY: 'auto',
-      maxHeight: 'calc(100vh - 40px)',
+      maxHeight: '100%',
       pointerEvents: 'auto',
     }}>
       {/* Inspector header */}
