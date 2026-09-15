@@ -7,169 +7,169 @@
 
 # -------------------- ENERGY -------------------------------
 
-Generator1-->EnergyController@status
-Generator2-->EnergyController@status
+Generator1-->EnergyController[signal]@status
+Generator2-->EnergyController[signal]@status
 
-PowerSensor-->EnergyController@power_data
-FuelLevelSensor-->EnergyController@fuel_data
-BatterySensor-->EnergyController@battery_data
+PowerSensor-->EnergyController[resource]@power_data
+FuelLevelSensor-->EnergyController[resource]@fuel_data
+BatterySensor-->EnergyController[data]@battery_data
 
-EnergyController-->Generator1@command
-EnergyController-->Generator2@command
+EnergyController-->Generator1[data]@command
+EnergyController-->Generator2[data]@command
 
-EnergyController-->BatteryBank@charge_control
-EnergyController-->PowerInverter@power_control
+EnergyController-->BatteryBank[signal]@charge_control
+EnergyController-->PowerInverter[resource]@power_control
 
-BatteryBank-->PowerInverter@stored_power
-PowerInverter-->ControlServer@power_status
+BatteryBank-->PowerInverter[resource]@stored_power
+PowerInverter-->ControlServer[resource]@power_status
 
 # -------------------- HVAC ---------------------------------
 
-IndoorTemperatureSensor-->HeatingController@temperature
-OutdoorTemperatureSensor-->HeatingController@outside_temperature
+IndoorTemperatureSensor-->HeatingController[signal]@temperature
+OutdoorTemperatureSensor-->HeatingController[signal]@outside_temperature
 
-HeatingController-->MainHeater@control
-HeatingController-->BackupHeater@backup_control
+HeatingController-->MainHeater[signal]@control
+HeatingController-->BackupHeater[signal]@backup_control
 
-AirQualitySensor-->VentilationController@air_quality
-AirflowSensor-->VentilationController@airflow
+AirQualitySensor-->VentilationController[signal]@air_quality
+AirflowSensor-->VentilationController[signal]@airflow
 
-VentilationController-->SupplyFan@control
-VentilationController-->ExhaustFan@control
+VentilationController-->SupplyFan[signal]@control
+VentilationController-->ExhaustFan[signal]@control
 
-CoolingTemperatureSensor-->CoolingController@temperature
-CoolingController-->CoolingUnit@control
+CoolingTemperatureSensor-->CoolingController[signal]@temperature
+CoolingController-->CoolingUnit[signal]@control
 
 # -------------------- HVAC TO CONTROL ----------------------
 
-HeatingController-->MainController@heating_status
-VentilationController-->MainController@ventilation_status
-CoolingController-->MainController@cooling_status
+HeatingController-->MainController[resource]@heating_status
+VentilationController-->MainController[signal]@ventilation_status
+CoolingController-->MainController[signal]@cooling_status
 
-MainController-->HeatingController@command
-MainController-->VentilationController@command
-MainController-->CoolingController@command
+MainController-->HeatingController[data]@command
+MainController-->VentilationController[data]@command
+MainController-->CoolingController[data]@command
 
 # -------------------- RESEARCH -----------------------------
 
-LabTemperatureSensor-->LabController@temperature
-LabHumiditySensor-->LabController@humidity
-LabGasSensor-->LabController@gas_data
+LabTemperatureSensor-->LabController[signal]@temperature
+LabHumiditySensor-->LabController[signal]@humidity
+LabGasSensor-->LabController[data]@gas_data
 
-LabController-->WetLab@control
-LabController-->DryLab@control
+LabController-->WetLab[signal]@control
+LabController-->DryLab[signal]@control
 
-GPS-->MainController@location
-WeatherSensor-->MainController@weather_data
+GPS-->MainController[signal]@location
+WeatherSensor-->MainController[data]@weather_data
 
-ResearchRobot-->ControlServer@telemetry
-SnowVehicle-->ControlServer@telemetry
+ResearchRobot-->ControlServer[data]@telemetry
+SnowVehicle-->ControlServer[data]@telemetry
 
 # -------------------- CONTROL ------------------------------
 
-SystemHealthSensor-->MainController@health
-NetworkSensor-->MainController@network_status
+SystemHealthSensor-->MainController[signal]@health
+NetworkSensor-->MainController[data]@network_status
 
-MainController-->ControlServer@system_data
-BackupController-->ControlServer@backup_data
+MainController-->ControlServer[data]@system_data
+BackupController-->ControlServer[data]@backup_data
 
-ControlServer-->MainController@commands
-ControlServer-->DataServer@data
+ControlServer-->MainController[data]@commands
+ControlServer-->DataServer[data]@data
 
 # -------------------- ALARMS -------------------------------
 
-FireAlarm-->AlarmController@alarm
-SmokeAlarm-->AlarmController@alarm
-EmergencyAlarm-->AlarmController@alarm
+FireAlarm-->AlarmController[signal]@alarm
+SmokeAlarm-->AlarmController[signal]@alarm
+EmergencyAlarm-->AlarmController[signal]@alarm
 
-FireSensor-->FireSafetyController@fire_detection
-SmokeSensor-->FireSafetyController@smoke_detection
+FireSensor-->FireSafetyController[signal]@fire_detection
+SmokeSensor-->FireSafetyController[signal]@smoke_detection
 
-FireSafetyController-->FireAlarm2@activate_alarm
-FireSafetyController-->AlarmController@emergency_status
+FireSafetyController-->FireAlarm2[signal]@activate_alarm
+FireSafetyController-->AlarmController[signal]@emergency_status
 
-EmergencySensor-->EmergencyController@emergency_data
+EmergencySensor-->EmergencyController[data]@emergency_data
 
-EmergencyController-->EmergencyBeacon@activate
-EmergencyController-->EmergencyRadio@broadcast
+EmergencyController-->EmergencyBeacon[signal]@activate
+EmergencyController-->EmergencyRadio[signal]@broadcast
 
 # -------------------- COMMUNICATION ------------------------
 
-MainRouter-->CommunicationServer@network_data
-BackupRouter-->CommunicationServer@backup_network
+MainRouter-->CommunicationServer[data]@network_data
+BackupRouter-->CommunicationServer[data]@backup_network
 
-SatelliteAntenna-->CommunicationServer@satellite_link
-RadioAntenna-->CommunicationServer@radio_link
+SatelliteAntenna-->CommunicationServer[data]@satellite_link
+RadioAntenna-->CommunicationServer[data]@radio_link
 
-CommunicationServer-->ControlServer@communication
-ControlServer-->CommunicationServer@commands
+CommunicationServer-->ControlServer[data]@communication
+ControlServer-->CommunicationServer[data]@commands
 
-MainRouter<-->BackupRouter@network_backup
+MainRouter<-->BackupRouter[data]@network_backup
 
 # -------------------- INVENTORY ----------------------------
 
-FoodTemperatureSensor-->InventoryController@food_temperature
-FuelLevelSensor2-->InventoryController@fuel_level
+FoodTemperatureSensor-->InventoryController[signal]@food_temperature
+FuelLevelSensor2-->InventoryController[resource]@fuel_level
 
-InventoryController-->FoodStorage@inventory_status
-InventoryController-->FuelStorage@fuel_status
-InventoryController-->EquipmentStorage@equipment_status
+InventoryController-->FoodStorage[signal]@inventory_status
+InventoryController-->FuelStorage[resource]@fuel_status
+InventoryController-->EquipmentStorage[signal]@equipment_status
 
-LogisticsController-->SupplyVehicle@dispatch
-LogisticsController-->CargoVehicle@dispatch
+LogisticsController-->SupplyVehicle[signal]@dispatch
+LogisticsController-->CargoVehicle[signal]@dispatch
 
-SupplyVehicle-->LogisticsController@location
-CargoVehicle-->LogisticsController@location
+SupplyVehicle-->LogisticsController[signal]@location
+CargoVehicle-->LogisticsController[signal]@location
 
 # -------------------- PERSONNEL ----------------------------
 
-AccessSensor-->PersonnelController@access_event
+AccessSensor-->PersonnelController[signal]@access_event
 
-PersonnelController-->PersonnelDatabase@personnel_data
-PersonnelDatabase-->PersonnelServer@personnel_records
+PersonnelController-->PersonnelDatabase[data]@personnel_data
+PersonnelDatabase-->PersonnelServer[signal]@personnel_records
 
-PersonnelServer-->ControlServer@personnel_status
-ControlServer-->PersonnelServer@access_request
+PersonnelServer-->ControlServer[signal]@personnel_status
+ControlServer-->PersonnelServer[signal]@access_request
 
 # -------------------- WATER -------------------------------
 
-WaterLevelSensor-->WaterController@water_level
-WaterQualitySensor-->WaterController@water_quality
+WaterLevelSensor-->WaterController[resource]@water_level
+WaterQualitySensor-->WaterController[resource]@water_quality
 
-WaterController-->WaterPump@pump_control
-WaterPump-->WaterTank@water_flow
+WaterController-->WaterPump[signal]@pump_control
+WaterPump-->WaterTank[resource]@water_flow
 
-WaterController-->ControlServer@water_status
+WaterController-->ControlServer[resource]@water_status
 
 # -------------------- WASTE -------------------------------
 
-WasteLevelSensor-->WasteController@waste_level
+WasteLevelSensor-->WasteController[resource]@waste_level
 
-WasteController-->WastePump@pump_control
-WastePump-->WasteStorage@waste_flow
+WasteController-->WastePump[signal]@pump_control
+WastePump-->WasteStorage[resource]@waste_flow
 
-WasteController-->ControlServer@waste_status
+WasteController-->ControlServer[resource]@waste_status
 
 # -------------------- CROSS-SYSTEM SAFETY ------------------
 
-FireSafetyController-->MainController@fire_status
-EmergencyController-->MainController@emergency_status
+FireSafetyController-->MainController[signal]@fire_status
+EmergencyController-->MainController[signal]@emergency_status
 
-MainController-->EmergencyController@emergency_command
-MainController-->AlarmController@alarm_command
+MainController-->EmergencyController[data]@emergency_command
+MainController-->AlarmController[data]@alarm_command
 
-EmergencyBeacon-->CommunicationServer@emergency_signal
-EmergencyRadio-->CommunicationServer@emergency_broadcast
+EmergencyBeacon-->CommunicationServer[signal]@emergency_signal
+EmergencyRadio-->CommunicationServer[signal]@emergency_broadcast
 
 # -------------------- CENTRAL CONTROL ----------------------
 
-EnergyController-->MainController@energy_status
-MainController-->EnergyController@energy_command
+EnergyController-->MainController[resource]@energy_status
+MainController-->EnergyController[resource]@energy_command
 
-InventoryController-->MainController@inventory_status
-PersonnelController-->MainController@personnel_status
-WaterController-->MainController@water_status
-WasteController-->MainController@waste_status
+InventoryController-->MainController[signal]@inventory_status
+PersonnelController-->MainController[signal]@personnel_status
+WaterController-->MainController[resource]@water_status
+WasteController-->MainController[resource]@waste_status
 
-MainController-->ControlServer@central_status
-ControlServer-->MainController@central_command
+MainController-->ControlServer[signal]@central_status
+ControlServer-->MainController[data]@central_command

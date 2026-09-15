@@ -2,577 +2,673 @@
   {
     "source": "Generator1",
     "target": "EnergyController",
-    "type": "status",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "status"
   },
   {
     "source": "Generator2",
     "target": "EnergyController",
-    "type": "status",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "status"
   },
   {
     "source": "PowerSensor",
     "target": "EnergyController",
-    "type": "power_data",
-    "direction": "-->"
+    "type": "resource",
+    "direction": "-->",
+    "relation": "power_data"
   },
   {
     "source": "FuelLevelSensor",
     "target": "EnergyController",
-    "type": "fuel_data",
-    "direction": "-->"
+    "type": "resource",
+    "direction": "-->",
+    "relation": "fuel_data"
   },
   {
     "source": "BatterySensor",
     "target": "EnergyController",
-    "type": "battery_data",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "battery_data"
   },
   {
     "source": "EnergyController",
     "target": "Generator1",
-    "type": "command",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "command"
   },
   {
     "source": "EnergyController",
     "target": "Generator2",
-    "type": "command",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "command"
   },
   {
     "source": "EnergyController",
     "target": "BatteryBank",
-    "type": "charge_control",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "charge_control"
   },
   {
     "source": "EnergyController",
     "target": "PowerInverter",
-    "type": "power_control",
-    "direction": "-->"
+    "type": "resource",
+    "direction": "-->",
+    "relation": "power_control"
   },
   {
     "source": "BatteryBank",
     "target": "PowerInverter",
-    "type": "stored_power",
-    "direction": "-->"
+    "type": "resource",
+    "direction": "-->",
+    "relation": "stored_power"
   },
   {
     "source": "PowerInverter",
     "target": "ControlServer",
-    "type": "power_status",
-    "direction": "-->"
+    "type": "resource",
+    "direction": "-->",
+    "relation": "power_status"
   },
   {
     "source": "IndoorTemperatureSensor",
     "target": "HeatingController",
-    "type": "temperature",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "temperature"
   },
   {
     "source": "OutdoorTemperatureSensor",
     "target": "HeatingController",
-    "type": "outside_temperature",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "outside_temperature"
   },
   {
     "source": "HeatingController",
     "target": "MainHeater",
-    "type": "control",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "control"
   },
   {
     "source": "HeatingController",
     "target": "BackupHeater",
-    "type": "backup_control",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "backup_control"
   },
   {
     "source": "AirQualitySensor",
     "target": "VentilationController",
-    "type": "air_quality",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "air_quality"
   },
   {
     "source": "AirflowSensor",
     "target": "VentilationController",
-    "type": "airflow",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "airflow"
   },
   {
     "source": "VentilationController",
     "target": "SupplyFan",
-    "type": "control",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "control"
   },
   {
     "source": "VentilationController",
     "target": "ExhaustFan",
-    "type": "control",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "control"
   },
   {
     "source": "CoolingTemperatureSensor",
     "target": "CoolingController",
-    "type": "temperature",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "temperature"
   },
   {
     "source": "CoolingController",
     "target": "CoolingUnit",
-    "type": "control",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "control"
   },
   {
     "source": "HeatingController",
     "target": "MainController",
-    "type": "heating_status",
-    "direction": "-->"
+    "type": "resource",
+    "direction": "-->",
+    "relation": "heating_status"
   },
   {
     "source": "VentilationController",
     "target": "MainController",
-    "type": "ventilation_status",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "ventilation_status"
   },
   {
     "source": "CoolingController",
     "target": "MainController",
-    "type": "cooling_status",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "cooling_status"
   },
   {
     "source": "MainController",
     "target": "HeatingController",
-    "type": "command",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "command"
   },
   {
     "source": "MainController",
     "target": "VentilationController",
-    "type": "command",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "command"
   },
   {
     "source": "MainController",
     "target": "CoolingController",
-    "type": "command",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "command"
   },
   {
     "source": "LabTemperatureSensor",
     "target": "LabController",
-    "type": "temperature",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "temperature"
   },
   {
     "source": "LabHumiditySensor",
     "target": "LabController",
-    "type": "humidity",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "humidity"
   },
   {
     "source": "LabGasSensor",
     "target": "LabController",
-    "type": "gas_data",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "gas_data"
   },
   {
     "source": "LabController",
     "target": "WetLab",
-    "type": "control",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "control"
   },
   {
     "source": "LabController",
     "target": "DryLab",
-    "type": "control",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "control"
   },
   {
     "source": "GPS",
     "target": "MainController",
-    "type": "location",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "location"
   },
   {
     "source": "WeatherSensor",
     "target": "MainController",
-    "type": "weather_data",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "weather_data"
   },
   {
     "source": "ResearchRobot",
     "target": "ControlServer",
-    "type": "telemetry",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "telemetry"
   },
   {
     "source": "SnowVehicle",
     "target": "ControlServer",
-    "type": "telemetry",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "telemetry"
   },
   {
     "source": "SystemHealthSensor",
     "target": "MainController",
-    "type": "health",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "health"
   },
   {
     "source": "NetworkSensor",
     "target": "MainController",
-    "type": "network_status",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "network_status"
   },
   {
     "source": "MainController",
     "target": "ControlServer",
-    "type": "system_data",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "system_data"
   },
   {
     "source": "BackupController",
     "target": "ControlServer",
-    "type": "backup_data",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "backup_data"
   },
   {
     "source": "ControlServer",
     "target": "MainController",
-    "type": "commands",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "commands"
   },
   {
     "source": "ControlServer",
     "target": "DataServer",
     "type": "data",
-    "direction": "-->"
+    "direction": "-->",
+    "relation": "data"
   },
   {
     "source": "FireAlarm",
     "target": "AlarmController",
-    "type": "alarm",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "alarm"
   },
   {
     "source": "SmokeAlarm",
     "target": "AlarmController",
-    "type": "alarm",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "alarm"
   },
   {
     "source": "EmergencyAlarm",
     "target": "AlarmController",
-    "type": "alarm",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "alarm"
   },
   {
     "source": "FireSensor",
     "target": "FireSafetyController",
-    "type": "fire_detection",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "fire_detection"
   },
   {
     "source": "SmokeSensor",
     "target": "FireSafetyController",
-    "type": "smoke_detection",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "smoke_detection"
   },
   {
     "source": "FireSafetyController",
     "target": "FireAlarm2",
-    "type": "activate_alarm",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "activate_alarm"
   },
   {
     "source": "FireSafetyController",
     "target": "AlarmController",
-    "type": "emergency_status",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "emergency_status"
   },
   {
     "source": "EmergencySensor",
     "target": "EmergencyController",
-    "type": "emergency_data",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "emergency_data"
   },
   {
     "source": "EmergencyController",
     "target": "EmergencyBeacon",
-    "type": "activate",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "activate"
   },
   {
     "source": "EmergencyController",
     "target": "EmergencyRadio",
-    "type": "broadcast",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "broadcast"
   },
   {
     "source": "MainRouter",
     "target": "CommunicationServer",
-    "type": "network_data",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "network_data"
   },
   {
     "source": "BackupRouter",
     "target": "CommunicationServer",
-    "type": "backup_network",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "backup_network"
   },
   {
     "source": "SatelliteAntenna",
     "target": "CommunicationServer",
-    "type": "satellite_link",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "satellite_link"
   },
   {
     "source": "RadioAntenna",
     "target": "CommunicationServer",
-    "type": "radio_link",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "radio_link"
   },
   {
     "source": "CommunicationServer",
     "target": "ControlServer",
-    "type": "communication",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "communication"
   },
   {
     "source": "ControlServer",
     "target": "CommunicationServer",
-    "type": "commands",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "commands"
   },
   {
     "source": "MainRouter",
     "target": "BackupRouter",
-    "type": "network_backup",
-    "direction": "<-->"
+    "type": "data",
+    "direction": "<-->",
+    "relation": "network_backup"
   },
   {
     "source": "FoodTemperatureSensor",
     "target": "InventoryController",
-    "type": "food_temperature",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "food_temperature"
   },
   {
     "source": "FuelLevelSensor2",
     "target": "InventoryController",
-    "type": "fuel_level",
-    "direction": "-->"
+    "type": "resource",
+    "direction": "-->",
+    "relation": "fuel_level"
   },
   {
     "source": "InventoryController",
     "target": "FoodStorage",
-    "type": "inventory_status",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "inventory_status"
   },
   {
     "source": "InventoryController",
     "target": "FuelStorage",
-    "type": "fuel_status",
-    "direction": "-->"
+    "type": "resource",
+    "direction": "-->",
+    "relation": "fuel_status"
   },
   {
     "source": "InventoryController",
     "target": "EquipmentStorage",
-    "type": "equipment_status",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "equipment_status"
   },
   {
     "source": "LogisticsController",
     "target": "SupplyVehicle",
-    "type": "dispatch",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "dispatch"
   },
   {
     "source": "LogisticsController",
     "target": "CargoVehicle",
-    "type": "dispatch",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "dispatch"
   },
   {
     "source": "SupplyVehicle",
     "target": "LogisticsController",
-    "type": "location",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "location"
   },
   {
     "source": "CargoVehicle",
     "target": "LogisticsController",
-    "type": "location",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "location"
   },
   {
     "source": "AccessSensor",
     "target": "PersonnelController",
-    "type": "access_event",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "access_event"
   },
   {
     "source": "PersonnelController",
     "target": "PersonnelDatabase",
-    "type": "personnel_data",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "personnel_data"
   },
   {
     "source": "PersonnelDatabase",
     "target": "PersonnelServer",
-    "type": "personnel_records",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "personnel_records"
   },
   {
     "source": "PersonnelServer",
     "target": "ControlServer",
-    "type": "personnel_status",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "personnel_status"
   },
   {
     "source": "ControlServer",
     "target": "PersonnelServer",
-    "type": "access_request",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "access_request"
   },
   {
     "source": "WaterLevelSensor",
     "target": "WaterController",
-    "type": "water_level",
-    "direction": "-->"
+    "type": "resource",
+    "direction": "-->",
+    "relation": "water_level"
   },
   {
     "source": "WaterQualitySensor",
     "target": "WaterController",
-    "type": "water_quality",
-    "direction": "-->"
+    "type": "resource",
+    "direction": "-->",
+    "relation": "water_quality"
   },
   {
     "source": "WaterController",
     "target": "WaterPump",
-    "type": "pump_control",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "pump_control"
   },
   {
     "source": "WaterPump",
     "target": "WaterTank",
-    "type": "water_flow",
-    "direction": "-->"
+    "type": "resource",
+    "direction": "-->",
+    "relation": "water_flow"
   },
   {
     "source": "WaterController",
     "target": "ControlServer",
-    "type": "water_status",
-    "direction": "-->"
+    "type": "resource",
+    "direction": "-->",
+    "relation": "water_status"
   },
   {
     "source": "WasteLevelSensor",
     "target": "WasteController",
-    "type": "waste_level",
-    "direction": "-->"
+    "type": "resource",
+    "direction": "-->",
+    "relation": "waste_level"
   },
   {
     "source": "WasteController",
     "target": "WastePump",
-    "type": "pump_control",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "pump_control"
   },
   {
     "source": "WastePump",
     "target": "WasteStorage",
-    "type": "waste_flow",
-    "direction": "-->"
+    "type": "resource",
+    "direction": "-->",
+    "relation": "waste_flow"
   },
   {
     "source": "WasteController",
     "target": "ControlServer",
-    "type": "waste_status",
-    "direction": "-->"
+    "type": "resource",
+    "direction": "-->",
+    "relation": "waste_status"
   },
   {
     "source": "FireSafetyController",
     "target": "MainController",
-    "type": "fire_status",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "fire_status"
   },
   {
     "source": "EmergencyController",
     "target": "MainController",
-    "type": "emergency_status",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "emergency_status"
   },
   {
     "source": "MainController",
     "target": "EmergencyController",
-    "type": "emergency_command",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "emergency_command"
   },
   {
     "source": "MainController",
     "target": "AlarmController",
-    "type": "alarm_command",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "alarm_command"
   },
   {
     "source": "EmergencyBeacon",
     "target": "CommunicationServer",
-    "type": "emergency_signal",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "emergency_signal"
   },
   {
     "source": "EmergencyRadio",
     "target": "CommunicationServer",
-    "type": "emergency_broadcast",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "emergency_broadcast"
   },
   {
     "source": "EnergyController",
     "target": "MainController",
-    "type": "energy_status",
-    "direction": "-->"
+    "type": "resource",
+    "direction": "-->",
+    "relation": "energy_status"
   },
   {
     "source": "MainController",
     "target": "EnergyController",
-    "type": "energy_command",
-    "direction": "-->"
+    "type": "resource",
+    "direction": "-->",
+    "relation": "energy_command"
   },
   {
     "source": "InventoryController",
     "target": "MainController",
-    "type": "inventory_status",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "inventory_status"
   },
   {
     "source": "PersonnelController",
     "target": "MainController",
-    "type": "personnel_status",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "personnel_status"
   },
   {
     "source": "WaterController",
     "target": "MainController",
-    "type": "water_status",
-    "direction": "-->"
+    "type": "resource",
+    "direction": "-->",
+    "relation": "water_status"
   },
   {
     "source": "WasteController",
     "target": "MainController",
-    "type": "waste_status",
-    "direction": "-->"
+    "type": "resource",
+    "direction": "-->",
+    "relation": "waste_status"
   },
   {
     "source": "MainController",
     "target": "ControlServer",
-    "type": "central_status",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "central_status"
   },
   {
     "source": "ControlServer",
     "target": "MainController",
-    "type": "central_command",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "central_command"
   }
 ]

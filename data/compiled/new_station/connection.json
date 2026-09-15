@@ -2,55 +2,64 @@
   {
     "source": "MainGenerator",
     "target": "PowerSensor",
-    "type": "power",
-    "direction": "-->"
+    "type": "resource",
+    "direction": "-->",
+    "relation": "power"
   },
   {
     "source": "PowerSensor",
     "target": "MainController",
     "type": "data",
-    "direction": "-->"
+    "direction": "-->",
+    "relation": "data"
   },
   {
     "source": "MainController",
     "target": "MainGenerator",
-    "type": "control",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "control"
   },
   {
     "source": "TankSensor",
     "target": "MainController",
     "type": "data",
-    "direction": "-->"
+    "direction": "-->",
+    "relation": "data"
   },
   {
     "source": "MainController",
     "target": "MainPump",
-    "type": "control",
-    "direction": "-->"
+    "type": "signal",
+    "direction": "-->",
+    "relation": "control"
   },
   {
     "source": "MainPump",
     "target": "WaterTank",
-    "type": "water",
-    "direction": "-->"
+    "type": "resource",
+    "direction": "-->",
+    "relation": "water"
   },
   {
     "source": "StationA",
     "target": "StationB",
-    "type": "road",
-    "direction": "<-->"
+    "type": "signal",
+    "direction": "<-->",
+    "relation": "road"
   },
   {
     "source": "BlockA1",
     "target": "BlockA2",
-    "type": "hallway",
-    "direction": "<-->"
+    "type": "signal",
+    "direction": "<-->",
+    "relation": "hallway"
   },
   {
     "source": "BlockB1",
     "target": "BlockB2",
-    "type": "hallway",
-    "direction": "<-->"
+    "type": "signal",
+    "direction": "<-->",
+    "relation": "hallway"
   }
 ]

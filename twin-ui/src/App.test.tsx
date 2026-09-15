@@ -32,7 +32,8 @@ describe('App Component (Phase 30 3D Twin Viewer)', () => {
     const { getByText, getByTestId } = render(<App />);
     
     // Check that the title is rendered
-    expect(getByText('PolarTwin 3D Viewer')).toBeInTheDocument();
+    expect(getByText('PolarTwin')).toBeInTheDocument();
+    expect(getByText('3D Digital Twin Viewer')).toBeInTheDocument();
     
     // Check that the mocked Canvas is rendered
     expect(getByTestId('mock-canvas')).toBeInTheDocument();

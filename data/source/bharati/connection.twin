@@ -5,464 +5,464 @@
 
 # -------------------- POWER GENERATION ----------------------
 
-CHPUnit1-->MainGeneratorController@status
-CHPUnit2-->MainGeneratorController@status
-CHPUnit3-->MainGeneratorController@status
+CHPUnit1-->MainGeneratorController[signal]@status
+CHPUnit2-->MainGeneratorController[signal]@status
+CHPUnit3-->MainGeneratorController[signal]@status
 
-Generator1Sensor-->MainGeneratorController@generator1_data
-Generator2Sensor-->MainGeneratorController@generator2_data
-Generator3Sensor-->MainGeneratorController@generator3_data
+Generator1Sensor-->MainGeneratorController[data]@generator1_data
+Generator2Sensor-->MainGeneratorController[data]@generator2_data
+Generator3Sensor-->MainGeneratorController[data]@generator3_data
 
-FuelConsumptionSensor-->MainGeneratorController@fuel_consumption
-PowerOutputSensor-->MainGeneratorController@power_output
+FuelConsumptionSensor-->MainGeneratorController[resource]@fuel_consumption
+PowerOutputSensor-->MainGeneratorController[resource]@power_output
 
-MainGeneratorController-->CHPUnit1@control
-MainGeneratorController-->CHPUnit2@control
-MainGeneratorController-->CHPUnit3@control
+MainGeneratorController-->CHPUnit1[signal]@control
+MainGeneratorController-->CHPUnit2[signal]@control
+MainGeneratorController-->CHPUnit3[signal]@control
 
-MainGeneratorController-->PowerController@generation_status
+MainGeneratorController-->PowerController[signal]@generation_status
 
-PowerController-->MainSwitchboard@power_distribution
-PowerController-->EmergencySwitchboard@emergency_power
+PowerController-->MainSwitchboard[resource]@power_distribution
+PowerController-->EmergencySwitchboard[resource]@emergency_power
 
-BatterySensor-->PowerController@battery_status
-PowerController-->BatteryBank@charge_control
-PowerController-->PowerInverter@inverter_control
+BatterySensor-->PowerController[signal]@battery_status
+PowerController-->BatteryBank[signal]@charge_control
+PowerController-->PowerInverter[signal]@inverter_control
 
-BatteryBank-->PowerInverter@stored_power
-PowerInverter-->MainSwitchboard@backup_power
+BatteryBank-->PowerInverter[resource]@stored_power
+PowerInverter-->MainSwitchboard[resource]@backup_power
 
-UPS-->ControlServer@critical_power
+UPS-->ControlServer[resource]@critical_power
 
 # -------------------- FUEL SYSTEM ---------------------------
 
-FuelLevelSensor-->FuelFarmController@fuel_level
-FuelPressureSensor-->FuelFarmController@pressure
-FuelLeakSensor-->FuelFarmController@leak_detection
+FuelLevelSensor-->FuelFarmController[resource]@fuel_level
+FuelPressureSensor-->FuelFarmController[signal]@pressure
+FuelLeakSensor-->FuelFarmController[signal]@leak_detection
 
-FuelFarmController-->FuelTransferPump@pump_control
-FuelFarmController-->MainFuelTank@fuel_status
-FuelFarmController-->BackupFuelTank@backup_status
+FuelFarmController-->FuelTransferPump[signal]@pump_control
+FuelFarmController-->MainFuelTank[resource]@fuel_status
+FuelFarmController-->BackupFuelTank[signal]@backup_status
 
-FuelTransferPump-->FuelStationController@fuel_supply
+FuelTransferPump-->FuelStationController[resource]@fuel_supply
 
-FuelStationController-->FuelDispenser@dispensing
-FuelMeter-->FuelStationController@fuel_data
+FuelStationController-->FuelDispenser[signal]@dispensing
+FuelMeter-->FuelStationController[resource]@fuel_data
 
-FuelFarmController-->MainController@fuel_status
+FuelFarmController-->MainController[resource]@fuel_status
 
 # -------------------- LABORATORIES --------------------------
 
-LabTemperatureSensor-->LaboratoryController@temperature
-LabHumiditySensor-->LaboratoryController@humidity
-LabAirQualitySensor-->LaboratoryController@air_quality
-LabPowerSensor-->LaboratoryController@power
+LabTemperatureSensor-->LaboratoryController[signal]@temperature
+LabHumiditySensor-->LaboratoryController[signal]@humidity
+LabAirQualitySensor-->LaboratoryController[signal]@air_quality
+LabPowerSensor-->LaboratoryController[resource]@power
 
-LaboratoryController-->AtmosphericLab@environment_control
-LaboratoryController-->GeologyLab@environment_control
-LaboratoryController-->BiologyLab@environment_control
-LaboratoryController-->OceanScienceLab@environment_control
-LaboratoryController-->EnvironmentalLab@environment_control
+LaboratoryController-->AtmosphericLab[signal]@environment_control
+LaboratoryController-->GeologyLab[signal]@environment_control
+LaboratoryController-->BiologyLab[signal]@environment_control
+LaboratoryController-->OceanScienceLab[signal]@environment_control
+LaboratoryController-->EnvironmentalLab[signal]@environment_control
 
-LaboratoryController-->ResearchDataServer@laboratory_data
+LaboratoryController-->ResearchDataServer[data]@laboratory_data
 
-GroundStorageSystem-->LaboratoryController@equipment_status
+GroundStorageSystem-->LaboratoryController[signal]@equipment_status
 
 # -------------------- WORKSHOPS -----------------------------
 
-WorkshopPowerSensor-->WorkshopController@power
-WorkshopTemperatureSensor-->WorkshopController@temperature
+WorkshopPowerSensor-->WorkshopController[resource]@power
+WorkshopTemperatureSensor-->WorkshopController[signal]@temperature
 
-WorkshopController-->MechanicalWorkshop@control
-WorkshopController-->ElectricalWorkshop@control
-WorkshopController-->InstrumentWorkshop@control
+WorkshopController-->MechanicalWorkshop[signal]@control
+WorkshopController-->ElectricalWorkshop[signal]@control
+WorkshopController-->InstrumentWorkshop[signal]@control
 
-WorkshopController-->MainController@maintenance_status
+WorkshopController-->MainController[signal]@maintenance_status
 
 # -------------------- STORAGE -------------------------------
 
-StorageTemperatureSensor-->StorageController@temperature
-StorageHumiditySensor-->StorageController@humidity
+StorageTemperatureSensor-->StorageController[signal]@temperature
+StorageHumiditySensor-->StorageController[signal]@humidity
 
-StorageController-->ColdStore@temperature_control
-StorageController-->EquipmentStore@inventory_status
-StorageController-->ScientificStore@inventory_status
-StorageController-->SparePartsStore@inventory_status
+StorageController-->ColdStore[signal]@temperature_control
+StorageController-->EquipmentStore[signal]@inventory_status
+StorageController-->ScientificStore[signal]@inventory_status
+StorageController-->SparePartsStore[signal]@inventory_status
 
-StorageController-->CargoInventorySensor@storage_status
+StorageController-->CargoInventorySensor[signal]@storage_status
 
 # -------------------- HVAC ----------------------------------
 
-IndoorTemperatureSensor-->HVACController@temperature
-OutdoorTemperatureSensor-->HVACController@outside_temperature
-AirPressureSensor-->HVACController@pressure
-AirQualitySensor-->HVACController@air_quality
+IndoorTemperatureSensor-->HVACController[signal]@temperature
+OutdoorTemperatureSensor-->HVACController[signal]@outside_temperature
+AirPressureSensor-->HVACController[signal]@pressure
+AirQualitySensor-->HVACController[signal]@air_quality
 
-HVACController-->HeatingUnit@heating_control
-HVACController-->BackupHeatingUnit@backup_control
-HVACController-->AirHandlingUnit@air_control
-HVACController-->VentilationFan@ventilation_control
-HVACController-->ExhaustFan@exhaust_control
+HVACController-->HeatingUnit[resource]@heating_control
+HVACController-->BackupHeatingUnit[signal]@backup_control
+HVACController-->AirHandlingUnit[signal]@air_control
+HVACController-->VentilationFan[signal]@ventilation_control
+HVACController-->ExhaustFan[signal]@exhaust_control
 
-HVACController-->MainController@thermal_status
+HVACController-->MainController[signal]@thermal_status
 
 # -------------------- RESIDENTIAL ---------------------------
 
-RoomTemperatureSensor-->ResidentialController@temperature
-RoomAirQualitySensor-->ResidentialController@air_quality
+RoomTemperatureSensor-->ResidentialController[signal]@temperature
+RoomAirQualitySensor-->ResidentialController[signal]@air_quality
 
-ResidentialController-->ScientistQuarters@environment
-ResidentialController-->EngineerQuarters@environment
-ResidentialController-->MedicalQuarters@environment
-ResidentialController-->CommonRoom@environment
-ResidentialController-->Library@environment
+ResidentialController-->ScientistQuarters[signal]@environment
+ResidentialController-->EngineerQuarters[signal]@environment
+ResidentialController-->MedicalQuarters[signal]@environment
+ResidentialController-->CommonRoom[signal]@environment
+ResidentialController-->Library[signal]@environment
 
-ResidentialController-->MainController@living_status
+ResidentialController-->MainController[signal]@living_status
 
 # -------------------- FOOD AND DINING -----------------------
 
-FoodTemperatureSensor-->FoodServiceController@temperature
-KitchenAirQualitySensor-->FoodServiceController@air_quality
+FoodTemperatureSensor-->FoodServiceController[signal]@temperature
+KitchenAirQualitySensor-->FoodServiceController[signal]@air_quality
 
-FoodServiceController-->Kitchen@control
-FoodServiceController-->DiningHall@service
-FoodServiceController-->FoodPreparationRoom@control
-FoodServiceController-->FoodColdStorage@temperature_control
+FoodServiceController-->Kitchen[signal]@control
+FoodServiceController-->DiningHall[signal]@service
+FoodServiceController-->FoodPreparationRoom[signal]@control
+FoodServiceController-->FoodColdStorage[signal]@temperature_control
 
-FoodServiceController-->MainController@food_status
+FoodServiceController-->MainController[signal]@food_status
 
 # -------------------- MEDICAL --------------------------------
 
-MedicalTemperatureSensor-->MedicalController@temperature
-MedicalAirQualitySensor-->MedicalController@air_quality
+MedicalTemperatureSensor-->MedicalController[signal]@temperature
+MedicalAirQualitySensor-->MedicalController[signal]@air_quality
 
-MedicalController-->MedicalRoom@environment
-MedicalController-->FirstAidRoom@environment
-MedicalController-->HypothermiaTreatmentRoom@environment
+MedicalController-->MedicalRoom[signal]@environment
+MedicalController-->FirstAidRoom[signal]@environment
+MedicalController-->HypothermiaTreatmentRoom[signal]@environment
 
-MedicalController-->MedicalEmergencyController@medical_status
+MedicalController-->MedicalEmergencyController[signal]@medical_status
 
-MedicalEmergencyController-->MainController@medical_status
+MedicalEmergencyController-->MainController[signal]@medical_status
 
 # -------------------- ADMINISTRATION ------------------------
 
-PersonnelDatabase-->PersonnelServer@personnel_records
-PersonnelServer-->AdministrationController@personnel_data
+PersonnelDatabase-->PersonnelServer[signal]@personnel_records
+PersonnelServer-->AdministrationController[data]@personnel_data
 
-AdministrationController-->StationOffice@administration
-AdministrationController-->ExpeditionOffice@logistics
-AdministrationController-->ConferenceRoom@coordination
-AdministrationController-->RecordsRoom@records
+AdministrationController-->StationOffice[signal]@administration
+AdministrationController-->ExpeditionOffice[signal]@logistics
+AdministrationController-->ConferenceRoom[signal]@coordination
+AdministrationController-->RecordsRoom[signal]@records
 
-AdministrationController-->MainController@personnel_status
+AdministrationController-->MainController[signal]@personnel_status
 
 # -------------------- WATER INTAKE --------------------------
 
-IntakePressureSensor-->SeaWaterController@pressure
-IntakeFlowSensor-->SeaWaterController@flow
+IntakePressureSensor-->SeaWaterController[signal]@pressure
+IntakeFlowSensor-->SeaWaterController[signal]@flow
 
-SeaWaterController-->SeaWaterPump@pump_control
-SeaWaterController-->SeaWaterBackupPump@backup_control
-SeaWaterPump-->DesalinationUnit@seawater_supply
+SeaWaterController-->SeaWaterPump[signal]@pump_control
+SeaWaterController-->SeaWaterBackupPump[signal]@backup_control
+SeaWaterPump-->DesalinationUnit[resource]@seawater_supply
 
-DesalinationUnit-->FreshWaterTank@fresh_water
-DesalinationUnit-->WaterTreatmentController@treated_water
+DesalinationUnit-->FreshWaterTank[resource]@fresh_water
+DesalinationUnit-->WaterTreatmentController[resource]@treated_water
 
-WaterQualitySensor-->WaterTreatmentController@quality
-WaterLevelSensor-->WaterTreatmentController@level
-WaterTemperatureSensor-->WaterTreatmentController@temperature
+WaterQualitySensor-->WaterTreatmentController[signal]@quality
+WaterLevelSensor-->WaterTreatmentController[signal]@level
+WaterTemperatureSensor-->WaterTreatmentController[signal]@temperature
 
-WaterTreatmentController-->FreshWaterTank@storage_control
-WaterTreatmentController-->HotWaterTank@hot_water_control
+WaterTreatmentController-->FreshWaterTank[signal]@storage_control
+WaterTreatmentController-->HotWaterTank[resource]@hot_water_control
 
-FreshWaterTank-->MainWaterPump@fresh_water
-HotWaterTank-->HotWaterPipeline@hot_water
+FreshWaterTank-->MainWaterPump[resource]@fresh_water
+HotWaterTank-->HotWaterPipeline[resource]@hot_water
 
 # -------------------- WATER DISTRIBUTION --------------------
 
-WaterPressureSensor-->WaterDistributionController@pressure
-WaterFlowSensor-->WaterDistributionController@flow
+WaterPressureSensor-->WaterDistributionController[signal]@pressure
+WaterFlowSensor-->WaterDistributionController[signal]@flow
 
-WaterDistributionController-->MainWaterPump@pump_control
-WaterDistributionController-->BackupWaterPump@backup_control
+WaterDistributionController-->MainWaterPump[signal]@pump_control
+WaterDistributionController-->BackupWaterPump[signal]@backup_control
 
-MainWaterPump-->FreshWaterPipeline@water_supply
-BackupWaterPump-->FreshWaterPipeline@backup_supply
+MainWaterPump-->FreshWaterPipeline[resource]@water_supply
+BackupWaterPump-->FreshWaterPipeline[signal]@backup_supply
 
-FreshWaterPipeline-->Kitchen@water
-FreshWaterPipeline-->MedicalRoom@water
-FreshWaterPipeline-->Washrooms@water
+FreshWaterPipeline-->Kitchen[resource]@water
+FreshWaterPipeline-->MedicalRoom[resource]@water
+FreshWaterPipeline-->Washrooms[resource]@water
 
-WaterDistributionController-->MainController@water_status
+WaterDistributionController-->MainController[resource]@water_status
 
 # -------------------- WASTEWATER ----------------------------
 
-WasteWaterLevelSensor-->WasteWaterController@level
-WasteWaterQualitySensor-->WasteWaterController@quality
+WasteWaterLevelSensor-->WasteWaterController[signal]@level
+WasteWaterQualitySensor-->WasteWaterController[signal]@quality
 
-WasteWaterController-->WasteWaterCollection@collection
-WasteWaterController-->WasteWaterTreatment@treatment
-WasteWaterTreatment-->TreatedWaterTank@treated_water
+WasteWaterController-->WasteWaterCollection[signal]@collection
+WasteWaterController-->WasteWaterTreatment[signal]@treatment
+WasteWaterTreatment-->TreatedWaterTank[resource]@treated_water
 
-WasteWaterController-->MainController@wastewater_status
+WasteWaterController-->MainController[resource]@wastewater_status
 
 # -------------------- SOLID WASTE ---------------------------
 
-WasteLevelSensor-->WasteController@level
-WasteProcessingSensor-->WasteController@processing_status
+WasteLevelSensor-->WasteController[signal]@level
+WasteProcessingSensor-->WasteController[signal]@processing_status
 
-WasteController-->WasteCollection@collection
-WasteController-->WasteProcessingUnit@processing
-WasteController-->WasteStorage@storage
+WasteController-->WasteCollection[signal]@collection
+WasteController-->WasteProcessingUnit[signal]@processing
+WasteController-->WasteStorage[signal]@storage
 
-WasteController-->MainController@waste_status
+WasteController-->MainController[resource]@waste_status
 
 # -------------------- STATION CONTROL -----------------------
 
-StationHealthSensor-->MainController@station_health
-NetworkHealthSensor-->MainController@network_health
+StationHealthSensor-->MainController[signal]@station_health
+NetworkHealthSensor-->MainController[data]@network_health
 
-MainController-->ControlServer@station_data
-MainController-->BackupServer@backup_data
+MainController-->ControlServer[data]@station_data
+MainController-->BackupServer[data]@backup_data
 
-ControlServer-->MainController@commands
-BackupController-->ControlServer@backup_control
+ControlServer-->MainController[data]@commands
+BackupController-->ControlServer[signal]@backup_control
 
-ControlServer-->DataSystem@data_services
-DataSystem-->ControlServer@processed_data
+ControlServer-->DataSystem[data]@data_services
+DataSystem-->ControlServer[data]@processed_data
 
 # -------------------- RESEARCH DATA -------------------------
 
-DataTemperatureSensor-->DataController@temperature
-DataPowerSensor-->DataController@power
+DataTemperatureSensor-->DataController[signal]@temperature
+DataPowerSensor-->DataController[resource]@power
 
-DataController-->ResearchDataServer@server_control
-DataController-->ScienceDatabase@database_control
-DataController-->DataStorage@storage_control
-DataController-->DataProcessingCluster@processing_control
+DataController-->ResearchDataServer[signal]@server_control
+DataController-->ScienceDatabase[data]@database_control
+DataController-->DataStorage[signal]@storage_control
+DataController-->DataProcessingCluster[signal]@processing_control
 
-ResearchDataServer-->ScienceDatabase@research_data
-ScienceDatabase-->DataStorage@archival_data
-DataProcessingCluster-->ResearchDataServer@processed_results
+ResearchDataServer-->ScienceDatabase[data]@research_data
+ScienceDatabase-->DataStorage[data]@archival_data
+DataProcessingCluster-->ResearchDataServer[signal]@processed_results
 
-ResearchDataServer-->CommunicationServer@remote_data
-CommunicationServer-->ResearchDataServer@external_data
+ResearchDataServer-->CommunicationServer[data]@remote_data
+CommunicationServer-->ResearchDataServer[data]@external_data
 
 # -------------------- COMMUNICATION -------------------------
 
-SatelliteSignalSensor-->SatelliteController@signal_strength
+SatelliteSignalSensor-->SatelliteController[signal]@signal_strength
 
-SatelliteController-->SatelliteModem@control
-SatelliteController-->SatelliteBackupModem@backup_control
+SatelliteController-->SatelliteModem[signal]@control
+SatelliteController-->SatelliteBackupModem[signal]@backup_control
 
-SatelliteModem-->SatelliteTerminal@satellite_data
-SatelliteBackupModem-->SatelliteTerminal@backup_data
+SatelliteModem-->SatelliteTerminal[data]@satellite_data
+SatelliteBackupModem-->SatelliteTerminal[data]@backup_data
 
-SatelliteTerminal-->CommunicationServer@voice_video_data
-SatelliteTerminal-->ResearchDataServer@research_link
+SatelliteTerminal-->CommunicationServer[data]@voice_video_data
+SatelliteTerminal-->ResearchDataServer[data]@research_link
 
-SatelliteController-->MainController@satellite_status
+SatelliteController-->MainController[signal]@satellite_status
 
-RadioSignalSensor-->RadioController@signal_status
+RadioSignalSensor-->RadioController[signal]@signal_status
 
-RadioController-->BaseRadio@control
-RadioController-->EmergencyRadio@control
-RadioController-->FieldRadio@control
+RadioController-->BaseRadio[signal]@control
+RadioController-->EmergencyRadio[signal]@control
+RadioController-->FieldRadio[signal]@control
 
-EmergencyRadio-->MainController@emergency_communication
-FieldRadio-->MainController@field_communication
+EmergencyRadio-->MainController[data]@emergency_communication
+FieldRadio-->MainController[data]@field_communication
 
 # -------------------- EARTH STATION -------------------------
 
-EarthStationSensor-->EarthStationController@station_health
-SignalStrengthSensor-->EarthStationController@signal
+EarthStationSensor-->EarthStationController[signal]@station_health
+SignalStrengthSensor-->EarthStationController[signal]@signal
 
-EarthStationController-->SatelliteTrackingUnit@tracking
-EarthStationController-->SatelliteDataReceiver@data_reception
-EarthStationController-->SatelliteCommandTerminal@command
-EarthStationController-->RemoteSensingServer@processing
+EarthStationController-->SatelliteTrackingUnit[signal]@tracking
+EarthStationController-->SatelliteDataReceiver[data]@data_reception
+EarthStationController-->SatelliteCommandTerminal[data]@command
+EarthStationController-->RemoteSensingServer[signal]@processing
 
-SatelliteDataReceiver-->RemoteSensingServer@remote_sensing_data
-RemoteSensingServer-->ResearchDataServer@satellite_data
+SatelliteDataReceiver-->RemoteSensingServer[data]@remote_sensing_data
+RemoteSensingServer-->ResearchDataServer[data]@satellite_data
 
-RemoteSensingServer-->CommunicationServer@remote_sensing_status
+RemoteSensingServer-->CommunicationServer[signal]@remote_sensing_status
 
 # -------------------- METEOROLOGY ---------------------------
 
-WindSensor-->MeteorologyController@wind
-AirTemperatureSensor-->MeteorologyController@temperature
-AtmosphericPressureSensor-->MeteorologyController@pressure
-SolarRadiationSensor-->MeteorologyController@solar_radiation
+WindSensor-->MeteorologyController[signal]@wind
+AirTemperatureSensor-->MeteorologyController[signal]@temperature
+AtmosphericPressureSensor-->MeteorologyController[signal]@pressure
+SolarRadiationSensor-->MeteorologyController[signal]@solar_radiation
 
-MeteorologyController-->AutomaticWeatherStation@weather_control
-AutomaticWeatherStation-->ResearchDataServer@weather_data
-MeteorologyController-->MainController@weather_status
+MeteorologyController-->AutomaticWeatherStation[signal]@weather_control
+AutomaticWeatherStation-->ResearchDataServer[data]@weather_data
+MeteorologyController-->MainController[signal]@weather_status
 
 # -------------------- GEOPHYSICS ----------------------------
 
-SeismicSensor-->GeophysicsController@seismic_data
-MagneticSensor-->GeophysicsController@magnetic_data
+SeismicSensor-->GeophysicsController[data]@seismic_data
+MagneticSensor-->GeophysicsController[data]@magnetic_data
 
-GeophysicsController-->SeismicStation@seismic_control
-GeophysicsController-->Magnetometer@magnetic_control
-GeophysicsController-->GPSReferenceStation@gps_data
+GeophysicsController-->SeismicStation[signal]@seismic_control
+GeophysicsController-->Magnetometer[signal]@magnetic_control
+GeophysicsController-->GPSReferenceStation[data]@gps_data
 
-SeismicStation-->ResearchDataServer@seismic_data
-Magnetometer-->ResearchDataServer@magnetic_data
-GPSReferenceStation-->ResearchDataServer@reference_data
+SeismicStation-->ResearchDataServer[data]@seismic_data
+Magnetometer-->ResearchDataServer[data]@magnetic_data
+GPSReferenceStation-->ResearchDataServer[data]@reference_data
 
 # -------------------- ENVIRONMENTAL MONITORING --------------
 
-SnowDepthSensor-->EnvironmentalController@snow_depth
-IceTemperatureSensor-->EnvironmentalController@ice_temperature
-EnvironmentalSensor-->EnvironmentalController@environment
+SnowDepthSensor-->EnvironmentalController[signal]@snow_depth
+IceTemperatureSensor-->EnvironmentalController[signal]@ice_temperature
+EnvironmentalSensor-->EnvironmentalController[signal]@environment
 
-EnvironmentalController-->SnowMonitoringStation@monitoring
-EnvironmentalController-->IceMonitoringUnit@ice_monitoring
-EnvironmentalController-->EnvironmentalDataLogger@data_logging
+EnvironmentalController-->SnowMonitoringStation[signal]@monitoring
+EnvironmentalController-->IceMonitoringUnit[signal]@ice_monitoring
+EnvironmentalController-->EnvironmentalDataLogger[data]@data_logging
 
-EnvironmentalDataLogger-->ResearchDataServer@environmental_data
+EnvironmentalDataLogger-->ResearchDataServer[data]@environmental_data
 
 # -------------------- LOGISTICS -----------------------------
 
-CargoInventorySensor-->CargoController@inventory
-CargoTemperatureSensor-->CargoController@temperature
+CargoInventorySensor-->CargoController[signal]@inventory
+CargoTemperatureSensor-->CargoController[signal]@temperature
 
-CargoController-->CargoStorage@inventory_status
-CargoController-->EquipmentCargoStore@equipment_status
-CargoController-->ExpeditionSupplyStore@supply_status
+CargoController-->CargoStorage[signal]@inventory_status
+CargoController-->EquipmentCargoStore[signal]@equipment_status
+CargoController-->ExpeditionSupplyStore[signal]@supply_status
 
-VehicleGPS-->LogisticsController@gps
-VehicleTelemetry-->LogisticsController@telemetry
+VehicleGPS-->LogisticsController[signal]@gps
+VehicleTelemetry-->LogisticsController[data]@telemetry
 
-LogisticsController-->SnowVehicle@dispatch
-LogisticsController-->UtilityVehicle@dispatch
-LogisticsController-->FieldTrailer@dispatch
+LogisticsController-->SnowVehicle[signal]@dispatch
+LogisticsController-->UtilityVehicle[signal]@dispatch
+LogisticsController-->FieldTrailer[signal]@dispatch
 
-SnowVehicle-->LogisticsController@location
-UtilityVehicle-->LogisticsController@location
+SnowVehicle-->LogisticsController[signal]@location
+UtilityVehicle-->LogisticsController[signal]@location
 
-LogisticsController-->MainController@logistics_status
+LogisticsController-->MainController[signal]@logistics_status
 
 # -------------------- FIRE SAFETY ---------------------------
 
-FireSensor-->FireSafetyController@fire_detection
-SmokeSensor-->FireSafetyController@smoke_detection
-HeatSensor-->FireSafetyController@heat_detection
+FireSensor-->FireSafetyController[signal]@fire_detection
+SmokeSensor-->FireSafetyController[signal]@smoke_detection
+HeatSensor-->FireSafetyController[resource]@heat_detection
 
-FireSafetyController-->FireAlarm@alarm
-FireSafetyController-->FireSuppression@suppression
+FireSafetyController-->FireAlarm[signal]@alarm
+FireSafetyController-->FireSuppression[signal]@suppression
 
-FireSafetyController-->MainController@fire_status
-FireSafetyController-->EmergencyController@emergency_status
+FireSafetyController-->MainController[signal]@fire_status
+FireSafetyController-->EmergencyController[signal]@emergency_status
 
 # -------------------- EMERGENCY -----------------------------
 
-EmergencySensor-->EmergencyController@emergency_detection
+EmergencySensor-->EmergencyController[signal]@emergency_detection
 
-EmergencyController-->EmergencyAlarm@alarm
-EmergencyController-->EmergencyBeacon@activate
-EmergencyController-->EmergencyLighting@activate
+EmergencyController-->EmergencyAlarm[signal]@alarm
+EmergencyController-->EmergencyBeacon[signal]@activate
+EmergencyController-->EmergencyLighting[signal]@activate
 
-EmergencyController-->EmergencyRadio@broadcast
-EmergencyController-->MainController@emergency_status
+EmergencyController-->EmergencyRadio[signal]@broadcast
+EmergencyController-->MainController[signal]@emergency_status
 
 # -------------------- MEDICAL EMERGENCY ---------------------
 
-MedicalEmergencyController-->MedicalAlarm@alarm
-MedicalEmergencyController-->EmergencyMedicalKit@emergency_access
-MedicalEmergencyController-->EvacuationEquipment@evacuation
+MedicalEmergencyController-->MedicalAlarm[signal]@alarm
+MedicalEmergencyController-->EmergencyMedicalKit[signal]@emergency_access
+MedicalEmergencyController-->EvacuationEquipment[signal]@evacuation
 
-MedicalEmergencyController-->MainController@medical_emergency
+MedicalEmergencyController-->MainController[signal]@medical_emergency
 
 # -------------------- EMERGENCY SHELTER ---------------------
 
-ShelterTemperatureSensor-->ShelterController@temperature
-ShelterPowerSensor-->ShelterController@power
-ShelterWaterSensor-->ShelterController@water
+ShelterTemperatureSensor-->ShelterController[signal]@temperature
+ShelterPowerSensor-->ShelterController[resource]@power
+ShelterWaterSensor-->ShelterController[resource]@water
 
-ShelterController-->ShelterGenerator@power
-ShelterController-->ShelterWaterTank@water
-ShelterController-->ShelterWasteUnit@waste
+ShelterController-->ShelterGenerator[resource]@power
+ShelterController-->ShelterWaterTank[resource]@water
+ShelterController-->ShelterWasteUnit[resource]@waste
 
-ShelterController-->ShelterAccommodation@environment
-ShelterController-->ShelterKitchen@operation
-ShelterController-->ShelterCommunicationRoom@communication
+ShelterController-->ShelterAccommodation[signal]@environment
+ShelterController-->ShelterKitchen[signal]@operation
+ShelterController-->ShelterCommunicationRoom[data]@communication
 
-ShelterController-->MainController@shelter_status
+ShelterController-->MainController[signal]@shelter_status
 
-SummerCampController-->SummerAccommodation@accommodation
-SummerCampController-->SummerDining@dining
-SummerCampController-->SummerStorage@storage
+SummerCampController-->SummerAccommodation[data]@accommodation
+SummerCampController-->SummerDining[signal]@dining
+SummerCampController-->SummerStorage[signal]@storage
 
-SummerCampController-->MainController@summer_camp_status
+SummerCampController-->MainController[signal]@summer_camp_status
 
 # -------------------- CROSS-SYSTEM CONTROL ------------------
 
-MainGeneratorController-->MainController@energy_status
-MainController-->MainGeneratorController@energy_command
+MainGeneratorController-->MainController[resource]@energy_status
+MainController-->MainGeneratorController[resource]@energy_command
 
-PowerController-->MainController@power_status
-MainController-->PowerController@power_command
+PowerController-->MainController[resource]@power_status
+MainController-->PowerController[resource]@power_command
 
-HVACController-->MainController@hvac_status
-MainController-->HVACController@hvac_command
+HVACController-->MainController[signal]@hvac_status
+MainController-->HVACController[data]@hvac_command
 
-WaterTreatmentController-->MainController@water_treatment_status
-MainController-->WaterTreatmentController@water_command
+WaterTreatmentController-->MainController[resource]@water_treatment_status
+MainController-->WaterTreatmentController[resource]@water_command
 
-WasteWaterController-->MainController@wastewater_status
-WasteController-->MainController@waste_status
+WasteWaterController-->MainController[resource]@wastewater_status
+WasteController-->MainController[resource]@waste_status
 
-LaboratoryController-->MainController@research_status
-MainController-->LaboratoryController@research_command
+LaboratoryController-->MainController[signal]@research_status
+MainController-->LaboratoryController[data]@research_command
 
-CommunicationController-->MainController@communication_status
-MainController-->CommunicationController@communication_command
+CommunicationController-->MainController[data]@communication_status
+MainController-->CommunicationController[data]@communication_command
 
-EarthStationController-->MainController@earth_station_status
+EarthStationController-->MainController[signal]@earth_station_status
 
-MeteorologyController-->MainController@meteorology_status
-GeophysicsController-->MainController@geophysics_status
-EnvironmentalController-->MainController@environment_status
+MeteorologyController-->MainController[signal]@meteorology_status
+GeophysicsController-->MainController[signal]@geophysics_status
+EnvironmentalController-->MainController[signal]@environment_status
 
 # -------------------- CENTRAL DATA FLOW --------------------
 
-MainController-->ResearchDataServer@station_telemetry
-MainController-->ControlServer@central_status
+MainController-->ResearchDataServer[data]@station_telemetry
+MainController-->ControlServer[signal]@central_status
 
-ControlServer-->MainController@central_command
+ControlServer-->MainController[data]@central_command
 
-ResearchDataServer-->ControlServer@research_status
-ControlServer-->ResearchDataServer@data_command
+ResearchDataServer-->ControlServer[signal]@research_status
+ControlServer-->ResearchDataServer[data]@data_command
 
-CommunicationServer-->ControlServer@communication
-ControlServer-->CommunicationServer@communication_command
+CommunicationServer-->ControlServer[data]@communication
+ControlServer-->CommunicationServer[data]@communication_command
 
-RemoteSensingServer-->ControlServer@satellite_status
-ControlServer-->RemoteSensingServer@remote_sensing_command
+RemoteSensingServer-->ControlServer[signal]@satellite_status
+ControlServer-->RemoteSensingServer[data]@remote_sensing_command
 
 # -------------------- REDUNDANT COMMUNICATION --------------
 
-MainRouter<-->BackupRouter@network_backup
+MainRouter<-->BackupRouter[data]@network_backup
 
-SatelliteModem<-->SatelliteBackupModem@satellite_redundancy
+SatelliteModem<-->SatelliteBackupModem[signal]@satellite_redundancy
 
-BackupRouter-->CommunicationServer@network_data
-SatelliteController-->CommunicationServer@satellite_status
+BackupRouter-->CommunicationServer[data]@network_data
+SatelliteController-->CommunicationServer[signal]@satellite_status
 
 # -------------------- STATION-WIDE SAFETY ------------------
 
-MainController-->EmergencyController@emergency_command
-MainController-->FireSafetyController@fire_command
-MainController-->MedicalEmergencyController@medical_command
+MainController-->EmergencyController[data]@emergency_command
+MainController-->FireSafetyController[data]@fire_command
+MainController-->MedicalEmergencyController[data]@medical_command
 
-EmergencyController-->CommunicationServer@emergency_signal
-FireSafetyController-->CommunicationServer@fire_alert
-MedicalEmergencyController-->CommunicationServer@medical_alert
+EmergencyController-->CommunicationServer[signal]@emergency_signal
+FireSafetyController-->CommunicationServer[signal]@fire_alert
+MedicalEmergencyController-->CommunicationServer[signal]@medical_alert
 
-CommunicationServer-->EmergencyRadio@emergency_broadcast
-CommunicationServer-->FieldRadio@field_alert
+CommunicationServer-->EmergencyRadio[signal]@emergency_broadcast
+CommunicationServer-->FieldRadio[signal]@field_alert
 
 # ============================================================
 # END OF RELATIONSHIPS

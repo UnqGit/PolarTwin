@@ -91,13 +91,13 @@ export const GraphModal: React.FC<GraphModalProps> = ({ onClose, connections, al
     const effHovered = localHovered || hoveredName;
     if (effHovered) {
       cy.getElementById(effHovered).addClass('hovered');
-      cy.edges().filter(e => e.data('originalId') === effHovered).addClass('hovered');
+      cy.edges().filter((e: any) => e.data('originalId') === effHovered).addClass('hovered');
     }
     
     const effSelected = localSelected || selectedName;
     if (effSelected) {
       cy.getElementById(effSelected).addClass('selected');
-      cy.edges().filter(e => e.data('originalId') === effSelected).addClass('selected');
+      cy.edges().filter((e: any) => e.data('originalId') === effSelected).addClass('selected');
     }
   }, [hoveredName, selectedName, localHovered, localSelected]);
 
@@ -240,7 +240,7 @@ export const GraphModal: React.FC<GraphModalProps> = ({ onClose, connections, al
       cy.minZoom(initialZoom / 3.5); // Cap zoom out to 3.5x the fitted graph size
 
       const edgeGroups: Record<string, cytoscape.EdgeSingular[]> = {};
-      cy.edges().forEach(e => {
+      cy.edges().forEach((e: any) => {
         const s = e.source().id();
         const t = e.target().id();
         const key = [s, t].sort().join('::');

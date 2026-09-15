@@ -77,10 +77,12 @@ class Phase22SafetyTests(unittest.TestCase):
 
     def test_invalid_connection_error_raises_validation_error(self):
         topology = dict(self.topology)
+        connections = list(self.connections)
         connections.append({
             "source": "Generator",
             "target": "DoesNotExist",
-            "type": "power",
+            "type": "resource",
+            "relation": "power",
             "direction": "-->"
         })
         with self.assertRaises(ValidationError) as ctx:
@@ -89,10 +91,12 @@ class Phase22SafetyTests(unittest.TestCase):
 
     def test_invalid_connection_warning_suppresses_error(self):
         topology = dict(self.topology)
+        connections = list(self.connections)
         connections.append({
             "source": "Generator",
             "target": "DoesNotExist",
-            "type": "power",
+            "type": "resource",
+            "relation": "power",
             "direction": "-->"
         })
         # If set to warning, validate_topology does not raise.

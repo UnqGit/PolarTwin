@@ -86,8 +86,10 @@ export interface ConnectionLayout {
    */
   path: [number, number, number][];
   profile: ConnectionProfile;
-  /** Raw connection type from topology, e.g. "power" or "road". */
+  /** Raw connection type from topology, e.g. "data" or "passageway". */
   connectionType: string;
+  /** Relation field representing specific edge type (e.g., "power_line"). */
+  relation: string;
   /** Directionality string from topology, e.g. "-->". */
   direction: string;
   // Legacy aliases kept so ConnectionRenderer can migrate gradually
@@ -153,15 +155,16 @@ export interface ConnectionProfile {
 }
 
 export const CONNECTION_PROFILES: Record<string, ConnectionProfile> = {
-  road: { width: 1.2, height: 0.05, elevation: 'ground', clearance: 4.0, color: '#3f3f46' }, // darker gray
-  hallway: { width: 1.0, height: 'min-block', elevation: 'ground', clearance: 3.0, color: '#64748b' }, // slate
-  power: { width: 0.15, height: 0.15, elevation: 0.075, clearance: 1.0, color: '#ef4444' }, // red
+  // New schema connection types
+  passageway: { width: 1.0, height: 'min-block', elevation: 'ground', clearance: 3.0, color: '#64748b' }, // slate
+  resource: { width: 0.2, height: 0.2, elevation: 0.1, clearance: 1.0, color: '#ef4444' }, // red
   data: { width: 0.1, height: 0.1, elevation: 0.05, clearance: 0.8, color: '#3b82f6' }, // blue
-  water: { width: 0.2, height: 0.2, elevation: 0.1, clearance: 1.0, color: '#06b6d4' }, // cyan
-  control: { width: 0.1, height: 0.1, elevation: 0.05, clearance: 0.8, color: '#eab308' }, // yellow
+  signal: { width: 0.1, height: 0.1, elevation: 0.05, clearance: 0.8, color: '#eab308' }, // yellow
+  
+  // Synthetic / Generated connections
   ladder: { width: 0.6, height: 0.1, elevation: 0, clearance: 1.0, color: '#b45309' }, // orange-brown
   lift: { width: 1.2, height: 1.2, elevation: 0, clearance: 1.0, color: '#475569' }, // dark slate
-  wire: { width: 0.1, height: 0.1, elevation: 0.05, clearance: 1.0, color: '#0ea5e9' }, // brand-friendly cyan
+  
   // Default fallback for unknown types
   default: { width: 0.1, height: 0.1, elevation: 0.05, clearance: 1.0, color: '#6b7280' },
 };
@@ -1032,6 +1035,7 @@ export function buildSceneLayout(topology: any, connectionsData: any, spec: any)
         endPos: elevatedPath[elevatedPath.length - 1],
         profile,
         connectionType,
+        relation: c.relation ?? connectionType,
         direction: c.direction ?? '-->',
       };
     })

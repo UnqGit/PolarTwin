@@ -2,25 +2,29 @@
   {
     "source": "Generator",
     "target": "Controller",
-    "type": "power_data",
-    "direction": "-->"
+    "type": "resource",
+    "direction": "-->",
+    "relation": "power_data"
   },
   {
     "source": "FuelSensor",
     "target": "Controller",
-    "type": "fuel_data",
-    "direction": "-->"
+    "type": "resource",
+    "direction": "-->",
+    "relation": "fuel_data"
   },
   {
     "source": "Controller",
     "target": "Generator",
-    "type": "command",
-    "direction": "-->"
+    "type": "data",
+    "direction": "-->",
+    "relation": "command"
   },
   {
     "source": "Generator",
     "target": "FuelSensor",
-    "type": "fuel",
-    "direction": "-->"
+    "type": "resource",
+    "direction": "-->",
+    "relation": "fuel"
   }
 ]

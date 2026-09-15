@@ -66,8 +66,8 @@ const UnifiedConnection: React.FC<UnifiedConnectionProps> = ({ connection }) => 
   const renderOrd = hovered || selected ? 10 : 0;
   const isHighlighted = hovered || selected;
   const type = (connection.connectionType || '').toLowerCase();
-  const expandWidth = type !== 'road';
-  const expandHeight = type !== 'hallway';
+  const expandWidth = type !== 'passageway';
+  const expandHeight = type !== 'passageway';
   
   const currentBeamWidth = isHighlighted && expandWidth ? beamWidth * 1.6 : beamWidth;
   const currentBeamThickness = isHighlighted && expandHeight ? beamThickness * 1.6 : beamThickness;

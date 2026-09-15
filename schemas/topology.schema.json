@@ -3,35 +3,107 @@
   "$id": "https://polartwin.dev/schemas/topology.schema.json",
   "title": "Digital Twin Topology",
   "type": "object",
-  "required": ["name", "type", "tags", "children", "connections"],
+  "required": [
+    "name",
+    "type",
+    "tags",
+    "children",
+    "connections"
+  ],
   "properties": {
-    "name": {"type": "string", "minLength": 1},
-    "type": {"type": "string", "minLength": 1},
-    "tags": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
-    "children": {"type": "array", "items": {"$ref": "#/$defs/node"}},
-    "connections": {"type": "array", "items": {"$ref": "#/$defs/connection"}}
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "type": {
+      "type": "string",
+      "minLength": 1
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "uniqueItems": true
+    },
+    "children": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/node"
+      }
+    },
+    "connections": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/connection"
+      }
+    }
   },
   "additionalProperties": true,
   "$defs": {
     "node": {
       "type": "object",
-      "required": ["name", "type", "tags", "children"],
+      "required": [
+        "name",
+        "type",
+        "tags",
+        "children"
+      ],
       "properties": {
-        "name": {"type": "string", "minLength": 1},
-        "type": {"type": "string", "minLength": 1},
-        "tags": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true},
-        "children": {"type": "array", "items": {"$ref": "#/$defs/node"}}
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          },
+          "uniqueItems": true
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/node"
+          }
+        }
       },
       "additionalProperties": true
     },
     "connection": {
       "type": "object",
-      "required": ["source", "target", "type", "direction"],
+      "required": [
+        "source",
+        "target",
+        "type",
+        "direction"
+      ],
       "properties": {
-        "source": {"type": "string", "minLength": 1},
-        "target": {"type": "string", "minLength": 1},
-        "type": {"type": "string", "minLength": 1},
-        "direction": {"enum": ["-->", "<-->", "-.->"]}
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "target": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "direction": {
+          "enum": [
+            "-->",
+            "<-->",
+            "-.->"
+          ]
+        }
       },
       "additionalProperties": true
     }
