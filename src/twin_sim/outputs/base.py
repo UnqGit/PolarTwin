@@ -21,6 +21,9 @@ class TelemetrySink(ABC):
     def close(self) -> None:
         return None
 
+    def tick(self, dt: float, environment: dict) -> None:
+        return None
+
     def __enter__(self) -> "TelemetrySink":
         self.start()
         return self

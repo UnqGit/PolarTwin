@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import Any
 
 from .component import Component
 from .connection import Connection
@@ -14,6 +15,8 @@ class ComponentGraph:
     components: dict[str, Component]
     connections: list[Connection]
     diagnostics: list[str] = field(default_factory=list)
+    external_data_reference: str | None = None
+    external_data_config: dict[str, Any] = field(default_factory=dict)
     _incoming: dict[str, list[Connection]] = field(default_factory=dict, repr=False)
     _outgoing: dict[str, list[Connection]] = field(default_factory=dict, repr=False)
 

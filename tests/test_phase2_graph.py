@@ -45,12 +45,13 @@ class Phase2GraphTests(unittest.TestCase):
 
     def test_bidirectional_connection_is_indexed_both_ways(self):
         topology = copy.deepcopy(self.topology)
+        connections = copy.deepcopy(self.connections)
         # Make the fuel connection (Generator->FuelSensor) bidirectional
-        for conn in topology["connections"]:
+        for conn in connections:
             if conn["source"] == "Generator" and conn["target"] == "FuelSensor":
                 conn["direction"] = "<-->"
                 break
-        graph = compile_model(topology, self.connections, self.specification)
+        graph = compile_model(topology, connections, self.specification)
         # Bidirectional should create reverse indexing
         self.assertTrue(any(c.source == "FuelSensor" and c.target == "Generator" for c in graph.incoming("Generator")))
         self.assertTrue(any(c.target == "Generator" for c in graph.outgoing("FuelSensor")))
@@ -69,6 +70,7 @@ class Phase2GraphTests(unittest.TestCase):
 
     def test_maitri_compiles_without_station_specific_code(self):
         topology = read_json(ROOT / "data/compiled/maitri/relation.json")
+        connections = read_json(ROOT / "data/compiled/maitri/connection.json")
         specification = read_json(ROOT / "data/compiled/maitri/spec.json")
         graph = compile_model(topology, connections, specification)
         self.assertGreater(len(graph.components), 1)

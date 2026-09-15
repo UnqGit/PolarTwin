@@ -15,6 +15,7 @@ from twin_sim.outputs import TelemetrySink
 
 from .clock import ClockMode, SimulationClock
 from .environment import EnvironmentState
+from .external import ExternalDataEvolver
 from .failure import apply_failure_recovery
 from .randomness import RandomSource
 from .propagation import propagate
@@ -55,10 +56,12 @@ class SimulationEngine:
         self.environment = environment if isinstance(environment, EnvironmentState) else EnvironmentState(environment)
         self.status = SimulationStatus.READY
         self.tick_count = 0
+        self.external_evolver = ExternalDataEvolver(graph.external_data_config) if getattr(graph, 'external_data_config', None) else None
         self.context = BehaviorContext({
             "clock": self.clock,
             "random": self.random,
             "environment": self.environment.snapshot(),
+            "external_data": {},
         })
         self.last_phase_order: list[str] = []
         self.causal_trace: list[dict[str, Any]] = []
@@ -90,9 +93,26 @@ class SimulationEngine:
         self.status = SimulationStatus.RUNNING
         timestamp = self.clock.advance()
         self.last_phase_order = []
+        
+        ext_state, ext_events = ({}, [])
+        if self.external_evolver:
+            ext_state, ext_events = self.external_evolver.evolve(timestamp)
+            
+        if ext_state:
+            self.context.values["external_data"] = ext_state
+            if ext_state.get("weather"):
+                self.environment.update(ext_state["weather"])
+            if ext_state.get("network"):
+                self.environment.update(ext_state["network"])
+                
         self.last_phase_order.append("events")
         for event in self.scheduler.pop_due(timestamp):
             event.callback(timestamp, event.payload)
+            
+        for event in ext_events:
+            for component in self._active_components:
+                component.behavior.handle_event(component, event, self.context)
+                
         self.last_phase_order.append("environment")
         self.context.values["timestamp"] = timestamp
         self.context.values["environment"] = self.environment.snapshot()
@@ -124,9 +144,11 @@ class SimulationEngine:
             self.environment.values,
             self.causal_trace[-5:],
         ))
-        if self.telemetry_sink and len(self.telemetry) >= self.telemetry_batch_size:
-            self.telemetry_sink.write_batch(list(self.telemetry))
-            self.telemetry.clear()
+        if self.telemetry_sink:
+            self.telemetry_sink.tick(self.clock.tick_interval, self.environment.values)
+            if len(self.telemetry) >= self.telemetry_batch_size:
+                self.telemetry_sink.write_batch(list(self.telemetry))
+                self.telemetry.clear()
 
         self.tick_count += 1
         self.status = SimulationStatus.PAUSED if self.status == SimulationStatus.PAUSED else SimulationStatus.RUNNING

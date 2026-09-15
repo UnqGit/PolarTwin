@@ -10,8 +10,24 @@ from twin_sim.observability import SafetyError
 from twin_sim.model import Component, ComponentGraph, Connection
 
 
-def compile_model(topology: Any, raw_connections: Any, specification: Any, validation_config: dict[str, str] | None = None) -> ComponentGraph:
+def compile_model(
+    topology: Any,
+    raw_connections: Any = None,
+    specification: Any = None,
+    validation_config: dict[str, str] | None = None,
+    external_data: dict[str, Any] | None = None,
+    external_data_reference: str | None = None
+) -> ComponentGraph:
     """Build a reusable graph without referring to topology-specific names."""
+    
+    # Backward compatibility: compile_model(topology, specification)
+    if specification is None and isinstance(raw_connections, dict) and "components" in raw_connections:
+        specification = raw_connections
+        raw_connections = None
+        
+    if raw_connections is None:
+        raw_connections = topology.get("connections", []) if isinstance(topology, dict) else []
+        
     valid_topology, valid_connections, valid_specification = validate_documents(topology, raw_connections, specification, validation_config)
     components: dict[str, Component] = {}
 
@@ -30,7 +46,13 @@ def compile_model(topology: Any, raw_connections: Any, specification: Any, valid
 
     root = build(valid_topology)
     connections = [Connection(**connection) for connection in valid_connections]
-    graph = ComponentGraph(root, components, connections)
+    graph = ComponentGraph(
+        root=root,
+        components=components,
+        connections=connections,
+        external_data_config=external_data or {},
+        external_data_reference=external_data_reference
+    )
     graph.rebuild_indexes()
 
     specified_names = set(valid_specification["components"])

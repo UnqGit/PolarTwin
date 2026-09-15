@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import datetime
 import json
 from pathlib import Path
 from typing import Any
@@ -144,3 +145,57 @@ def validate_documents(topology: Any, connections: Any, specification: Any, vali
         if component["type"] != relation_type:
             raise ValidationError(f"type mismatch for '{name}': topology has '{relation_type}', specification has '{component['type']}'")
     return valid_topology, valid_connections, valid_specification
+
+
+def validate_external(document: Any) -> dict[str, Any]:
+    """Validate external data configuration."""
+    if document is None:
+        return {}
+    root = _object(document, "external")
+    
+    # Optional weather
+    if "weather" in root:
+        weather = _object(root["weather"], "external.weather")
+        # Validate time-series or scalar
+        for k, v in weather.items():
+            if isinstance(v, list):
+                for i, point in enumerate(v):
+                    p = _object(point, f"external.weather.{k}[{i}]")
+                    if "time" not in p or "value" not in p:
+                        raise ValidationError(f"external.weather.{k}[{i}] must have 'time' and 'value'")
+                    if not isinstance(p["time"], (int, float)) or not isinstance(p["value"], (int, float)):
+                        raise ValidationError(f"external.weather.{k}[{i}] 'time' and 'value' must be numbers")
+            elif not isinstance(v, (int, float)):
+                raise ValidationError(f"external.weather.{k} must be a number or a time-series array")
+                
+    # Optional network
+    if "network" in root:
+        network = _object(root["network"], "external.network")
+        for k, v in network.items():
+            if isinstance(v, list):
+                for i, point in enumerate(v):
+                    p = _object(point, f"external.network.{k}[{i}]")
+                    if "time" not in p or "value" not in p:
+                        raise ValidationError(f"external.network.{k}[{i}] must have 'time' and 'value'")
+                    if not isinstance(p["time"], (int, float)):
+                        raise ValidationError(f"external.network.{k}[{i}] 'time' must be a number")
+            elif not isinstance(v, (int, float, str)):
+                raise ValidationError(f"external.network.{k} must be a primitive or a time-series array")
+                
+    # Optional supplies
+    if "supplies" in root:
+        if not isinstance(root["supplies"], list):
+            raise ValidationError("external.supplies must be an array")
+        for i, supply in enumerate(root["supplies"]):
+            s = _object(supply, f"external.supplies[{i}]")
+            for field in ("eta", "description", "transportation_mode"):
+                if field not in s:
+                    raise ValidationError(f"external.supplies[{i}] is missing required field '{field}'")
+                _string(s[field], f"external.supplies[{i}].{field}")
+            # Validate ETA format
+            try:
+                datetime.datetime.fromisoformat(s["eta"].replace("Z", "+00:00"))
+            except ValueError:
+                raise ValidationError(f"external.supplies[{i}].eta must be a valid ISO 8601 string")
+                
+    return root

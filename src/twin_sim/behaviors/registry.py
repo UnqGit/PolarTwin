@@ -37,6 +37,8 @@ from .physical import (
     SensorPhysicalBehavior,
     StoragePhysicalBehavior,
     TankPhysicalBehavior,
+    BuildingPhysicalBehavior,
+    ThermostatPhysicalBehavior,
 )
 
 BehaviorFactory = Callable[[], Behavior]
@@ -81,6 +83,8 @@ def default_registry() -> BehaviorRegistry:
         GeneratorPhysicalBehavior,
         BatteryPhysicalBehavior,
         InverterPhysicalBehavior,
+        BuildingPhysicalBehavior,
+        ThermostatPhysicalBehavior,
         HeaterPhysicalBehavior,
         FanPhysicalBehavior,
         CoolerBehavior,

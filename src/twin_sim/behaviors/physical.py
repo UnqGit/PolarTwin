@@ -59,7 +59,9 @@ class GeneratorPhysicalBehavior(SpecializedBehavior):
             command = None
         if command is None:
             command = rating if spec.get("role") != "backup" else 0.0
-        multiplier = context.values.get("environment", {}).get("heating_demand_multiplier") or 1.0
+        multiplier = inputs.get("heating_demand_multiplier", context.values.get("environment", {}).get("heating_demand_multiplier"))
+        if multiplier is None:
+            multiplier = 1.0
         command *= float(multiplier)
         command = max(0.0, min(float(command), rating))
         fuel = max(0.0, float(current.get("fuel_level", _value(spec, "fuel_capacity", 0.0))))
@@ -164,6 +166,52 @@ class FanPhysicalBehavior(BoundedActuatorBehavior):
     output_key = "airflow"
 
 
+class BuildingPhysicalBehavior(SpecializedBehavior):
+    name = "building"
+
+    def initialize(self, component, context):
+        component.runtime_state.values.setdefault("indoor_temperature", 20.0)
+
+    def evaluate(self, component, context, dt):
+        spec = component.specification
+        inputs = _inputs(context)
+        environment = context.values.get("environment", {})
+        
+        outdoor_temp = float(environment.get("outdoor_temperature", 0.0))
+        indoor_temp = float(component.runtime_state.values.get("indoor_temperature", 20.0))
+        
+        # Thermal coupling
+        k = _value(spec, "thermal_coupling", 0.0001)
+        heat_capacity = _value(spec, "heat_capacity", 1000.0)
+        
+        # Heater output (assume W)
+        heater_power = float(inputs.get("thermal_output", inputs.get("heat", 0.0)))
+        
+        dt_temp = k * (outdoor_temp - indoor_temp) * dt + (heater_power / heat_capacity) * dt
+        indoor_temp += dt_temp
+        
+        return {"indoor_temperature": indoor_temp}
+
+
+class ThermostatPhysicalBehavior(SpecializedBehavior):
+    name = "thermostat"
+
+    def evaluate(self, component, context, dt):
+        spec = component.specification
+        inputs = _inputs(context)
+        
+        indoor_temp = float(inputs.get("indoor_temperature", 20.0))
+        target_temp = _value(spec, "target_temperature", 21.0)
+        
+        # Simple proportional demand
+        demand_mult = 1.0
+        if indoor_temp < target_temp:
+            gain = _value(spec, "gain", 0.1)
+            demand_mult += (target_temp - indoor_temp) * gain
+            
+        return {"heating_demand_multiplier": demand_mult, "command": 1.0 if indoor_temp < target_temp else 0.0}
+
+
 class PumpPhysicalBehavior(BoundedActuatorBehavior):
     name = "pump"
     output_key = "flow"
@@ -181,6 +229,17 @@ class TankPhysicalBehavior(SpecializedBehavior):
         level = float(component.runtime_state.values.get("level", capacity))
         level += (float(inputs.get("inflow", 0.0)) - float(inputs.get("outflow", 0.0))) * dt
         return {"level": max(0.0, min(level, capacity))}
+
+    def handle_event(self, component, event, context):
+        if isinstance(event, dict) and event.get("type") == "SupplyArrived":
+            supply = event.get("supply", {})
+            # Only process if this tank is intended for this supply or if it matches generically
+            # We assume it matches if description is similar, or just blindly accept if it has quantity for now
+            qty = supply.get("quantity")
+            if qty is not None:
+                capacity = _value(component.specification, "capacity", float("inf"))
+                current = float(component.runtime_state.values.get("level", capacity))
+                component.runtime_state.values["level"] = max(0.0, min(current + float(qty), capacity))
 
 
 class StoragePhysicalBehavior(TankPhysicalBehavior):

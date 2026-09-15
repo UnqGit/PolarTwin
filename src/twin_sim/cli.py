@@ -9,7 +9,7 @@ from pathlib import Path
 
 from twin_sim.compiler import compile_model
 from twin_sim.ingestion.config import load_runtime_config
-from twin_sim.ingestion.loaders import load_model_inputs
+from twin_sim.ingestion.loaders import load_model_inputs, load_external
 from twin_sim.ingestion.validator import ValidationError, load_json
 from twin_sim.observability import build_quality_report
 from twin_sim.outputs import AsyncTelemetryPipeline, DatabaseSink, JsonlSink, MultiSink, create_sink
@@ -20,6 +20,10 @@ from twin_sim.storage import SQLiteAdapter
 
 def _inputs(args):
     return load_model_inputs(args.topology, args.connection, args.spec)
+
+
+def _external(args):
+    return load_external(getattr(args, "external", None))
 
 
 def _scenario(engine, paths):
@@ -53,7 +57,8 @@ def command_validate(args) -> int:
 
 def command_inspect(args) -> int:
     topology, connections, specification = _inputs(args)
-    graph = compile_model(topology, connections, specification)
+    ext = _external(args)
+    graph = compile_model(topology, connections, specification, external_data=ext, external_data_reference=getattr(args, "external", None))
     behavior_counts: dict[str, int] = {}
     for component in graph.components.values():
         name = component.behavior.name if component.behavior else "none"
@@ -70,7 +75,8 @@ def command_inspect(args) -> int:
 
 def command_graph(args) -> int:
     topology, connections, specification = _inputs(args)
-    graph = compile_model(topology, connections, specification)
+    ext = _external(args)
+    graph = compile_model(topology, connections, specification, external_data=ext, external_data_reference=getattr(args, "external", None))
     for connection in graph.connections:
         print(f"{connection.source}{connection.direction}{connection.target}@{connection.type}")
     return 0
@@ -78,7 +84,8 @@ def command_graph(args) -> int:
 
 def command_quality(args) -> int:
     topology, connections, specification = _inputs(args)
-    report = build_quality_report(compile_model(topology, connections, specification))
+    ext = _external(args)
+    report = build_quality_report(compile_model(topology, connections, specification, external_data=ext, external_data_reference=getattr(args, "external", None)))
     print(json.dumps(report.to_dict(), sort_keys=True))
     return 0
 
@@ -159,7 +166,8 @@ def _run_engine(args, _get=None, seed: int | None = None, run_id: str | None = N
         from twin_sim.plugins import load_plugins_from_directory
         load_plugins_from_directory(plugins_dir)
 
-    graph = compile_model(topology, connections, specification, validation_config)
+    ext = _external(args)
+    graph = compile_model(topology, connections, specification, validation_config, external_data=ext, external_data_reference=getattr(args, "external", None))
     
     env_arg = _get("environment")
     environment = None
@@ -191,11 +199,11 @@ def command_run(args) -> int:
     if "outputs" in config:
         for output_cfg in config["outputs"]:
             if output_cfg.get("enabled", True):
-                sinks.append(create_sink(output_cfg))
+                sinks.append(create_sink(output_cfg, random_value=engine.random.random))
     elif args.output:
         sinks.append(JsonlSink(args.output))
     else:
-        sinks.append(create_sink({"type": "stdout"}))
+        sinks.append(create_sink({"type": "stdout"}, random_value=engine.random.random))
         
     multi_sink = MultiSink(sinks)
     pipeline = AsyncTelemetryPipeline(multi_sink, backpressure_policy="drop")
@@ -222,11 +230,11 @@ def command_generate(args) -> int:
     sinks = []
     if getattr(args, "mqtt_config", None):
         configuration = load_json(args.mqtt_config)
-        sinks.append(create_sink(configuration))
+        sinks.append(create_sink(configuration, random_value=engine.random.random))
     elif "outputs" in config:
         for output_cfg in config["outputs"]:
             if output_cfg.get("enabled", True):
-                sinks.append(create_sink(output_cfg))
+                sinks.append(create_sink(output_cfg, random_value=engine.random.random))
                 
     if not sinks:
         print("No outputs configured. Use --mqtt-config or --config with outputs array.")
@@ -252,7 +260,8 @@ def command_generate(args) -> int:
 def command_validate_simulation(args) -> int:
     topology, connections, specification = _inputs(args)
     validation_config = json.loads(args.validation) if getattr(args, "validation", None) else None
-    graph = compile_model(topology, connections, specification, validation_config)
+    ext = _external(args)
+    graph = compile_model(topology, connections, specification, validation_config, external_data=ext, external_data_reference=getattr(args, "external", None))
     scenario_paths = getattr(args, "scenario", None) or []
     if isinstance(scenario_paths, str):
         scenario_paths = [scenario_paths]
@@ -299,7 +308,7 @@ def command_experiment(args) -> int:
             if "outputs" in config:
                 for output_cfg in config["outputs"]:
                     if output_cfg.get("enabled", True):
-                        sinks.append(create_sink(output_cfg))
+                        sinks.append(create_sink(output_cfg, random_value=engine.random.random))
             elif getattr(args, "output", None):
                 sinks.append(JsonlSink(args.output))
                 
@@ -346,8 +355,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     def add_inputs(command):
         command.add_argument("--topology", required=True)
-        command.add_argument("--connection", required=True)
+        command.add_argument("--connection", required=False)
         command.add_argument("--spec", required=True)
+        command.add_argument("--external", required=False, help="Path to external.json")
         command.add_argument(
             "--validation",
             choices=["error", "warning", "ignore"],
@@ -405,8 +415,10 @@ def build_parser() -> argparse.ArgumentParser:
     experiment.set_defaults(handler=command_experiment)
 
     generate = subparsers.add_parser("generate")
-    for action in ("topology", "connection", "spec"):
+    for action in ("topology", "spec"):
         generate.add_argument(f"--{action}", required=True)
+    generate.add_argument("--connection", required=False)
+    generate.add_argument("--external", required=False, help="Path to external.json")
     generate.add_argument("--scenario", action="append", help="Scenario JSON file(s)")
     generate.add_argument("--config", help="Runtime configuration JSON file")
     generate.add_argument("--mqtt-config", required=False)

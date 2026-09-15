@@ -21,7 +21,7 @@ class Phase1ContractTests(unittest.TestCase):
         self.specification = read_json(ROOT / "examples/minimal/specification.json")
 
     def test_minimal_inputs_validate_and_preserve_unknown_fields(self):
-        topology, specification = validate_documents(self.topology, self.connections, self.specification)
+        topology, connections, specification = validate_documents(self.topology, self.connections, self.specification)
         self.assertEqual(topology["name"], "MiniStation")
         self.assertTrue(specification["components"]["MiniStation"]["spec"]["future_field"]["enabled"])
 
@@ -32,9 +32,10 @@ class Phase1ContractTests(unittest.TestCase):
 
     def test_unknown_connection_reference_is_rejected(self):
         invalid = copy.deepcopy(self.topology)
-        invalid["connections"][0]["target"] = "Missing"
+        connections = copy.deepcopy(self.connections)
+        connections[0]["target"] = "Missing"
         with self.assertRaisesRegex(ValidationError, "unknown component 'Missing'"):
-            validate_topology(invalid)
+            validate_documents(invalid, connections, self.specification)
 
     def test_duplicate_component_name_is_rejected(self):
         invalid = copy.deepcopy(self.topology)
@@ -45,9 +46,10 @@ class Phase1ContractTests(unittest.TestCase):
 
     def test_invalid_direction_is_rejected(self):
         invalid = copy.deepcopy(self.topology)
-        invalid["connections"][0]["direction"] = "invalid"
+        connections = copy.deepcopy(self.connections)
+        connections[0]["direction"] = "invalid"
         with self.assertRaisesRegex(ValidationError, "direction"):
-            validate_topology(invalid)
+            validate_documents(invalid, connections, self.specification)
 
     def test_specification_type_mismatch_is_rejected(self):
         invalid = copy.deepcopy(self.specification)

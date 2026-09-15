@@ -39,6 +39,7 @@ class Phase5PropagationTests(unittest.TestCase):
     def setUp(self):
         root = ROOT / "examples/minimal"
         topology = read_json(root / "topology.json")
+        connections = read_json(root / "connections.json")
         specification = read_json(root / "specification.json")
         self.graph = compile_model(topology, connections, specification)
         self.graph.get("Generator").behavior = SourceBehavior()
@@ -65,7 +66,8 @@ class Phase5PropagationTests(unittest.TestCase):
 
     def test_bidirectional_propagation_updates_both_endpoints(self):
         topology = read_json(ROOT / "examples/minimal/topology.json")
-        topology["connections"][0]["direction"] = "<-->"
+        connections = read_json(ROOT / "examples/minimal/connections.json")
+        connections[0]["direction"] = "<-->"
         specification = read_json(ROOT / "examples/minimal/specification.json")
         graph = compile_model(topology, connections, specification)
         graph.get("Generator").behavior = SourceBehavior()
