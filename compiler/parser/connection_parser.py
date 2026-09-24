@@ -19,21 +19,44 @@ class ConnectionParseError(Exception):
             super().__init__(message)
 
 
+# Supported connection types per specification §2.2
+SUPPORTED_CONNECTION_TYPES = frozenset({"power", "data", "signal", "resource"})
+
+# Connection syntax:
+#   Source-->Target[type]@relation
+#   Source<-->Target[type]@relation
+#   Source-.->Target[type]@relation
+#
+# The [type] field specifies the connection type (power, data, signal, resource).
+# Old syntax without [type] is rejected.
+_CONNECTION_PATTERN = re.compile(
+    r"^(\w+)\s*(-->|<-->|-\.->)\s*(\w+)\s*\[(\w+)\]\s*@\s*(\w+)\s*$"
+)
+
+
 def parse_connection_file(connection_file, topology_data):
     """
     Parse a connection.twin file and validate it against the topology data.
+
+    Connection syntax (spec §2.4):
+        Source-->Target[type]@relation
+        Source<-->Target[type]@relation
+        Source-.->Target[type]@relation
+
+    The [type] field must be one of: power, data, signal, resource.
+    Old syntax (Source-->Target@relation) without [type] is rejected.
     """
-    
-    # Extract all node names and their types from topology_data
+
+    # Extract all node names and their types from topology_data.
     nodes = {}
-    
+
     def extract_nodes(node):
         nodes[node["name"]] = node
         for child in node.get("children", []):
             extract_nodes(child)
-            
+
     extract_nodes(topology_data)
-    
+
     connections = []
 
     with open(connection_file, "r", encoding="utf-8") as f:
@@ -43,43 +66,38 @@ def parse_connection_file(connection_file, topology_data):
             if not line:
                 continue
 
-            # Connection Syntax:
-            # Source-->Target@relation
-            # Source<-->Target@relation
-            # Source-.->Target@relation
-            
-            m = re.match(
-                r"^(\w+)\s*(-->|<-->|-\.\->)\s*(\w+)\s*@\s*(\w+)\s*$",
-                line,
-            )
+            m = _CONNECTION_PATTERN.match(line)
 
             if m:
-                source, direction, target, relation = m.groups()
+                source, direction, target, conn_type, relation = m.groups()
 
                 connections.append({
                     "source": source,
                     "target": target,
-                    "type": relation,
+                    "type": conn_type,
+                    "relation": relation,
                     "direction": direction,
                     "line": line_number,
                 })
                 continue
-                
+
             raise ConnectionParseError(
                 "Invalid connection syntax. "
-                "Expected: Source-->Target@relation",
+                "Expected: Source-->Target[type]@relation "
+                "where type is one of: power, data, signal, resource",
                 line_number,
                 line,
             )
 
-    # -------------------------------------------------------------
-    # Validate connection references.
+    # ------------------------------------------------------------------
+    # Validate connection references and type.
     # Connections may NOT have a floor node as either endpoint.
-    # -------------------------------------------------------------
-    
+    # ------------------------------------------------------------------
+
     for connection in connections:
         source = connection["source"]
         target = connection["target"]
+        conn_type = connection["type"]
         line_number = connection["line"]
 
         if source not in nodes:
@@ -88,7 +106,7 @@ def parse_connection_file(connection_file, topology_data):
                 f"Every connection endpoint must reference a defined node.",
                 line_number,
                 f"{source}{connection['direction']}"
-                f"{target}@{connection['type']}",
+                f"{target}[{conn_type}]@{connection['relation']}",
             )
 
         if target not in nodes:
@@ -97,7 +115,7 @@ def parse_connection_file(connection_file, topology_data):
                 f"Every connection endpoint must reference a defined node.",
                 line_number,
                 f"{source}{connection['direction']}"
-                f"{target}@{connection['type']}",
+                f"{target}[{conn_type}]@{connection['relation']}",
             )
 
         source_node = nodes[source]
@@ -110,7 +128,7 @@ def parse_connection_file(connection_file, topology_data):
                 f"Connections cannot have a floor as either source or target.",
                 line_number,
                 f"{source}{connection['direction']}"
-                f"{target}@{connection['type']}",
+                f"{target}[{conn_type}]@{connection['relation']}",
             )
 
         if target_node["type"] == "floor":
@@ -120,10 +138,19 @@ def parse_connection_file(connection_file, topology_data):
                 f"Connections cannot have a floor as either source or target.",
                 line_number,
                 f"{source}{connection['direction']}"
-                f"{target}@{connection['type']}",
+                f"{target}[{conn_type}]@{connection['relation']}",
             )
 
-        # Clean up line number before returning
+        if conn_type not in SUPPORTED_CONNECTION_TYPES:
+            raise ConnectionParseError(
+                f"Unsupported connection type '{conn_type}'. "
+                f"Supported types: {sorted(SUPPORTED_CONNECTION_TYPES)}.",
+                line_number,
+                f"{source}{connection['direction']}"
+                f"{target}[{conn_type}]@{connection['relation']}",
+            )
+
+        # Remove internal parser-only line number before returning.
         connection.pop("line", None)
 
     return connections

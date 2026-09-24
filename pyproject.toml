@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "polar-twin"
-version = "0.1.0"
-description = "Schema-driven digital twin simulator"
+version = "0.2.0"
+description = "PolarTwin — Antarctic research station digital twin simulator"
 requires-python = ">=3.11"
 dependencies = [
     "pydantic>=2.0.0",
@@ -18,9 +18,10 @@ dependencies = [
 twin-sim = "twin_sim.cli:main"
 
 [tool.pytest.ini_options]
-pythonpath = ["src"]
-testpaths = ["tests"]
-[tool.pyright]
-include = ["src", "compiler"]
+# Include both src (existing) and root (for packages/) in the Python path.
+pythonpath = ["src", "."]
+testpaths = ["tests", "packages"]
 
+[tool.pyright]
+include = ["src", "compiler", "packages"]
 extraPaths = ["."]

@@ -4,13 +4,13 @@ from pathlib import Path
 
 
 # Types that are allowed to contain child nodes.
+# Note: "subsystem" is NOT a valid container type (confirmed by spec).
 CONTAINER_TYPES = {
     "campus",
     "station",
     "block",
     "floor",
     "system",
-    "subsystem",
 }
 
 
