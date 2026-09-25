@@ -2,8 +2,6 @@ import { useEffect, useState, useMemo } from 'react';
 import { useStation } from '../components/StationContext';
 import { Activity, Thermometer, Zap, Box, AlertTriangle, CheckCircle, Package } from 'lucide-react';
 
-const hierarchyFiles = import.meta.glob('../../../data/compiled/*/hierarchy.json', { eager: true, import: 'default' });
-
 export interface BlockData {
   id: string;
   name: string;
@@ -14,7 +12,7 @@ export interface BlockData {
 }
 
 export function Overview() {
-  const { selectedStation } = useStation();
+  const { selectedStation, hierarchy } = useStation();
   
   // Real implementation would fetch telemetry from /simulations/{runId}/state
   // Since telemetry integration (Phase 12-15) is incomplete, we show fallback values for telemetry.
@@ -24,10 +22,7 @@ export function Overview() {
     nextSupply: 'N/A'
   });
 
-  const hierarchyData = useMemo(() => {
-    if (!selectedStation) return [];
-    return hierarchyFiles[`../../../data/compiled/${selectedStation}/hierarchy.json`] as any[] || [];
-  }, [selectedStation]);
+  const hierarchyData = hierarchy || [];
 
   const stats = useMemo(() => {
     const totalComponents = hierarchyData.length;

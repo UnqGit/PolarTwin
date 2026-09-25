@@ -254,7 +254,8 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
   connectionsInteractable = true,
   onComponentsInteractableChange,
   onConnectionsInteractableChange,
-  containerOcclusion = 'off'
+  containerOcclusion = 'off',
+  children
 }) => {
   const { theme } = useTheme();
   const bgMain = theme === 'light' ? '#f8fafc' : '#0f172a';
@@ -517,6 +518,8 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
               liveStateRef={liveStateRef}
             />
           )}
+
+          {children}
         </div>
       </HoverContext.Provider>
     </SelectionProvider>

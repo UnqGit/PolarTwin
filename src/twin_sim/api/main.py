@@ -99,6 +99,14 @@ def get_station_hierarchy(station_id: str):
     return station.hierarchy_list
 
 
+@app.get("/stations/{station_id}/spec")
+def get_station_spec(station_id: str):
+    station = _manager.get_loaded_station(station_id)
+    if station is None:
+        raise HTTPException(404, f"Station '{station_id}' not found")
+    return station.specs_list
+
+
 @app.get("/stations/{station_id}/connections")
 def get_station_connections(station_id: str):
     station = _manager.get_loaded_station(station_id)

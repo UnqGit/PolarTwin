@@ -30,21 +30,22 @@ export function Navbar() {
     <div className="glass-panel" style={{
       width: '100%',
       height: '64px',
-      display: 'flex',
+      display: 'grid',
+      gridTemplateColumns: '1fr auto 1fr',
       alignItems: 'center',
       borderLeft: 'none',
       borderRight: 'none',
       borderTop: 'none',
       borderRadius: '0 0 8px 8px',
       zIndex: 100,
-      padding: '0 24px'
+      padding: '0 24px',
+      boxSizing: 'border-box'
     }}>
       <div style={{
         display: 'flex',
         alignItems: 'center',
         gap: '12px',
-        color: 'var(--text-primary)',
-        marginRight: '48px'
+        color: 'var(--text-primary)'
       }}>
         <div style={{ 
           color: 'var(--accent-blue)', 
@@ -85,7 +86,7 @@ export function Navbar() {
         </select>
       </div>
 
-      <nav style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '12px' }}>
+      <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
         {navItems.map((item) => (
           <NavLink
             key={item.path}
@@ -111,7 +112,7 @@ export function Navbar() {
         ))}
       </nav>
       
-      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '16px' }}>
         <button 
           onClick={toggleTheme}
           style={{
@@ -132,9 +133,6 @@ export function Navbar() {
         >
           {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
         </button>
-        <div style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
-          v1.0.0
-        </div>
       </div>
     </div>
   );

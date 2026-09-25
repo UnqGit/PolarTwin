@@ -3,14 +3,15 @@ import { Snowflake } from 'lucide-react';
 import { TwinViewer, type LightingMode } from '../components/TwinViewer';
 import { useStation } from '../components/StationContext';
 
-const hierarchyFiles = import.meta.glob('../../../data/compiled/*/hierarchy.json', { eager: true, import: 'default' });
-const connectionFiles = import.meta.glob('../../../data/compiled/*/connection.json', { eager: true, import: 'default' });
-const specFiles = import.meta.glob('../../../data/compiled/*/spec.json', { eager: true, import: 'default' });
-
-// The StationContext handles available twins now.
-
 export function DigitalTwin() {
-  const { selectedStation: selectedTwin } = useStation();
+  const { 
+    selectedStation: selectedTwin, 
+    hierarchy, 
+    connections, 
+    spec,
+    isLoadingData
+  } = useStation();
+
   const [lightingMode, setLightingMode] = useState<LightingMode>('off');
   const [containerOcclusion, setContainerOcclusion] = useState<'off' | 'off_on_hover'>('off');
   const [selectedComponentName, setSelectedComponentName] = useState<string | null>(null);
@@ -21,10 +22,6 @@ export function DigitalTwin() {
 
   // liveStateRef will hold the latest telemetry without triggering React re-renders
   const liveStateRef = useRef<Record<string, unknown>>({});
-
-  const hierarchy = selectedTwin ? hierarchyFiles[`../../../data/compiled/${selectedTwin}/hierarchy.json`] : null;
-  const connections = selectedTwin ? connectionFiles[`../../../data/compiled/${selectedTwin}/connection.json`] : null;
-  const spec = selectedTwin ? specFiles[`../../../data/compiled/${selectedTwin}/spec.json`] : null;
 
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', position: 'relative' }}>

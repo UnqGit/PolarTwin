@@ -2,8 +2,6 @@ import { useState, useMemo } from 'react';
 import { useStation } from '../components/StationContext';
 import { ChevronRight, Zap, Info, Box } from 'lucide-react';
 
-const hierarchyFiles = import.meta.glob('../../../data/compiled/*/hierarchy.json', { eager: true, import: 'default' });
-
 const FALLBACK_IMGS = [
   'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
   'https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
@@ -11,12 +9,7 @@ const FALLBACK_IMGS = [
 ];
 
 export function ComponentsPage() {
-  const { selectedStation } = useStation();
-  
-  const hierarchyData = useMemo(() => {
-    if (!selectedStation) return [];
-    return hierarchyFiles[`../../../data/compiled/${selectedStation}/hierarchy.json`] as any[] || [];
-  }, [selectedStation]);
+  const { selectedStation, hierarchy: hierarchyData } = useStation();
 
   // The drill-down stack contains the names of the nodes we've navigated into.
   // Initially empty, meaning we are at the outermost level.

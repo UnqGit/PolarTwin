@@ -1,11 +1,11 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@testing-library/jest-dom/vitest';
-import { render } from '@testing-library/react';
+import { render, waitFor, screen } from '@testing-library/react';
 import React from 'react';
 import App from './App';
 import { DigitalTwin } from './pages/DigitalTwin';
 import { BrowserRouter } from 'react-router-dom';
-import { StationProvider } from './components/StationContext';
+import { StationProvider, useStation } from './components/StationContext';
 import { ThemeProvider } from './components/ThemeContext';
 
 // Mock R3F Canvas and Drei components
@@ -29,9 +29,18 @@ vi.mock('@react-three/drei', () => ({
   Edges:   () => null,
 }));
 
+vi.mock('./lib/api', () => ({
+  api: {
+    getStations: vi.fn().mockResolvedValue([{ station_id: 'TestStation' }]),
+    getHierarchy: vi.fn().mockResolvedValue([{ name: 'Root', type: 'block' }]),
+    getConnections: vi.fn().mockResolvedValue([]),
+    getSpec: vi.fn().mockResolvedValue({})
+  }
+}));
+
 describe('App Component (Phase 18 Global Navigation)', () => {
-  it('should render the Navbar and Overview page by default', () => {
-    const { getByText } = render(
+  it('should render the Navbar and Overview page by default', async () => {
+    render(
       <ThemeProvider>
         <StationProvider>
           <App />
@@ -40,21 +49,23 @@ describe('App Component (Phase 18 Global Navigation)', () => {
     );
     
     // Check that the title and navbar items are rendered
-    expect(getByText('PolarTwin')).toBeInTheDocument();
-    expect(getByText('Overview')).toBeInTheDocument();
-    expect(getByText('Digital Twin')).toBeInTheDocument();
-    expect(getByText('Components')).toBeInTheDocument();
-    
-    // Check that the default route (Overview) content is present
-    expect(getByText('System status and high-level telemetry')).toBeInTheDocument();
-    expect(getByText('Power Output')).toBeInTheDocument();
-    expect(getByText('Station Temp')).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText('PolarTwin')).toBeInTheDocument();
+      expect(screen.getByText('Overview')).toBeInTheDocument();
+      expect(screen.getByText('Digital Twin')).toBeInTheDocument();
+      expect(screen.getAllByText('Components').length).toBeGreaterThan(0);
+      
+      // Check that the default route (Overview) content is present
+      expect(screen.getByText('System status and high-level telemetry')).toBeInTheDocument();
+      expect(screen.getByText('Power Output')).toBeInTheDocument();
+      expect(screen.getByText('Station Temp')).toBeInTheDocument();
+    });
   });
 });
 
 describe('DigitalTwin Component', () => {
-  it('should render the TwinViewer Canvas', () => {
-    const { getByText, getByTestId } = render(
+  it('should render the TwinViewer Canvas', async () => {
+    render(
       <BrowserRouter>
         <StationProvider>
           <DigitalTwin />
@@ -62,10 +73,13 @@ describe('DigitalTwin Component', () => {
       </BrowserRouter>
     );
     
-    // Check that the digital twin title card is rendered
-    expect(getByText('3D Digital Twin Viewer')).toBeInTheDocument();
-    
-    // Check that the mocked Canvas is rendered
-    expect(getByTestId('mock-canvas')).toBeInTheDocument();
+    await waitFor(() => {
+      // Check that the digital twin title card is rendered
+      expect(screen.getByText('3D Digital Twin Viewer')).toBeInTheDocument();
+      
+      // Check that the mocked Canvas is rendered
+      expect(screen.getByTestId('mock-canvas')).toBeInTheDocument();
+    });
   });
 });
+
