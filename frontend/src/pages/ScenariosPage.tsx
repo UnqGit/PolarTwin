@@ -6,7 +6,8 @@ import { TimelineEditor } from '../components/TimelineEditor';
 import { DSLEditor } from '../components/DSLEditor';
 import type { SceneEventData } from '../components/TimelineEditor';
 import { EventInspector } from '../components/EventInspector';
-import { Play, Pause, RefreshCw, StepForward, Code, List, Activity, Library, ChevronUp, ChevronDown, MousePointer2 } from 'lucide-react';
+import { SimulationMonitor } from '../components/SimulationMonitor';
+import { Play, Pause, RefreshCw, StepForward, Code, List, Activity, Library, ChevronUp, ChevronDown, MousePointer2, LayoutDashboard } from 'lucide-react';
 
 export function ScenariosPage() {
   const { selectedStation, hierarchy, spec, connections } = useStation();
@@ -36,7 +37,7 @@ export function ScenariosPage() {
   // UI state
   const [timelineOpen, setTimelineOpen] = useState(true);
   const [bottomOpen, setBottomOpen] = useState(false);
-  const [bottomTab, setBottomTab] = useState<'source' | 'log' | 'diagnostics' | 'inspector'>('source');
+  const [bottomTab, setBottomTab] = useState<'source' | 'log' | 'diagnostics' | 'inspector' | 'monitor'>('source');
 
   const [rightPanelWidth, setRightPanelWidth] = useState(450);
   const [bottomPanelHeight, setBottomPanelHeight] = useState(192);
@@ -271,64 +272,55 @@ export function ScenariosPage() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative', flexDirection: 'column' }}>
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
         
-        {/* Top View (Viewer + Right Side Panel) */}
-        <div style={{ display: 'flex', flex: 1, minHeight: 0, flexDirection: 'row' }}>
-          
-          {/* Twin Viewer Area */}
-          <div style={{ flex: 1, backgroundColor: '#000', position: 'relative', minWidth: 0, minHeight: 0 }}>
-             {hierarchy && spec && connections ? (
-              <TwinViewer 
-                topology={hierarchy}
-                specification={spec}
-                connections={connections}
-                customSidebarTabs={customTabs}
-                liveStateRef={liveStateRef}
-              />
-            ) : (
-              <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>
-                Loading twin data...
-              </div>
-            )}
-            
-            {/* Simulation overlay */}
-            <div style={{ position: 'absolute', top: '16px', right: '16px', pointerEvents: 'none' }}>
-              <div className="glass-panel" style={{ padding: '16px', fontSize: '14px', width: '256px', color: 'var(--text-primary)' }}>
-                <div style={{ fontWeight: 'bold', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)' }}>Simulation Monitor</div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>Status:</span>
-                  <span style={{ color: 'var(--accent-cyan)', fontFamily: 'monospace' }}>{simStatus}</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>Time:</span>
-                  <span style={{ fontFamily: 'monospace' }}>{simTime.toFixed(1)}s</span>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>Components:</span>
-                  <span style={{ fontFamily: 'monospace' }}>{simState ? simState.components?.length : 0}</span>
-                </div>
-              </div>
+        {/* Twin Viewer Area (Full size) */}
+        <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#000', zIndex: 1 }}>
+            {hierarchy && spec && connections ? (
+            <TwinViewer 
+              topology={hierarchy}
+              specification={spec}
+              connections={connections}
+              customSidebarTabs={customTabs}
+              liveStateRef={liveStateRef}
+              rightOffset={(bottomOpen ? rightPanelWidth : 0) + 48 + 20}
+              bottomOffset={(timelineOpen ? bottomPanelHeight : 40) + 20}
+            />
+          ) : (
+            <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>
+              Loading twin data...
             </div>
-          </div>
+          )}
+        </div>
+        
+        {/* Right Side Panel (Overlay) */}
+        <div style={{ 
+          position: 'absolute', top: 0, right: 0, 
+          bottom: timelineOpen ? bottomPanelHeight : 40, 
+          transition: isResizingBottom ? 'none' : 'bottom 0.3s ease',
+          display: 'flex', flexDirection: 'row', backgroundColor: 'transparent', zIndex: 10, pointerEvents: 'none' 
+        }}>
           
-          {/* Right Side Panel */}
-          <div style={{ display: 'flex', flexDirection: 'row', borderLeft: '1px solid var(--border-color)', backgroundColor: 'var(--bg-panel-secondary)', zIndex: 10 }}>
-            
-            {/* Content Area (Resizable) */}
-            {bottomOpen && (
-              <div style={{ width: `${rightPanelWidth}px`, flexShrink: 0, display: 'flex', flexDirection: 'column', backgroundColor: '#000', position: 'relative' }}>
+          {/* Content Area (Resizable) */}
+          {bottomOpen && (
+            <div style={{ width: `${rightPanelWidth}px`, flexShrink: 0, display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-main)', position: 'relative', pointerEvents: 'auto', borderLeft: '1px solid var(--border-color)', boxShadow: '-4px 0 15px rgba(0,0,0,0.3)' }}>
                 {/* Resize Handle for Right Panel */}
                 <div 
                   style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '4px', cursor: 'ew-resize', zIndex: 50 }}
                   onMouseDown={(e) => { e.preventDefault(); setIsResizingRight(true); }}
                 />
 
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-panel-secondary)', zIndex: 10 }}>
+                  <div style={{ fontWeight: 'bold', fontSize: '14px', color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    {bottomTab === 'source' ? 'DSL Source' : bottomTab === 'log' ? 'Simulation Log' : bottomTab}
+                  </div>
+                  {bottomTab === 'source' && (
+                    <button onClick={saveSource} style={{ padding: '4px 12px', backgroundColor: 'var(--accent-blue)', color: '#fff', fontSize: '12px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>Save & Reload</button>
+                  )}
+                </div>
+
                 {bottomTab === 'source' && (
-                  <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                    <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '8px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-panel-secondary)', zIndex: 10 }}>
-                      <button onClick={saveSource} style={{ padding: '4px 12px', backgroundColor: 'var(--accent-blue)', color: '#fff', fontSize: '12px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>Save & Reload</button>
-                    </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}>
                     <DSLEditor 
                       value={scenarioSource}
                       onChange={setScenarioSource}
@@ -373,11 +365,15 @@ export function ScenariosPage() {
                     onUpdateEvent={(snippet) => selectedEvent && handleUpdateEvent(selectedEvent, snippet)}
                   />
                 )}
+                
+                {bottomTab === 'monitor' && (
+                  <SimulationMonitor simState={simState} />
+                )}
               </div>
             )}
 
-            {/* Vertical Strip of Tabs */}
-            <div style={{ width: '48px', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '12px 0', gap: '16px', backgroundColor: 'var(--bg-panel)', borderLeft: bottomOpen ? '1px solid var(--border-color)' : 'none' }}>
+          {/* Vertical Strip of Tabs */}
+          <div style={{ width: '48px', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '12px 0', gap: '16px', backgroundColor: 'var(--bg-panel-solid)', borderLeft: '1px solid var(--border-color)', pointerEvents: 'auto', boxShadow: '-4px 0 15px rgba(0,0,0,0.1)' }}>
               <button 
                 onClick={() => toggleBottomTab('source')} 
                 title="DSL Source"
@@ -406,20 +402,27 @@ export function ScenariosPage() {
               >
                 <MousePointer2 size={20} />
               </button>
+              <button 
+                onClick={() => toggleBottomTab('monitor')} 
+                title="Simulation Monitor"
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: bottomOpen && bottomTab === 'monitor' ? 'var(--accent-blue)' : 'var(--text-secondary)' }}
+              >
+                <LayoutDashboard size={20} />
+              </button>
             </div>
-          </div>
         </div>
 
         {/* Timeline Editor (Bottom Panel) */}
         <div style={{ 
+          position: 'absolute', left: 0, right: 0, bottom: 0,
           height: timelineOpen ? `${bottomPanelHeight}px` : '40px', 
           transition: isResizingBottom ? 'none' : 'height 0.3s ease',
           borderTop: '1px solid var(--border-color)', 
           backgroundColor: 'var(--bg-panel-secondary)', 
           display: 'flex', 
           flexDirection: 'column', 
-          flexShrink: 0,
-          position: 'relative'
+          zIndex: 10,
+          boxShadow: '0 -4px 15px rgba(0,0,0,0.2)'
         }}>
           {/* Resize Handle for Bottom Panel */}
           {timelineOpen && (

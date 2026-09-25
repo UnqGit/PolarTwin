@@ -128,6 +128,7 @@ export interface HierarchyPanelProps {
   onLightingModeChange?: (mode: 'dynamic' | 'static' | 'off') => void;
   containerOcclusion?: 'off' | 'off_on_hover';
   onContainerOcclusionChange?: (mode: 'off' | 'off_on_hover') => void;
+  bottomOffset?: number;
 }
 
 export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
@@ -138,7 +139,8 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
   onResetCamera, activeLayer = null, setActiveLayer,
   onShowGraph, customSidebarTabs,
   lightingMode, onLightingModeChange,
-  containerOcclusion, onContainerOcclusionChange
+  containerOcclusion, onContainerOcclusionChange,
+  bottomOffset = 0
 }) => {
   const [activeView, setActiveView] = useState<string | null>('hierarchy');
   const { selectedName } = useSelection();
@@ -257,9 +259,10 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
 
   return (
     <div style={{
-      position: 'absolute', left: 0, top: 0, bottom: 0,
+      position: 'absolute', left: 0, top: 0, bottom: bottomOffset,
       display: 'flex', flexDirection: 'row-reverse', zIndex: 20,
       pointerEvents: 'none',
+      transition: 'bottom 0.3s ease',
     }}>
       {/* Panel Area */}
       {isOpen && (

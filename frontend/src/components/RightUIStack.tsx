@@ -3,12 +3,15 @@ import { HoverCard } from './HoverCard';
 import { PropertyInspector } from './PropertyInspector';
 import { useSelection } from './SelectionContext';
 import type { NodeLayout, ConnectionLayout } from '../lib/layout';
+import { Focus } from 'lucide-react';
 
 interface RightUIStackProps {
   children?: React.ReactNode;
   root: NodeLayout;
   connections: ConnectionLayout[];
   liveStateRef?: React.MutableRefObject<Record<string, unknown>>;
+  rightOffset?: number;
+  bottomOffset?: number;
 }
 
 function findNode(root: NodeLayout, name: string): NodeLayout | null {
@@ -20,7 +23,7 @@ function findNode(root: NodeLayout, name: string): NodeLayout | null {
   return null;
 }
 
-export const RightUIStack: React.FC<RightUIStackProps> = ({ children, root, connections, liveStateRef }) => {
+export const RightUIStack: React.FC<RightUIStackProps> = ({ children, root, connections, liveStateRef, rightOffset = 20, bottomOffset = 20 }) => {
   const { selectedName } = useSelection();
   
   let selectedNode = null;
@@ -32,8 +35,8 @@ export const RightUIStack: React.FC<RightUIStackProps> = ({ children, root, conn
     <div style={{
       position: 'absolute',
       top: 20,
-      right: 20,
-      bottom: 20,
+      right: rightOffset,
+      bottom: bottomOffset,
       zIndex: 10,
       display: 'flex',
       flexDirection: 'column',
@@ -41,10 +44,11 @@ export const RightUIStack: React.FC<RightUIStackProps> = ({ children, root, conn
       pointerEvents: 'none', // Allow clicking through empty space
       overflowY: 'auto',
       overflowX: 'hidden',
-      maxWidth: 'calc(40vw + 40px)',
+      maxWidth: `calc(40vw + 40px)`,
+      transition: 'right 0.3s ease, bottom 0.3s ease',
     }}>
       {/* 1. HUD / Viewer Info (passed as children) */}
-      <div style={{ pointerEvents: 'auto', flexShrink: 0 }}>
+      <div style={{ pointerEvents: 'auto', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
         {children}
       </div>
 
