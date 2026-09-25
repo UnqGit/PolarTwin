@@ -123,6 +123,11 @@ export interface HierarchyPanelProps {
   activeLayer?: number | null;
   setActiveLayer?: (layer: number | null) => void;
   onShowGraph?: () => void;
+  customSidebarTabs?: { id: string, icon: React.ReactNode, title: string, content: React.ReactNode }[];
+  lightingMode?: 'dynamic' | 'static' | 'off';
+  onLightingModeChange?: (mode: 'dynamic' | 'static' | 'off') => void;
+  containerOcclusion?: 'off' | 'off_on_hover';
+  onContainerOcclusionChange?: (mode: 'off' | 'off_on_hover') => void;
 }
 
 export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
@@ -131,9 +136,11 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
   hideAllComponents, hideAllConnections,
   onHideAllComponentsChange, onHideAllConnectionsChange,
   onResetCamera, activeLayer = null, setActiveLayer,
-  onShowGraph
+  onShowGraph, customSidebarTabs,
+  lightingMode, onLightingModeChange,
+  containerOcclusion, onContainerOcclusionChange
 }) => {
-  const [activeView, setActiveView] = useState<'hierarchy' | 'connections' | 'interactivity' | null>('hierarchy');
+  const [activeView, setActiveView] = useState<string | null>('hierarchy');
   const { selectedName } = useSelection();
   const { theme, toggleTheme } = useTheme();
   const isOpen = activeView !== null;
@@ -228,7 +235,7 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
     }
   }, [selectedName, root, activeView, isOpen]);
 
-  const toggleView = (view: 'hierarchy' | 'connections' | 'interactivity') => {
+  const toggleView = (view: string) => {
     if (activeView === view) setActiveView(null);
     else setActiveView(view);
   };
@@ -276,7 +283,8 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
              <span>
                {activeView === 'hierarchy' ? 'Hierarchy Tree' : 
                 activeView === 'connections' ? 'Connections List' : 
-                'Settings'}
+                activeView === 'interactivity' ? 'Settings' :
+                customSidebarTabs?.find(t => t.id === activeView)?.title || 'Settings'}
              </span>
              {activeView === 'hierarchy' && (
                <div style={{ display: 'flex', gap: 4, textTransform: 'none', letterSpacing: 'normal', fontWeight: 500 }}>
@@ -290,7 +298,7 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
           </div>
           <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
              {activeView === 'hierarchy' && <TreeNode node={root} depth={0} expandedSet={expandedSet} toggleExpanded={toggleExpanded} />}
-             {activeView === 'connections' && <ConnectionsList connections={connections} onShowGraph={onShowGraph} />}
+             {activeView === 'connections' && <ConnectionsList connections={connections} />}
              {activeView === 'interactivity' && (
                <div style={{ padding: '16px 14px', fontSize: 13, color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: 12 }}>
                  <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: 11, textTransform: 'uppercase', marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -339,6 +347,33 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                      style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }}
                    />
                  </div>
+                 {onLightingModeChange && (
+                   <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                     <span>Lighting</span>
+                     <select 
+                       value={lightingMode} 
+                       onChange={e => onLightingModeChange(e.target.value as any)}
+                       style={{ background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-solid)', borderRadius: 4, padding: '2px 4px', outline: 'none', cursor: 'pointer' }}
+                     >
+                       <option value="dynamic">Dynamic</option>
+                       <option value="static">Static</option>
+                       <option value="off">Off</option>
+                     </select>
+                   </label>
+                 )}
+                 {onContainerOcclusionChange && (
+                   <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                     <span>Occlusion</span>
+                     <select 
+                       value={containerOcclusion} 
+                       onChange={e => onContainerOcclusionChange(e.target.value as any)}
+                       style={{ background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-solid)', borderRadius: 4, padding: '2px 4px', outline: 'none', cursor: 'pointer' }}
+                     >
+                       <option value="off">Translucent</option>
+                       <option value="off_on_hover">Opaque (Off on hover)</option>
+                     </select>
+                   </label>
+                 )}
                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
                    <span>Hide All Components</span>
                    <input type="checkbox" checked={!!hideAllComponents} onChange={(e) => onHideAllComponentsChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
@@ -349,6 +384,10 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                  </label>
                </div>
              )}
+             
+             {customSidebarTabs?.map(tab => (
+               activeView === tab.id && <React.Fragment key={tab.id}>{tab.content}</React.Fragment>
+             ))}
           </div>
         </div>
       )}
@@ -363,14 +402,13 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
         <IconBtn icon={<Link2 size={20} />} active={activeView === 'connections'} onClick={() => toggleView('connections')} title="Connections" />
         <IconBtn icon={<Sliders size={20} />} active={activeView === 'interactivity'} onClick={() => toggleView('interactivity')} title="Settings" />
         
+        {customSidebarTabs?.map(tab => (
+          <IconBtn key={tab.id} icon={tab.icon} active={activeView === tab.id} onClick={() => toggleView(tab.id)} title={tab.title} />
+        ))}
+
         <div style={{ flex: 1 }} /> {/* spacer */}
         
         <div style={{ marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <IconBtn 
-            icon={theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />} 
-            onClick={toggleTheme} 
-            title="Toggle Theme" 
-          />
           {onResetCamera && (
             <IconBtn icon={<Focus size={20} />} onClick={onResetCamera} title="Reset View" />
           )}

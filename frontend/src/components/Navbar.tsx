@@ -18,7 +18,7 @@ const navItems = [
   { path: '/twin', icon: MonitorPlay, label: 'Digital Twin' },
   { path: '/components', icon: Box, label: 'Components' },
   { path: '/connections', icon: Network, label: 'Connections' },
-  { path: '/scenarios', icon: Settings2, label: 'Scenario' },
+  { path: '/scenarios', icon: Settings2, label: 'Scenario/Simulation' },
   { path: '/diagnostics', icon: History, label: 'History' },
 ];
 

@@ -32,89 +32,9 @@ export function DigitalTwin() {
             connections={connections}
             specification={spec}
             liveStateRef={liveStateRef}
-            lightingMode={lightingMode}
-            containerOcclusion={containerOcclusion}
             selectedName={selectedComponentName}
             onSelectName={setSelectedComponentName}
-          >
-            {/* Top-left title card */}
-            <div className="glass-panel" style={{
-              position: 'absolute',
-              top: 20, left: 20, zIndex: 10,
-              padding: '16px 20px',
-              color: 'var(--text-primary)',
-              display: 'flex',
-              flexDirection: 'column',
-              pointerEvents: 'auto',
-            }}>
-              <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ color: 'var(--accent-blue)', display: 'flex', alignItems: 'center' }}><Snowflake size={20} /></span> PolarTwin
-              </h1>
-              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4, fontWeight: 500 }}>
-                3D Digital Twin Viewer
-              </div>
-            </div>
-
-            {/* HUD overlay - Focus */}
-            <div className="glass-panel" style={{
-              position: 'absolute',
-              bottom: 20, left: 20, zIndex: 10,
-              color: 'var(--text-primary)',
-              padding: '14px 18px',
-              display: 'flex', flexDirection: 'column', gap: '8px',
-              width: 280,
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <label htmlFor="lighting-mode" style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Lighting:</label>
-                <select
-                  id="lighting-mode"
-                  value={lightingMode}
-                  onChange={(e) => setLightingMode(e.target.value as LightingMode)}
-                  style={{
-                    background: 'var(--bg-panel-secondary)',
-                    color: 'var(--text-primary)',
-                    border: '1px solid var(--border-solid)',
-                    borderRadius: '4px',
-                    padding: '4px 8px',
-                    outline: 'none',
-                    flex: 1
-                  }}
-                >
-                  <option value="dynamic">Dynamic</option>
-                  <option value="static">Static (Baked)</option>
-                  <option value="off">Off</option>
-                </select>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <label htmlFor="occlusion-mode" style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Occlusion:</label>
-                <select
-                  id="occlusion-mode"
-                  value={containerOcclusion}
-                  onChange={(e) => setContainerOcclusion(e.target.value as 'off' | 'off_on_hover')}
-                  style={{
-                    background: 'var(--bg-panel-secondary)',
-                    color: 'var(--text-primary)',
-                    border: '1px solid var(--border-solid)',
-                    borderRadius: '4px',
-                    padding: '4px 8px',
-                    outline: 'none',
-                    flex: 1
-                  }}
-                >
-                  <option value="off">Off (Translucent)</option>
-                  <option value="off_on_hover">Off on Hover (Opaque)</option>
-                </select>
-              </div>
-
-              <p style={{ margin: '6px 0 0', fontSize: 12, color: 'var(--text-secondary)' }}>
-                Hover over any component to inspect live telemetry.
-              </p>
-              <p style={{ margin: '4px 0 0', fontSize: 11, color: 'var(--text-tertiary)' }}>
-                Drag to rotate · Scroll to zoom · Right-drag to pan
-              </p>
-            </div>
-          </TwinViewer>
+          />
         </div>
       ) : (
         <div style={{ color: 'white', padding: 24 }}>Loading or no twin selected...</div>
