@@ -1,175 +1,24 @@
+MainGenerator:BackupBattery[power]@feed
+BackupBattery:Heater[power]@feed
+BackupBattery:Radio[power]@feed
+BackupBattery:TransferPump[power]@feed
+MainGenerator:PowerSensor[data]@feed
+PowerSensor:Radio[data]@feed
+MainGenerator:GenEffSensor[data]@feed
+GenEffSensor:Radio[data]@feed
 
-# ============================================================
+BackupBattery:BattCapSensor[data]@feed
+BattCapSensor:Radio[data]@feed
 
-# RELATIONSHIPS
+Heater:TempSensor[data]@feed
+TempSensor:Radio[data]@feed
 
-# ============================================================
+FuelTank:FuelSensor[data]@feed
+FuelSensor:Radio[data]@feed
 
-# -------------------- ENERGY -------------------------------
-
-Generator1-->EnergyController[signal]@status
-Generator2-->EnergyController[signal]@status
-
-PowerSensor-->EnergyController[resource]@power_data
-FuelLevelSensor-->EnergyController[resource]@fuel_data
-BatterySensor-->EnergyController[data]@battery_data
-
-EnergyController-->Generator1[data]@command
-EnergyController-->Generator2[data]@command
-
-EnergyController-->BatteryBank[signal]@charge_control
-EnergyController-->PowerInverter[resource]@power_control
-
-BatteryBank-->PowerInverter[resource]@stored_power
-PowerInverter-->ControlServer[resource]@power_status
-
-# -------------------- HVAC ---------------------------------
-
-IndoorTemperatureSensor-->HeatingController[signal]@temperature
-OutdoorTemperatureSensor-->HeatingController[signal]@outside_temperature
-
-HeatingController-->MainHeater[signal]@control
-HeatingController-->BackupHeater[signal]@backup_control
-
-AirQualitySensor-->VentilationController[signal]@air_quality
-AirflowSensor-->VentilationController[signal]@airflow
-
-VentilationController-->SupplyFan[signal]@control
-VentilationController-->ExhaustFan[signal]@control
-
-CoolingTemperatureSensor-->CoolingController[signal]@temperature
-CoolingController-->CoolingUnit[signal]@control
-
-# -------------------- HVAC TO CONTROL ----------------------
-
-HeatingController-->MainController[resource]@heating_status
-VentilationController-->MainController[signal]@ventilation_status
-CoolingController-->MainController[signal]@cooling_status
-
-MainController-->HeatingController[data]@command
-MainController-->VentilationController[data]@command
-MainController-->CoolingController[data]@command
-
-# -------------------- RESEARCH -----------------------------
-
-LabTemperatureSensor-->LabController[signal]@temperature
-LabHumiditySensor-->LabController[signal]@humidity
-LabGasSensor-->LabController[data]@gas_data
-
-LabController-->WetLab[signal]@control
-LabController-->DryLab[signal]@control
-
-GPS-->MainController[signal]@location
-WeatherSensor-->MainController[data]@weather_data
-
-ResearchRobot-->ControlServer[data]@telemetry
-SnowVehicle-->ControlServer[data]@telemetry
-
-# -------------------- CONTROL ------------------------------
-
-SystemHealthSensor-->MainController[signal]@health
-NetworkSensor-->MainController[data]@network_status
-
-MainController-->ControlServer[data]@system_data
-BackupController-->ControlServer[data]@backup_data
-
-ControlServer-->MainController[data]@commands
-ControlServer-->DataServer[data]@data
-
-# -------------------- ALARMS -------------------------------
-
-FireAlarm-->AlarmController[signal]@alarm
-SmokeAlarm-->AlarmController[signal]@alarm
-EmergencyAlarm-->AlarmController[signal]@alarm
-
-FireSensor-->FireSafetyController[signal]@fire_detection
-SmokeSensor-->FireSafetyController[signal]@smoke_detection
-
-FireSafetyController-->FireAlarm2[signal]@activate_alarm
-FireSafetyController-->AlarmController[signal]@emergency_status
-
-EmergencySensor-->EmergencyController[data]@emergency_data
-
-EmergencyController-->EmergencyBeacon[signal]@activate
-EmergencyController-->EmergencyRadio[signal]@broadcast
-
-# -------------------- COMMUNICATION ------------------------
-
-MainRouter-->CommunicationServer[data]@network_data
-BackupRouter-->CommunicationServer[data]@backup_network
-
-SatelliteAntenna-->CommunicationServer[data]@satellite_link
-RadioAntenna-->CommunicationServer[data]@radio_link
-
-CommunicationServer-->ControlServer[data]@communication
-ControlServer-->CommunicationServer[data]@commands
-
-MainRouter<-->BackupRouter[data]@network_backup
-
-# -------------------- INVENTORY ----------------------------
-
-FoodTemperatureSensor-->InventoryController[signal]@food_temperature
-FuelLevelSensor2-->InventoryController[resource]@fuel_level
-
-InventoryController-->FoodStorage[signal]@inventory_status
-InventoryController-->FuelStorage[resource]@fuel_status
-InventoryController-->EquipmentStorage[signal]@equipment_status
-
-LogisticsController-->SupplyVehicle[signal]@dispatch
-LogisticsController-->CargoVehicle[signal]@dispatch
-
-SupplyVehicle-->LogisticsController[signal]@location
-CargoVehicle-->LogisticsController[signal]@location
-
-# -------------------- PERSONNEL ----------------------------
-
-AccessSensor-->PersonnelController[signal]@access_event
-
-PersonnelController-->PersonnelDatabase[data]@personnel_data
-PersonnelDatabase-->PersonnelServer[signal]@personnel_records
-
-PersonnelServer-->ControlServer[signal]@personnel_status
-ControlServer-->PersonnelServer[signal]@access_request
-
-# -------------------- WATER -------------------------------
-
-WaterLevelSensor-->WaterController[resource]@water_level
-WaterQualitySensor-->WaterController[resource]@water_quality
-
-WaterController-->WaterPump[signal]@pump_control
-WaterPump-->WaterTank[resource]@water_flow
-
-WaterController-->ControlServer[resource]@water_status
-
-# -------------------- WASTE -------------------------------
-
-WasteLevelSensor-->WasteController[resource]@waste_level
-
-WasteController-->WastePump[signal]@pump_control
-WastePump-->WasteStorage[resource]@waste_flow
-
-WasteController-->ControlServer[resource]@waste_status
-
-# -------------------- CROSS-SYSTEM SAFETY ------------------
-
-FireSafetyController-->MainController[signal]@fire_status
-EmergencyController-->MainController[signal]@emergency_status
-
-MainController-->EmergencyController[data]@emergency_command
-MainController-->AlarmController[data]@alarm_command
-
-EmergencyBeacon-->CommunicationServer[signal]@emergency_signal
-EmergencyRadio-->CommunicationServer[signal]@emergency_broadcast
-
-# -------------------- CENTRAL CONTROL ----------------------
-
-EnergyController-->MainController[resource]@energy_status
-MainController-->EnergyController[resource]@energy_command
-
-InventoryController-->MainController[signal]@inventory_status
-PersonnelController-->MainController[signal]@personnel_status
-WaterController-->MainController[resource]@water_status
-WasteController-->MainController[resource]@waste_status
-
-MainController-->ControlServer[signal]@central_status
-ControlServer-->MainController[data]@central_command
+TransferPump:PumpFlowSensor[data]@feed
+PumpFlowSensor:Radio[data]@feed
+TransferPump:PumpPowSensor[data]@feed
+PumpPowSensor:Radio[data]@feed
+FuelTank:TransferPump[resource]@feed
+TransferPump:MainGenerator[resource]@feed

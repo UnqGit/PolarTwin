@@ -222,7 +222,7 @@ const HoverManager: React.FC<HoverManagerProps> = ({
 // ─── viewer ───────────────────────────────────────────────────────────────────
 
 import { SelectionProvider } from './SelectionContext';
-import { LeftUIStack } from './LeftUIStack';
+import { RightUIStack } from './RightUIStack';
 import { HoverCard } from './HoverCard';
 
 interface TwinViewerProps {
@@ -254,8 +254,7 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
   connectionsInteractable = true,
   onComponentsInteractableChange,
   onConnectionsInteractableChange,
-  containerOcclusion = 'off',
-  children,
+  containerOcclusion = 'off'
 }) => {
   const { theme } = useTheme();
   const bgMain = theme === 'light' ? '#f8fafc' : '#0f172a';
@@ -471,9 +470,8 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
             </group>
           </Canvas>
           
-          <LeftUIStack root={sceneLayout.root} connections={sceneLayout.connections} liveStateRef={liveStateRef}>
-            {children}
-          </LeftUIStack>
+          <RightUIStack root={sceneLayout.root} connections={sceneLayout.connections} liveStateRef={liveStateRef}>
+          </RightUIStack>
 
           {effectiveSelected && (
             <div style={{

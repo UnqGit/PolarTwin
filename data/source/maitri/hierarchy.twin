@@ -1,0 +1,35 @@
+MaitriCampus:campus @1 {
+    MainBuilding:block @1 {
+        GroundFloor:floor @1 @level=0 {
+            PowerSystem:system @1 {
+                MainGenerator:generator @1
+                BackupBattery:battery @1 backup(MainGenerator)
+                PowerSensor:sensor @1
+                GenEffSensor:sensor @1
+                BattCapSensor:sensor @1
+                GridController:controller @1
+            }
+            HVACSys:system @1 {
+                Heater:generic @1
+                TempSensor:sensor @1
+            }
+        }
+        FirstFloor:floor @1 @level=1 {
+            CommsSystem:system @1 {
+                Radio:antenna @1
+                CommsBattery:battery @1 backup(Radio)
+            }
+        }
+    }
+    Outpost:block @2 {
+        Ground:floor @2 @level=0 {
+            FuelSystem:system @2 {
+                FuelTank:generic @2
+                TransferPump:pump @2
+                FuelSensor:sensor @2
+                PumpFlowSensor:sensor @2
+                PumpPowSensor:sensor @2
+            }
+        }
+    }
+}

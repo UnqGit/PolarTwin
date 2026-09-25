@@ -144,7 +144,7 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
   useEffect(() => {
     const handlePointerMove = (e: PointerEvent) => {
       if (!isResizing.current) return;
-      const newWidth = window.innerWidth - e.clientX;
+      const newWidth = e.clientX;
       if (newWidth >= 200 && newWidth <= 600) {
         setPanelWidth(newWidth);
       }
@@ -250,16 +250,16 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
 
   return (
     <div style={{
-      position: 'absolute', right: 0, top: 0, bottom: 0,
-      display: 'flex', flexDirection: 'row', zIndex: 20,
+      position: 'absolute', left: 0, top: 0, bottom: 0,
+      display: 'flex', flexDirection: 'row-reverse', zIndex: 20,
       pointerEvents: 'none',
     }}>
       {/* Panel Area */}
       {isOpen && (
         <div style={{
           position: 'relative', width: panelWidth, background: 'var(--bg-panel)', backdropFilter: 'blur(8px)',
-          borderLeft: PANEL_BORDER, display: 'flex', flexDirection: 'column',
-          pointerEvents: 'auto', boxShadow: '-4px 0 15px rgba(0,0,0,0.3)',
+          borderRight: PANEL_BORDER, display: 'flex', flexDirection: 'column',
+          pointerEvents: 'auto', boxShadow: '4px 0 15px rgba(0,0,0,0.3)',
         }}>
           {/* Resizer Handle */}
           <div
@@ -267,7 +267,7 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
             onMouseEnter={(e) => { (e.target as HTMLDivElement).style.background = 'rgba(56, 189, 248, 0.4)'; }}
             onMouseLeave={(e) => { (e.target as HTMLDivElement).style.background = 'transparent'; }}
             style={{
-              position: 'absolute', left: 0, top: 0, bottom: 0, width: 5,
+              position: 'absolute', right: 0, top: 0, bottom: 0, width: 5,
               cursor: 'col-resize', zIndex: 30, background: 'transparent',
               transition: 'background 0.2s',
             }}
@@ -355,7 +355,7 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
       
       {/* Activity Bar */}
       <div style={{
-        width: 48, background: 'var(--bg-panel-solid)', borderLeft: PANEL_BORDER,
+        width: 48, background: 'var(--bg-panel-solid)', borderRight: PANEL_BORDER,
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         paddingTop: 8, pointerEvents: 'auto',
       }}>

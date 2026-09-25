@@ -1,0 +1,340 @@
+[
+  {
+    "name": "MaitriCampus",
+    "type": "campus",
+    "parent": null,
+    "priority": 1,
+    "floor": 0,
+    "is_backup": false,
+    "backup": [],
+    "external_field": null,
+    "children": [
+      "MainBuilding",
+      "Outpost"
+    ],
+    "tags": []
+  },
+  {
+    "name": "MainBuilding",
+    "type": "block",
+    "parent": "MaitriCampus",
+    "priority": 1,
+    "floor": 0,
+    "is_backup": false,
+    "backup": [],
+    "external_field": null,
+    "children": [
+      "GroundFloor",
+      "FirstFloor"
+    ],
+    "tags": []
+  },
+  {
+    "name": "GroundFloor",
+    "type": "floor",
+    "parent": "MainBuilding",
+    "priority": 1,
+    "floor": 0,
+    "is_backup": false,
+    "backup": [],
+    "external_field": null,
+    "children": [
+      "PowerSystem",
+      "HVACSys"
+    ],
+    "tags": []
+  },
+  {
+    "name": "PowerSystem",
+    "type": "system",
+    "parent": "GroundFloor",
+    "priority": 1,
+    "floor": 0,
+    "is_backup": false,
+    "backup": [],
+    "external_field": null,
+    "children": [
+      "MainGenerator",
+      "BackupBattery",
+      "PowerSensor",
+      "GenEffSensor",
+      "BattCapSensor",
+      "GridController"
+    ],
+    "tags": []
+  },
+  {
+    "name": "MainGenerator",
+    "type": "generator",
+    "parent": "PowerSystem",
+    "priority": 1,
+    "floor": 0,
+    "is_backup": false,
+    "backup": [],
+    "external_field": null,
+    "children": [],
+    "tags": []
+  },
+  {
+    "name": "BackupBattery",
+    "type": "battery",
+    "parent": "PowerSystem",
+    "priority": 1,
+    "floor": 0,
+    "is_backup": true,
+    "backup": [
+      "MainGenerator"
+    ],
+    "external_field": null,
+    "children": [],
+    "tags": []
+  },
+  {
+    "name": "PowerSensor",
+    "type": "sensor",
+    "parent": "PowerSystem",
+    "priority": 1,
+    "floor": 0,
+    "is_backup": false,
+    "backup": [],
+    "external_field": null,
+    "children": [],
+    "tags": []
+  },
+  {
+    "name": "GenEffSensor",
+    "type": "sensor",
+    "parent": "PowerSystem",
+    "priority": 1,
+    "floor": 0,
+    "is_backup": false,
+    "backup": [],
+    "external_field": null,
+    "children": [],
+    "tags": []
+  },
+  {
+    "name": "BattCapSensor",
+    "type": "sensor",
+    "parent": "PowerSystem",
+    "priority": 1,
+    "floor": 0,
+    "is_backup": false,
+    "backup": [],
+    "external_field": null,
+    "children": [],
+    "tags": []
+  },
+  {
+    "name": "GridController",
+    "type": "controller",
+    "parent": "PowerSystem",
+    "priority": 1,
+    "floor": 0,
+    "is_backup": false,
+    "backup": [],
+    "external_field": null,
+    "children": [],
+    "tags": []
+  },
+  {
+    "name": "HVACSys",
+    "type": "system",
+    "parent": "GroundFloor",
+    "priority": 1,
+    "floor": 0,
+    "is_backup": false,
+    "backup": [],
+    "external_field": null,
+    "children": [
+      "Heater",
+      "TempSensor"
+    ],
+    "tags": []
+  },
+  {
+    "name": "Heater",
+    "type": "generic",
+    "parent": "HVACSys",
+    "priority": 1,
+    "floor": 0,
+    "is_backup": false,
+    "backup": [],
+    "external_field": null,
+    "children": [],
+    "tags": []
+  },
+  {
+    "name": "TempSensor",
+    "type": "sensor",
+    "parent": "HVACSys",
+    "priority": 1,
+    "floor": 0,
+    "is_backup": false,
+    "backup": [],
+    "external_field": null,
+    "children": [],
+    "tags": []
+  },
+  {
+    "name": "FirstFloor",
+    "type": "floor",
+    "parent": "MainBuilding",
+    "priority": 1,
+    "floor": 1,
+    "is_backup": false,
+    "backup": [],
+    "external_field": null,
+    "children": [
+      "CommsSystem"
+    ],
+    "tags": []
+  },
+  {
+    "name": "CommsSystem",
+    "type": "system",
+    "parent": "FirstFloor",
+    "priority": 1,
+    "floor": 0,
+    "is_backup": false,
+    "backup": [],
+    "external_field": null,
+    "children": [
+      "Radio",
+      "CommsBattery"
+    ],
+    "tags": []
+  },
+  {
+    "name": "Radio",
+    "type": "antenna",
+    "parent": "CommsSystem",
+    "priority": 1,
+    "floor": 0,
+    "is_backup": false,
+    "backup": [],
+    "external_field": null,
+    "children": [],
+    "tags": []
+  },
+  {
+    "name": "CommsBattery",
+    "type": "battery",
+    "parent": "CommsSystem",
+    "priority": 1,
+    "floor": 0,
+    "is_backup": true,
+    "backup": [
+      "Radio"
+    ],
+    "external_field": null,
+    "children": [],
+    "tags": []
+  },
+  {
+    "name": "Outpost",
+    "type": "block",
+    "parent": "MaitriCampus",
+    "priority": 2,
+    "floor": 0,
+    "is_backup": false,
+    "backup": [],
+    "external_field": null,
+    "children": [
+      "Ground"
+    ],
+    "tags": []
+  },
+  {
+    "name": "Ground",
+    "type": "floor",
+    "parent": "Outpost",
+    "priority": 2,
+    "floor": 0,
+    "is_backup": false,
+    "backup": [],
+    "external_field": null,
+    "children": [
+      "FuelSystem"
+    ],
+    "tags": []
+  },
+  {
+    "name": "FuelSystem",
+    "type": "system",
+    "parent": "Ground",
+    "priority": 2,
+    "floor": 0,
+    "is_backup": false,
+    "backup": [],
+    "external_field": null,
+    "children": [
+      "FuelTank",
+      "TransferPump",
+      "FuelSensor",
+      "PumpFlowSensor",
+      "PumpPowSensor"
+    ],
+    "tags": []
+  },
+  {
+    "name": "FuelTank",
+    "type": "generic",
+    "parent": "FuelSystem",
+    "priority": 2,
+    "floor": 0,
+    "is_backup": false,
+    "backup": [],
+    "external_field": null,
+    "children": [],
+    "tags": []
+  },
+  {
+    "name": "TransferPump",
+    "type": "pump",
+    "parent": "FuelSystem",
+    "priority": 2,
+    "floor": 0,
+    "is_backup": false,
+    "backup": [],
+    "external_field": null,
+    "children": [],
+    "tags": []
+  },
+  {
+    "name": "FuelSensor",
+    "type": "sensor",
+    "parent": "FuelSystem",
+    "priority": 2,
+    "floor": 0,
+    "is_backup": false,
+    "backup": [],
+    "external_field": null,
+    "children": [],
+    "tags": []
+  },
+  {
+    "name": "PumpFlowSensor",
+    "type": "sensor",
+    "parent": "FuelSystem",
+    "priority": 2,
+    "floor": 0,
+    "is_backup": false,
+    "backup": [],
+    "external_field": null,
+    "children": [],
+    "tags": []
+  },
+  {
+    "name": "PumpPowSensor",
+    "type": "sensor",
+    "parent": "FuelSystem",
+    "priority": 2,
+    "floor": 0,
+    "is_backup": false,
+    "backup": [],
+    "external_field": null,
+    "children": [],
+    "tags": []
+  }
+]

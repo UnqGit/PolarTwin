@@ -1,10 +1,10 @@
-import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import React, { createContext, useContext, useState, type ReactNode } from 'react';
 
 // For now, load available stations from local JSON files.
 // In a real app, we'd fetch this list from the /stations API endpoint.
-const relationFiles = import.meta.glob('../../data/compiled/*/relation.json', { eager: true, import: 'default' });
-const availableTwins = Object.keys(relationFiles).map((path) => {
-  const match = path.match(/\.\.\/\.\.\/data\/compiled\/(.+)\/relation\.json/);
+const hierarchyFiles = import.meta.glob('../../../data/compiled/*/hierarchy.json', { eager: true, import: 'default' });
+const availableTwins = Object.keys(hierarchyFiles).map((path) => {
+  const match = path.match(/\.\.\/\.\.\/\.\.\/data\/compiled\/(.+)\/hierarchy\.json/);
   return match ? match[1] : '';
 }).filter(Boolean);
 

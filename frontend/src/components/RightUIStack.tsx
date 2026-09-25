@@ -4,7 +4,7 @@ import { PropertyInspector } from './PropertyInspector';
 import { useSelection } from './SelectionContext';
 import type { NodeLayout, ConnectionLayout } from '../lib/layout';
 
-interface LeftUIStackProps {
+interface RightUIStackProps {
   children?: React.ReactNode;
   root: NodeLayout;
   connections: ConnectionLayout[];
@@ -20,7 +20,7 @@ function findNode(root: NodeLayout, name: string): NodeLayout | null {
   return null;
 }
 
-export const LeftUIStack: React.FC<LeftUIStackProps> = ({ children, root, connections, liveStateRef }) => {
+export const RightUIStack: React.FC<RightUIStackProps> = ({ children, root, connections, liveStateRef }) => {
   const { selectedName } = useSelection();
   
   let selectedNode = null;
@@ -32,7 +32,7 @@ export const LeftUIStack: React.FC<LeftUIStackProps> = ({ children, root, connec
     <div style={{
       position: 'absolute',
       top: 20,
-      left: 20,
+      right: 20,
       bottom: 20,
       zIndex: 10,
       display: 'flex',
