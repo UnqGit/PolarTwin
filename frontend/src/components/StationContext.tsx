@@ -13,7 +13,7 @@ interface StationContextType {
   isLoadingData: boolean;
 }
 
-const StationContext = createContext<StationContextType>({
+export const StationContext = createContext<StationContextType>({
   availableStations: [],
   selectedStation: '',
   setSelectedStation: () => {},
