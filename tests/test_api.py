@@ -37,14 +37,15 @@ class TestBackendAPI(unittest.TestCase):
     def test_simulations_routes(self):
         response = self.client.post("/simulations", json={"station_id": "123"})
         self.assertEqual(response.status_code, 200)
+        run_id = response.json()["runId"]
         
-        response = self.client.post("/simulations/run1/play")
+        response = self.client.post(f"/simulations/{run_id}/play")
         self.assertEqual(response.status_code, 200)
         
-        response = self.client.post("/simulations/run1/telemetry/start")
+        response = self.client.post(f"/simulations/{run_id}/telemetry/start")
         self.assertEqual(response.status_code, 200)
         
-        response = self.client.get("/simulations/run1/state")
+        response = self.client.get(f"/simulations/{run_id}/state")
         self.assertEqual(response.status_code, 200)
 
     def test_telemetry_routes(self):

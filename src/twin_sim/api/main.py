@@ -1,8 +1,17 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict, Any
+import uuid
+
+from twin_sim.dsl.event_stack import TimelineStateManager
+from twin_sim.simulation.engine_core import SimulationEngineCore
+from twin_sim.ingestion.models import ExternalModel, WeatherModel, NetworkModel
 
 app = FastAPI(title="PolarTwin Backend API", version="1.0.0")
+
+# In-memory store for active simulations
+SIMULATIONS: Dict[str, SimulationEngineCore] = {}
+
 
 # ---------------------------------------------------------
 # Stations
@@ -90,26 +99,52 @@ def get_event_definition(name: str):
 # ---------------------------------------------------------
 @app.post("/simulations")
 def create_simulation(payload: Dict[str, Any]):
-    return {"runId": "sim-123"}
+    run_id = f"sim-{uuid.uuid4().hex[:8]}"
+    
+    # Initialize a dummy TimelineStateManager for the API for now, 
+    # in production this would load real specs based on payload["station_id"]
+    ext = ExternalModel(
+        weather=WeatherModel(temperature=-10.0, wind_speed=5.0, humidity=50, o2_level=21, co2_level=0, wind_direction=180, visibility=1000, pressure=1000, dew_frost_point=-15),
+        network=NetworkModel(bandwidth=100, mainland_connectivity=True, upload_window=False, upload_speed=10, download_speed=10),
+        supplies=[]
+    )
+    state = TimelineStateManager(components=[], connections=[], external=ext)
+    engine = SimulationEngineCore(state, [])
+    SIMULATIONS[run_id] = engine
+    
+    return {"runId": run_id}
 
 @app.get("/simulations/{run_id}")
 def get_simulation(run_id: str):
-    return {"runId": run_id}
+    if run_id not in SIMULATIONS:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+    return {"runId": run_id, "time": SIMULATIONS[run_id].time}
 
 @app.post("/simulations/{run_id}/play")
 def play_simulation(run_id: str):
+    if run_id not in SIMULATIONS:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+    # In a real backend, this would spawn a background worker task.
+    # For now, we simulate success.
     return {"status": "playing"}
 
 @app.post("/simulations/{run_id}/pause")
 def pause_simulation(run_id: str):
+    if run_id not in SIMULATIONS:
+        raise HTTPException(status_code=404, detail="Simulation not found")
     return {"status": "paused"}
 
 @app.post("/simulations/{run_id}/step")
 def step_simulation(run_id: str):
-    return {"status": "stepped"}
+    if run_id not in SIMULATIONS:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+    SIMULATIONS[run_id].run_tick()
+    return {"status": "stepped", "time": SIMULATIONS[run_id].time}
 
 @app.post("/simulations/{run_id}/reset")
 def reset_simulation(run_id: str):
+    if run_id not in SIMULATIONS:
+        raise HTTPException(status_code=404, detail="Simulation not found")
     return {"status": "reset"}
 
 @app.post("/simulations/{run_id}/telemetry/start")
@@ -122,11 +157,23 @@ def stop_telemetry(run_id: str):
 
 @app.get("/simulations/{run_id}/state")
 def get_simulation_state(run_id: str):
-    return {"time": 0.0, "components": [], "connections": []}
+    if run_id not in SIMULATIONS:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+        
+    engine = SIMULATIONS[run_id]
+    eff_state = engine.state.get_effective_state_dict()
+    
+    return {
+        "time": engine.time, 
+        "components": [c.model_dump() for c in eff_state["components"]], 
+        "connections": eff_state["connections"]
+    }
 
 @app.get("/simulations/{run_id}/log")
 def get_simulation_log(run_id: str):
-    return []
+    if run_id not in SIMULATIONS:
+        raise HTTPException(status_code=404, detail="Simulation not found")
+    return SIMULATIONS[run_id].telemetry
 
 # ---------------------------------------------------------
 # Telemetry
