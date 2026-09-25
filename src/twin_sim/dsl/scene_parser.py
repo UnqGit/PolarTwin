@@ -14,12 +14,11 @@ class SceneParseError(ParseError):
             if line is not None:
                 error += f"\n    {line}"
         super().__init__(error)
+        self.line_number = line_number
 
-def parse_scene_file(filepath: Path) -> List[SceneEvent]:
+def parse_scene_string(source: str) -> List[SceneEvent]:
     events = []
-    
-    with open(filepath, "r", encoding="utf-8") as f:
-        lines = f.readlines()
+    lines = source.splitlines()
         
     i = 0
     current_event = None
@@ -63,7 +62,9 @@ def parse_scene_file(filepath: Path) -> List[SceneEvent]:
                     selector=sel,
                     at=float(at_str),
                     duration=float('inf') if for_str == "inf" else float(for_str),
-                    payload={}
+                    payload={},
+                    source_location=i,
+                    source_order=len(events)
                 )
                 block_stack.append({})
             else:
@@ -92,7 +93,9 @@ def parse_scene_file(filepath: Path) -> List[SceneEvent]:
                 selector=sel,
                 at=float(at_str),
                 duration=float('inf') if for_str == "inf" else float(for_str),
-                payload={}
+                payload={},
+                source_location=i,
+                source_order=len(events)
             ))
             continue
             
@@ -101,5 +104,10 @@ def parse_scene_file(filepath: Path) -> List[SceneEvent]:
     if current_event is not None or block_stack:
         raise SceneParseError("Unclosed event block at end of file", None, None)
         
-    # Sort events by 'at' time (stable sort)
-    return sorted(events, key=lambda e: e.at)
+    # Sort events by 'at' time (stable sort based on source_order)
+    return sorted(events, key=lambda e: (e.at, e.source_order))
+
+def parse_scene_file(filepath: Path) -> List[SceneEvent]:
+    with open(filepath, "r", encoding="utf-8") as f:
+        return parse_scene_string(f.read())
+
