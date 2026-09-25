@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Snowflake } from 'lucide-react';
 import { TwinViewer, type LightingMode } from '../components/TwinViewer';
+import { useStation } from '../components/StationContext';
 
 const relationFiles = import.meta.glob('../../data/compiled/*/relation.json', { eager: true, import: 'default' });
 const connectionFiles = import.meta.glob('../../data/compiled/*/connection.json', { eager: true, import: 'default' });
@@ -13,10 +14,14 @@ const availableTwins = Object.keys(relationFiles).map((path) => {
 }).filter(Boolean);
 
 export function DigitalTwin() {
-  const [selectedTwin, setSelectedTwin] = useState<string>('new_station');
+  const { selectedStation: selectedTwin } = useStation();
   const [lightingMode, setLightingMode] = useState<LightingMode>('off');
   const [containerOcclusion, setContainerOcclusion] = useState<'off' | 'off_on_hover'>('off');
   const [selectedComponentName, setSelectedComponentName] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSelectedComponentName(null);
+  }, [selectedTwin]);
 
   // liveStateRef will hold the latest telemetry without triggering React re-renders
   const liveStateRef = useRef<Record<string, unknown>>({});
@@ -81,29 +86,6 @@ export function DigitalTwin() {
             display: 'flex', flexDirection: 'column', gap: '8px',
             width: 280,
           }}>
-            
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-              <label htmlFor="twin-select" style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Select Twin:</label>
-              <select 
-                id="twin-select"
-                value={selectedTwin} 
-                onChange={(e) => { setSelectedComponentName(null); setSelectedTwin(e.target.value); }}
-                style={{ 
-                  background: 'var(--bg-panel-secondary)', 
-                  color: 'var(--text-primary)', 
-                  border: '1px solid var(--border-solid)', 
-                  borderRadius: '4px',
-                  padding: '4px 8px',
-                  outline: 'none',
-                  flex: 1
-                }}
-              >
-                {availableTwins.map(twin => (
-                  <option key={twin} value={twin}>{twin}</option>
-                ))}
-              </select>
-            </div>
-
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <label htmlFor="lighting-mode" style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Lighting:</label>
               <select 

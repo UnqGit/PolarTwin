@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Layout } from './Layout';
 import { DigitalTwin } from './pages/DigitalTwin';
+import { Overview } from './pages/Overview';
 
-function Overview() { return <div style={{ padding: 24 }}><h2>Overview</h2><p>High-level dashboard coming soon.</p></div>; }
 function Components() { return <div style={{ padding: 24 }}><h2>Components</h2><p>Component hierarchy and specs coming soon.</p></div>; }
 function Connections() { return <div style={{ padding: 24 }}><h2>Connections</h2><p>Network topology coming soon.</p></div>; }
 function Scenarios() { return <div style={{ padding: 24 }}><h2>Scenarios & Simulation</h2><p>Event DSL runner coming soon.</p></div>; }

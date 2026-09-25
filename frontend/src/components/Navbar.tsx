@@ -6,8 +6,12 @@ import {
   Settings2, 
   History, 
   Snowflake,
-  MonitorPlay
+  MonitorPlay,
+  Sun,
+  Moon
 } from 'lucide-react';
+import { useStation } from './StationContext';
+import { useTheme } from './ThemeContext';
 
 const navItems = [
   { path: '/', icon: Activity, label: 'Overview' },
@@ -19,6 +23,9 @@ const navItems = [
 ];
 
 export function Navbar() {
+  const { availableStations, selectedStation, setSelectedStation } = useStation();
+  const { theme, toggleTheme } = useTheme();
+
   return (
     <div className="glass-panel" style={{
       width: '100%',
@@ -53,6 +60,29 @@ export function Navbar() {
         <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, letterSpacing: '-0.03em' }}>
           PolarTwin
         </h1>
+        
+        <div style={{ width: '1px', height: '24px', background: 'var(--border-color)', margin: '0 8px' }} />
+        
+        <select 
+          value={selectedStation} 
+          onChange={(e) => setSelectedStation(e.target.value)}
+          style={{ 
+            background: 'var(--bg-input)', 
+            color: 'var(--text-primary)', 
+            border: '1px solid var(--border-solid)', 
+            borderRadius: '6px',
+            padding: '6px 10px',
+            outline: 'none',
+            fontSize: '13px',
+            fontWeight: 500,
+            cursor: 'pointer',
+            minWidth: '120px'
+          }}
+        >
+          {availableStations.map(station => (
+            <option key={station} value={station}>{station}</option>
+          ))}
+        </select>
       </div>
 
       <nav style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -81,8 +111,30 @@ export function Navbar() {
         ))}
       </nav>
       
-      <div style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
-        v1.0.0
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <button 
+          onClick={toggleTheme}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            color: 'var(--icon-color)',
+            cursor: 'pointer',
+            padding: '8px',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            transition: 'background 0.2s',
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.background = 'var(--hover-overlay)'}
+          onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+        >
+          {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+        </button>
+        <div style={{ fontSize: '12px', color: 'var(--text-tertiary)' }}>
+          v1.0.0
+        </div>
       </div>
     </div>
   );

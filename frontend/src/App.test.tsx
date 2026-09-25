@@ -5,6 +5,8 @@ import React from 'react';
 import App from './App';
 import { DigitalTwin } from './pages/DigitalTwin';
 import { BrowserRouter } from 'react-router-dom';
+import { StationProvider } from './components/StationContext';
+import { ThemeProvider } from './components/ThemeContext';
 
 // Mock R3F Canvas and Drei components
 vi.mock('@react-three/fiber', () => ({
@@ -29,7 +31,13 @@ vi.mock('@react-three/drei', () => ({
 
 describe('App Component (Phase 18 Global Navigation)', () => {
   it('should render the Navbar and Overview page by default', () => {
-    const { getByText } = render(<App />);
+    const { getByText } = render(
+      <ThemeProvider>
+        <StationProvider>
+          <App />
+        </StationProvider>
+      </ThemeProvider>
+    );
     
     // Check that the title and navbar items are rendered
     expect(getByText('PolarTwin')).toBeInTheDocument();
@@ -38,7 +46,9 @@ describe('App Component (Phase 18 Global Navigation)', () => {
     expect(getByText('Components')).toBeInTheDocument();
     
     // Check that the default route (Overview) content is present
-    expect(getByText('High-level dashboard coming soon.')).toBeInTheDocument();
+    expect(getByText('System status and high-level telemetry')).toBeInTheDocument();
+    expect(getByText('Power Output')).toBeInTheDocument();
+    expect(getByText('Station Temp')).toBeInTheDocument();
   });
 });
 
@@ -46,7 +56,9 @@ describe('DigitalTwin Component', () => {
   it('should render the TwinViewer Canvas', () => {
     const { getByText, getByTestId } = render(
       <BrowserRouter>
-        <DigitalTwin />
+        <StationProvider>
+          <DigitalTwin />
+        </StationProvider>
       </BrowserRouter>
     );
     
