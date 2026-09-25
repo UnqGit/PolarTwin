@@ -47,5 +47,117 @@ export const api = {
     const res = await fetch(`/api/telemetry/records/${recordId}`);
     if (!res.ok) throw new Error("Failed to fetch telemetry record");
     return res.json();
+  },
+
+  // Scenario API
+  getScenarios: async (stationId: string) => {
+    const res = await fetch(`/api/stations/${stationId}/scenarios`);
+    if (!res.ok) throw new Error("Failed to fetch scenarios");
+    return res.json();
+  },
+  createScenario: async (stationId: string, name: string, source: string = "") => {
+    const res = await fetch(`/api/stations/${stationId}/scenarios`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, source })
+    });
+    if (!res.ok) throw new Error("Failed to create scenario");
+    return res.json();
+  },
+  getScenario: async (scenarioId: string) => {
+    const res = await fetch(`/api/scenarios/${scenarioId}`);
+    if (!res.ok) throw new Error("Failed to fetch scenario");
+    return res.json();
+  },
+  getScenarioSource: async (scenarioId: string) => {
+    const res = await fetch(`/api/scenarios/${scenarioId}/source`);
+    if (!res.ok) throw new Error("Failed to fetch scenario source");
+    return res.json();
+  },
+  updateScenarioSource: async (scenarioId: string, source: string) => {
+    const res = await fetch(`/api/scenarios/${scenarioId}/source`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ source })
+    });
+    if (!res.ok) throw new Error("Failed to update scenario source");
+    return res.json();
+  },
+  duplicateScenario: async (scenarioId: string) => {
+    const res = await fetch(`/api/scenarios/${scenarioId}/duplicate`, { method: 'POST' });
+    if (!res.ok) throw new Error("Failed to duplicate scenario");
+    return res.json();
+  },
+  deleteScenario: async (scenarioId: string) => {
+    const res = await fetch(`/api/scenarios/${scenarioId}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error("Failed to delete scenario");
+  },
+  validateScenario: async (scenarioId: string) => {
+    const res = await fetch(`/api/scenarios/${scenarioId}/validate`, { method: 'POST' });
+    if (!res.ok) throw new Error("Failed to validate scenario");
+    return res.json();
+  },
+
+  // Event Definitions
+  getEventDefinitions: async () => {
+    const res = await fetch('/api/event-definitions');
+    if (!res.ok) throw new Error("Failed to fetch event definitions");
+    return res.json();
+  },
+
+  // Simulations
+  createSimulation: async (stationId: string, scenarioId?: string, globalTolerance: number = 10.0) => {
+    const res = await fetch('/api/simulations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ station_id: stationId, scenario_id: scenarioId, global_tolerance: globalTolerance })
+    });
+    if (!res.ok) throw new Error("Failed to create simulation");
+    return res.json();
+  },
+  getSimulation: async (runId: string) => {
+    const res = await fetch(`/api/simulations/${runId}`);
+    if (!res.ok) throw new Error("Failed to fetch simulation");
+    return res.json();
+  },
+  playSimulation: async (runId: string, tickInterval: number = 1.0) => {
+    const res = await fetch(`/api/simulations/${runId}/play`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tick_interval: tickInterval })
+    });
+    if (!res.ok) throw new Error("Failed to play simulation");
+    return res.json();
+  },
+  pauseSimulation: async (runId: string) => {
+    const res = await fetch(`/api/simulations/${runId}/pause`, { method: 'POST' });
+    if (!res.ok) throw new Error("Failed to pause simulation");
+    return res.json();
+  },
+  stepSimulation: async (runId: string) => {
+    const res = await fetch(`/api/simulations/${runId}/step`, { method: 'POST' });
+    if (!res.ok) throw new Error("Failed to step simulation");
+    return res.json();
+  },
+  resetSimulation: async (runId: string) => {
+    const res = await fetch(`/api/simulations/${runId}/reset`, { method: 'POST' });
+    if (!res.ok) throw new Error("Failed to reset simulation");
+    return res.json();
+  },
+  setTelemetryPublishing: async (runId: string, enable: boolean) => {
+    const action = enable ? 'start' : 'stop';
+    const res = await fetch(`/api/simulations/${runId}/telemetry/${action}`, { method: 'POST' });
+    if (!res.ok) throw new Error("Failed to change telemetry publishing state");
+    return res.json();
+  },
+  getSimulationState: async (runId: string) => {
+    const res = await fetch(`/api/simulations/${runId}/state`);
+    if (!res.ok) throw new Error("Failed to fetch simulation state");
+    return res.json();
+  },
+  getSimulationLog: async (runId: string) => {
+    const res = await fetch(`/api/simulations/${runId}/log`);
+    if (!res.ok) throw new Error("Failed to fetch simulation log");
+    return res.json();
   }
 };

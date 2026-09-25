@@ -221,6 +221,7 @@ const HoverManager: React.FC<HoverManagerProps> = ({
 
 // ─── viewer ───────────────────────────────────────────────────────────────────
 
+import { Target } from 'lucide-react';
 import { SelectionProvider } from './SelectionContext';
 import { RightUIStack } from './RightUIStack';
 import { HoverCard } from './HoverCard';
@@ -239,8 +240,8 @@ interface TwinViewerProps {
   connectionsInteractable?: boolean;
   onComponentsInteractableChange?: (val: boolean) => void;
   onConnectionsInteractableChange?: (val: boolean) => void;
-  containerOcclusion?: 'off' | 'off_on_hover';
   children?: ReactNode; // For the HUD overlay
+  customSidebarTabs?: { id: string, icon: React.ReactNode, title: string, content: React.ReactNode }[];
 }
 
 export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
@@ -254,8 +255,8 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
   connectionsInteractable = true,
   onComponentsInteractableChange,
   onConnectionsInteractableChange,
-  containerOcclusion = 'off',
-  children
+  children,
+  customSidebarTabs
 }) => {
   const { theme } = useTheme();
   const bgMain = theme === 'light' ? '#f8fafc' : '#0f172a';
@@ -278,6 +279,8 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
 
   const [internalComponentsInteractable, setInternalComponentsInteractable] = useState(true);
   const [internalConnectionsInteractable, setInternalConnectionsInteractable] = useState(true);
+  const [internalLightingMode, setInternalLightingMode] = useState<LightingMode>('dynamic');
+  const [internalOcclusion, setInternalOcclusion] = useState<'off' | 'off_on_hover'>('off');
 
   const controlsRef = useRef<any>(null);
 
@@ -417,7 +420,7 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
 
             <RaycasterConfig />
 
-            <SceneLights key={`${lightingMode}-${theme}`} mode={lightingMode} theme={theme} />
+            <SceneLights key={`${internalLightingMode}-${theme}`} mode={internalLightingMode} theme={theme} />
 
             <Suspense fallback={null}>
               <Environment preset="warehouse" />
@@ -433,7 +436,7 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
                       layout={sceneLayout.root}
                       depth={0}
                       liveStateRef={liveStateRef}
-                      containerOcclusion={containerOcclusion}
+                      containerOcclusion={internalOcclusion}
                     />
                   )}
                   {!hideAllConnections && (
@@ -474,23 +477,6 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
           <RightUIStack root={sceneLayout.root} connections={sceneLayout.connections} liveStateRef={liveStateRef}>
           </RightUIStack>
 
-          {effectiveSelected && (
-            <div style={{
-              position: 'absolute',
-              top: 16,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              zIndex: 100,
-            }}>
-              <HoverCard
-                root={sceneLayout.root}
-                connections={sceneLayout.connections}
-                liveStateRef={liveStateRef}
-                explicitName={effectiveSelected}
-              />
-            </div>
-          )}
-
           <HierarchyPanel 
             root={sceneLayout.root}
             connections={sceneLayout.connections}
@@ -507,6 +493,11 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
             activeLayer={activeLayer}
             setActiveLayer={setActiveLayer}
             onShowGraph={() => setIsGraphOpen(true)}
+            customSidebarTabs={customSidebarTabs}
+            lightingMode={internalLightingMode}
+            onLightingModeChange={setInternalLightingMode}
+            containerOcclusion={internalOcclusion}
+            onContainerOcclusionChange={setInternalOcclusion}
           />
 
           {isGraphOpen && (
@@ -518,6 +509,8 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
               liveStateRef={liveStateRef}
             />
           )}
+
+
 
           {children}
         </div>

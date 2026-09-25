@@ -370,16 +370,13 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
       </button>
 
       {hoveredName && root && connections && (
-        <div style={{ position: 'absolute', top: 16, right: 16, pointerEvents: 'none', zIndex: 100 }}>
+        <div style={{ position: 'absolute', top: 16, left: 16, pointerEvents: 'none', zIndex: 100 }}>
           <HoverCard root={root} connections={connections} liveStateRef={liveStateRef} explicitName={hoveredName} />
         </div>
       )}
 
       {selectedName && root && connections && (
-        <div style={{ position: 'absolute', top: 16, left: 16, display: 'flex', flexDirection: 'column', gap: 16, zIndex: 100, pointerEvents: 'none', maxHeight: 'calc(100% - 32px)' }}>
-          <div style={{ pointerEvents: 'auto' }}>
-            <HoverCard root={root} connections={connections} liveStateRef={liveStateRef} explicitName={selectedName} />
-          </div>
+        <div style={{ position: 'absolute', top: 16, right: 16, display: 'flex', flexDirection: 'column', gap: 16, zIndex: 100, pointerEvents: 'none', maxHeight: 'calc(100% - 32px)' }}>
           {selectedNodeObj && (
             <div style={{ pointerEvents: 'auto', width: 'max-content', minWidth: 300, maxWidth: '30vw', overflowY: 'auto', backgroundColor: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: 8 }}>
               <PropertyInspector node={selectedNodeObj} connections={connections} liveStateRef={liveStateRef} />

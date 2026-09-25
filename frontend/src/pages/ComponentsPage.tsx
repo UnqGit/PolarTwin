@@ -1,6 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useStation } from '../components/StationContext';
 import { ChevronRight, Zap, Info, Box } from 'lucide-react';
+import { PropertyInspector } from '../components/PropertyInspector';
+import { buildSceneLayout } from '../lib/layout';
 
 const FALLBACK_IMGS = [
   'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80',
@@ -9,12 +11,13 @@ const FALLBACK_IMGS = [
 ];
 
 export function ComponentsPage() {
-  const { selectedStation, hierarchy: hierarchyData } = useStation();
+  const { selectedStation, hierarchy: hierarchyData, spec } = useStation();
 
   // The drill-down stack contains the names of the nodes we've navigated into.
   // Initially empty, meaning we are at the outermost level.
   const [drillStack, setDrillStack] = useState<string[]>([]);
   const [fadeState, setFadeState] = useState<'in' | 'out'>('in');
+  const [inspectNodeName, setInspectNodeName] = useState<string | null>(null);
 
   const currentParentName = drillStack.length > 0 ? drillStack[drillStack.length - 1] : null;
 
@@ -152,7 +155,7 @@ export function ComponentsPage() {
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
-                      alert(`Inspector for ${node.name} (Coming soon when integrated with RightUIStack)`);
+                      setInspectNodeName(node.name);
                     }}
                     style={{ background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', borderRadius: 6, padding: '6px 12px', fontSize: 12, color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
                     className="hover:bg-[var(--accent-blue)] hover:border-[var(--accent-blue)] transition-colors"
@@ -171,6 +174,35 @@ export function ComponentsPage() {
         <div style={{ textAlign: 'center', padding: 48, color: 'var(--text-tertiary)' }}>
           <Box size={48} style={{ margin: '0 auto', opacity: 0.2, marginBottom: 16 }} />
           No components found in this view.
+        </div>
+      )}
+
+      {inspectNodeName && hierarchyData && (
+        <div style={{
+          position: 'fixed', top: 64, right: 0, bottom: 0, width: 400,
+          background: 'var(--bg-panel)', borderLeft: '1px solid var(--border-color)',
+          zIndex: 100, boxShadow: '-4px 0 15px rgba(0,0,0,0.1)', overflowY: 'auto'
+        }}>
+          <div style={{ padding: 16, borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Inspector</h3>
+            <button onClick={() => setInspectNodeName(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 20 }}>&times;</button>
+          </div>
+          {(() => {
+            try {
+              const layout = buildSceneLayout(hierarchyData, [], spec || { components: {}, globals: {} });
+              const node = layout.allNodes.get(inspectNodeName);
+              if (node) {
+                return (
+                  <div style={{ padding: 16 }}>
+                    <PropertyInspector node={node} connections={[]} liveStateRef={{ current: {} }} />
+                  </div>
+                );
+              }
+            } catch (e) {
+              console.error(e);
+            }
+            return <div style={{ padding: 16 }}>Failed to load inspector for {inspectNodeName}.</div>;
+          })()}
         </div>
       )}
     </div>

@@ -6,8 +6,7 @@ import { ComponentsPage } from './pages/ComponentsPage';
 import { ConnectionsPage } from './pages/ConnectionsPage';
 import { DiagnosticsPage } from './pages/DiagnosticsPage';
 
-function Scenarios() { return <div style={{ padding: 24 }}><h2>Scenarios & Simulation</h2><p>Event DSL runner coming soon.</p></div>; }
-
+import { ScenariosPage } from './pages/ScenariosPage';
 export default function App() {
   return (
     <BrowserRouter>
@@ -17,7 +16,7 @@ export default function App() {
           <Route path="twin" element={<DigitalTwin />} />
           <Route path="components" element={<ComponentsPage />} />
           <Route path="connections" element={<ConnectionsPage />} />
-          <Route path="scenarios" element={<Scenarios />} />
+          <Route path="scenarios" element={<ScenariosPage />} />
           <Route path="diagnostics" element={<DiagnosticsPage />} />
         </Route>
       </Routes>

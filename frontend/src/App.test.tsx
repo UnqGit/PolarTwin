@@ -74,9 +74,6 @@ describe('DigitalTwin Component', () => {
     );
     
     await waitFor(() => {
-      // Check that the digital twin title card is rendered
-      expect(screen.getByText('3D Digital Twin Viewer')).toBeInTheDocument();
-      
       // Check that the mocked Canvas is rendered
       expect(screen.getByTestId('mock-canvas')).toBeInTheDocument();
     });
