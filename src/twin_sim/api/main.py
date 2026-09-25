@@ -403,3 +403,33 @@ def get_latest_telemetry(run_id: str):
     if record is None:
         raise HTTPException(404, "No telemetry found for this run")
     return record
+
+
+@app.get("/telemetry/history")
+def get_telemetry_history(station_id: str, run_id: Optional[str] = None):
+    """Get the timeline of telemetry records for a station."""
+    return _db.get_records_timeline(station_id, run_id)
+
+
+@app.get("/telemetry/records/{record_id}")
+def get_telemetry_record(record_id: int):
+    """Get a specific telemetry record by ID."""
+    rec = _db.get_record_by_id(record_id)
+    if not rec:
+        raise HTTPException(404, "Record not found")
+    return rec
+
+
+@app.get("/telemetry/history")
+def get_telemetry_history(station_id: str, run_id: Optional[str] = None):
+    """Get the timeline of telemetry records for a station."""
+    return _db.get_records_timeline(station_id, run_id)
+
+
+@app.get("/telemetry/records/{record_id}")
+def get_telemetry_record(record_id: int):
+    """Get a specific telemetry record by ID."""
+    rec = _db.get_record_by_id(record_id)
+    if not rec:
+        raise HTTPException(404, "Record not found")
+    return rec
