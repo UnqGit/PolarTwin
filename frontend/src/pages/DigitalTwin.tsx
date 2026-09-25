@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Snowflake } from 'lucide-react';
-import { TwinViewer, type LightingMode } from './components/TwinViewer';
+import { TwinViewer, type LightingMode } from '../components/TwinViewer';
 
 const relationFiles = import.meta.glob('../../data/compiled/*/relation.json', { eager: true, import: 'default' });
 const connectionFiles = import.meta.glob('../../data/compiled/*/connection.json', { eager: true, import: 'default' });
@@ -12,7 +12,7 @@ const availableTwins = Object.keys(relationFiles).map((path) => {
   return match ? match[1] : '';
 }).filter(Boolean);
 
-function App() {
+export function DigitalTwin() {
   const [selectedTwin, setSelectedTwin] = useState<string>('new_station');
   const [lightingMode, setLightingMode] = useState<LightingMode>('off');
   const [containerOcclusion, setContainerOcclusion] = useState<'off' | 'off_on_hover'>('off');
@@ -163,4 +163,4 @@ function App() {
   );
 }
 
-export default App;
+
