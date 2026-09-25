@@ -20,6 +20,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 from twin_sim.api.manager import SimulationManager, RunStatus
+from twin_sim.api.scenario_manager import ScenarioManager
 from twin_sim.simulation.station_loader import StationLoader
 from twin_sim.telemetry.database import TelemetryDatabase
 
@@ -41,6 +42,7 @@ app = FastAPI(title="PolarTwin Backend API", version="2.0.0")
 
 _db = TelemetryDatabase(str(DB_PATH))
 _manager = SimulationManager(telemetry_db=_db)
+_scenario_manager = ScenarioManager(DATA_DIR)
 
 
 @app.on_event("startup")
@@ -118,66 +120,103 @@ def get_station_runtime(station_id: str):
 
 
 # ---------------------------------------------------------------------------
-# Scenarios (stubs — full implementation in Phase 17)
+# Scenarios
 # ---------------------------------------------------------------------------
+
+class CreateScenarioRequest(BaseModel):
+    name: str
+    source: str = ""
+
+class UpdateScenarioSourceRequest(BaseModel):
+    source: str
 
 @app.get("/stations/{station_id}/scenarios")
 def get_station_scenarios(station_id: str):
-    return []
+    return _scenario_manager.list_for_station(station_id)
 
 
-@app.post("/stations/{station_id}/scenarios")
-def create_scenario(station_id: str, payload: Dict[str, Any]):
-    return {"id": "new-scenario", "station_id": station_id}
+@app.post("/stations/{station_id}/scenarios", status_code=201)
+def create_scenario(station_id: str, payload: CreateScenarioRequest):
+    try:
+        return _scenario_manager.create(station_id, payload.name, payload.source)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
 
 
 @app.get("/scenarios/{scenario_id}")
 def get_scenario(scenario_id: str):
-    return {"id": scenario_id}
+    try:
+        return _scenario_manager.get(scenario_id)
+    except FileNotFoundError as e:
+        raise HTTPException(404, str(e))
+    except ValueError as e:
+        raise HTTPException(400, str(e))
 
 
-@app.put("/scenarios/{scenario_id}")
-def update_scenario(scenario_id: str, payload: Dict[str, Any]):
-    return {"id": scenario_id, "status": "updated"}
-
-
-@app.post("/scenarios/{scenario_id}/duplicate")
+@app.post("/scenarios/{scenario_id}/duplicate", status_code=201)
 def duplicate_scenario(scenario_id: str):
-    return {"id": f"{scenario_id}-copy"}
+    try:
+        return _scenario_manager.duplicate(scenario_id)
+    except FileNotFoundError as e:
+        raise HTTPException(404, str(e))
+    except ValueError as e:
+        raise HTTPException(400, str(e))
 
 
-@app.delete("/scenarios/{scenario_id}")
+@app.delete("/scenarios/{scenario_id}", status_code=204)
 def delete_scenario(scenario_id: str):
-    return {"status": "deleted"}
+    try:
+        _scenario_manager.delete(scenario_id)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    return None
 
 
 @app.post("/scenarios/{scenario_id}/validate")
 def validate_scenario(scenario_id: str):
-    return {"valid": True, "errors": []}
+    try:
+        return _scenario_manager.validate(scenario_id)
+    except FileNotFoundError as e:
+        raise HTTPException(404, str(e))
+    except ValueError as e:
+        raise HTTPException(400, str(e))
 
 
 @app.get("/scenarios/{scenario_id}/source")
 def get_scenario_source(scenario_id: str):
-    return {"source": ""}
+    try:
+        return {"source": _scenario_manager.get_source(scenario_id)}
+    except FileNotFoundError as e:
+        raise HTTPException(404, str(e))
+    except ValueError as e:
+        raise HTTPException(400, str(e))
 
 
 @app.put("/scenarios/{scenario_id}/source")
-def update_scenario_source(scenario_id: str, payload: Dict[str, str]):
-    return {"status": "updated"}
+def update_scenario_source(scenario_id: str, payload: UpdateScenarioSourceRequest):
+    try:
+        return _scenario_manager.update_source(scenario_id, payload.source)
+    except FileNotFoundError as e:
+        raise HTTPException(404, str(e))
+    except ValueError as e:
+        raise HTTPException(400, str(e))
 
 
 # ---------------------------------------------------------------------------
-# Event Definitions (stubs — full implementation in Phase 17)
+# Event Definitions
 # ---------------------------------------------------------------------------
 
 @app.get("/event-definitions")
 def get_event_definitions():
-    return []
+    return _scenario_manager.list_events()
 
 
 @app.get("/event-definitions/{name}")
 def get_event_definition(name: str):
-    return {"name": name}
+    try:
+        return _scenario_manager.get_event(name)
+    except FileNotFoundError as e:
+        raise HTTPException(404, str(e))
 
 
 # ---------------------------------------------------------------------------
@@ -191,9 +230,19 @@ def create_simulation(req: CreateSimulationRequest):
     The station must already be loaded (auto-discovered on startup).
     """
     try:
+        scenes = []
+        if req.scenario_id:
+            try:
+                scenes = _scenario_manager.get_parsed_events(req.scenario_id)
+            except FileNotFoundError:
+                raise HTTPException(404, f"Scenario '{req.scenario_id}' not found")
+            except Exception as e:
+                raise HTTPException(400, f"Error parsing scenario: {e}")
+
         run_id = _manager.create_run(
             station_id=req.station_id,
             scenario_id=req.scenario_id,
+            scenes=scenes,
             global_tolerance=req.global_tolerance,
         )
     except ValueError as e:
