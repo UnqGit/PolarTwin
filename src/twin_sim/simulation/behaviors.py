@@ -93,3 +93,45 @@ def container_temperature(t_prev: float, t_surr: float, inner_temps: list[float]
         v_all = sum(v["t_out"] * v["a_curr"] for v in ac_vents) / a_mtotal
         
     return t_prev + beta * (alpha_inner * i_avg + v_all + alpha_surr * t_surr - t_prev)
+
+def server_temperature(t_prev: float, t_surr: float, p_req: float, p_max: float, p_min: float,
+                       t_max: float, t_min: float, alpha: float = 0.225, beta: float = 0.5):
+    """
+    Same as generator temperature but uses P_req / P
+    """
+    p_range = p_max - p_min
+    if p_range <= 0: p_range = 1
+    t_range = t_max - t_min
+    
+    return t_prev + beta * (alpha * t_range * (p_req / p_range) + t_surr - t_prev)
+
+def alarm_current(status: str) -> float:
+    """
+    inactive -> 0 A
+    active -> 5 A
+    """
+    return 5.0 if status == "active" else 0.0
+
+def vent_current(a_curr: float, a_max: float, i_max: float) -> float:
+    """
+    Current is directly proportional to airflow up to maximum rated current.
+    """
+    if a_max <= 0: return 0.0
+    return min(i_max, i_max * (a_curr / a_max))
+
+def antenna_current(active_connections: int, i_max: float) -> float:
+    """
+    0 active connections -> 0 A
+    1–19 active connections -> Imax / 2
+    20+ active connections -> Imax
+    """
+    if active_connections == 0: return 0.0
+    if active_connections < 20: return i_max / 2.0
+    return i_max
+
+def station_surrounding_temperature(t_external: float) -> float:
+    """
+    Tsurr = Texternal + 20
+    """
+    return t_external + 20.0
+
