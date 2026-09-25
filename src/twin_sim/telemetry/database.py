@@ -4,9 +4,11 @@ from typing import Dict, Any, List
 
 class TelemetryDatabase:
     def __init__(self, db_path: str = ":memory:"):
-        self.conn = sqlite3.connect(db_path)
+        self.conn = sqlite3.connect(db_path, check_same_thread=False)
+        self.conn.execute("PRAGMA journal_mode=WAL")
         self.conn.row_factory = sqlite3.Row
         self._create_tables()
+
 
     def _create_tables(self):
         with self.conn:

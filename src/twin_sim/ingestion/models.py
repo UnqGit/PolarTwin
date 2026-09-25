@@ -87,6 +87,7 @@ class WeatherModel(BaseModel):
     visibility: float
     pressure: float
     dew_frost_point: float
+    irradiance: float = 0.0  # Light irradiance in W/m2; 0 by default (polar winter)
     
     @model_validator(mode='before')
     @classmethod
