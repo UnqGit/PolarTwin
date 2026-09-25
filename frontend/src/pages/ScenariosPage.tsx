@@ -2,7 +2,11 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { api } from '../lib/api';
 import { useStation } from '../components/StationContext';
 import { TwinViewer } from '../components/TwinViewer';
-import { Play, Pause, RefreshCw, StepForward, Code, List, Activity, Library, ChevronUp, ChevronDown } from 'lucide-react';
+import { TimelineEditor } from '../components/TimelineEditor';
+import { DSLEditor } from '../components/DSLEditor';
+import type { SceneEventData } from '../components/TimelineEditor';
+import { EventInspector } from '../components/EventInspector';
+import { Play, Pause, RefreshCw, StepForward, Code, List, Activity, Library, ChevronUp, ChevronDown, MousePointer2 } from 'lucide-react';
 
 export function ScenariosPage() {
   const { selectedStation, hierarchy, spec, connections } = useStation();
@@ -12,6 +16,10 @@ export function ScenariosPage() {
   const [scenarios, setScenarios] = useState<any[]>([]);
   const [selectedScenarioId, setSelectedScenarioId] = useState<string | null>(null);
   const [scenarioSource, setScenarioSource] = useState<string>('');
+  const [scenarioEvents, setScenarioEvents] = useState<SceneEventData[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<SceneEventData | null>(null);
+  const [errorLine, setErrorLine] = useState<number | undefined>(undefined);
+  const [validationErrors, setValidationErrors] = useState<{message: string; line_number?: number}[]>([]);
   
   // Events library
   const [eventDefs, setEventDefs] = useState<any[]>([]);
@@ -28,7 +36,36 @@ export function ScenariosPage() {
   // UI state
   const [timelineOpen, setTimelineOpen] = useState(true);
   const [bottomOpen, setBottomOpen] = useState(false);
-  const [bottomTab, setBottomTab] = useState<'source' | 'log' | 'diagnostics'>('source');
+  const [bottomTab, setBottomTab] = useState<'source' | 'log' | 'diagnostics' | 'inspector'>('source');
+
+  const [rightPanelWidth, setRightPanelWidth] = useState(450);
+  const [bottomPanelHeight, setBottomPanelHeight] = useState(192);
+  const [isResizingRight, setIsResizingRight] = useState(false);
+  const [isResizingBottom, setIsResizingBottom] = useState(false);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isResizingRight) {
+        setRightPanelWidth(prev => Math.max(200, Math.min(800, prev - e.movementX)));
+      }
+      if (isResizingBottom) {
+        setBottomPanelHeight(prev => Math.max(100, Math.min(600, prev - e.movementY)));
+      }
+    };
+    const handleMouseUp = () => {
+      setIsResizingRight(false);
+      setIsResizingBottom(false);
+    };
+
+    if (isResizingRight || isResizingBottom) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizingRight, isResizingBottom]);
 
   useEffect(() => {
     if (!selectedStation) return;
@@ -49,8 +86,30 @@ export function ScenariosPage() {
       setScenarioSource('');
       setRunId(null);
       setSimStatus('Ready');
+      setScenarioEvents([]);
     }
   }, [selectedScenarioId, selectedStation]);
+
+  useEffect(() => {
+    if (selectedScenarioId) {
+      api.getScenarioEvents(selectedScenarioId)
+        .then(events => {
+          setScenarioEvents(events);
+          setErrorLine(undefined);
+          setValidationErrors([]);
+        })
+        .catch(err => {
+          console.error(err);
+          if (err.line_number !== undefined) {
+            setErrorLine(err.line_number);
+            setValidationErrors([{ message: err.message, line_number: err.line_number }]);
+          } else {
+            setErrorLine(undefined);
+            setValidationErrors([{ message: err.message || err.toString() }]);
+          }
+        });
+    }
+  }, [selectedScenarioId, scenarioSource]); // Refetch events when source updates and parses
 
   useEffect(() => {
     let interval: any;
@@ -112,12 +171,22 @@ export function ScenariosPage() {
     }
   };
 
-  const toggleBottomTab = (tab: 'source' | 'log' | 'diagnostics') => {
+  const toggleBottomTab = (tab: 'source' | 'log' | 'diagnostics' | 'inspector') => {
     if (bottomOpen && bottomTab === tab) {
       setBottomOpen(false);
     } else {
       setBottomTab(tab);
       setBottomOpen(true);
+    }
+  };
+
+  const handleUpdateEvent = (event: SceneEventData, newSourceSnippet: string) => {
+    if (!event.source_location) return;
+    const lines = scenarioSource.split('\n');
+    const idx = event.source_location - 1; // source_location is 1-indexed
+    if (idx >= 0 && idx < lines.length) {
+      lines[idx] = newSourceSnippet;
+      setScenarioSource(lines.join('\n'));
     }
   };
 
@@ -141,7 +210,12 @@ export function ScenariosPage() {
       
       <h3 style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-tertiary)', textTransform: 'uppercase', marginBottom: '8px', marginTop: '24px' }}>Event Definitions</h3>
       {eventDefs.map((e, i) => (
-        <div key={i} style={{ fontSize: '14px', padding: '8px', borderRadius: '4px', backgroundColor: 'var(--bg-input)', marginBottom: '4px', border: '1px solid var(--border-color)', cursor: 'grab' }}>
+        <div 
+          key={i} 
+          draggable
+          onDragStart={(evt) => evt.dataTransfer.setData('text/plain', e.name)}
+          style={{ fontSize: '14px', padding: '8px', borderRadius: '4px', backgroundColor: 'var(--bg-input)', marginBottom: '4px', border: '1px solid var(--border-color)', cursor: 'grab' }}
+        >
           <div style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{e.name}</div>
           <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.description || 'No description'}</div>
         </div>
@@ -197,13 +271,13 @@ export function ScenariosPage() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative', flexDirection: 'row' }}>
+      <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative', flexDirection: 'column' }}>
         
-        {/* Center */}
-        <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        {/* Top View (Viewer + Right Side Panel) */}
+        <div style={{ display: 'flex', flex: 1, minHeight: 0, flexDirection: 'row' }}>
           
           {/* Twin Viewer Area */}
-          <div style={{ flex: 1, backgroundColor: '#000', position: 'relative' }}>
+          <div style={{ flex: 1, backgroundColor: '#000', position: 'relative', minWidth: 0, minHeight: 0 }}>
              {hierarchy && spec && connections ? (
               <TwinViewer 
                 topology={hierarchy}
@@ -238,125 +312,161 @@ export function ScenariosPage() {
             </div>
           </div>
           
-          {/* Timeline Editor */}
-          <div style={{ 
-            height: timelineOpen ? '192px' : '40px', 
-            transition: 'height 0.3s ease',
-            borderTop: '1px solid var(--border-color)', 
-            backgroundColor: 'var(--bg-panel-secondary)', 
-            display: 'flex', 
-            flexDirection: 'column', 
-            flexShrink: 0 
-          }}>
-            <div 
-              style={{ 
-                padding: '0 12px', 
-                height: '40px',
-                backgroundColor: 'var(--bg-panel)', 
-                fontSize: '12px', 
-                color: 'var(--text-secondary)', 
-                fontWeight: 600, 
-                borderBottom: '1px solid var(--border-color)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                cursor: 'pointer'
-              }}
-              onClick={() => setTimelineOpen(!timelineOpen)}
-            >
-              <span>TIMELINE EDITOR</span>
-              {timelineOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
-            </div>
-            {timelineOpen && (
-              <div style={{ flex: 1, position: 'relative', overflowX: 'auto', padding: '16px', backgroundImage: 'url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0MCIgaGVpZ2h0PSI0MCI+PHBhdGggZD0iTTAgMGgwLjV2NDBIMHptMjAgMGgwLjV2NDBoLS41eiIgZmlsbD0iIzMzMyIgZmlsbC1vcGFjaXR5PSIuMiIvPjwvc3ZnPg==")' }}>
-                 {/* Playhead */}
-                 <div 
-                   style={{ position: 'absolute', top: 0, bottom: 0, width: '2px', backgroundColor: '#ef4444', zIndex: 10, boxShadow: '0 0 8px rgba(239,68,68,0.8)', left: `${Math.max(40, simTime * 10)}px` }}
-                 >
-                   <div style={{ position: 'absolute', top: '-12px', transform: 'translateX(-50%)', backgroundColor: '#ef4444', color: '#fff', fontSize: '10px', padding: '0 4px', borderRadius: '2px' }}>
-                     {simTime.toFixed(1)}
-                   </div>
-                 </div>
-                 
-                 <div style={{ color: 'var(--text-tertiary)', fontSize: '14px', display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
-                   Timeline events visualization will appear here. Edit the scenario source below to populate.
-                 </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-      {/* Right Side Panel */}
-      <div style={{ backgroundColor: 'var(--bg-panel-secondary)', borderLeft: '1px solid var(--border-color)', flexShrink: 0, transition: 'width 0.3s ease', width: bottomOpen ? '450px' : '40px', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 8px', height: '40px', borderBottom: '1px solid var(--border-color)' }}>
-          <div style={{ display: 'flex', gap: '4px', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-            <button 
-              onClick={() => toggleBottomTab('source')}
-              style={{ padding: '4px 12px', fontSize: '14px', borderRadius: '4px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: bottomOpen && bottomTab === 'source' ? 'var(--bg-input)' : 'transparent', color: bottomOpen && bottomTab === 'source' ? 'var(--text-primary)' : 'var(--text-secondary)' }}
-            >
-              <Code size={16} /> DSL Source
-            </button>
-            <button 
-              onClick={() => toggleBottomTab('log')}
-              style={{ padding: '4px 12px', fontSize: '14px', borderRadius: '4px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: bottomOpen && bottomTab === 'log' ? 'var(--bg-input)' : 'transparent', color: bottomOpen && bottomTab === 'log' ? 'var(--text-primary)' : 'var(--text-secondary)' }}
-            >
-              <List size={16} /> Log
-            </button>
-            <button 
-              onClick={() => toggleBottomTab('diagnostics')}
-              style={{ padding: '4px 12px', fontSize: '14px', borderRadius: '4px', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', backgroundColor: bottomOpen && bottomTab === 'diagnostics' ? 'var(--bg-input)' : 'transparent', color: bottomOpen && bottomTab === 'diagnostics' ? 'var(--text-primary)' : 'var(--text-secondary)' }}
-            >
-              <Activity size={16} /> Diagnostics
-            </button>
-          </div>
-          
-          {bottomOpen && (
-            <button onClick={() => setBottomOpen(false)} style={{ color: 'var(--text-secondary)', background: 'transparent', border: 'none', cursor: 'pointer', padding: '0 8px', marginLeft: 16 }}>
-              &times; Close
-            </button>
-          )}
-        </div>
-        
-        {bottomOpen && (
-          <div style={{ height: 'calc(100% - 40px)', backgroundColor: '#000', overflow: 'hidden', position: 'relative' }}>
-            {bottomTab === 'source' && (
-              <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '8px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-panel-secondary)', position: 'absolute', top: 0, right: 0, zIndex: 10, width: '100%' }}>
-                  <button onClick={saveSource} style={{ padding: '4px 12px', backgroundColor: 'var(--accent-blue)', color: '#fff', fontSize: '12px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>Save & Reload</button>
-                </div>
-                <textarea 
-                  style={{ flex: 1, backgroundColor: 'transparent', color: 'var(--text-primary)', padding: '16px', paddingTop: '48px', fontFamily: 'monospace', fontSize: '14px', border: 'none', outline: 'none', resize: 'none' }}
-                  value={scenarioSource}
-                  onChange={e => setScenarioSource(e.target.value)}
-                  placeholder="Select a scenario to edit its DSL source..."
-                  spellCheck={false}
-                />
-              </div>
-            )}
+          {/* Right Side Panel */}
+          <div style={{ display: 'flex', flexDirection: 'row', borderLeft: '1px solid var(--border-color)', backgroundColor: 'var(--bg-panel-secondary)', zIndex: 10 }}>
             
-            {bottomTab === 'log' && (
-              <div style={{ padding: '16px', height: '100%', overflowY: 'auto', fontFamily: 'monospace', fontSize: '14px' }}>
-                {simLog.length === 0 ? (
-                  <div style={{ color: 'var(--text-tertiary)' }}>No log entries yet.</div>
-                ) : (
-                  simLog.map((log, i) => (
-                    <div key={i} style={{ marginBottom: '4px', color: 'var(--text-primary)' }}>
-                      <span style={{ color: 'var(--text-tertiary)' }}>[{log.time.toFixed(1)}s]</span> {JSON.stringify(log)}
+            {/* Content Area (Resizable) */}
+            {bottomOpen && (
+              <div style={{ width: `${rightPanelWidth}px`, flexShrink: 0, display: 'flex', flexDirection: 'column', backgroundColor: '#000', position: 'relative' }}>
+                {/* Resize Handle for Right Panel */}
+                <div 
+                  style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '4px', cursor: 'ew-resize', zIndex: 50 }}
+                  onMouseDown={(e) => { e.preventDefault(); setIsResizingRight(true); }}
+                />
+
+                {bottomTab === 'source' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '8px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-panel-secondary)', zIndex: 10 }}>
+                      <button onClick={saveSource} style={{ padding: '4px 12px', backgroundColor: 'var(--accent-blue)', color: '#fff', fontSize: '12px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>Save & Reload</button>
                     </div>
-                  ))
+                    <DSLEditor 
+                      value={scenarioSource}
+                      onChange={setScenarioSource}
+                      selectedLine={selectedEvent?.source_location ? selectedEvent.source_location - 1 : undefined}
+                      errorLine={errorLine}
+                    />
+                  </div>
+                )}
+                
+                {bottomTab === 'log' && (
+                  <div style={{ padding: '16px', height: '100%', overflowY: 'auto', fontFamily: 'monospace', fontSize: '14px' }}>
+                    {simLog.length === 0 ? (
+                      <div style={{ color: 'var(--text-tertiary)' }}>No log entries yet.</div>
+                    ) : (
+                      simLog.map((log, i) => (
+                        <div key={i} style={{ marginBottom: '4px', color: 'var(--text-primary)' }}>
+                          <span style={{ color: 'var(--text-tertiary)' }}>[{log.time.toFixed(1)}s]</span> {JSON.stringify(log)}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+                
+                {bottomTab === 'diagnostics' && (
+                  <div style={{ padding: '16px', height: '100%', overflowY: 'auto' }}>
+                    {validationErrors.length === 0 ? (
+                      <div style={{ color: 'var(--text-tertiary)' }}>No diagnostics or validation errors.</div>
+                    ) : (
+                      validationErrors.map((err, i) => (
+                        <div key={i} style={{ color: '#ef4444', marginBottom: '8px', fontSize: '13px' }}>
+                          {err.line_number !== undefined ? `Line ${err.line_number + 1}: ` : ''}{err.message}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+                
+                {bottomTab === 'inspector' && (
+                  <EventInspector 
+                    event={selectedEvent} 
+                    eventDef={eventDefs.find(ed => ed.name === selectedEvent?.event_ref)}
+                    onUpdateEvent={(snippet) => selectedEvent && handleUpdateEvent(selectedEvent, snippet)}
+                  />
                 )}
               </div>
             )}
-            
-            {bottomTab === 'diagnostics' && (
-              <div style={{ padding: '16px', height: '100%', overflowY: 'auto' }}>
-                <div style={{ color: 'var(--text-tertiary)' }}>Diagnostics and validation errors will appear here.</div>
-              </div>
-            )}
+
+            {/* Vertical Strip of Tabs */}
+            <div style={{ width: '48px', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '12px 0', gap: '16px', backgroundColor: 'var(--bg-panel)', borderLeft: bottomOpen ? '1px solid var(--border-color)' : 'none' }}>
+              <button 
+                onClick={() => toggleBottomTab('source')} 
+                title="DSL Source"
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: bottomOpen && bottomTab === 'source' ? 'var(--accent-blue)' : 'var(--text-secondary)' }}
+              >
+                <Code size={20} />
+              </button>
+              <button 
+                onClick={() => toggleBottomTab('log')} 
+                title="Log"
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: bottomOpen && bottomTab === 'log' ? 'var(--accent-blue)' : 'var(--text-secondary)' }}
+              >
+                <List size={20} />
+              </button>
+              <button 
+                onClick={() => toggleBottomTab('diagnostics')} 
+                title="Diagnostics"
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: bottomOpen && bottomTab === 'diagnostics' ? 'var(--accent-blue)' : 'var(--text-secondary)' }}
+              >
+                <Activity size={20} />
+              </button>
+              <button 
+                onClick={() => toggleBottomTab('inspector')} 
+                title="Inspector"
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: bottomOpen && bottomTab === 'inspector' ? 'var(--accent-blue)' : 'var(--text-secondary)' }}
+              >
+                <MousePointer2 size={20} />
+              </button>
+            </div>
           </div>
-        )}
+        </div>
+
+        {/* Timeline Editor (Bottom Panel) */}
+        <div style={{ 
+          height: timelineOpen ? `${bottomPanelHeight}px` : '40px', 
+          transition: isResizingBottom ? 'none' : 'height 0.3s ease',
+          borderTop: '1px solid var(--border-color)', 
+          backgroundColor: 'var(--bg-panel-secondary)', 
+          display: 'flex', 
+          flexDirection: 'column', 
+          flexShrink: 0,
+          position: 'relative'
+        }}>
+          {/* Resize Handle for Bottom Panel */}
+          {timelineOpen && (
+            <div 
+              style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', cursor: 'ns-resize', zIndex: 50 }}
+              onMouseDown={(e) => { e.preventDefault(); setIsResizingBottom(true); }}
+            />
+          )}
+
+          <div 
+            style={{ 
+              padding: '0 12px', 
+              height: '40px',
+              minHeight: '40px',
+              backgroundColor: 'var(--bg-panel)', 
+              fontSize: '12px', 
+              color: 'var(--text-secondary)', 
+              fontWeight: 600, 
+              borderBottom: '1px solid var(--border-color)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              cursor: 'pointer'
+            }}
+            onClick={() => setTimelineOpen(!timelineOpen)}
+          >
+            <span>TIMELINE EDITOR</span>
+            {timelineOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+          </div>
+          {timelineOpen && (
+            <TimelineEditor 
+              events={scenarioEvents}
+              simTime={simTime}
+              selectedEvent={selectedEvent}
+              onSelectEvent={(ev) => {
+                setSelectedEvent(ev);
+                if (ev && !bottomOpen) setBottomOpen(true);
+                if (ev) setBottomTab('inspector');
+              }}
+              onAppendEvent={(eventRef, at) => {
+                const newLine = `\nevent:${eventRef} at=${at} for=1.0`;
+                setScenarioSource(prev => prev + newLine);
+              }}
+            />
+          )}
+        </div>
       </div>
-    </div>
     </div>
   );
 }

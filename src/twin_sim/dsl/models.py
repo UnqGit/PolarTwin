@@ -25,3 +25,6 @@ class SceneEvent(BaseModel):
     
     # The payload built from the `set { ... }` block inside the scene
     payload: Dict[str, Any] = Field(default_factory=dict)
+    
+    source_location: int = 0
+    source_order: int = 0

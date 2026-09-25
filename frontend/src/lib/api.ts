@@ -97,6 +97,14 @@ export const api = {
     if (!res.ok) throw new Error("Failed to validate scenario");
     return res.json();
   },
+  getScenarioEvents: async (scenarioId: string) => {
+    const res = await fetch(`/api/scenarios/${scenarioId}/events`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw err.detail || new Error("Failed to fetch scenario events");
+    }
+    return res.json();
+  },
 
   // Event Definitions
   getEventDefinitions: async () => {

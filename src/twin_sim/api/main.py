@@ -210,6 +210,31 @@ def update_scenario_source(scenario_id: str, payload: UpdateScenarioSourceReques
         raise HTTPException(400, str(e))
 
 
+@app.get("/scenarios/{scenario_id}/events")
+def get_scenario_events(scenario_id: str):
+    try:
+        events = _scenario_manager.get_parsed_events(scenario_id)
+        # SceneEvent has event_ref, selector, at, duration, payload
+        return [
+            {
+                "event_ref": e.event_ref,
+                "selector": e.selector,
+                "at": e.at,
+                "duration": e.duration,
+                "payload": e.payload,
+                "source_location": getattr(e, 'source_location', 0),
+                "source_order": getattr(e, 'source_order', 0)
+            }
+            for e in events
+        ]
+    except FileNotFoundError as e:
+        raise HTTPException(404, str(e))
+    except Exception as e:
+        if hasattr(e, 'line_number') and getattr(e, 'line_number') is not None:
+            raise HTTPException(400, detail={"message": str(e), "line_number": e.line_number - 1})
+        raise HTTPException(400, detail={"message": f"Error parsing scenario: {e}"})
+
+
 # ---------------------------------------------------------------------------
 # Event Definitions
 # ---------------------------------------------------------------------------
