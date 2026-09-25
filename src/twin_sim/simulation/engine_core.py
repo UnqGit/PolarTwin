@@ -102,10 +102,13 @@ class SimulationEngineCore:
         # 14-16. Write runtime state (automatically handled by the active objects manipulating state dict)
         
         # 17-18. Telemetry
+        import time
         self.telemetry.append({
             "time": self.time,
-            "components": len(base_components),
-            "events_active": len(self.state.active_layers)
+            "persistence_time": time.time(),
+            "components": list(base_components.values()),
+            "connections": list(self.state.base_connections.values()),
+            "external": external
         })
         
         # 19. Publish state update to frontend (No-op for headless core)
