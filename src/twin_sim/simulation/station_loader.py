@@ -83,12 +83,14 @@ class LoadedStation:
         runtime_components: List[RuntimeComponent],
         runtime_connections: List[RuntimeConnection],
         external: ExternalModel,
+        specs_list: List[Dict[str, Any]] = None,
     ):
         self.station_id = station_id
         self.hierarchy_list = hierarchy_list
         self.runtime_components = runtime_components
         self.runtime_connections = runtime_connections
         self.external = external
+        self.specs_list = specs_list or []
 
         # Build HierarchyGraph once — shared across engine instances
         self.hierarchy_graph = HierarchyGraph(hierarchy_list)
@@ -190,6 +192,7 @@ class StationLoader:
             runtime_components=runtime_components,
             runtime_connections=runtime_connections,
             external=external,
+            specs_list=specs
         )
 
     @staticmethod

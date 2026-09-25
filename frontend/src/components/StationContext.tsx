@@ -1,32 +1,90 @@
-import React, { createContext, useContext, useState, type ReactNode } from 'react';
-
-// For now, load available stations from local JSON files.
-// In a real app, we'd fetch this list from the /stations API endpoint.
-const hierarchyFiles = import.meta.glob('../../../data/compiled/*/hierarchy.json', { eager: true, import: 'default' });
-const availableTwins = Object.keys(hierarchyFiles).map((path) => {
-  const match = path.match(/\.\.\/\.\.\/\.\.\/data\/compiled\/(.+)\/hierarchy\.json/);
-  return match ? match[1] : '';
-}).filter(Boolean);
+import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { api, type StationManifest } from '../lib/api';
 
 interface StationContextType {
   availableStations: string[];
   selectedStation: string;
   setSelectedStation: (station: string) => void;
+  
+  // Loaded models for the active station
+  hierarchy: any | null;
+  connections: any | null;
+  spec: any | null;
+  isLoadingData: boolean;
 }
 
 const StationContext = createContext<StationContextType>({
   availableStations: [],
   selectedStation: '',
-  setSelectedStation: () => {}
+  setSelectedStation: () => {},
+  hierarchy: null,
+  connections: null,
+  spec: null,
+  isLoadingData: false,
 });
 
 export const useStation = () => useContext(StationContext);
 
 export const StationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const defaultStation = availableTwins.length > 0 ? availableTwins[0] : 'new_station';
+  const [availableStations, setAvailableStations] = useState<string[]>([]);
   const [selectedStation, setSelectedStationState] = useState<string>(() => {
-    return localStorage.getItem('polartwin_selected_station') || defaultStation;
+    return localStorage.getItem('polartwin_selected_station') || '';
   });
+  
+  const [hierarchy, setHierarchy] = useState<any | null>(null);
+  const [connections, setConnections] = useState<any | null>(null);
+  const [spec, setSpec] = useState<any | null>(null);
+  const [isLoadingData, setIsLoadingData] = useState<boolean>(false);
+
+  // Fetch available stations on mount
+  useEffect(() => {
+    api.getStations()
+      .then(data => {
+        const stationIds = data.map(s => s.station_id);
+        setAvailableStations(stationIds);
+        
+        if (stationIds.length > 0 && (!selectedStation || !stationIds.includes(selectedStation))) {
+          const defaultStation = stationIds[0];
+          setSelectedStationState(defaultStation);
+          localStorage.setItem('polartwin_selected_station', defaultStation);
+        }
+      })
+      .catch(err => console.error("Failed to fetch stations:", err));
+  }, []); // Run once on mount
+
+  // Fetch data when selectedStation changes
+  useEffect(() => {
+    if (!selectedStation) {
+      setHierarchy(null);
+      setConnections(null);
+      setSpec(null);
+      return;
+    }
+
+    let isMounted = true;
+    setIsLoadingData(true);
+
+    Promise.all([
+      api.getHierarchy(selectedStation),
+      api.getConnections(selectedStation),
+      api.getSpec(selectedStation)
+    ])
+    .then(([hierarchyData, connectionsData, specData]) => {
+      if (!isMounted) return;
+      setHierarchy(hierarchyData);
+      setConnections(connectionsData);
+      setSpec(specData);
+      setIsLoadingData(false);
+    })
+    .catch(err => {
+      console.error("Failed to fetch station data:", err);
+      if (isMounted) setIsLoadingData(false);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedStation]);
 
   const setSelectedStation = (station: string) => {
     setSelectedStationState(station);
@@ -34,7 +92,15 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
   };
 
   return (
-    <StationContext.Provider value={{ availableStations: availableTwins, selectedStation, setSelectedStation }}>
+    <StationContext.Provider value={{ 
+      availableStations, 
+      selectedStation, 
+      setSelectedStation,
+      hierarchy,
+      connections,
+      spec,
+      isLoadingData
+    }}>
       {children}
     </StationContext.Provider>
   );
