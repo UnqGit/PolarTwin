@@ -41,7 +41,7 @@ function buildNodesMap(root: NodeLayout): Map<string, NodeInfo> {
   return map;
 }
 
-const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout[] }> = ({ root, connections }) => {
+const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout[], leftOffset: number }> = ({ root, connections, leftOffset }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const cyRef = useRef<cytoscape.Core | null>(null);
 
@@ -370,7 +370,7 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
       </button>
 
       {hoveredName && root && connections && (
-        <div style={{ position: 'absolute', top: 16, left: 16, pointerEvents: 'none', zIndex: 100 }}>
+        <div style={{ position: 'absolute', top: 16, left: leftOffset + 16, pointerEvents: 'none', zIndex: 100 }}>
           <HoverCard root={root} connections={connections} liveStateRef={liveStateRef} explicitName={hoveredName} />
         </div>
       )}
@@ -391,6 +391,29 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
 export function ConnectionsPage() {
   const { hierarchy: rawHierarchy, connections: rawConnections, isLoadingData, spec } = useStation();
   const [hoveredName, setHoveredName] = useState<string | null>(null);
+
+  const [leftPanelWidth, setLeftPanelWidth] = useState(300);
+  const [isResizingLeft, setIsResizingLeft] = useState(false);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isResizingLeft) {
+        setLeftPanelWidth(prev => Math.max(200, Math.min(600, prev + e.movementX)));
+      }
+    };
+    const handleMouseUp = () => {
+      setIsResizingLeft(false);
+    };
+
+    if (isResizingLeft) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+    }
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, [isResizingLeft]);
 
   const sceneLayout = useMemo(() => {
     if (!rawHierarchy || !rawConnections) return null;
@@ -422,11 +445,15 @@ export function ConnectionsPage() {
       setHoveredName
     }}>
       <SelectionProvider>
-        <div style={{ display: 'flex', width: '100%', height: '100%' }}>
-          <div style={{ width: 300, borderRight: '1px solid var(--border-color)', backgroundColor: 'var(--bg-panel)', zIndex: 10, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ display: 'flex', width: '100%', height: '100%', position: 'relative' }}>
+          <div style={{ width: leftPanelWidth, position: 'absolute', top: 0, left: 0, bottom: 0, borderRight: '1px solid var(--border-color)', backgroundColor: 'var(--bg-panel)', zIndex: 10, display: 'flex', flexDirection: 'column' }}>
             <ConnectionsList connections={sceneLayout.connections} />
+            <div 
+              style={{ position: 'absolute', top: 0, right: -2, bottom: 0, width: '4px', cursor: 'ew-resize', zIndex: 50 }}
+              onMouseDown={(e) => { e.preventDefault(); setIsResizingLeft(true); }}
+            />
           </div>
-          <GraphContainer root={sceneLayout.root} connections={sceneLayout.connections} />
+          <GraphContainer root={sceneLayout.root} connections={sceneLayout.connections} leftOffset={leftPanelWidth} />
         </div>
       </SelectionProvider>
     </HoverContext.Provider>

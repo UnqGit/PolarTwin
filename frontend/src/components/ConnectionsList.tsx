@@ -79,6 +79,7 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
             fontSize: 12,
             outline: 'none',
             marginBottom: 8,
+            boxSizing: 'border-box',
           }}
         />
         {onShowGraph && (
@@ -95,6 +96,7 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
               cursor: 'pointer',
               fontWeight: 600,
               fontSize: 12,
+              boxSizing: 'border-box',
             }}
           >
             Show Graph

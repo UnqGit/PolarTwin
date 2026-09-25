@@ -153,6 +153,8 @@ class RunRecord:
             "components": [c.model_dump() for c in eff["components"]],
             "connections": [c.model_dump() for c in eff["connections"]],
             "external": eff["external"].model_dump() if hasattr(eff["external"], "model_dump") else {},
+            "active_events": [layer.model_dump() for layer in self.engine.state.active_layers],
+            "upcoming_events": [scene.model_dump() for scene in self.engine.scenes],
         }
 
     def summary(self) -> Dict[str, Any]:

@@ -69,8 +69,9 @@ export function ComponentsPage() {
   }
 
   return (
-    <div style={{ padding: '32px 48px', color: 'var(--text-primary)', height: '100%', overflowY: 'auto' }}>
-      <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 24 }}>Components</h1>
+    <div style={{ display: 'flex', height: '100%', overflow: 'hidden', color: 'var(--text-primary)' }}>
+      <div style={{ flex: 1, padding: '32px 48px', overflowY: 'auto' }}>
+        <h1 style={{ fontSize: 24, fontWeight: 700, marginBottom: 24 }}>Components</h1>
       
       {/* Breadcrumbs */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24, fontSize: 14, color: 'var(--text-secondary)' }}>
@@ -176,24 +177,26 @@ export function ComponentsPage() {
           No components found in this view.
         </div>
       )}
+      </div>
 
       {inspectNodeName && hierarchyData && (
         <div style={{
-          position: 'fixed', top: 64, right: 0, bottom: 0, width: 400,
+          width: 400, flexShrink: 0,
           background: 'var(--bg-panel)', borderLeft: '1px solid var(--border-color)',
-          zIndex: 100, boxShadow: '-4px 0 15px rgba(0,0,0,0.1)', overflowY: 'auto'
+          display: 'flex', flexDirection: 'column', overflow: 'hidden'
         }}>
-          <div style={{ padding: 16, borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ padding: 16, borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
             <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Inspector</h3>
             <button onClick={() => setInspectNodeName(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 20 }}>&times;</button>
           </div>
           {(() => {
             try {
+              // Pass the real spec and connections so PropertyInspector doesn't crash on missing data
               const layout = buildSceneLayout(hierarchyData, [], spec || { components: {}, globals: {} });
               const node = layout.allNodes.get(inspectNodeName);
               if (node) {
                 return (
-                  <div style={{ padding: 16 }}>
+                  <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
                     <PropertyInspector node={node} connections={[]} liveStateRef={{ current: {} }} />
                   </div>
                 );

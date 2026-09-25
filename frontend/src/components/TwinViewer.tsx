@@ -139,7 +139,22 @@ const HoverManager: React.FC<HoverManagerProps> = ({
   const { gl } = useThree();
   const { selectedName, setSelectedName } = React.useContext(SelectionContext);
 
+  const [hasPointerMoved, setHasPointerMoved] = useState(false);
+
+  useEffect(() => {
+    const el = gl?.domElement;
+    if (!el) return;
+    const onMove = () => {
+      setHasPointerMoved(true);
+      el.removeEventListener('pointermove', onMove);
+    };
+    el.addEventListener('pointermove', onMove);
+    return () => el.removeEventListener('pointermove', onMove);
+  }, [gl]);
+
   useFrame(({ raycaster, scene }) => {
+    if (!hasPointerMoved) return;
+    
     const intersects = raycaster.intersectObjects(scene.children, true);
 
     let maxDepth = -1;
@@ -242,6 +257,8 @@ interface TwinViewerProps {
   onConnectionsInteractableChange?: (val: boolean) => void;
   children?: ReactNode; // For the HUD overlay
   customSidebarTabs?: { id: string, icon: React.ReactNode, title: string, content: React.ReactNode }[];
+  rightOffset?: number;
+  bottomOffset?: number;
 }
 
 export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
@@ -256,7 +273,9 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
   onComponentsInteractableChange,
   onConnectionsInteractableChange,
   children,
-  customSidebarTabs
+  customSidebarTabs,
+  rightOffset = 20,
+  bottomOffset = 20
 }) => {
   const { theme } = useTheme();
   const bgMain = theme === 'light' ? '#f8fafc' : '#0f172a';
@@ -474,7 +493,7 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
             </group>
           </Canvas>
           
-          <RightUIStack root={sceneLayout.root} connections={sceneLayout.connections} liveStateRef={liveStateRef}>
+          <RightUIStack root={sceneLayout.root} connections={sceneLayout.connections} liveStateRef={liveStateRef} rightOffset={rightOffset} bottomOffset={bottomOffset}>
           </RightUIStack>
 
           <HierarchyPanel 
@@ -498,6 +517,7 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
             onLightingModeChange={setInternalLightingMode}
             containerOcclusion={internalOcclusion}
             onContainerOcclusionChange={setInternalOcclusion}
+            bottomOffset={bottomOffset}
           />
 
           {isGraphOpen && (
