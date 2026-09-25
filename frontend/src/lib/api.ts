@@ -27,5 +27,25 @@ export const api = {
     const res = await fetch(`/api/stations/${stationId}/spec`);
     if (!res.ok) throw new Error("Failed to fetch spec");
     return res.json();
+  },
+
+  getTelemetryRuns: async () => {
+    const res = await fetch('/api/telemetry/runs');
+    if (!res.ok) throw new Error("Failed to fetch telemetry runs");
+    return res.json();
+  },
+
+  getTelemetryHistory: async (stationId: string, runId?: string) => {
+    let url = `/api/telemetry/history?station_id=${stationId}`;
+    if (runId) url += `&run_id=${runId}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Failed to fetch telemetry history");
+    return res.json();
+  },
+
+  getTelemetryRecord: async (recordId: number) => {
+    const res = await fetch(`/api/telemetry/records/${recordId}`);
+    if (!res.ok) throw new Error("Failed to fetch telemetry record");
+    return res.json();
   }
 };

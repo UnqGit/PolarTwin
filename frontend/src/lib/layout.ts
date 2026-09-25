@@ -951,7 +951,34 @@ export function buildLayout(node: any, spec: any, rawConnections: any[] = []): N
  * @param spec     — raw specification JSON (spec.json).
  */
 export function buildSceneLayout(topology: any, connectionsData: any, spec: any): SceneLayout {
-  const root = buildLayout(topology, spec, connectionsData);
+  let rootNode = topology;
+  
+  // The backend returns a flat list of nodes where children are string arrays.
+  // We need to unflatten this into a nested tree before building the layout.
+  if (Array.isArray(topology)) {
+    const nodeMap = new Map<string, any>();
+    // First pass: clone nodes and initialize empty object children arrays
+    for (const item of topology) {
+      nodeMap.set(item.name, { ...item, children: [] });
+    }
+    
+    // Second pass: link children to parents
+    let foundRoot = null;
+    for (const item of topology) {
+      const node = nodeMap.get(item.name);
+      if (!item.parent) {
+        foundRoot = node;
+      } else {
+        const parent = nodeMap.get(item.parent);
+        if (parent) {
+          parent.children.push(node);
+        }
+      }
+    }
+    rootNode = foundRoot || (topology.length > 0 ? nodeMap.get(topology[0].name) : {});
+  }
+
+  const root = buildLayout(rootNode, spec, connectionsData);
   const nodeMap = buildNodeMap(root);
   const rawConnections: any[] = Array.isArray(connectionsData) ? connectionsData : [];
   

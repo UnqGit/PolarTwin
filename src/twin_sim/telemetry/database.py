@@ -128,3 +128,79 @@ class TelemetryDatabase:
             "connections": [dict(c) for c in conns],
             "external": json.loads(ext["external_json"]) if ext else {}
         }
+
+    def get_records_timeline(self, station_id: str, run_id: str = None) -> List[Dict[str, Any]]:
+        query = """
+            SELECT r.id, r.run_id, r.station_id, r.simulation_time, r.persistence_time, r.source,
+                   (SELECT COUNT(*) FROM telemetry_component_states WHERE record_id = r.id) as component_count,
+                   (SELECT COUNT(*) FROM telemetry_connection_states WHERE record_id = r.id) as connection_count
+            FROM telemetry_records r
+            WHERE r.station_id = ?
+        """
+        params = [station_id]
+        if run_id:
+            query += " AND r.run_id = ?"
+            params.append(run_id)
+        query += " ORDER BY r.simulation_time ASC"
+        
+        cur = self.conn.execute(query, params)
+        return [dict(row) for row in cur.fetchall()]
+        
+    def get_record_by_id(self, record_id: int) -> Dict[str, Any]:
+        cur = self.conn.execute("SELECT * FROM telemetry_records WHERE id = ?", (record_id,))
+        row = cur.fetchone()
+        if not row: return {}
+        
+        comps = self.conn.execute("SELECT * FROM telemetry_component_states WHERE record_id = ?", (record_id,)).fetchall()
+        conns = self.conn.execute("SELECT * FROM telemetry_connection_states WHERE record_id = ?", (record_id,)).fetchall()
+        ext = self.conn.execute("SELECT * FROM telemetry_external_states WHERE record_id = ?", (record_id,)).fetchone()
+        
+        return {
+            "id": row["id"],
+            "run_id": row["run_id"],
+            "station_id": row["station_id"],
+            "source": row["source"],
+            "time": row["simulation_time"],
+            "persistence_time": row["persistence_time"],
+            "components": [dict(c, value_json=json.loads(c["value_json"])) for c in comps],
+            "connections": [dict(c) for c in conns],
+            "external": json.loads(ext["external_json"]) if ext else {}
+        }
+
+    def get_records_timeline(self, station_id: str, run_id: str = None) -> List[Dict[str, Any]]:
+        query = """
+            SELECT r.id, r.run_id, r.station_id, r.simulation_time, r.persistence_time, r.source,
+                   (SELECT COUNT(*) FROM telemetry_component_states WHERE record_id = r.id) as component_count,
+                   (SELECT COUNT(*) FROM telemetry_connection_states WHERE record_id = r.id) as connection_count
+            FROM telemetry_records r
+            WHERE r.station_id = ?
+        """
+        params = [station_id]
+        if run_id:
+            query += " AND r.run_id = ?"
+            params.append(run_id)
+        query += " ORDER BY r.simulation_time ASC"
+        
+        cur = self.conn.execute(query, params)
+        return [dict(row) for row in cur.fetchall()]
+        
+    def get_record_by_id(self, record_id: int) -> Dict[str, Any]:
+        cur = self.conn.execute("SELECT * FROM telemetry_records WHERE id = ?", (record_id,))
+        row = cur.fetchone()
+        if not row: return {}
+        
+        comps = self.conn.execute("SELECT * FROM telemetry_component_states WHERE record_id = ?", (record_id,)).fetchall()
+        conns = self.conn.execute("SELECT * FROM telemetry_connection_states WHERE record_id = ?", (record_id,)).fetchall()
+        ext = self.conn.execute("SELECT * FROM telemetry_external_states WHERE record_id = ?", (record_id,)).fetchone()
+        
+        return {
+            "id": row["id"],
+            "run_id": row["run_id"],
+            "station_id": row["station_id"],
+            "source": row["source"],
+            "time": row["simulation_time"],
+            "persistence_time": row["persistence_time"],
+            "components": [dict(c, value_json=json.loads(c["value_json"])) for c in comps],
+            "connections": [dict(c) for c in conns],
+            "external": json.loads(ext["external_json"]) if ext else {}
+        }
