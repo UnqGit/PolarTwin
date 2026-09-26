@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 from fastapi import FastAPI, HTTPException
+from contextlib import asynccontextmanager
 from pydantic import BaseModel
 
 from twin_sim.api.manager import SimulationManager, RunStatus
@@ -38,15 +39,8 @@ DB_PATH = DATA_DIR / "telemetry.db"
 # Application bootstrap
 # ---------------------------------------------------------------------------
 
-app = FastAPI(title="PolarTwin Backend API", version="2.0.0")
-
-_db = TelemetryDatabase(str(DB_PATH))
-_manager = SimulationManager(telemetry_db=_db)
-_scenario_manager = ScenarioManager(DATA_DIR)
-
-
-@app.on_event("startup")
-def _discover_stations():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     """Auto-discover and register all compiled stations on startup."""
     station_names = StationLoader.list_stations(COMPILED_ROOT)
     for name in station_names:
@@ -54,9 +48,15 @@ def _discover_stations():
             station = StationLoader.load(COMPILED_ROOT / name)
             _manager.register_station(station)
         except Exception as exc:
-            # Log but don't crash startup if one station is malformed
             print(f"[warning] Could not load station '{name}': {exc}")
     print(f"[startup] Loaded {len(station_names)} station(s): {station_names}")
+    yield
+
+app = FastAPI(title="PolarTwin Backend API", version="2.0.0", lifespan=lifespan)
+
+_db = TelemetryDatabase(str(DB_PATH))
+_manager = SimulationManager(telemetry_db=_db)
+_scenario_manager = ScenarioManager(DATA_DIR)
 
 
 # ---------------------------------------------------------------------------
@@ -314,6 +314,8 @@ def pause_simulation(run_id: str):
     if not _manager.pause(run_id):
         raise HTTPException(404, "Simulation not found")
     rec = _manager.get_run(run_id)
+    if not rec:
+        raise HTTPException(404, "Simulation not found")
     return {"status": rec.status}
 
 
@@ -444,17 +446,3 @@ def get_telemetry_record(record_id: int):
         raise HTTPException(404, "Record not found")
     return rec
 
-
-@app.get("/telemetry/history")
-def get_telemetry_history(station_id: str, run_id: Optional[str] = None):
-    """Get the timeline of telemetry records for a station."""
-    return _db.get_records_timeline(station_id, run_id)
-
-
-@app.get("/telemetry/records/{record_id}")
-def get_telemetry_record(record_id: int):
-    """Get a specific telemetry record by ID."""
-    rec = _db.get_record_by_id(record_id)
-    if not rec:
-        raise HTTPException(404, "Record not found")
-    return rec

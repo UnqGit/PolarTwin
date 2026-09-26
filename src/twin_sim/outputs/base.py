@@ -18,6 +18,10 @@ class TelemetrySink(ABC):
     def flush(self) -> None:
         return None
 
+    def write_batch(self, telemetries: list[TelemetryMessage]) -> None:
+        for t in telemetries:
+            self.write(t)
+
     def close(self) -> None:
         return None
 

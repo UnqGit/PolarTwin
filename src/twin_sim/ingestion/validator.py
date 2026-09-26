@@ -38,7 +38,7 @@ def _string(value: Any, path: str) -> str:
     return value
 
 
-def validate_topology(document: Any, validation_config: dict[str, str] | None = None) -> dict[str, Any]:
+def validate_topology(document: Any, validation_config: dict[str, str] | None = None) -> tuple[dict[str, Any], dict[str, str]]:
     validation_config = validation_config or {}
     root = _object(document, "topology")
     for field in ("name", "type", "tags", "children"):

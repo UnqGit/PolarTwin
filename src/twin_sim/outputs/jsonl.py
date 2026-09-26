@@ -25,6 +25,7 @@ class JsonlSink(TelemetrySink):
     def write(self, telemetry: TelemetryMessage) -> None:
         if self._stream is None:
             self.start()
+        assert self._stream is not None
         self._stream.write(serialize(telemetry) + "\n")
 
     def flush(self) -> None:

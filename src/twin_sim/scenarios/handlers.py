@@ -7,7 +7,7 @@ from typing import Any, Callable
 
 from twin_sim.behaviors import BehaviorContext
 from twin_sim.model import ComponentGraph
-from twin_sim.simulation.environment import EnvironmentState
+
 
 from .event import ScenarioEvent
 
@@ -15,7 +15,7 @@ from .event import ScenarioEvent
 @dataclass
 class EventContext:
     graph: ComponentGraph
-    environment: EnvironmentState
+    environment: dict[str, Any]
     behavior_context: BehaviorContext
     schedule: Callable[[float, Callable[[float, Any], None], Any], None]
     causal_trace: list[dict[str, Any]] | None = None

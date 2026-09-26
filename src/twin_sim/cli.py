@@ -9,24 +9,20 @@ from pathlib import Path
 
 from twin_sim.compiler import compile_model
 from twin_sim.ingestion.config import load_runtime_config
-from twin_sim.ingestion.loaders import load_model_inputs
 from twin_sim.ingestion.validator import ValidationError, load_json
 from twin_sim.observability import build_quality_report
-from twin_sim.outputs import AsyncTelemetryPipeline, DatabaseSink, JsonlSink, MultiSink, create_sink
-from twin_sim.scenarios import ScenarioScheduler, load_scenario_events
-from twin_sim.simulation import SimulationEngine
+from twin_sim.outputs import AsyncTelemetryPipeline, DatabaseSink, JsonlSink, MultiSink, create_sink, TelemetrySink
+from twin_sim.dsl.scene_parser import parse_scene_string
+from twin_sim.simulation.engine_core import SimulationEngineCore
+from twin_sim.simulation.station_loader import LoadedStation, _DEFAULT_EXTERNAL
+from twin_sim.ingestion.loaders import generate_runtime_components, generate_runtime_connections
 from twin_sim.storage import SQLiteAdapter
 
 
 def _inputs(args):
-    return load_model_inputs(args.topology, args.connection, args.spec)
+    return load_json(args.topology), load_json(args.connection), load_json(args.spec)
 
 
-def _scenario(engine, paths):
-    if paths:
-        if isinstance(paths, str):
-            paths = [paths]
-        ScenarioScheduler().schedule(engine, load_scenario_events(paths))
 
 
 def _hash_file(path_str: str | list[str] | None) -> str | None:
@@ -83,36 +79,6 @@ def command_quality(args) -> int:
     return 0
 
 
-def command_explain(args) -> int:
-    _, _get = _merge_config(args)
-    engine = _run_engine(args, _get)
-    engine.run(duration=_get("duration", 1.0))
-    explanation = engine.tracer.explain(args.component)
-    if args.json:
-        print(json.dumps(explanation.to_dict(), sort_keys=True, indent=2))
-    else:
-        print(explanation.format_text())
-    return 0
-
-
-def command_trace(args) -> int:
-    _, _get = _merge_config(args)
-    engine = _run_engine(args, _get)
-    engine.run(duration=_get("duration", 1.0))
-    if args.component:
-        events = [e for e in engine.tracer.events if any(eff.component == args.component for eff in e.effects)]
-    else:
-        events = engine.tracer.events
-    
-    if args.json:
-        print(json.dumps([e.to_dict() for e in events], sort_keys=True, indent=2))
-    else:
-        for event in events:
-            print(f"[{event.timestamp}] {event.cause.component} {event.cause.event}")
-            for effect in event.effects:
-                print(f"  -> {effect.component}: {effect.state_change}")
-    return 0
-
 
 def _merge_config(args):
     config = {}
@@ -165,23 +131,37 @@ def _run_engine(args, _get=None, seed: int | None = None, run_id: str | None = N
     environment = None
     if env_arg:
         environment = json.loads(env_arg) if isinstance(env_arg, str) else env_arg
-
     final_seed = seed if seed is not None else _get("seed", None)
     final_run_id = run_id if run_id is not None else _get("run_id", "run-cli")
 
-    engine = SimulationEngine(
-        graph,
-        tick_interval=_get("tick_interval", 1.0),
-        time_scale=_get("time_scale", 1.0),
-        seed=final_seed,
-        run_id=final_run_id,
-        environment=environment,
-        debug=_get("debug", True) if getattr(args, "command", "") in ("explain", "trace") else _get("debug", False),
-        validation_config=validation_config,
-    )
-    _scenario(engine, getattr(args, "scenario", None))
-    return engine
+    hierarchy_list = topology if isinstance(topology, list) else [topology]
+    compiled_connections = connections if isinstance(connections, list) else [connections]
+    specs = specification if isinstance(specification, list) else [specification]
 
+    runtime_components = generate_runtime_components(hierarchy_list, specs)
+    runtime_conns = generate_runtime_connections(compiled_connections)
+    
+    assert final_run_id is not None
+    station = LoadedStation(
+        station_id=final_run_id,
+        hierarchy_list=hierarchy_list,
+        runtime_components=runtime_components,
+        runtime_connections=runtime_conns,
+        external=_DEFAULT_EXTERNAL,
+        specs_list=specs,
+    )
+    
+    scenario_paths = getattr(args, "scenario", None) or []
+    if isinstance(scenario_paths, str):
+        scenario_paths = [scenario_paths]
+        
+    scenes = []
+    for path in scenario_paths:
+        with open(path, "r", encoding="utf-8") as f:
+            scenes.extend(parse_scene_string(f.read()))
+
+    engine = station.build_engine(scenes=scenes)
+    return engine
 
 def command_run(args) -> int:
     config, _get = _merge_config(args)
@@ -199,12 +179,16 @@ def command_run(args) -> int:
         
     multi_sink = MultiSink(sinks)
     pipeline = AsyncTelemetryPipeline(multi_sink, backpressure_policy="drop")
-    engine.telemetry_sink = pipeline
-    engine.telemetry_batch_size = 100
+    engine.telemetry_publishing = True
     
     try:
         pipeline.start()
-        engine.run(duration=_get("duration", 1.0))
+        duration = _get("duration") or 1.0
+        while engine.time < duration:
+            engine.run_tick()
+            if engine.telemetry:
+                pipeline.write_batch(engine.telemetry)
+                engine.telemetry.clear()
         pipeline.flush()
     finally:
         pipeline.close()
@@ -234,16 +218,19 @@ def command_generate(args) -> int:
 
     multi_sink = MultiSink(sinks)
     pipeline = AsyncTelemetryPipeline(multi_sink, backpressure_policy="drop")
-    engine.telemetry_sink = pipeline
-    engine.telemetry_batch_size = 100
+    engine.telemetry_publishing = True
     
     try:
         pipeline.start()
-        engine.run(duration=_get("duration", 1.0))
+        duration = _get("duration") or 1.0
+        while engine.time < duration:
+            engine.run_tick()
+            if engine.telemetry:
+                pipeline.write_batch(engine.telemetry)
+                engine.telemetry.clear()
         pipeline.flush()
     finally:
         pipeline.close()
-    
     dropped = pipeline.dropped_batches
     print(json.dumps({"sinks": len(sinks), "dropped_batches": dropped}))
     return 0
@@ -256,11 +243,14 @@ def command_validate_simulation(args) -> int:
     scenario_paths = getattr(args, "scenario", None) or []
     if isinstance(scenario_paths, str):
         scenario_paths = [scenario_paths]
-    events = load_scenario_events(scenario_paths) if scenario_paths else []
+    events = []
+    for path in scenario_paths:
+        with open(path, "r", encoding="utf-8") as f:
+            events.extend(parse_scene_string(f.read()))
     targets = set(graph.components)
     for event in events:
-        if event.target and event.target not in targets:
-            raise ValidationError(f"scenario event '{event.id}' references unknown component '{event.target}'")
+        if event.selector and event.selector not in targets:
+            raise ValidationError(f"scenario event '{event.event_ref}' references unknown component '{event.selector}'")
     print(json.dumps({"valid": True, "events": len(events), "diagnostics": graph.diagnostics}, sort_keys=True))
     return 0
 
@@ -295,7 +285,7 @@ def command_experiment(args) -> int:
             
             engine = _run_engine(args, _get, seed=current_seed, run_id=run_id)
             
-            sinks = [DatabaseSink(SQLiteAdapter(db_path))]
+            sinks: list[TelemetrySink] = [DatabaseSink(SQLiteAdapter(db_path))]
             if "outputs" in config:
                 for output_cfg in config["outputs"]:
                     if output_cfg.get("enabled", True):
@@ -305,12 +295,16 @@ def command_experiment(args) -> int:
                 
             multi_sink = MultiSink(sinks)
             pipeline = AsyncTelemetryPipeline(multi_sink, backpressure_policy="drop")
-            engine.telemetry_sink = pipeline
-            engine.telemetry_batch_size = 100
+            engine.telemetry_publishing = True
             
             try:
                 pipeline.start()
-                engine.run(duration=_get("duration", 1.0))
+                duration = _get("duration") or 1.0
+                while engine.time < duration:
+                    engine.run_tick()
+                    if engine.telemetry:
+                        pipeline.write_batch(engine.telemetry)
+                        engine.telemetry.clear()
                 pipeline.flush()
             finally:
                 pipeline.close()
@@ -422,25 +416,6 @@ def build_parser() -> argparse.ArgumentParser:
     add_inputs(dry_run)
     dry_run.add_argument("--scenario", action="append", help="Scenario JSON file(s)")
     dry_run.set_defaults(handler=command_validate_simulation)
-    
-    explain = subparsers.add_parser("explain")
-    add_inputs(explain)
-    explain.add_argument("--config", help="Runtime configuration JSON file")
-    explain.add_argument("--scenario", action="append", help="Scenario JSON file(s)")
-    explain.add_argument("--component", required=True)
-    explain.add_argument("--duration", type=float, default=None)
-    explain.add_argument("--json", action="store_true")
-    explain.set_defaults(handler=command_explain)
-
-    trace = subparsers.add_parser("trace")
-    add_inputs(trace)
-    trace.add_argument("--config", help="Runtime configuration JSON file")
-    trace.add_argument("--scenario", action="append", help="Scenario JSON file(s)")
-    trace.add_argument("--component")
-    trace.add_argument("--duration", type=float, default=None)
-    trace.add_argument("--json", action="store_true")
-    trace.set_defaults(handler=command_trace)
-    
     serve = subparsers.add_parser("serve")
     serve.add_argument("--host", default="127.0.0.1")
     serve.add_argument("--port", type=int, default=8000)

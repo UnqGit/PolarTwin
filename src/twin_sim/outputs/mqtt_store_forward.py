@@ -78,6 +78,7 @@ class MqttStoreForwardSink(TelemetrySink):
             if not self.connectivity_policy.allow(environment):
                 raise ConnectionError("simulated network loss")
             self._connect()
+            assert self.client is not None
             self.client.publish(record.topic, record.payload, record.qos, record.retain)
             self.outbox.mark_delivered(record.message_id)
         except Exception as exc:
