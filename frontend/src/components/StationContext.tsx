@@ -11,6 +11,23 @@ interface StationContextType {
   connections: any | null;
   spec: any | null;
   isLoadingData: boolean;
+
+  // Simulation and Scenario state
+  liveStateRef: React.MutableRefObject<Record<string, unknown>>;
+  selectedScenarioId: string | null;
+  setSelectedScenarioId: React.Dispatch<React.SetStateAction<string | null>>;
+  scenarioSource: string;
+  setScenarioSource: React.Dispatch<React.SetStateAction<string>>;
+  runId: string | null;
+  setRunId: React.Dispatch<React.SetStateAction<string | null>>;
+  simStatus: string;
+  setSimStatus: React.Dispatch<React.SetStateAction<string>>;
+  simTime: number;
+  setSimTime: React.Dispatch<React.SetStateAction<number>>;
+  simLog: any[];
+  setSimLog: React.Dispatch<React.SetStateAction<any[]>>;
+  simState: any | null;
+  setSimState: React.Dispatch<React.SetStateAction<any | null>>;
 }
 
 export const StationContext = createContext<StationContextType>({
@@ -21,6 +38,23 @@ export const StationContext = createContext<StationContextType>({
   connections: null,
   spec: null,
   isLoadingData: false,
+  
+  // Dummy defaults for simulation state
+  liveStateRef: { current: {} },
+  selectedScenarioId: null,
+  setSelectedScenarioId: () => {},
+  scenarioSource: '',
+  setScenarioSource: () => {},
+  runId: null,
+  setRunId: () => {},
+  simStatus: 'Ready',
+  setSimStatus: () => {},
+  simTime: 0,
+  setSimTime: () => {},
+  simLog: [],
+  setSimLog: () => {},
+  simState: null,
+  setSimState: () => {},
 });
 
 export const useStation = () => useContext(StationContext);
@@ -35,6 +69,16 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [connections, setConnections] = useState<any | null>(null);
   const [spec, setSpec] = useState<any | null>(null);
   const [isLoadingData, setIsLoadingData] = useState<boolean>(false);
+
+  // Simulation and Scenario state
+  const liveStateRef = React.useRef<Record<string, unknown>>({});
+  const [selectedScenarioId, setSelectedScenarioId] = useState<string | null>(null);
+  const [scenarioSource, setScenarioSource] = useState<string>('');
+  const [runId, setRunId] = useState<string | null>(null);
+  const [simStatus, setSimStatus] = useState<string>('Ready');
+  const [simTime, setSimTime] = useState<number>(0);
+  const [simLog, setSimLog] = useState<any[]>([]);
+  const [simState, setSimState] = useState<any | null>(null);
 
   // Fetch available stations on mount
   useEffect(() => {
@@ -99,7 +143,15 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
       hierarchy,
       connections,
       spec,
-      isLoadingData
+      isLoadingData,
+      liveStateRef,
+      selectedScenarioId, setSelectedScenarioId,
+      scenarioSource, setScenarioSource,
+      runId, setRunId,
+      simStatus, setSimStatus,
+      simTime, setSimTime,
+      simLog, setSimLog,
+      simState, setSimState
     }}>
       {children}
     </StationContext.Provider>

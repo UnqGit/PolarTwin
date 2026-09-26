@@ -39,7 +39,7 @@ export function DSLEditor({ value, onChange, selectedLine, errorLine }: DSLEdito
       if (part.startsWith('@')) return <span key={i} style={{ color: '#10b981' }}>{part}</span>;
       if (['=', '{', '}'].includes(part)) return <span key={i} style={{ color: '#f59e0b' }}>{part}</span>;
       if (/^[0-9.]+$/.test(part)) return <span key={i} style={{ color: '#8b5cf6' }}>{part}</span>;
-      return <span key={i}>{part}</span>;
+      return <span key={i} style={{ color: '#d4d4d4' }}>{part}</span>;
     });
   };
 

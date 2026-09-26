@@ -195,3 +195,15 @@ class ScenarioManager:
             "created_at": getattr(path.stat(), 'st_birthtime', path.stat().st_mtime),
             "updated_at": path.stat().st_mtime
         }
+
+    def create_event(self, name: str, source: str = "") -> Dict[str, Any]:
+        path = self.events_dir / f"{name}.event"
+        path.write_text(source, encoding="utf-8")
+        return self.get_event(name)
+        
+    def update_event(self, name: str, source: str) -> Dict[str, Any]:
+        path = self.events_dir / f"{name}.event"
+        if not path.exists():
+            raise FileNotFoundError(f"Event definition '{name}' not found")
+        path.write_text(source, encoding="utf-8")
+        return self.get_event(name)

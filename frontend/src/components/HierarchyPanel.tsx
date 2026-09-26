@@ -1,9 +1,11 @@
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import type { NodeLayout, ConnectionLayout } from '../lib/layout';
 import { useSelection } from './SelectionContext';
+import { useStation } from './StationContext';
+import { api } from '../lib/api';
 import { TypeIcon } from './TypeIcon';
 import { ConnectionsList } from './ConnectionsList';
-import { Network, Link2, Sliders, ChevronRight, Eye, EyeOff, Focus, Sun, Moon } from 'lucide-react';
+import { Network, Link2, Sliders, ChevronRight, Eye, EyeOff, Focus, Edit2 } from 'lucide-react';
 import { useTheme } from './ThemeContext';
 
 const PANEL_BORDER = '1px solid var(--border-color)';
@@ -19,14 +21,25 @@ function findPath(root: NodeLayout, targetName: string): string[] | null {
   return null;
 }
 
+function findNode(root: NodeLayout, targetName: string): NodeLayout | null {
+  if (root.name === targetName) return root;
+  for (const child of root.children) {
+    const found = findNode(child, targetName);
+    if (found) return found;
+  }
+  return null;
+}
+
 interface TreeNodeProps {
   node: NodeLayout;
   depth: number;
   expandedSet: Set<string>;
   toggleExpanded: (name: string) => void;
+  isEditingInitials?: boolean;
+  onEditInitials?: (name: string, type: 'component' | 'connection') => void;
 }
 
-const TreeNode: React.FC<TreeNodeProps> = ({ node, depth, expandedSet, toggleExpanded }) => {
+const TreeNode: React.FC<TreeNodeProps> = ({ node, depth, expandedSet, toggleExpanded, isEditingInitials, onEditInitials }) => {
   const { selectedName, setSelectedName, hiddenSet, toggleVisibility } = useSelection();
   const isSelected = selectedName === node.name;
   const isExpanded = expandedSet.has(node.name);
@@ -82,6 +95,15 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, depth, expandedSet, toggleExp
         <span style={{ color: 'var(--text-tertiary)', fontSize: 10, marginLeft: 'auto', paddingRight: 6, flexShrink: 0 }}>
           {node.type}
         </span>
+        {isEditingInitials && (
+          <span 
+            onClick={(e) => { e.stopPropagation(); onEditInitials?.(node.name, 'component'); }}
+            style={{ cursor: 'pointer', paddingRight: 6, display: 'flex', alignItems: 'center' }}
+            title="Edit Initials"
+          >
+            <Edit2 size={14} color="var(--text-secondary)" />
+          </span>
+        )}
         <span
           onClick={(e) => { e.stopPropagation(); toggleVisibility(node.name); }}
           style={{
@@ -97,7 +119,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, depth, expandedSet, toggleExp
       {hasChildren && isExpanded && (
         <div>
           {node.children.map(child => (
-            <TreeNode key={child.name} node={child} depth={depth + 1} expandedSet={expandedSet} toggleExpanded={toggleExpanded} />
+            <TreeNode key={child.name} node={child} depth={depth + 1} expandedSet={expandedSet} toggleExpanded={toggleExpanded} isEditingInitials={isEditingInitials} onEditInitials={onEditInitials} />
           ))}
         </div>
       )}
@@ -129,6 +151,7 @@ export interface HierarchyPanelProps {
   containerOcclusion?: 'off' | 'off_on_hover';
   onContainerOcclusionChange?: (mode: 'off' | 'off_on_hover') => void;
   bottomOffset?: number;
+  hideEditInitials?: boolean;
 }
 
 export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
@@ -140,12 +163,21 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
   onShowGraph, customSidebarTabs,
   lightingMode, onLightingModeChange,
   containerOcclusion, onContainerOcclusionChange,
-  bottomOffset = 0
+  bottomOffset = 0, hideEditInitials = false,
+  liveStateRef
 }) => {
   const [activeView, setActiveView] = useState<string | null>('hierarchy');
+  const [isEditingInitials, setIsEditingInitials] = useState(false);
+  const [editingTarget, setEditingTarget] = useState<{name: string, type: 'component' | 'connection'} | null>(null);
+  
   const { selectedName } = useSelection();
-  const { theme, toggleTheme } = useTheme();
+  const { runId } = useStation();
   const isOpen = activeView !== null;
+
+  // Clear editing state when view changes
+  useEffect(() => {
+    setEditingTarget(null);
+  }, [activeView, isEditingInitials]);
 
   const [panelWidth, setPanelWidth] = useState(300);
   const isResizing = React.useRef(false);
@@ -264,6 +296,99 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
       pointerEvents: 'none',
       transition: 'bottom 0.3s ease',
     }}>
+      {editingTarget && (
+        <div style={{
+          position: 'relative', width: 320, background: 'var(--bg-panel)', backdropFilter: 'blur(8px)',
+          borderRight: PANEL_BORDER, display: 'flex', flexDirection: 'column',
+          pointerEvents: 'auto', boxShadow: '4px 0 15px rgba(0,0,0,0.3)',
+          overflowY: 'auto', zIndex: 15
+        }}>
+           <div style={{ padding: '16px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+             <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>
+               Edit Initials ({editingTarget.type === 'connection' ? editingTarget.name.replace('-to-', ' → ').replace(/-/g, ' ') : editingTarget.name})
+             </h3>
+             <button onClick={() => setEditingTarget(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 20 }}>&times;</button>
+           </div>
+           <div style={{ padding: '16px', fontSize: 13, flex: 1, overflowY: 'auto' }}>
+             {/* Dynamic fields from spec */}
+             {(() => {
+                const node = root ? findNode(root, editingTarget.name) : null;
+                const specObj = node?.spec || {};
+                const liveState = (liveStateRef?.current?.[editingTarget.name] ?? {}) as Record<string, unknown>;
+                
+                const inputs: string[] = [];
+                const states: string[] = [];
+                const outputs: string[] = [];
+                
+                if (specObj.rating) {
+                   for (const k of Object.keys((specObj.rating as any).input || {})) inputs.push(k);
+                   for (const k of Object.keys((specObj.rating as any).state || {})) states.push(k);
+                   for (const k of Object.keys((specObj.rating as any).output || {})) outputs.push(k);
+                }
+                
+                const renderInput = (key: string, category: string) => {
+                   const detail = (specObj.rating as any)?.[category]?.[key];
+                   const unit = detail?.unit || '';
+                   const rawVal = liveState[key] ?? detail?.value ?? '';
+                   const val = typeof rawVal === 'object' ? JSON.stringify(rawVal) : String(rawVal);
+                   return (
+                     <div key={key} style={{ marginBottom: 12 }}>
+                       <label style={{ display: 'block', marginBottom: 4, color: 'var(--text-secondary)', fontSize: 11 }}>{key} {unit ? `(${unit})` : ''}</label>
+                       <input 
+                         type="text" 
+                         defaultValue={val} 
+                         onBlur={(e) => {
+                           if(runId && editingTarget) {
+                             const numVal = parseFloat(e.target.value);
+                             if (!isNaN(numVal)) {
+                               // Assuming we have api.setComponentState or similar
+                               api.setComponentState(runId, editingTarget.name, { [key]: numVal });
+                             }
+                           }
+                         }}
+                         style={{ width: '100%', background: 'var(--bg-input)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4 }} 
+                       />
+                     </div>
+                   );
+                };
+
+                return (
+                  <>
+                    <div style={{ marginBottom: 12 }}>
+                      <label style={{ display: 'block', marginBottom: 4, color: 'var(--text-secondary)', fontSize: 11 }}>Individual Tolerance</label>
+                      <input 
+                        type="number" 
+                        defaultValue={(specObj.tolerance as number) || 10} 
+                        onBlur={(e) => {
+                           if(runId && editingTarget) api.setComponentTolerance(runId, editingTarget.name, parseFloat(e.target.value));
+                        }}
+                        style={{ width: '100%', background: 'var(--bg-input)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4 }} 
+                      />
+                    </div>
+
+                    {inputs.length > 0 && <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic', marginBottom: 8, marginTop: 16 }}>input:</div>}
+                    {inputs.map(k => renderInput(k, 'input'))}
+                    
+                    {states.length > 0 && <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic', marginBottom: 8, marginTop: 16 }}>state:</div>}
+                    {states.map(k => renderInput(k, 'state'))}
+                    
+                    {outputs.length > 0 && <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic', marginBottom: 8, marginTop: 16 }}>output:</div>}
+                    {outputs.map(k => renderInput(k, 'output'))}
+                  </>
+                );
+             })()}
+
+             <div style={{ display: 'flex', gap: 8, marginBottom: 16, marginTop: 16 }}>
+               <button style={{ flex: 1, background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4, cursor: 'pointer' }} onClick={() => { if(runId && editingTarget) api.setComponentTolerance(runId, editingTarget.name, 10); }}>Reset Tolerance</button>
+               <button style={{ flex: 1, background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4, cursor: 'pointer' }} onClick={() => console.log('Reset fields to earlier state')}>Reset Fields</button>
+             </div>
+             <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic' }}>
+               Changes are synced with backend automatically.
+             </div>
+           </div>
+        </div>
+      )}
+
       {/* Panel Area */}
       {isOpen && (
         <div style={{
@@ -291,6 +416,14 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
              </span>
              {activeView === 'hierarchy' && (
                <div style={{ display: 'flex', gap: 4, textTransform: 'none', letterSpacing: 'normal', fontWeight: 500 }}>
+                  {!hideEditInitials && (
+                    <button 
+                      onClick={() => setIsEditingInitials(!isEditingInitials)} 
+                      style={{ background: isEditingInitials ? 'var(--accent-blue)' : 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: isEditingInitials ? '#fff' : 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}
+                    >
+                      Edit Initials
+                    </button>
+                  )}
                   {allHierarchyExpanded ? (
                     <button onClick={collapseAllHierarchy} style={{ background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}>Collapse All</button>
                   ) : (
@@ -298,10 +431,20 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                   )}
                </div>
              )}
+             {activeView === 'connections' && !hideEditInitials && (
+               <div style={{ display: 'flex', gap: 4, textTransform: 'none', letterSpacing: 'normal', fontWeight: 500 }}>
+                  <button 
+                    onClick={() => setIsEditingInitials(!isEditingInitials)} 
+                    style={{ background: isEditingInitials ? 'var(--accent-blue)' : 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: isEditingInitials ? '#fff' : 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}
+                  >
+                    Edit Initials
+                  </button>
+               </div>
+             )}
           </div>
           <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
-             {activeView === 'hierarchy' && <TreeNode node={root} depth={0} expandedSet={expandedSet} toggleExpanded={toggleExpanded} />}
-             {activeView === 'connections' && <ConnectionsList connections={connections} />}
+             {activeView === 'hierarchy' && <TreeNode node={root} depth={0} expandedSet={expandedSet} toggleExpanded={toggleExpanded} isEditingInitials={isEditingInitials} onEditInitials={(name, type) => setEditingTarget({ name, type })} />}
+             {activeView === 'connections' && <ConnectionsList connections={connections} isEditingInitials={isEditingInitials} onEditInitials={(name, type) => setEditingTarget({ name, type })} />}
              {activeView === 'interactivity' && (
                <div style={{ padding: '16px 14px', fontSize: 13, color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: 12 }}>
                  <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: 11, textTransform: 'uppercase', marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -394,12 +537,12 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
           </div>
         </div>
       )}
-      
+
       {/* Activity Bar */}
       <div style={{
         width: 48, background: 'var(--bg-panel-solid)', borderRight: PANEL_BORDER,
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        paddingTop: 8, pointerEvents: 'auto',
+        paddingTop: 8, paddingBottom: 8, boxSizing: 'border-box', pointerEvents: 'auto',
       }}>
         <IconBtn icon={<Network size={20} />} active={activeView === 'hierarchy'} onClick={() => toggleView('hierarchy')} title="Hierarchy" />
         <IconBtn icon={<Link2 size={20} />} active={activeView === 'connections'} onClick={() => toggleView('connections')} title="Connections" />

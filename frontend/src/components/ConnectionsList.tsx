@@ -1,13 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Edit2 } from 'lucide-react';
 import type { ConnectionLayout } from '../lib/layout';
 import { useSelection } from './SelectionContext';
 
 interface ConnectionsListProps {
   connections: ConnectionLayout[];
   onShowGraph?: () => void;
+  isEditingInitials?: boolean;
+  onEditInitials?: (name: string, type: 'component' | 'connection') => void;
 }
 
-export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, onShowGraph }) => {
+export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, onShowGraph, isEditingInitials, onEditInitials }) => {
   const { selectedName, setSelectedName, hiddenSet, toggleVisibility } = useSelection();
   const [search, setSearch] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
@@ -24,7 +27,7 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
     }
   }, [selectedName]);
 
-  const [sortBy, setSortBy] = useState<'source' | 'target'>('source');
+  const [sortBy, setSortBy] = useState<'source' | 'target' | 'type'>('source');
 
   // Filter
   const filtered = connections.filter(c => {
@@ -38,7 +41,7 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
   // Group by chosen sort property
   const grouped = new Map<string, ConnectionLayout[]>();
   for (const c of filtered) {
-    const key = sortBy === 'source' ? c.source : c.target;
+    const key = sortBy === 'source' ? c.source : sortBy === 'target' ? c.target : c.connectionType;
     const arr = grouped.get(key) || [];
     arr.push(c);
     grouped.set(key, arr);
@@ -115,6 +118,7 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
             >
               <option value="source">source</option>
               <option value="target">target</option>
+              <option value="type">type</option>
             </select>
           </div>
           <div style={{ display: 'flex', gap: 4 }}>
@@ -145,13 +149,13 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
             const groupConnections = grouped.get(groupKey)!;
             // Sort inner items by the other property
             groupConnections.sort((a, b) => {
-              const valA = sortBy === 'source' ? a.target : a.source;
-              const valB = sortBy === 'source' ? b.target : b.source;
+              const valA = sortBy === 'source' ? a.target : sortBy === 'target' ? a.source : `${a.source}->${a.target}`;
+              const valB = sortBy === 'source' ? b.target : sortBy === 'target' ? b.source : `${b.source}->${b.target}`;
               return valA.localeCompare(valB);
             });
 
             const isCollapsed = !expandedGroups.has(groupKey);
-            const headingLabel = sortBy === 'source' ? 'Source:' : 'Target:';
+            const headingLabel = sortBy === 'source' ? 'Source:' : sortBy === 'target' ? 'Target:' : 'Type:';
 
             return (
               <div key={groupKey} style={{ marginBottom: 4 }}>
@@ -189,8 +193,10 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
                   <div>
                     {groupConnections.map((c) => {
                       const isSelected = selectedName === c.id;
-                      const innerLabel = sortBy === 'source' ? 'Target:' : 'Source:';
-                      const innerValue = sortBy === 'source' ? c.target : c.source;
+                      let innerLabel = '';
+                      let innerValue = '';
+                      if (sortBy === 'source') { innerLabel = 'Target:'; innerValue = c.target; }
+                      else if (sortBy === 'target') { innerLabel = 'Source:'; innerValue = c.source; }
                       
                       return (
                         <div
@@ -214,24 +220,43 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
                         >
                           <div style={{ display: 'flex', alignItems: 'center', flex: 1, overflow: 'hidden', justifyContent: 'space-between' }}>
                             <div style={{ color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)', fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              <span style={{ color: 'var(--text-tertiary)', marginRight: 4, fontWeight: 500 }}>{innerLabel}</span>
-                              <span style={{ fontWeight: 600 }}>{innerValue}</span>
+                              {sortBy === 'type' ? (
+                                <span style={{ fontWeight: 600 }}>{c.source} <span style={{ color: 'var(--text-tertiary)', margin: '0 4px', fontWeight: 'normal' }}>→</span> {c.target}</span>
+                              ) : (
+                                <>
+                                  <span style={{ color: 'var(--text-tertiary)', marginRight: 4, fontWeight: 500 }}>{innerLabel}</span>
+                                  <span style={{ fontWeight: 600 }}>{innerValue}</span>
+                                </>
+                              )}
                             </div>
-                            <div style={{ color: 'var(--text-secondary)', fontSize: 10, textTransform: 'uppercase', flexShrink: 0, paddingLeft: 8, paddingRight: 8 }}>
-                              [{c.connectionType}]
-                            </div>
+                            {sortBy !== 'type' && (
+                              <div style={{ color: 'var(--text-secondary)', fontSize: 10, textTransform: 'uppercase', flexShrink: 0, paddingLeft: 8, paddingRight: 8 }}>
+                                [{c.connectionType}]
+                              </div>
+                            )}
                           </div>
-                          <span
-                            onClick={(e) => { e.stopPropagation(); toggleVisibility(c.id); }}
-                            style={{
-                              cursor: 'pointer', fontSize: 12, padding: '2px 4px',
-                              color: hiddenSet.has(c.id) ? 'var(--text-tertiary)' : 'var(--text-secondary)',
-                              opacity: hiddenSet.has(c.id) ? 0.5 : 1,
-                            }}
-                            title={hiddenSet.has(c.id) ? 'Show connection' : 'Hide connection'}
-                          >
-                            {hiddenSet.has(c.id) ? '👁‍🗨' : '👁'}
-                          </span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            {isEditingInitials && (
+                              <span 
+                                onClick={(e) => { e.stopPropagation(); onEditInitials?.(c.id, 'connection'); }}
+                                style={{ cursor: 'pointer', fontSize: 10, color: 'var(--text-tertiary)' }}
+                                title="Edit Initials"
+                              >
+                                <Edit2 size={12} color="var(--text-secondary)" />
+                              </span>
+                            )}
+                            <span
+                              onClick={(e) => { e.stopPropagation(); toggleVisibility(c.id); }}
+                              style={{
+                                cursor: 'pointer', fontSize: 12, padding: '2px 4px',
+                                color: hiddenSet.has(c.id) ? 'var(--text-tertiary)' : 'var(--text-secondary)',
+                                opacity: hiddenSet.has(c.id) ? 0.5 : 1,
+                              }}
+                              title={hiddenSet.has(c.id) ? 'Show connection' : 'Hide connection'}
+                            >
+                              {hiddenSet.has(c.id) ? '👁‍🗨' : '👁'}
+                            </span>
+                          </div>
                         </div>
                       );
                     })}

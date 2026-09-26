@@ -8,6 +8,7 @@ import { HoverContext } from '../components/HoverContext';
 import { ConnectionsList } from '../components/ConnectionsList';
 import { HoverCard } from '../components/HoverCard';
 import { PropertyInspector } from '../components/PropertyInspector';
+import { ConnectionInspector } from '../components/ConnectionInspector';
 import { useTheme } from '../components/ThemeContext';
 import { TYPE_MATERIALS, GENERIC_MATERIAL } from '../lib/materials';
 import type { NodeLayout, NodeInfo, ConnectionLayout } from '../lib/layout';
@@ -81,7 +82,8 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
 
     // Add edges
     connections.forEach((c, idx) => {
-      if (!hiddenSet.has(c.id)) {
+      // Prevent cytoscape from crashing if a connection source or target is missing
+      if (allNodes.has(c.source) && allNodes.has(c.target)) {
         els.push({
           data: {
             id: `conn-${idx}-${c.source}-${c.target}`,
@@ -94,14 +96,14 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
     });
 
     return els;
-  }, [allNodes, connections, hiddenSet]);
+  }, [allNodes, connections]);
 
-  // Sync selection/hover
+  // Sync selection/hover/hidden
   useEffect(() => {
     if (!cyRef.current) return;
     const cy = cyRef.current;
     
-    cy.elements().removeClass('hovered').removeClass('selected');
+    cy.elements().removeClass('hovered').removeClass('selected').removeClass('hidden');
     
     if (hoveredName) {
       cy.getElementById(hoveredName).addClass('hovered');
@@ -112,7 +114,11 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
       cy.getElementById(selectedName).addClass('selected');
       cy.edges().filter((e: any) => e.data('originalId') === selectedName).addClass('selected');
     }
-  }, [hoveredName, selectedName]);
+    
+    if (hiddenSet.size > 0) {
+      cy.edges().filter((e: any) => hiddenSet.has(e.data('originalId'))).addClass('hidden');
+    }
+  }, [hoveredName, selectedName, hiddenSet]);
 
   // Sync theme
   useEffect(() => {
@@ -231,6 +237,12 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
             'target-arrow-color': '#f59e0b',
             'z-index': 20
           }
+        },
+        {
+          selector: '.hidden',
+          style: {
+            'display': 'none'
+          }
         }
       ],
       layout: {
@@ -346,8 +358,9 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
   })(root, selectedName) : null;
 
   return (
-    <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
-      <div ref={containerRef} style={{ width: '100%', height: '100%', backgroundColor: 'var(--bg-main)' }} data-testid="cytoscape-container" />
+    <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
+      <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+        <div ref={containerRef} style={{ width: '100%', height: '100%', backgroundColor: 'var(--bg-main)' }} data-testid="cytoscape-container" />
       
       <button
         onClick={() => {
@@ -375,13 +388,29 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
         </div>
       )}
 
+      </div>
+      
       {selectedName && root && connections && (
-        <div style={{ position: 'absolute', top: 16, right: 16, display: 'flex', flexDirection: 'column', gap: 16, zIndex: 100, pointerEvents: 'none', maxHeight: 'calc(100% - 32px)' }}>
-          {selectedNodeObj && (
-            <div style={{ pointerEvents: 'auto', width: 'max-content', minWidth: 300, maxWidth: '30vw', overflowY: 'auto', backgroundColor: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: 8 }}>
-              <PropertyInspector node={selectedNodeObj} connections={connections} liveStateRef={liveStateRef} />
-            </div>
-          )}
+        <div style={{
+          width: 400, flexShrink: 0,
+          background: 'var(--bg-panel)', borderLeft: '1px solid var(--border-color)',
+          display: 'flex', flexDirection: 'column', overflow: 'hidden'
+        }}>
+          <div style={{ padding: 16, borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Inspector</h3>
+            <button onClick={() => setSelectedName(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 20 }}>&times;</button>
+          </div>
+          <div style={{ flex: 1, overflowY: 'auto' }}>
+            {selectedNodeObj ? (
+              <PropertyInspector node={selectedNodeObj} connections={connections} liveStateRef={liveStateRef} flat={true} />
+            ) : (
+              (() => {
+                const c = connections.find(x => x.id === selectedName);
+                if (c) return <ConnectionInspector connection={c} liveStateRef={liveStateRef} flat={true} />;
+                return null;
+              })()
+            )}
+          </div>
         </div>
       )}
     </div>
@@ -446,7 +475,7 @@ export function ConnectionsPage() {
     }}>
       <SelectionProvider>
         <div style={{ display: 'flex', width: '100%', height: '100%', position: 'relative' }}>
-          <div style={{ width: leftPanelWidth, position: 'absolute', top: 0, left: 0, bottom: 0, borderRight: '1px solid var(--border-color)', backgroundColor: 'var(--bg-panel)', zIndex: 10, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ width: leftPanelWidth, position: 'absolute', top: 0, left: 0, bottom: 0, borderRight: '1px solid var(--border-color)', backgroundColor: 'var(--bg-panel)', zIndex: 10, display: 'flex', flexDirection: 'column', boxShadow: '4px 0 15px rgba(0,0,0,0.3)' }}>
             <ConnectionsList connections={sceneLayout.connections} />
             <div 
               style={{ position: 'absolute', top: 0, right: -2, bottom: 0, width: '4px', cursor: 'ew-resize', zIndex: 50 }}

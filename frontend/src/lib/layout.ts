@@ -845,7 +845,7 @@ export function buildLayout(node: any, spec: any, rawConnections: any[] = []): N
 
   // Compute dynamic gap based on connections between children
   let dynamicGap = 0.6; // fallback CHILD_GAP
-  const hasFloors = children.some(c => c.type === 'floor');
+  const hasFloors = children.some(c => (c.type || '').toLowerCase().includes('floor') || c.level !== undefined);
   
   if (children.length > 0 && !hasFloors) {
     const childNames = new Set(children.map(c => c.name));
@@ -985,7 +985,7 @@ export function buildSceneLayout(topology: any, connectionsData: any, spec: any)
   // Discover floors and generate synthetic connections (ladders/lifts)
   const floorContainers = new Map<string, NodeLayout[]>();
   const collectFloors = (node: NodeLayout, parentName: string | null) => {
-    if (node.type === 'floor' && parentName) {
+    if (((node.type || '').toLowerCase().includes('floor') || node.level !== undefined) && parentName) {
       if (!floorContainers.has(parentName)) floorContainers.set(parentName, []);
       floorContainers.get(parentName)!.push(node);
     }
