@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Trash2 } from 'lucide-react';
 import { api } from '../lib/api';
 import { useStation } from '../components/StationContext';
 
@@ -97,6 +98,7 @@ export function DiagnosticsPage() {
             <div style={{ flex: 1 }}>Run ID</div>
             <div style={{ width: 60, textAlign: 'right' }}>Comps</div>
             <div style={{ width: 60, textAlign: 'right' }}>Conns</div>
+            <div style={{ width: 30 }}></div>
           </div>
           <div style={{ flex: 1, overflowY: 'auto' }}>
             {filteredHistory.map(r => (
@@ -122,6 +124,25 @@ export function DiagnosticsPage() {
                 <div style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', opacity: 0.8 }}>{r.run_id}</div>
                 <div style={{ width: 60, textAlign: 'right', opacity: 0.7 }}>{r.component_count}</div>
                 <div style={{ width: 60, textAlign: 'right', opacity: 0.7 }}>{r.connection_count}</div>
+                <div style={{ width: 30, textAlign: 'right' }}>
+                  <button 
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      if (confirm('Delete this record?')) {
+                        await api.deleteTelemetryRecord(r.id);
+                        setHistory(h => h.filter(x => x.id !== r.id));
+                        if (selectedRecordId === r.id) {
+                          setRecordDetail(null);
+                          setSelectedRecordId(null);
+                        }
+                      }
+                    }}
+                    style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+                    title="Delete Record"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
             ))}
             {filteredHistory.length === 0 && (
@@ -138,7 +159,23 @@ export function DiagnosticsPage() {
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 800, margin: '0 auto', width: '100%' }}>
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8, backgroundColor: 'var(--bg-panel)', padding: 20, borderRadius: 8, border: '1px solid var(--border-color)' }}>
-                <h3 style={{ margin: 0, fontSize: 16, color: 'var(--text-primary)' }}>Record Summary</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <h3 style={{ margin: 0, fontSize: 16, color: 'var(--text-primary)' }}>Record Summary</h3>
+                  <button 
+                    onClick={async () => {
+                      if (confirm('Delete this record?')) {
+                        await api.deleteTelemetryRecord(recordDetail.id);
+                        setHistory(h => h.filter(x => x.id !== recordDetail.id));
+                        setRecordDetail(null);
+                        setSelectedRecordId(null);
+                      }
+                    }}
+                    style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+                    title="Delete Record"
+                  >
+                    Delete Record
+                  </button>
+                </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginTop: 8 }}>
                   <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Record ID: <span style={{ color: 'var(--text-primary)', fontFamily: 'monospace' }}>{recordDetail.id}</span></div>
                   <div style={{ fontSize: 13, color: 'var(--text-secondary)' }}>Run ID: <span style={{ color: 'var(--text-primary)', fontFamily: 'monospace' }}>{recordDetail.run_id}</span></div>
@@ -156,7 +193,18 @@ export function DiagnosticsPage() {
                     {Object.entries(recordDetail.external).map(([key, val]: [string, any]) => (
                       <div key={key} style={{ backgroundColor: 'var(--bg-panel-secondary)', padding: '12px 16px', borderRadius: 6, border: '1px solid var(--border-solid)' }}>
                         <div style={{ fontSize: 11, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 }}>{key}</div>
-                        <div style={{ fontSize: 14, color: 'var(--text-primary)' }}>{typeof val === 'object' ? JSON.stringify(val) : String(val)}</div>
+                        {typeof val === 'object' && val !== null ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8 }}>
+                            {Object.entries(val).map(([subKey, subVal]) => (
+                              <div key={subKey} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}>
+                                <span style={{ color: 'var(--text-secondary)' }}>{subKey}:</span>
+                                <span style={{ color: 'var(--text-primary)' }}>{String(subVal)}</span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div style={{ fontSize: 14, color: 'var(--text-primary)' }}>{String(val)}</div>
+                        )}
                       </div>
                     ))}
                   </div>

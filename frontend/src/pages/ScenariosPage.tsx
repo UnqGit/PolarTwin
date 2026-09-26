@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { api } from '../lib/api';
 import { useStation } from '../components/StationContext';
 import { TwinViewer } from '../components/TwinViewer';
@@ -7,41 +7,48 @@ import { DSLEditor } from '../components/DSLEditor';
 import type { SceneEventData } from '../components/TimelineEditor';
 import { EventInspector } from '../components/EventInspector';
 import { SimulationMonitor } from '../components/SimulationMonitor';
-import { Play, Pause, RefreshCw, StepForward, Code, List, Activity, Library, ChevronUp, ChevronDown, MousePointer2, LayoutDashboard } from 'lucide-react';
+import { Play, Pause, RefreshCw, StepForward, Code, List, Activity, Library, ChevronUp, ChevronDown, MousePointer2, LayoutDashboard, Plus, Trash2, GitCompare, FileText, FilePlus } from 'lucide-react';
+import { ScenarioComparison } from '../components/ScenarioComparison';
 
 export function ScenariosPage() {
-  const { selectedStation, hierarchy, spec, connections } = useStation();
-  const liveStateRef = useRef<Record<string, unknown>>({});
+  const { 
+    selectedStation, hierarchy, spec, connections,
+    liveStateRef,
+    selectedScenarioId, setSelectedScenarioId,
+    scenarioSource, setScenarioSource,
+    runId, setRunId,
+    simStatus, setSimStatus,
+    simTime, setSimTime,
+    simLog,
+    simState, setSimState
+  } = useStation();
 
-  // Scenarios state
+  // Scenarios local state
   const [scenarios, setScenarios] = useState<any[]>([]);
-  const [selectedScenarioId, setSelectedScenarioId] = useState<string | null>(null);
-  const [scenarioSource, setScenarioSource] = useState<string>('');
   const [scenarioEvents, setScenarioEvents] = useState<SceneEventData[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<SceneEventData | null>(null);
+  const [selectedComponentName, setSelectedComponentName] = useState<string | null>(null);
   const [errorLine, setErrorLine] = useState<number | undefined>(undefined);
   const [validationErrors, setValidationErrors] = useState<{message: string; line_number?: number}[]>([]);
   
   // Events library
   const [eventDefs, setEventDefs] = useState<any[]>([]);
+  const [selectedEventDefId, setSelectedEventDefId] = useState<string | null>(null);
+  const [editingType, setEditingType] = useState<'scenario' | 'event'>('scenario');
 
-  // Simulation state
-  const [runId, setRunId] = useState<string | null>(null);
-  const [simStatus, setSimStatus] = useState<string>('Ready');
-  const [simTime, setSimTime] = useState<number>(0);
-  const [simLog, setSimLog] = useState<any[]>([]);
-  const [simState, setSimState] = useState<any | null>(null);
+  // Simulation UI state
   const [telemetryEnabled, setTelemetryEnabled] = useState<boolean>(false);
-  const [playbackSpeed, setPlaybackSpeed] = useState<number>(1.0);
+  const [playbackSpeed] = useState<number>(1.0);
 
   // UI state
   const [timelineOpen, setTimelineOpen] = useState(true);
   const [bottomOpen, setBottomOpen] = useState(false);
-  const [bottomTab, setBottomTab] = useState<'source' | 'log' | 'diagnostics' | 'inspector' | 'monitor'>('source');
+  const [bottomTab, setBottomTab] = useState<'source' | 'log' | 'diagnostics' | 'inspector' | 'monitor' | 'compare'>('source');
 
   const [rightPanelWidth, setRightPanelWidth] = useState(450);
   const [bottomPanelHeight, setBottomPanelHeight] = useState(192);
   const [isResizingRight, setIsResizingRight] = useState(false);
+  const globalToleranceInputRef = useRef<HTMLInputElement>(null);
   const [isResizingBottom, setIsResizingBottom] = useState(false);
 
   useEffect(() => {
@@ -129,7 +136,20 @@ export function ScenariosPage() {
   }, [runId, simStatus]);
 
   const handlePlayPause = async () => {
-    if (!runId) return;
+    if (!runId) {
+      if (!selectedStation || !selectedScenarioId) return;
+      try {
+        await saveSource(); // Save source first
+        const res = await api.createSimulation(selectedStation, selectedScenarioId, 20.0);
+        setRunId(res.run_id);
+        const playRes = await api.playSimulation(res.run_id, playbackSpeed);
+        setSimStatus(playRes.status);
+      } catch (err: any) {
+        alert("Failed to start simulation: " + (err.message || err.toString()));
+      }
+      return;
+    }
+    
     if (simStatus === 'RUNNING' || simStatus === 'running') {
       const res = await api.pauseSimulation(runId);
       setSimStatus(res.status);
@@ -154,25 +174,29 @@ export function ScenariosPage() {
 
   const handleReset = async () => {
     if (!runId) return;
-    const res = await api.resetSimulation(runId);
+    await api.resetSimulation(runId);
     setSimStatus('Ready');
     setSimTime(0);
     setSimState(null);
   };
 
   const saveSource = async () => {
-    if (!selectedScenarioId) return;
-    await api.updateScenarioSource(selectedScenarioId, scenarioSource);
-    if (selectedStation) {
-      const res = await api.createSimulation(selectedStation, selectedScenarioId);
-      setRunId(res.runId);
-      setSimStatus(res.status);
-      setSimTime(0);
-      setSimState(null);
+    if (editingType === 'scenario' && selectedScenarioId) {
+      await api.updateScenarioSource(selectedScenarioId, scenarioSource);
+      if (selectedStation) {
+        const res = await api.createSimulation(selectedStation, selectedScenarioId);
+        setRunId(res.runId);
+        setSimStatus(res.status);
+        setSimTime(0);
+        setSimState(null);
+      }
+    } else if (editingType === 'event' && selectedEventDefId) {
+      await api.updateEventDefinitionSource(selectedEventDefId, scenarioSource);
+      // Event defs don't need a full simulation restart directly
     }
   };
 
-  const toggleBottomTab = (tab: 'source' | 'log' | 'diagnostics' | 'inspector') => {
+  const toggleBottomTab = (tab: 'source' | 'log' | 'diagnostics' | 'inspector' | 'monitor' | 'compare') => {
     if (bottomOpen && bottomTab === tab) {
       setBottomOpen(false);
     } else {
@@ -193,32 +217,101 @@ export function ScenariosPage() {
 
   const libraryTabContent = (
     <div style={{ padding: '8px' }}>
-      <h3 style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-tertiary)', textTransform: 'uppercase', marginBottom: '8px', marginTop: '8px' }}>Scenarios</h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', marginTop: '8px' }}>
+        <h3 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-tertiary)', textTransform: 'uppercase', margin: 0, letterSpacing: '0.05em' }}>Scenarios</h3>
+        <button 
+          onClick={async () => {
+            if (selectedStation) {
+              const res = await api.createScenario(selectedStation, 'New Scenario', '');
+              setSelectedScenarioId(res.id);
+            }
+          }}
+          style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '2px' }}
+          title="New File..."
+        >
+          <FilePlus size={14} />
+        </button>
+      </div>
       {scenarios.map(s => (
         <div 
           key={s.id} 
           style={{
-            fontSize: '14px', padding: '8px', borderRadius: '4px', cursor: 'pointer', marginBottom: '4px',
-            backgroundColor: selectedScenarioId === s.id ? 'rgba(59, 130, 246, 0.2)' : 'transparent',
-            color: selectedScenarioId === s.id ? 'var(--accent-blue)' : 'var(--text-secondary)',
-            border: selectedScenarioId === s.id ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid transparent'
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            fontSize: '13px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', marginBottom: '2px',
+            backgroundColor: selectedScenarioId === s.id ? 'var(--bg-input)' : 'transparent',
+            color: selectedScenarioId === s.id ? 'var(--text-primary)' : 'var(--text-secondary)',
           }}
-          onClick={() => setSelectedScenarioId(s.id)}
+          onClick={() => {
+            setEditingType('scenario');
+            setSelectedScenarioId(s.id);
+            setSelectedEventDefId(null);
+            setBottomTab('source');
+            setBottomOpen(true);
+          }}
         >
-          {s.name}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <FileText size={14} style={{ color: 'var(--accent-blue)' }} />
+            <span>{s.name}.scene</span>
+          </div>
+          <button
+            onClick={async (e) => {
+              e.stopPropagation();
+              if (confirm('Delete scenario?')) {
+                await api.deleteScenario(s.id);
+                if (selectedScenarioId === s.id) setSelectedScenarioId(null);
+                if (selectedStation) {
+                  api.getScenarios(selectedStation).then(setScenarios);
+                }
+              }
+            }}
+            style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+            title="Delete Scenario"
+          >
+            <Trash2 size={12} />
+          </button>
         </div>
       ))}
       
-      <h3 style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--text-tertiary)', textTransform: 'uppercase', marginBottom: '8px', marginTop: '24px' }}>Event Definitions</h3>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', marginTop: '24px' }}>
+        <h3 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-tertiary)', textTransform: 'uppercase', margin: 0, letterSpacing: '0.05em' }}>Event Definitions</h3>
+        <button
+          onClick={async () => {
+            const name = prompt('Enter new Event Definition name:');
+            if (name && name.trim()) {
+              await api.createEventDefinition(name.trim());
+              api.getEventDefinitions().then(setEventDefs);
+              setEditingType('event');
+              setSelectedEventDefId(name.trim());
+              setSelectedScenarioId(null);
+            }
+          }}
+          style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '2px' }}
+          title="New File..."
+        >
+          <FilePlus size={14} />
+        </button>
+      </div>
       {eventDefs.map((e, i) => (
         <div 
           key={i} 
           draggable
           onDragStart={(evt) => evt.dataTransfer.setData('text/plain', e.name)}
-          style={{ fontSize: '14px', padding: '8px', borderRadius: '4px', backgroundColor: 'var(--bg-input)', marginBottom: '4px', border: '1px solid var(--border-color)', cursor: 'grab' }}
+          onClick={() => {
+            setEditingType('event');
+            setSelectedEventDefId(e.name);
+            setSelectedScenarioId(null);
+            setBottomTab('source');
+            setBottomOpen(true);
+          }}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '6px',
+            fontSize: '13px', padding: '4px 8px', borderRadius: '4px', cursor: 'grab', marginBottom: '2px',
+            backgroundColor: selectedEventDefId === e.name ? 'var(--bg-input)' : 'transparent',
+            color: selectedEventDefId === e.name ? 'var(--text-primary)' : 'var(--text-secondary)',
+          }}
         >
-          <div style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{e.name}</div>
-          <div style={{ fontSize: '12px', color: 'var(--text-secondary)', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{e.description || 'No description'}</div>
+          <FileText size={14} style={{ color: 'var(--accent-cyan)' }} />
+          <span>{e.name}.event</span>
         </div>
       ))}
     </div>
@@ -245,18 +338,62 @@ export function ScenariosPage() {
             ))}
           </select>
           <span style={{ fontSize: '12px', padding: '4px 8px', backgroundColor: 'var(--bg-input)', borderRadius: '4px', fontFamily: 'monospace', border: '1px solid var(--border-color)' }}>
-            {simStatus} | T={simTime.toFixed(1)}s
+            {simStatus} | T={(simTime || 0).toFixed(1)}s
           </span>
-          <button 
-            onClick={() => setTelemetryEnabled(!telemetryEnabled)}
-            style={{ 
-              fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', border: '1px solid var(--border-color)',
-              backgroundColor: telemetryEnabled ? 'rgba(239, 68, 68, 0.2)' : 'var(--bg-input)',
-              color: telemetryEnabled ? '#ef4444' : 'var(--text-secondary)'
-            }}
-          >
-            {telemetryEnabled ? 'Telemetry: REC' : 'Telemetry: OFF'}
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)' }}>Tolerance:</span>
+              <input 
+                type="number" 
+                ref={globalToleranceInputRef}
+                defaultValue={20}
+                onBlur={(e) => { if (runId) api.setGlobalTolerance(runId, parseFloat(e.target.value)); }}
+                style={{
+                  width: '50px', background: 'var(--bg-input)', border: '1px solid var(--border-solid)', 
+                  color: 'var(--text-primary)', padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
+                }}
+              />
+            </div>
+            <button 
+              onClick={() => {
+                if (runId) api.setGlobalTolerance(runId, 20);
+                if (globalToleranceInputRef.current) globalToleranceInputRef.current.value = '20';
+              }}
+              style={{
+                fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', border: '1px solid var(--border-color)',
+                backgroundColor: 'var(--bg-input)', color: 'var(--text-secondary)'
+              }}
+              title="Reset global tolerance to default (20)"
+            >
+              Set Default
+            </button>
+            <button 
+              onClick={() => {
+                if (runId) {
+                  api.resetSimulation(runId);
+                  setSimStatus('Ready');
+                  setSimTime(0);
+                }
+              }}
+              style={{
+                fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', border: '1px solid var(--border-color)',
+                backgroundColor: 'var(--bg-input)', color: 'var(--text-secondary)'
+              }}
+              title="Reset all components to defaults"
+            >
+              Reset All
+            </button>
+            <button 
+              onClick={() => setTelemetryEnabled(!telemetryEnabled)}
+              style={{ 
+                fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', border: '1px solid var(--border-color)',
+                backgroundColor: telemetryEnabled ? 'rgba(239, 68, 68, 0.2)' : 'var(--bg-input)',
+                color: telemetryEnabled ? '#ef4444' : 'var(--text-secondary)'
+              }}
+            >
+              {telemetryEnabled ? 'Telemetry: REC' : 'Telemetry: OFF'}
+            </button>
+          </div>
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -283,8 +420,10 @@ export function ScenariosPage() {
               connections={connections}
               customSidebarTabs={customTabs}
               liveStateRef={liveStateRef}
-              rightOffset={(bottomOpen ? rightPanelWidth : 0) + 48 + 20}
-              bottomOffset={(timelineOpen ? bottomPanelHeight : 40) + 20}
+              selectedName={selectedComponentName}
+              onSelectName={setSelectedComponentName}
+              rightOffset={(bottomOpen ? rightPanelWidth : 0) + 48}
+              bottomOffset={(timelineOpen ? bottomPanelHeight : 40)}
             />
           ) : (
             <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>
@@ -311,8 +450,21 @@ export function ScenariosPage() {
                 />
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-panel-secondary)', zIndex: 10 }}>
-                  <div style={{ fontWeight: 'bold', fontSize: '14px', color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                    {bottomTab === 'source' ? 'DSL Source' : bottomTab === 'log' ? 'Simulation Log' : bottomTab}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--text-primary)' }}>
+                    {bottomTab === 'source' ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', backgroundColor: 'var(--bg-main)', padding: '6px 16px', borderTop: '2px solid var(--accent-blue)', borderRight: '1px solid var(--border-color)', borderLeft: '1px solid var(--border-color)', marginTop: '-12px', marginBottom: '-12px', borderBottom: '1px solid transparent', zIndex: 20 }}>
+                        <FileText size={14} style={{ color: 'var(--accent-blue)' }} />
+                        <span style={{ fontFamily: 'monospace' }}>
+                          {editingType === 'scenario' 
+                            ? (selectedScenarioId ? `${scenarios.find(s => s.id === selectedScenarioId)?.name || 'untitled'}.scene` : 'untitled.scene')
+                            : (selectedEventDefId ? `${selectedEventDefId}.event` : 'untitled.event')}
+                        </span>
+                      </div>
+                    ) : (
+                      <div style={{ fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '4px 0' }}>
+                        {bottomTab === 'log' ? 'Simulation Log' : bottomTab === 'compare' ? 'Scenario Comparison' : bottomTab}
+                      </div>
+                    )}
                   </div>
                   {bottomTab === 'source' && (
                     <button onClick={saveSource} style={{ padding: '4px 12px', backgroundColor: 'var(--accent-blue)', color: '#fff', fontSize: '12px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>Save & Reload</button>
@@ -369,6 +521,10 @@ export function ScenariosPage() {
                 {bottomTab === 'monitor' && (
                   <SimulationMonitor simState={simState} />
                 )}
+                
+                {bottomTab === 'compare' && (
+                  <ScenarioComparison stationId={selectedStation || ''} />
+                )}
               </div>
             )}
 
@@ -409,6 +565,13 @@ export function ScenariosPage() {
               >
                 <LayoutDashboard size={20} />
               </button>
+              <button 
+                onClick={() => toggleBottomTab('compare')} 
+                title="Compare Scenarios"
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: bottomOpen && bottomTab === 'compare' ? 'var(--accent-blue)' : 'var(--text-secondary)' }}
+              >
+                <GitCompare size={20} />
+              </button>
             </div>
         </div>
 
@@ -432,33 +595,45 @@ export function ScenariosPage() {
             />
           )}
 
-          <div 
-            style={{ 
-              padding: '0 12px', 
-              height: '40px',
-              minHeight: '40px',
-              backgroundColor: 'var(--bg-panel)', 
-              fontSize: '12px', 
-              color: 'var(--text-secondary)', 
-              fontWeight: 600, 
-              borderBottom: '1px solid var(--border-color)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              cursor: 'pointer'
-            }}
-            onClick={() => setTimelineOpen(!timelineOpen)}
-          >
-            <span>TIMELINE EDITOR</span>
-            {timelineOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 12px', alignItems: 'center' }}>
+            <div 
+              style={{ 
+                height: '40px',
+                minHeight: '40px',
+                fontSize: '12px', 
+                color: 'var(--text-secondary)', 
+                fontWeight: 600, 
+                display: 'flex',
+                alignItems: 'center',
+                flex: 1,
+                cursor: 'pointer'
+              }}
+              onClick={() => setTimelineOpen(!timelineOpen)}
+            >
+              <span>TIMELINE EDITOR {selectedComponentName ? `(Filtered: ${selectedComponentName})` : ''}</span>
+              <div style={{ marginLeft: '12px' }}>
+                {timelineOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
+              </div>
+            </div>
+            {selectedComponentName && (
+              <button 
+                onClick={() => setSelectedComponentName(null)} 
+                style={{ fontSize: '10px', padding: '2px 6px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                Clear Filter
+              </button>
+            )}
           </div>
           {timelineOpen && (
             <TimelineEditor 
-              events={scenarioEvents}
+              events={selectedComponentName ? scenarioEvents.filter(e => e.selector === `@${selectedComponentName}` || e.selector === selectedComponentName) : scenarioEvents}
               simTime={simTime}
               selectedEvent={selectedEvent}
               onSelectEvent={(ev) => {
                 setSelectedEvent(ev);
+                if (ev && ev.selector) {
+                  setSelectedComponentName(ev.selector.startsWith('@') ? ev.selector.slice(1) : ev.selector);
+                }
                 if (ev && !bottomOpen) setBottomOpen(true);
                 if (ev) setBottomTab('inspector');
               }}

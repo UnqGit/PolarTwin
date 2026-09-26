@@ -73,6 +73,32 @@ export const HoverCard: React.FC<HoverCardProps> = ({ root, connections, liveSta
           <Row label="Type" value={node.type || 'Generic'} />
           <Row label="ID" value={node.name} />
           <Row label="Status" value={status} />
+          {node.spec?.rating && typeof node.spec.rating === 'object' && (
+            <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--border-color)' }}>
+              {['input', 'state', 'output'].map(category => {
+                const catObj = (node.spec?.rating as any)?.[category];
+                if (!catObj) return null;
+                return (
+                  <div key={category} style={{ marginBottom: 6 }}>
+                    <div style={{ fontSize: 10, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>{category}</div>
+                    {Object.keys(catObj).map(k => {
+                      const valObj = catObj[k];
+                      const val = liveStateRef?.current?.[node.name] ? (liveStateRef.current[node.name] as any)[k] : undefined;
+                      const displayVal = val !== undefined ? val : valObj.max;
+                      return <Row key={k} label={k} value={`${displayVal !== undefined ? (typeof displayVal === 'number' ? displayVal.toFixed(2) : displayVal) : '--'}${valObj.unit ? ' ' + valObj.unit : ''}`} />;
+                    })}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          {node.tags && node.tags.length > 0 && (
+            <div style={{ marginTop: 8, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+              {node.tags.map(t => (
+                <span key={t} style={{ background: 'var(--bg-input)', padding: '2px 6px', borderRadius: 10, fontSize: 10, color: 'var(--text-secondary)' }}>{t}</span>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     );

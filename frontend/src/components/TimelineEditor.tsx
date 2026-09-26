@@ -66,7 +66,7 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
         {/* Playhead */}
         <div style={{ position: 'absolute', top: 16, bottom: 0, width: '2px', backgroundColor: '#ef4444', zIndex: 10, boxShadow: '0 0 8px rgba(239,68,68,0.8)', left: `${simTime * PIXELS_PER_UNIT}px`, transition: 'left 0.1s linear' }}>
           <div style={{ position: 'absolute', top: '-12px', transform: 'translateX(-50%)', backgroundColor: '#ef4444', color: '#fff', fontSize: '10px', padding: '0 4px', borderRadius: '2px' }}>
-            {simTime.toFixed(1)}
+            {(simTime || 0).toFixed(1)}
           </div>
         </div>
 

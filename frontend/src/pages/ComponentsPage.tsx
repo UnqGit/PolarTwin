@@ -11,7 +11,7 @@ const FALLBACK_IMGS = [
 ];
 
 export function ComponentsPage() {
-  const { selectedStation, hierarchy: hierarchyData, spec } = useStation();
+  const { selectedStation, hierarchy: hierarchyData, spec, connections, liveStateRef } = useStation();
 
   // The drill-down stack contains the names of the nodes we've navigated into.
   // Initially empty, meaning we are at the outermost level.
@@ -192,12 +192,12 @@ export function ComponentsPage() {
           {(() => {
             try {
               // Pass the real spec and connections so PropertyInspector doesn't crash on missing data
-              const layout = buildSceneLayout(hierarchyData, [], spec || { components: {}, globals: {} });
+              const layout = buildSceneLayout(hierarchyData, connections || [], spec || { components: {}, globals: {} });
               const node = layout.allNodes.get(inspectNodeName);
               if (node) {
                 return (
-                  <div style={{ flex: 1, overflowY: 'auto', padding: 16 }}>
-                    <PropertyInspector node={node} connections={[]} liveStateRef={{ current: {} }} />
+                  <div style={{ flex: 1, overflowY: 'auto' }}>
+                    <PropertyInspector node={node} connections={layout.connections} liveStateRef={liveStateRef || { current: {} }} flat={true} />
                   </div>
                 );
               }

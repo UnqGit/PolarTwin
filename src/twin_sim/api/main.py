@@ -15,8 +15,9 @@ from __future__ import annotations
 import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from pydantic import BaseModel
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Body
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
 
@@ -251,6 +252,20 @@ def get_event_definition(name: str):
     except FileNotFoundError as e:
         raise HTTPException(404, str(e))
 
+class EventUpdatePayload(BaseModel):
+    source: str
+
+@app.post("/event-definitions/{name}")
+def create_event_definition(name: str):
+    return _scenario_manager.create_event(name)
+
+@app.put("/event-definitions/{name}")
+def update_event_definition(name: str, payload: EventUpdatePayload):
+    try:
+        return _scenario_manager.update_event(name, payload.source)
+    except FileNotFoundError as e:
+        raise HTTPException(404, str(e))
+
 
 # ---------------------------------------------------------------------------
 # Simulations
@@ -446,3 +461,58 @@ def get_telemetry_record(record_id: int):
         raise HTTPException(404, "Record not found")
     return rec
 
+@app.delete("/telemetry/records/{record_id}", status_code=204)
+def delete_telemetry_record(record_id: int):
+    """Delete a specific telemetry record by ID."""
+    if not _db.get_record_by_id(record_id):
+        raise HTTPException(404, "Record not found")
+    _db.delete_record(record_id)
+    return None
+
+class GlobalToleranceRequest(BaseModel):
+    value: float
+
+@app.post("/simulations/{run_id}/tolerance/global")
+def set_global_tolerance(run_id: str, req: GlobalToleranceRequest):
+    rec = _manager.get_run(run_id)
+    if not rec:
+        raise HTTPException(status_code=404, detail="Run not found")
+    
+    # Engine should have global_tolerance attribute
+    rec.engine.global_tolerance = req.value
+    return {"status": "ok", "global_tolerance": req.value}
+
+class ComponentToleranceRequest(BaseModel):
+    value: float
+
+@app.post("/simulations/{run_id}/tolerance/component/{component_id}")
+def set_component_tolerance(run_id: str, component_id: str, req: ComponentToleranceRequest):
+    rec = _manager.get_run(run_id)
+    if not rec:
+        raise HTTPException(status_code=404, detail="Run not found")
+    
+    if component_id not in rec.engine.state_by_node:
+        raise HTTPException(status_code=404, detail="Component not found in simulation")
+        
+    comp = rec.engine.topology.get_node(component_id)
+    if not comp:
+        raise HTTPException(status_code=404, detail="Component not found")
+    
+    # Update specification's tolerance
+    comp.specification["tolerance"] = req.value
+    return {"status": "ok", "component": component_id, "tolerance": req.value}
+
+@app.post("/simulations/{run_id}/component/{component_id}/state")
+def set_component_state(run_id: str, component_id: str, updates: dict = Body(...)):
+    rec = _manager.get_run(run_id)
+    if not rec:
+        raise HTTPException(status_code=404, detail="Run not found")
+    
+    if component_id not in rec.engine.state_by_node:
+        raise HTTPException(status_code=404, detail="Component not found in simulation")
+    
+    # Update state fields
+    for k, v in updates.items():
+        rec.engine.state_by_node[component_id][k] = v
+        
+    return {"status": "ok", "component": component_id, "updates": updates}

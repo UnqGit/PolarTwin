@@ -167,3 +167,7 @@ class TelemetryDatabase:
             "external": json.loads(ext["external_json"]) if ext else {}
         }
 
+    def delete_record(self, record_id: int) -> None:
+        """Delete a telemetry record by ID."""
+        self.conn.execute("DELETE FROM telemetry_records WHERE id = ?", (record_id,))
+        self.conn.commit()

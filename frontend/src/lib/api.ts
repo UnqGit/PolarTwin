@@ -49,6 +49,12 @@ export const api = {
     return res.json();
   },
 
+  deleteTelemetryRecord: async (recordId: number) => {
+    const res = await fetch(`/api/telemetry/records/${recordId}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error("Failed to delete telemetry record");
+    return;
+  },
+
   // Scenario API
   getScenarios: async (stationId: string) => {
     const res = await fetch(`/api/stations/${stationId}/scenarios`);
@@ -112,6 +118,25 @@ export const api = {
     if (!res.ok) throw new Error("Failed to fetch event definitions");
     return res.json();
   },
+  createEventDefinition: async (name: string) => {
+    const res = await fetch(`/api/event-definitions/${name}`, { method: 'POST' });
+    if (!res.ok) throw new Error("Failed to create event definition");
+    return res.json();
+  },
+  getEventDefinitionSource: async (name: string) => {
+    const res = await fetch(`/api/event-definitions/${name}`);
+    if (!res.ok) throw new Error("Failed to fetch event definition");
+    return res.json();
+  },
+  updateEventDefinitionSource: async (name: string, source: string) => {
+    const res = await fetch(`/api/event-definitions/${name}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ source })
+    });
+    if (!res.ok) throw new Error("Failed to update event definition");
+    return res.json();
+  },
 
   // Simulations
   createSimulation: async (stationId: string, scenarioId?: string, globalTolerance: number = 10.0) => {
@@ -152,6 +177,33 @@ export const api = {
     if (!res.ok) throw new Error("Failed to reset simulation");
     return res.json();
   },
+  setComponentState: async (runId: string, componentId: string, stateUpdate: Record<string, unknown>) => {
+    const res = await fetch(`/api/simulations/${runId}/components/${componentId}/state`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(stateUpdate)
+    });
+    if (!res.ok) throw new Error("Failed to set component state");
+    return res.json();
+  },
+  setComponentTolerance: async (runId: string, componentId: string, tolerance: number) => {
+    const res = await fetch(`/api/simulations/${runId}/components/${componentId}/tolerance`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ value: tolerance })
+    });
+    if (!res.ok) throw new Error("Failed to set component tolerance");
+    return res.json();
+  },
+  setGlobalTolerance: async (runId: string, tolerance: number) => {
+    const res = await fetch(`/api/simulations/${runId}/tolerance`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ value: tolerance })
+    });
+    if (!res.ok) throw new Error("Failed to set global tolerance");
+    return res.json();
+  },
   setTelemetryPublishing: async (runId: string, enable: boolean) => {
     const action = enable ? 'start' : 'stop';
     const res = await fetch(`/api/simulations/${runId}/telemetry/${action}`, { method: 'POST' });
@@ -166,6 +218,33 @@ export const api = {
   getSimulationLog: async (runId: string) => {
     const res = await fetch(`/api/simulations/${runId}/log`);
     if (!res.ok) throw new Error("Failed to fetch simulation log");
+    return res.json();
+  },
+  setGlobalTolerance: async (runId: string, value: number) => {
+    const res = await fetch(`/api/simulations/${runId}/tolerance/global`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ value })
+    });
+    if (!res.ok) throw new Error("Failed to set global tolerance");
+    return res.json();
+  },
+  setComponentTolerance: async (runId: string, componentId: string, value: number) => {
+    const res = await fetch(`/api/simulations/${runId}/tolerance/component/${componentId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ value })
+    });
+    if (!res.ok) throw new Error("Failed to set component tolerance");
+    return res.json();
+  },
+  setComponentState: async (runId: string, componentId: string, stateUpdate: Record<string, any>) => {
+    const res = await fetch(`/api/simulations/${runId}/component/${componentId}/state`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(stateUpdate)
+    });
+    if (!res.ok) throw new Error("Failed to set component state");
     return res.json();
   }
 };

@@ -1,9 +1,9 @@
 import React from 'react';
 import { HoverCard } from './HoverCard';
 import { PropertyInspector } from './PropertyInspector';
+import { ConnectionInspector } from './ConnectionInspector';
 import { useSelection } from './SelectionContext';
 import type { NodeLayout, ConnectionLayout } from '../lib/layout';
-import { Focus } from 'lucide-react';
 
 interface RightUIStackProps {
   children?: React.ReactNode;
@@ -27,8 +27,12 @@ export const RightUIStack: React.FC<RightUIStackProps> = ({ children, root, conn
   const { selectedName } = useSelection();
   
   let selectedNode = null;
+  let selectedConnection = null;
   if (selectedName) {
     selectedNode = findNode(root, selectedName);
+    if (!selectedNode) {
+      selectedConnection = connections.find(c => c.id === selectedName);
+    }
   }
 
   return (
@@ -59,8 +63,13 @@ export const RightUIStack: React.FC<RightUIStackProps> = ({ children, root, conn
 
       {/* 3. Selected Inspector */}
       {selectedNode && (
-        <div style={{ pointerEvents: 'auto', minHeight: 0, overflow: 'hidden' }}>
+        <div style={{ pointerEvents: 'auto', minHeight: 0, overflow: 'hidden', flexShrink: 0 }}>
           <PropertyInspector node={selectedNode} connections={connections} liveStateRef={liveStateRef} />
+        </div>
+      )}
+      {selectedConnection && (
+        <div style={{ pointerEvents: 'auto', minHeight: 0, overflow: 'hidden', flexShrink: 0 }}>
+          <ConnectionInspector connection={selectedConnection} liveStateRef={liveStateRef} />
         </div>
       )}
     </div>

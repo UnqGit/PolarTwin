@@ -259,6 +259,7 @@ interface TwinViewerProps {
   customSidebarTabs?: { id: string, icon: React.ReactNode, title: string, content: React.ReactNode }[];
   rightOffset?: number;
   bottomOffset?: number;
+  hideEditInitials?: boolean;
 }
 
 export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
@@ -275,7 +276,8 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
   children,
   customSidebarTabs,
   rightOffset = 20,
-  bottomOffset = 20
+  bottomOffset = 20,
+  hideEditInitials = false
 }) => {
   const { theme } = useTheme();
   const bgMain = theme === 'light' ? '#f8fafc' : '#0f172a';
@@ -518,6 +520,7 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
             containerOcclusion={internalOcclusion}
             onContainerOcclusionChange={setInternalOcclusion}
             bottomOffset={bottomOffset}
+            hideEditInitials={hideEditInitials}
           />
 
           {isGraphOpen && (
