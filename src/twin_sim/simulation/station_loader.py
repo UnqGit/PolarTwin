@@ -83,7 +83,7 @@ class LoadedStation:
         runtime_components: List[RuntimeComponent],
         runtime_connections: List[RuntimeConnection],
         external: ExternalModel,
-        specs_list: List[Dict[str, Any]] = None,
+        specs_list: List[Dict[str, Any]] | None = None,
     ):
         self.station_id = station_id
         self.hierarchy_list = hierarchy_list

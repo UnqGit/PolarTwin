@@ -55,37 +55,37 @@ class AsyncTelemetryPipeline(TelemetrySink):
         # Flush one last time when exiting
         self.sink.flush()
 
-    def write(self, message: Any) -> None:
+    def write(self, telemetry: Any) -> None:
         """Write a single message. Usually `write_batch` is preferred."""
-        self.write_batch([message])
+        self.write_batch([telemetry])
 
-    def write_batch(self, messages: list[Any]) -> None:
+    def write_batch(self, telemetries: list[Any]) -> None:
         """Push a batch of messages into the pipeline queue."""
         if not self._running:
             return
 
         # Fast path
         try:
-            self._queue.put_nowait(messages)
+            self._queue.put_nowait(telemetries)
             return
         except queue.Full:
             pass
 
         if self.backpressure_policy == "block":
-            self._queue.put(messages)
+            self._queue.put(telemetries)
         elif self.backpressure_policy == "compress":
             try:
                 old_messages = self._queue.get_nowait()
                 self._queue.task_done()
                 
                 from .compressor import compress_telemetry_batch
-                combined = old_messages + messages
+                combined = (old_messages or []) + telemetries
                 compressed = compress_telemetry_batch(combined)
                 
                 self._queue.put_nowait(compressed)
             except queue.Empty:
                 try:
-                    self._queue.put_nowait(messages)
+                    self._queue.put_nowait(telemetries)
                 except queue.Full:
                     self.dropped_batches += 1
             except queue.Full:
@@ -101,7 +101,7 @@ class AsyncTelemetryPipeline(TelemetrySink):
             
             # Now try to put again.
             try:
-                self._queue.put_nowait(messages)
+                self._queue.put_nowait(telemetries)
             except queue.Full:
                 self.dropped_batches += 1
 

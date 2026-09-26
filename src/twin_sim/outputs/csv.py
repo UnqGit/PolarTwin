@@ -32,6 +32,7 @@ class CsvSink(TelemetrySink):
     def write(self, telemetry: TelemetryMessage) -> None:
         if self._writer is None:
             self.start()
+        assert self._writer is not None
         component = telemetry.component or {}
         measurement = telemetry.measurement or {}
         message_type = "measurement" if telemetry.measurement is not None else "event" if telemetry.event is not None else "state"

@@ -15,17 +15,17 @@ class MultiSink(TelemetrySink):
         for sink in self.sinks:
             sink.start()
 
-    def write(self, message: Any) -> None:
+    def write(self, telemetry: Any) -> None:
         for sink in self.sinks:
-            sink.write(message)
+            sink.write(telemetry)
 
-    def write_batch(self, messages: list[Any]) -> None:
+    def write_batch(self, telemetries: list[Any]) -> None:
         for sink in self.sinks:
             if hasattr(sink, "write_batch"):
-                sink.write_batch(messages)
+                sink.write_batch(telemetries)
             else:
-                for message in messages:
-                    sink.write(message)
+                for telemetry in telemetries:
+                    sink.write(telemetry)
 
     def flush(self) -> None:
         for sink in self.sinks:

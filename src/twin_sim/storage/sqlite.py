@@ -50,6 +50,7 @@ class SQLiteAdapter(DatabaseAdapter):
         document = telemetry.to_dict()
         component = document.get("component") or {}
         message_type = "measurement" if telemetry.measurement is not None else "event" if telemetry.event is not None else "state"
+        assert self.connection is not None
         self.connection.execute(
             "INSERT INTO telemetry (run_id, timestamp, message_type, component, component_type, payload) VALUES (?, ?, ?, ?, ?, ?)",
             (telemetry.run_id, telemetry.timestamp, message_type, component.get("name"), component.get("type"), serialize(telemetry)),
@@ -59,8 +60,8 @@ class SQLiteAdapter(DatabaseAdapter):
         self,
         run_id: str,
         seed: int | None,
-        topology_hash: str,
-        specification_hash: str,
+        topology_hash: str | None,
+        specification_hash: str | None,
         scenario_hash: str | None,
         configuration: str | None,
         start_timestamp: str,
@@ -68,6 +69,7 @@ class SQLiteAdapter(DatabaseAdapter):
     ) -> None:
         if self.connection is None:
             self.start()
+        assert self.connection is not None
         self.connection.execute(
             """
             INSERT INTO experiments (
@@ -85,7 +87,8 @@ class SQLiteAdapter(DatabaseAdapter):
                 end_timestamp,
             ),
         )
-        self.connection.commit()
+        if self.connection is not None:
+            self.connection.commit()
 
     def flush(self) -> None:
         if self.connection is not None:

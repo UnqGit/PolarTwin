@@ -41,6 +41,7 @@ def parse_scene_string(source: str) -> List[SceneEvent]:
             
             if not block_stack:
                 # We finished the outermost block (which should be the scene payload)
+                assert current_event is not None
                 current_event.payload = completed_dict.get("set", {})
                 events.append(current_event)
                 current_event = None

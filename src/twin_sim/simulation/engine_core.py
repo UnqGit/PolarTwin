@@ -1204,7 +1204,7 @@ class SimulationEngineCore:
             if name in visited:
                 return
             visited.add(name)
-            if name in self.hierarchy.nodes:
+            if self.hierarchy is not None and name in self.hierarchy.nodes:
                 for child in self.hierarchy.nodes[name].children:
                     dfs(child)
             if name in base_comps and base_comps[name].type in containers:

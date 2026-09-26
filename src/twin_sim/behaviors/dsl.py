@@ -91,7 +91,7 @@ class DslEvaluator(ast.NodeVisitor):
         op_type = type(node.op)
         if op_type in self.operations:
             try:
-                return self.operations[op_type](left, right)
+                return self.operations[op_type](left, right)  # type: ignore
             except Exception as e:
                 raise DslExecutionError(f"Math error in '{op_type.__name__}': {e}")
         raise DslExecutionError(f"Unsupported binary operator: {op_type}")
@@ -100,7 +100,7 @@ class DslEvaluator(ast.NodeVisitor):
         operand = self.visit(node.operand)
         op_type = type(node.op)
         if op_type in self.operations:
-            return self.operations[op_type](operand)
+            return self.operations[op_type](operand)  # type: ignore
         raise DslExecutionError(f"Unsupported unary operator: {op_type}")
 
     def visit_BoolOp(self, node: ast.BoolOp) -> Any:
@@ -123,7 +123,7 @@ class DslEvaluator(ast.NodeVisitor):
             if op_type not in self.operations:
                 raise DslExecutionError(f"Unsupported comparator: {op_type}")
             r = self.visit(right)
-            if not self.operations[op_type](left, r):
+            if not self.operations[op_type](left, r):  # type: ignore
                 return False
             left = r
         return True

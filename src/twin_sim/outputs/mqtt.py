@@ -20,7 +20,7 @@ class MqttClient(Protocol):
 
 def create_paho_client() -> MqttClient:
     try:
-        import paho.mqtt.client as mqtt
+        import paho.mqtt.client as mqtt  # type: ignore
     except ModuleNotFoundError as exc:
         raise RuntimeError("MQTT output requires the optional 'paho-mqtt' package") from exc
     return mqtt.Client()
@@ -75,6 +75,7 @@ class MqttSink(TelemetrySink):
         if self.client is None or not self.connected:
             self.start()
         payload = json.dumps(telemetry.to_dict(), sort_keys=True, separators=(",", ":"))
+        assert self.client is not None
         self.client.publish(topic_for(telemetry, self.topic_prefix), payload, self.qos, self.retain)
 
     def close(self) -> None:

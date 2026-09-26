@@ -2,7 +2,7 @@
 
 from typing import Any
 from .base import TelemetrySink
-from ..telemetry.model import TelemetryMessage, DeltaTelemetryMessage
+from twin_sim.telemetry.model import TelemetryMessage, DeltaTelemetryMessage
 
 class TelemetryDemodulator(TelemetrySink):
     """Wraps an existing TelemetrySink and expands DeltaTelemetryMessages into standard TelemetryMessages."""
@@ -53,16 +53,16 @@ class TelemetryDemodulator(TelemetrySink):
             
         return messages
 
-    def write(self, message: Any) -> None:
-        if isinstance(message, DeltaTelemetryMessage):
-            for expanded in self._interpolate(message):
+    def write(self, telemetry: Any) -> None:
+        if isinstance(telemetry, DeltaTelemetryMessage):
+            for expanded in self._interpolate(telemetry):
                 self.sink.write(expanded)
         else:
-            self.sink.write(message)
+            self.sink.write(telemetry)
 
-    def write_batch(self, messages: list[Any]) -> None:
+    def write_batch(self, telemetries: list[Any]) -> None:
         expanded_batch = []
-        for msg in messages:
+        for msg in telemetries:
             if isinstance(msg, DeltaTelemetryMessage):
                 expanded_batch.extend(self._interpolate(msg))
             else:

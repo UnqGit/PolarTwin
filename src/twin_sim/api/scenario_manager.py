@@ -18,6 +18,7 @@ from typing import Any, Dict, List, Optional
 import shutil
 
 from twin_sim.dsl.scene_parser import parse_scene_file, SceneParseError
+from twin_sim.dsl.models import SceneEvent
 
 
 class ScenarioManager:
@@ -59,7 +60,7 @@ class ScenarioManager:
                 "id": f"{station_id}:{name}",
                 "station_id": station_id,
                 "name": name,
-                "created_at": p.stat().st_ctime,
+                "created_at": getattr(p.stat(), 'st_birthtime', p.stat().st_mtime),
                 "updated_at": p.stat().st_mtime
             })
         return sorted(results, key=lambda x: x["name"])
@@ -91,7 +92,7 @@ class ScenarioManager:
             "id": scenario_id,
             "station_id": station_id,
             "name": name,
-            "created_at": path.stat().st_ctime,
+            "created_at": getattr(path.stat(), 'st_birthtime', path.stat().st_mtime),
             "updated_at": path.stat().st_mtime
         }
 
@@ -178,7 +179,7 @@ class ScenarioManager:
             name = p.stem
             results.append({
                 "name": name,
-                "created_at": p.stat().st_ctime,
+                "created_at": getattr(p.stat(), 'st_birthtime', p.stat().st_mtime),
                 "updated_at": p.stat().st_mtime
             })
         return sorted(results, key=lambda x: x["name"])
@@ -191,6 +192,6 @@ class ScenarioManager:
         return {
             "name": name,
             "source": path.read_text(encoding="utf-8"),
-            "created_at": path.stat().st_ctime,
+            "created_at": getattr(path.stat(), 'st_birthtime', path.stat().st_mtime),
             "updated_at": path.stat().st_mtime
         }
