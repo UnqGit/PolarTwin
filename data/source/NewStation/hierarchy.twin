@@ -454,7 +454,7 @@ Maitri:station @0 %critical %antarctic %research_station {
 
             MainBuildingEnvironmentalObservation:system @4 %environmental_observation {
 
-                MainBuildingTemperatureSensor:sensor @0 external@weather.temperature
+                MainBuildingEnvironmentalTemperatureSensor:sensor @0 external@weather.temperature
                 MainBuildingHumiditySensor:sensor @1 external@weather.humidity
                 MainBuildingPressureSensor:sensor @2 external@weather.pressure
                 MainBuildingWindSpeedSensor:sensor @3 external@weather.wind_speed

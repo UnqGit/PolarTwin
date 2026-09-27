@@ -70,6 +70,7 @@ export interface NodeLayout {
   tags: string[];
   level?: number;
   yOffset?: number; // local vertical offset for the container mesh (e.g., to enclose basements)
+  buildIndex?: number;
 }
 
 // ConnectionVisual removed
@@ -289,6 +290,7 @@ export interface NodeInfo {
   zMin: number; zMax: number;
   type: string;
   dims: Dims;
+  buildIndex: number;
 }
 
 /**
@@ -304,6 +306,7 @@ function buildNodeMap(
   parentWorldOrigin: [number, number, number] = [0, 0, 0],
   parentName: string | null = null,
   parentAncestors: Set<string> = new Set(),
+  counter: { value: number } = { value: 0 }
 ): Map<string, NodeInfo> {
   const map = new Map<string, NodeInfo>();
 
@@ -316,6 +319,9 @@ function buildNodeMap(
 
   const ancestors = new Set(parentAncestors);
   if (parentName) ancestors.add(parentName);
+  
+  const currentIndex = counter.value++;
+  node.buildIndex = currentIndex;
 
   map.set(node.name, {
     name: node.name,
@@ -328,10 +334,11 @@ function buildNodeMap(
     zMax: oz + d / 2,
     type: node.type,
     dims: node.dims,
+    buildIndex: currentIndex,
   });
 
   for (const child of node.children) {
-    buildNodeMap(child, [ox, oy, oz], node.name, ancestors).forEach((v, k) => map.set(k, v));
+    buildNodeMap(child, [ox, oy, oz], node.name, ancestors, counter).forEach((v, k) => map.set(k, v));
   }
   return map;
 }
@@ -983,16 +990,16 @@ export function buildSceneLayout(topology: any, connectionsData: any, spec: any)
   // Track used grid cells across all connections for overlap avoidance.
   const usedCells = new Set<string>();
 
-  const connections: ConnectionLayout[] = rawConnections
-    .map((c: any, index: number): ConnectionLayout | null => {
+  const connections: ConnectionLayout[] = [];
+  
+  // We attach a generator to progressive-route connections without blocking the main thread
+  function* connectionRouterGenerator() {
+    for (let index = 0; index < rawConnections.length; index++) {
+      const c = rawConnections[index];
       const src = nodeMap.get(c.source);
       const tgt = nodeMap.get(c.target);
       if (!src || !tgt) {
-        console.warn(
-          `[PolarTwin] Connection ${c.source}→${c.target}: ` +
-          `one or both components not found in the topology tree — skipping.`
-        );
-        return null;
+        continue;
       }
 
       const connectionType = c.type ?? 'unknown';
@@ -1012,30 +1019,28 @@ export function buildSceneLayout(topology: any, connectionsData: any, spec: any)
         usedCells,
       );
 
-      if (path.length === 0) {
-        return null;
+      if (path.length > 0) {
+        const elevation = profile.elevation === 'ground' ? height / 2 : profile.elevation;
+        const elevatedPath = path.map(([x, y, z]) => [x, y + (elevation as number), z] as [number, number, number]);
+
+        connections.push({
+          id:             `${c.source}--${c.target}--${index}`,
+          source: c.source,
+          target: c.target,
+          path: elevatedPath,
+          startPos: elevatedPath[0],
+          endPos: elevatedPath[elevatedPath.length - 1],
+          profile,
+          connectionType,
+          relation: c.relation ?? connectionType,
+          direction: c.direction ?? '-->',
+        });
       }
+      // Yield every 5 connections to keep framerate smooth
+      if (index % 5 === 0) yield connections.length;
+    }
+    return connections.length;
+  }
 
-      // If elevation is relative to ground, add it to the Y coordinate of the path.
-      // But for 3D paths, Y varies, so we just add elevation to all Ys.
-      const elevation = profile.elevation === 'ground' ? height / 2 : profile.elevation;
-      const elevatedPath = path.map(([x, y, z]) => [x, y + (elevation as number), z] as [number, number, number]);
-
-      return {
-        id:             `${c.source}--${c.target}--${index}`,
-        source: c.source,
-        target: c.target,
-        path: elevatedPath,
-        // Legacy aliases so ConnectionRenderer still works without changes.
-        startPos: elevatedPath[0],
-        endPos: elevatedPath[elevatedPath.length - 1],
-        profile,
-        connectionType,
-        relation: c.relation ?? connectionType,
-        direction: c.direction ?? '-->',
-      };
-    })
-    .filter((c): c is ConnectionLayout => c !== null);
-
-  return { root, connections, allNodes: nodeMap };
+  return { root, connections, allNodes: nodeMap, connectionRouterGenerator };
 }

@@ -288,12 +288,47 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
         return buildSceneLayout(topology, connections, specification);
       } catch (err) {
         console.error("Layout error:", err);
-        return { root: null, connections: [], allNodes: new Map<string, any>() };
+        return { root: null, connections: [], allNodes: new Map<string, any>(), connectionRouterGenerator: function*() {} };
       }
     },
     [topology, connections, specification]
   );
 
+  const [renderedConnections, setRenderedConnections] = useState<any[]>([]);
+  const [buildLimit, setBuildLimit] = useState(0);
+
+  // Progressive node build animation
+  useEffect(() => {
+    if (!sceneLayout.root) return;
+    const totalNodes = sceneLayout.allNodes.size;
+    setBuildLimit(0);
+    setRenderedConnections([]);
+
+    let limit = 0;
+    let animFrame: number;
+    const animateNodes = () => {
+      limit += Math.max(1, Math.floor(totalNodes / 60)); // Animate over ~60 frames
+      setBuildLimit(limit);
+      if (limit < totalNodes) {
+        animFrame = requestAnimationFrame(animateNodes);
+      } else {
+        // Once nodes are done, start routing connections progressively
+        if (sceneLayout.connectionRouterGenerator) {
+          const gen = sceneLayout.connectionRouterGenerator();
+          const tickConnections = () => {
+            const res = gen.next();
+            setRenderedConnections([...sceneLayout.connections]);
+            if (!res.done) {
+              requestAnimationFrame(tickConnections);
+            }
+          };
+          requestAnimationFrame(tickConnections);
+        }
+      }
+    };
+    animFrame = requestAnimationFrame(animateNodes);
+    return () => cancelAnimationFrame(animFrame);
+  }, [sceneLayout]);
 
   const hoveredNameRef = useRef<string | null>(null);
   const [internalHoveredName, setInternalHoveredName] = useState<string | null>(null);
@@ -467,11 +502,12 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
                       depth={0}
                       liveStateRef={liveStateRef}
                       containerOcclusion={internalOcclusion}
+                      buildLimit={buildLimit}
                     />
                   )}
                   {!hideAllConnections && (
                     <ConnectionRenderer
-                      connections={sceneLayout.connections}
+                      connections={renderedConnections}
                       root={sceneLayout.root}
                     />
                   )}
@@ -504,12 +540,12 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
             </group>
           </Canvas>
           
-          <RightUIStack root={sceneLayout.root} connections={sceneLayout.connections} liveStateRef={liveStateRef} rightOffset={rightOffset} bottomOffset={bottomOffset}>
+          <RightUIStack root={sceneLayout.root} connections={renderedConnections} liveStateRef={liveStateRef} rightOffset={rightOffset} bottomOffset={bottomOffset}>
           </RightUIStack>
 
           <HierarchyPanel 
             root={sceneLayout.root}
-            connections={sceneLayout.connections}
+            connections={renderedConnections}
             componentsInteractable={activeComponentsInteractable}
             connectionsInteractable={activeConnectionsInteractable}
             onComponentsInteractableChange={handleComponentsInteractable}
@@ -535,7 +571,7 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
           {isGraphOpen && (
             <GraphModal 
               onClose={() => setIsGraphOpen(false)}
-              connections={sceneLayout.connections}
+              connections={renderedConnections}
               allNodes={sceneLayout.allNodes}
               root={sceneLayout.root}
               liveStateRef={liveStateRef}
