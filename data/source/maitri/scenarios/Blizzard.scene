@@ -1,1 +1,2 @@
 event:generator_failure @generator at=0 for=1
+event:generator_failure MainGenerator at=0.4 for=1.4

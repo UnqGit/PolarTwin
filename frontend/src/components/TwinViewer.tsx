@@ -70,8 +70,8 @@ interface SceneLightsProps {
  * 'off'     — ambient-only, no shadows, maximum performance.
  */
 const SceneLights: React.FC<SceneLightsProps> = ({ mode, theme }) => {
-  const skyColor = theme === 'light' ? '#cbd5e1' : '#1e293b';
-  const groundColor = theme === 'light' ? '#f8fafc' : '#0f172a';
+  const skyColor = theme === 'light' ? '#e2e8f0' : '#0d111c';
+  const groundColor = theme === 'light' ? '#f0f4f8' : '#06060c';
 
   if (mode === 'off') {
     return (
@@ -280,7 +280,7 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
   hideEditInitials = false
 }) => {
   const { theme } = useTheme();
-  const bgMain = theme === 'light' ? '#f8fafc' : '#0f172a';
+  const bgMain = theme === 'light' ? '#f0f4f8' : '#06060c';
 
   const sceneLayout = useMemo(
     () => {
@@ -495,7 +495,7 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
                 <bufferGeometry>
                   <bufferAttribute attach="attributes-position" args={[new Float32Array([0,0,-30, 0,0,30]), 3]} />
                 </bufferGeometry>
-                <lineBasicMaterial color="#3b82f6" opacity={0.5} transparent />
+                <lineBasicMaterial color={theme === 'light' ? '#0ea5e9' : '#00d2ff'} opacity={0.5} transparent />
               </line>
               <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]} receiveShadow>
                 <planeGeometry args={[100, 100]} />
