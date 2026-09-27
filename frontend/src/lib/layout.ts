@@ -157,13 +157,10 @@ export interface ConnectionProfile {
 export const CONNECTION_PROFILES: Record<string, ConnectionProfile> = {
   // New schema connection types
   passageway: { width: 1.0, height: 'min-block', elevation: 'ground', clearance: 3.0, color: '#64748b' }, // slate
-  resource: { width: 0.2, height: 0.2, elevation: 0.1, clearance: 1.0, color: '#ef4444' }, // red
-  data: { width: 0.1, height: 0.1, elevation: 0.05, clearance: 0.8, color: '#3b82f6' }, // blue
-  signal: { width: 0.1, height: 0.1, elevation: 0.05, clearance: 0.8, color: '#eab308' }, // yellow
-  
-  // Synthetic / Generated connections
-  ladder: { width: 0.6, height: 0.1, elevation: 0, clearance: 1.0, color: '#b45309' }, // orange-brown
-  lift: { width: 1.2, height: 1.2, elevation: 0, clearance: 1.0, color: '#475569' }, // dark slate
+  power: { width: 0.15, height: 0.15, elevation: 0.05, clearance: 1.0, color: '#991b1b' }, // darkest red
+  data: { width: 0.08, height: 0.08, elevation: 0.05, clearance: 0.8, color: '#1e40af' }, // darkest blue
+  signal: { width: 0.04, height: 0.04, elevation: 0.05, clearance: 0.6, color: '#854d0e' }, // darkest yellow
+  resource: { width: 0.25, height: 0.25, elevation: 0.1, clearance: 1.2, color: '#166534' }, // darkest green
   
   // Default fallback for unknown types
   default: { width: 0.1, height: 0.1, elevation: 0.05, clearance: 1.0, color: '#6b7280' },
@@ -833,7 +830,7 @@ export function buildLayout(node: any, spec: any, rawConnections: any[] = []): N
   const name: string = node.name ?? '(unnamed)';
   const type: string = node.type ?? '';
   const tags: string[] = node.tags ?? [];
-  const level: number | undefined = typeof node.level === 'number' ? node.level : undefined;
+  const level: number | undefined = typeof node.floor === 'number' ? node.floor : (typeof node.level === 'number' ? node.level : undefined);
   const rawSpec: Record<string, unknown> = (spec?.components?.[name]?.spec) ?? {};
   const rawChildren: any[] = node.children ?? [];
 
@@ -845,7 +842,7 @@ export function buildLayout(node: any, spec: any, rawConnections: any[] = []): N
 
   // Compute dynamic gap based on connections between children
   let dynamicGap = 0.6; // fallback CHILD_GAP
-  const hasFloors = children.some(c => (c.type || '').toLowerCase().includes('floor') || c.level !== undefined);
+  const hasFloors = children.some(c => (c.type || '').toLowerCase().includes('floor'));
   
   if (children.length > 0 && !hasFloors) {
     const childNames = new Set(children.map(c => c.name));
@@ -981,35 +978,7 @@ export function buildSceneLayout(topology: any, connectionsData: any, spec: any)
   const root = buildLayout(rootNode, spec, connectionsData);
   const nodeMap = buildNodeMap(root);
   const rawConnections: any[] = Array.isArray(connectionsData) ? connectionsData : [];
-  
-  // Discover floors and generate synthetic connections (ladders/lifts)
-  const floorContainers = new Map<string, NodeLayout[]>();
-  const collectFloors = (node: NodeLayout, parentName: string | null) => {
-    if (((node.type || '').toLowerCase().includes('floor') || node.level !== undefined) && parentName) {
-      if (!floorContainers.has(parentName)) floorContainers.set(parentName, []);
-      floorContainers.get(parentName)!.push(node);
-    }
-    node.children.forEach(c => collectFloors(c, node.name));
-  };
-  collectFloors(root, null);
-  
-  for (const [_, floors] of floorContainers.entries()) {
-    floors.sort((a, b) => (a.level ?? 0) - (b.level ?? 0));
-    for (let i = 0; i < floors.length - 1; i++) {
-      const src = floors[i];
-      const tgt = floors[i+1];
-      const diff = (tgt.level ?? 0) - (src.level ?? 0);
-      const connType = diff === 1 ? 'ladder' : 'lift';
-      
-      rawConnections.push({
-        source: src.name,
-        target: tgt.name,
-        type: connType,
-        direction: '<-->',
-        _synthetic: true,
-      });
-    }
-  }
+
 
   // Track used grid cells across all connections for overlap avoidance.
   const usedCells = new Set<string>();

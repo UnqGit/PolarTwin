@@ -18,8 +18,10 @@ import { createContext } from 'react';
 export interface HoverState {
   /** Name of the deepest component currently under the cursor, or null. */
   hoveredName: string | null;
-  /** Set containing the hovered name and any related nodes (e.g. source/target of hovered connection) */
-  hoveredNodes: Set<string>;
+  /** Set containing the nodes associated with the hovered item (e.g. source/target or connections) */
+  hoveredAssociated: Set<string>;
+  /** Set containing the nodes associated with the selected item */
+  selectedAssociated: Set<string>;
   /** Set containing the ancestors of the hovered component */
   hoveredAncestors: Set<string>;
   /** Set containing the ancestors of the selected component */
@@ -35,7 +37,8 @@ export interface HoverState {
 
 export const HoverContext = createContext<HoverState>({ 
   hoveredName: null, 
-  hoveredNodes: new Set(), 
+  hoveredAssociated: new Set(),
+  selectedAssociated: new Set(),
   hoveredAncestors: new Set(), 
   selectedAncestors: new Set(), 
   activeLayer: null,

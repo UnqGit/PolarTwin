@@ -334,14 +334,18 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
     }
   }, [sceneLayout, onHoverChange, onConnectionHoverChange]);
 
-  const hoveredNodes = useMemo(() => {
+  const hoveredAssociated = useMemo(() => {
     const set = new Set<string>();
     if (internalHoveredName) {
-      set.add(internalHoveredName);
       const conn = sceneLayout.connections.find((c: any) => c.id === internalHoveredName);
       if (conn) {
         set.add(conn.source);
         set.add(conn.target);
+      } else {
+        const relatedConns = sceneLayout.connections.filter(
+          (c: any) => c.source === internalHoveredName || c.target === internalHoveredName
+        );
+        for (const rc of relatedConns) set.add(rc.id);
       }
     }
     return set;
@@ -376,14 +380,18 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
   const internalSelected = null;
   const effectiveSelected = onSelectName !== undefined ? selectedName : internalSelected;
   
-  const selectionNodes = useMemo(() => {
+  const selectedAssociated = useMemo(() => {
     const set = new Set<string>();
     if (effectiveSelected) {
-      set.add(effectiveSelected);
       const conn = sceneLayout.connections.find((c: any) => c.id === effectiveSelected);
       if (conn) {
         set.add(conn.source);
         set.add(conn.target);
+      } else {
+        const relatedConns = sceneLayout.connections.filter(
+          (c: any) => c.source === effectiveSelected || c.target === effectiveSelected
+        );
+        for (const rc of relatedConns) set.add(rc.id);
       }
     }
     return set;
@@ -423,7 +431,8 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
     <SelectionProvider externalSelection={onSelectName !== undefined ? [selectedName, onSelectName] : undefined}>
       <HoverContext.Provider value={{ 
         hoveredName: internalHoveredName, 
-        hoveredNodes: new Set([...hoveredNodes, ...selectionNodes]), 
+        hoveredAssociated,
+        selectedAssociated,
         hoveredAncestors, 
         selectedAncestors, 
         activeLayer,
@@ -451,7 +460,7 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
                 componentsInteractable={activeComponentsInteractable}
                 connectionsInteractable={activeConnectionsInteractable}
               >
-                <Bounds fit clip margin={1.3}>
+                <Bounds margin={1.3}>
                   {!hideAllComponents && (
                     <TwinNodeRenderer
                       layout={sceneLayout.root}

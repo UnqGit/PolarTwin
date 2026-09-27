@@ -387,3 +387,45 @@ describe('Spec forwarding', () => {
     expect((layout.spec as any).fuel_rate).toBe(0.25);
   });
 });
+
+// ─── Floor Stacking and Level Mapping ──────────────────────────────────────────
+
+describe('Floor Stacking and Level Mapping', () => {
+  it('reads level from node.floor correctly and applies vertical offset', () => {
+    const topo = makeTopology({
+      name: 'Station',
+      type: 'station',
+      children: [
+        { name: 'GroundFloor', type: 'floor', floor: 0, children: [] },
+        { name: 'FirstFloor', type: 'floor', floor: 1, children: [] },
+        { name: 'SecondFloor', type: 'floor', floor: 2, children: [] },
+      ]
+    });
+    const layout = buildLayout(topo, makeSpec());
+
+    expect(layout.children.length).toBe(3);
+    // Should be sorted by level
+    expect(layout.children[0].name).toBe('GroundFloor');
+    expect(layout.children[0].position[1]).toBe(0);
+    
+    expect(layout.children[1].name).toBe('FirstFloor');
+    expect(layout.children[1].position[1]).toBe(3.0);
+    
+    expect(layout.children[2].name).toBe('SecondFloor');
+    expect(layout.children[2].position[1]).toBe(6.0);
+  });
+
+  it('calculates yOffset to center the floors within container', () => {
+    const topo = makeTopology({
+      name: 'Station',
+      type: 'station',
+      children: [
+        { name: 'FirstFloor', type: 'floor', floor: 1, children: [] }, // Lowest floor is at level 1 (Y=3.0)
+      ]
+    });
+    const layout = buildLayout(topo, makeSpec());
+
+    // yMin = 3.0, PADDING = 0.8 -> yOffset = 3.0 - 0.4 = 2.6
+    expect(layout.yOffset).toBe(2.6);
+  });
+});

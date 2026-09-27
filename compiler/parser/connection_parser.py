@@ -4,6 +4,7 @@ from pathlib import Path
 from packages.shared_models.domain import HierarchyComponent, CompiledConnection
 from packages.shared_models.enums import ConnectionType
 from packages.shared_models.errors import ParseError
+from .utils import strip_comments
 
 class ConnectionParseError(ParseError):
     """Raised when connection.twin contains invalid syntax or references."""
@@ -45,8 +46,10 @@ def parse_connection_file(connection_file: Path, hierarchy_components: list[Hier
     outgoing_connections = {name: [] for name in nodes}
 
     with open(connection_file, "r", encoding="utf-8") as f:
-        for line_number, raw in enumerate(f, start=1):
-            line = raw.split("#", 1)[0].strip()
+        text = strip_comments(f.read())
+        
+        for line_number, raw in enumerate(text.splitlines(), start=1):
+            line = raw.strip()
             if not line:
                 continue
 
