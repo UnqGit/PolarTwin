@@ -93,7 +93,7 @@ export function Overview() {
   }, [hierarchyData, telemetry]);
 
   const blocks = useMemo(() => {
-    const blockNodes = hierarchyData.filter(n => n.type === 'block');
+    const blockNodes = hierarchyData.filter(n => n.type !== 'station');
     return blockNodes.map((b, i) => {
       // Calculate inner components using the children hierarchy
       const allDescendants = new Set<string>();
