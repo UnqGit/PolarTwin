@@ -11,6 +11,93 @@ export interface BlockData {
   innerActive: number;
 }
 
+function SubGrid({ allBlocks, title }: { allBlocks: BlockData[], title: string }) {
+  const [active, setActive] = useState<number[]>([]);
+  const [fading, setFading] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (allBlocks.length === 0) return;
+    const count = Math.min(4, allBlocks.length);
+    const initial: number[] = [];
+    const available = Array.from({length: allBlocks.length}, (_, i) => i);
+    for (let i = 0; i < count; i++) {
+      if (available.length === 0) break;
+      const rnd = Math.floor(Math.random() * available.length);
+      initial.push(available.splice(rnd, 1)[0]);
+    }
+    setActive(initial);
+  }, [allBlocks]);
+
+  useEffect(() => {
+    if (allBlocks.length <= active.length || active.length === 0) return;
+    
+    const intervalTime = 3000 + Math.random() * 3000;
+    
+    const interval = setInterval(() => {
+      const replacePos = Math.floor(Math.random() * active.length);
+      setFading(replacePos);
+
+      setTimeout(() => {
+        setActive(prev => {
+          const next = [...prev];
+          const available = Array.from({length: allBlocks.length}, (_, i) => i).filter(i => !next.includes(i));
+          if (available.length > 0) {
+            const rnd = Math.floor(Math.random() * available.length);
+            next[replacePos] = available[rnd];
+          }
+          return next;
+        });
+        setFading(null);
+      }, 500);
+    }, intervalTime);
+    
+    return () => clearInterval(interval);
+  }, [allBlocks, active.length]);
+
+  return (
+    <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column' }}>
+      <h3 style={{ fontSize: '16px', fontWeight: 600, marginTop: 0, marginBottom: '16px', color: 'var(--text-secondary)' }}>
+        {title}
+      </h3>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', flex: 1 }}>
+        {active.map((idx, i) => {
+          const block = allBlocks[idx];
+          return (
+            <div key={i} style={{
+              borderRadius: '8px',
+              overflow: 'hidden',
+              border: '1px solid var(--border-color)',
+              position: 'relative',
+              aspectRatio: '1',
+              opacity: fading === i ? 0 : 1,
+              transition: 'opacity 0.5s ease-in-out',
+            }}>
+              <div style={{ width: '100%', height: '100%', backgroundImage: `url(${block.img})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.8 }} />
+              <div style={{ 
+                position: 'absolute', 
+                bottom: 0, 
+                left: 0, 
+                right: 0, 
+                background: 'rgba(0,0,0,0.7)', 
+                backdropFilter: 'blur(4px)',
+                padding: '8px 10px', 
+                display: 'flex', 
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <span style={{ fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fff' }}>{block.name}</span>
+                {block.status === 'active' && <CheckCircle size={16} color="#10b981" style={{ flexShrink: 0 }} />}
+                {block.status === 'inactive' && <Box size={16} color="var(--text-tertiary)" style={{ flexShrink: 0 }} />}
+                {block.status === 'failure' && <AlertTriangle size={16} color="#ef4444" style={{ flexShrink: 0 }} />}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 export function Overview() {
   const { selectedStation, hierarchy } = useStation();
   
@@ -68,47 +155,9 @@ export function Overview() {
     });
   }, [hierarchyData]);
 
-  const [activeIndices, setActiveIndices] = useState<number[]>([]);
-  const [fadingIndex, setFadingIndex] = useState<number | null>(null);
-
-  useEffect(() => {
-    if (blocks.length === 0) {
-      setActiveIndices([]);
-      return;
-    }
-    const count = Math.max(1, Math.floor(Math.log2(blocks.length)));
-    const initial: number[] = [];
-    const available = Array.from({length: blocks.length}, (_, i) => i);
-    for (let i = 0; i < count; i++) {
-      if (available.length === 0) break;
-      const rnd = Math.floor(Math.random() * available.length);
-      initial.push(available.splice(rnd, 1)[0]);
-    }
-    setActiveIndices(initial);
-  }, [blocks]);
-
-  useEffect(() => {
-    if (blocks.length <= activeIndices.length || activeIndices.length === 0) return;
-    
-    const interval = setInterval(() => {
-      const replacePos = Math.floor(Math.random() * activeIndices.length);
-      setFadingIndex(replacePos);
-
-      setTimeout(() => {
-        setActiveIndices(prev => {
-          const next = [...prev];
-          const available = Array.from({length: blocks.length}, (_, i) => i).filter(i => !next.includes(i));
-          if (available.length > 0) {
-            const rnd = Math.floor(Math.random() * available.length);
-            next[replacePos] = available[rnd];
-          }
-          return next;
-        });
-        setFadingIndex(null);
-      }, 500);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [blocks, activeIndices.length]);
+  const numGrids = useMemo(() => {
+    return Math.max(1, Math.floor(Math.log2(blocks.length || 1)));
+  }, [blocks.length]);
 
   return (
     <div style={{ padding: '32px', height: '100%', overflowY: 'auto' }}>
@@ -177,40 +226,18 @@ export function Overview() {
         </div>
       </div>
 
-      <div className="glass-panel" style={{ padding: '24px' }}>
+      <div style={{ marginBottom: '32px' }}>
         <h2 style={{ fontSize: '18px', fontWeight: 600, marginTop: 0, marginBottom: '20px' }}>Featured Components</h2>
-        {activeIndices.length > 0 ? (
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${activeIndices.length}, 1fr)`, gap: '24px' }}>
-            {activeIndices.map((blockIdx, i) => {
-              const currentBlock = blocks[blockIdx];
-              return (
-                <div key={i} style={{
-                  borderRadius: '8px',
-                  overflow: 'hidden',
-                  border: '1px solid var(--border-color)',
-                  position: 'relative',
-                  background: 'var(--bg-panel-secondary)',
-                  opacity: fadingIndex === i ? 0 : 1,
-                  transition: 'opacity 0.5s ease-in-out',
-                }}>
-                  <div style={{ height: '180px', backgroundImage: `url(${currentBlock.img})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.8 }} />
-                  <div style={{ padding: '20px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                      <span style={{ fontWeight: 700, fontSize: '18px' }}>{currentBlock.name}</span>
-                      {currentBlock.status === 'active' && <CheckCircle size={20} color="#10b981" />}
-                      {currentBlock.status === 'inactive' && <Box size={20} color="var(--text-tertiary)" />}
-                      {currentBlock.status === 'failure' && <AlertTriangle size={20} color="#ef4444" />}
-                    </div>
-                    <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
-                      Inner Components: {currentBlock.innerActive} / {currentBlock.innerTotal}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+        {blocks.length > 0 ? (
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${numGrids}, 1fr)`, gap: '24px' }}>
+            {Array.from({ length: numGrids }).map((_, i) => (
+              <SubGrid key={i} allBlocks={blocks} title={`Sub-section ${i + 1}`} />
+            ))}
           </div>
         ) : (
-          <div style={{ color: 'var(--text-secondary)' }}>No blocks available.</div>
+          <div className="glass-panel" style={{ padding: '24px', color: 'var(--text-secondary)' }}>
+            No components available.
+          </div>
         )}
       </div>
     </div>
