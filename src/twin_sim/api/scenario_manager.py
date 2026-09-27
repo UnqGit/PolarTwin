@@ -26,7 +26,10 @@ class ScenarioManager:
         self.data_dir = Path(data_dir)
         self.source_dir = self.data_dir / "source"
         self.events_dir = self.data_dir / "events"
-        self.events_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            self.events_dir.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            pass  # Ignore on read-only filesystems (e.g., Vercel)
 
     # ------------------------------------------------------------------
     # ID Helpers
@@ -41,7 +44,10 @@ class ScenarioManager:
 
     def _get_scenario_path(self, station_id: str, name: str) -> Path:
         scenarios_dir = self.source_dir / station_id / "scenarios"
-        scenarios_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            scenarios_dir.mkdir(parents=True, exist_ok=True)
+        except OSError:
+            pass  # Ignore on read-only filesystems
         return scenarios_dir / f"{name}.scene"
 
     # ------------------------------------------------------------------

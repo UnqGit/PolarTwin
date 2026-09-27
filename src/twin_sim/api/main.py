@@ -36,7 +36,11 @@ from twin_sim.telemetry.database import TelemetryDatabase
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 DATA_DIR = Path(os.getenv("DATA_DIR", str(_PROJECT_ROOT / "data")))
 COMPILED_ROOT = DATA_DIR / "compiled"
-DB_PATH = DATA_DIR / "telemetry.db"
+
+if os.getenv("VERCEL") == "1":
+    DB_PATH = Path("/tmp/telemetry.db")
+else:
+    DB_PATH = DATA_DIR / "telemetry.db"
 
 # ---------------------------------------------------------------------------
 # Application bootstrap
