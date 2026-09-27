@@ -40,28 +40,30 @@ export function DSLEditor({ value, onChange, selectedLine, errorLine }: DSLEdito
       base: 'vs-dark',
       inherit: true,
       rules: [
-        { token: 'comment', foreground: '6b7280' },
-        { token: 'annotation', foreground: '10b981' },
-        { token: 'keyword', foreground: '3b82f6', fontStyle: 'bold' },
-        { token: 'delimiter', foreground: 'f59e0b' },
-        { token: 'number', foreground: '8b5cf6' },
+        { token: 'comment', foreground: '64748b' },
+        { token: 'annotation', foreground: '00e676' }, // Aurora green
+        { token: 'keyword', foreground: 'b566ff', fontStyle: 'bold' }, // Aurora purple
+        { token: 'delimiter', foreground: '00d2ff' }, // Aurora cyan
+        { token: 'number', foreground: 'fbbf24' },
       ],
       colors: {
-        'editor.background': '#1e1e1e',
+        'editor.background': '#06060c', // Matches --bg-main
+        'editor.lineHighlightBackground': '#161a29', // Matches --bg-panel-secondary
       }
     });
     monaco.editor.defineTheme('twin-light', {
       base: 'vs',
       inherit: true,
       rules: [
-        { token: 'comment', foreground: '6b7280' },
-        { token: 'annotation', foreground: '10b981' },
-        { token: 'keyword', foreground: '2563eb', fontStyle: 'bold' },
-        { token: 'delimiter', foreground: 'd97706' },
-        { token: 'number', foreground: '7c3aed' },
+        { token: 'comment', foreground: '94a3b8' },
+        { token: 'annotation', foreground: '0ea5e9' }, // Icy blue
+        { token: 'keyword', foreground: '38bdf8', fontStyle: 'bold' }, // Light icy blue
+        { token: 'delimiter', foreground: '475569' }, 
+        { token: 'number', foreground: 'd97706' },
       ],
       colors: {
-        'editor.background': '#f8fafc', // matches var(--bg-main) in light mode
+        'editor.background': '#f0f4f8', // Matches var(--bg-main) in light mode
+        'editor.lineHighlightBackground': '#e2e8f0', // Matches var(--bg-panel-secondary)
       }
     });
   };

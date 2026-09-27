@@ -14,13 +14,21 @@
 import React from 'react';
 import type { MeshProps } from './GenericMesh';
 
-import { GenericMesh }     from './GenericMesh';
-import { GeneratorMesh }   from './GeneratorMesh';
-import { TankMesh }        from './TankMesh';
-import { SensorMesh }      from './SensorMesh';
-import { ControllerMesh }  from './ControllerMesh';
-import { PumpMesh }        from './PumpMesh';
-import { BatteryMesh }     from './BatteryMesh';
+import { GenericMesh }        from './GenericMesh';
+import { GeneratorMesh }      from './GeneratorMesh';
+import { TankMesh }           from './TankMesh';
+import { SensorMesh }         from './SensorMesh';
+import { ControllerMesh }     from './ControllerMesh';
+import { PumpMesh }           from './PumpMesh';
+import { BatteryMesh }        from './BatteryMesh';
+import { AntennaMesh }        from './AntennaMesh';
+import { StorageMesh }        from './StorageMesh';
+import { VentMesh }           from './VentMesh';
+import { AlarmMesh }          from './AlarmMesh';
+import { ServerMesh }         from './ServerMesh';
+import { VehicleMesh }        from './VehicleMesh';
+import { SolarPanelMesh }     from './SolarPanelMesh';
+import { AirConditionerMesh } from './AirConditionerMesh';
 
 export type { MeshProps } from './GenericMesh';
 export {
@@ -31,6 +39,14 @@ export {
   ControllerMesh,
   PumpMesh,
   BatteryMesh,
+  AntennaMesh,
+  StorageMesh,
+  VentMesh,
+  AlarmMesh,
+  ServerMesh,
+  VehicleMesh,
+  SolarPanelMesh,
+  AirConditionerMesh,
 };
 
 // MeshProps is re-exported from GenericMesh (canonical definition) on line 25.
@@ -50,4 +66,12 @@ export const MESH_COMPONENT_MAP: Record<string, React.FC<MeshProps>> = {
   ControllerMesh,
   PumpMesh,
   BatteryMesh,
+  AntennaMesh,
+  StorageMesh,
+  VentMesh,
+  AlarmMesh,
+  ServerMesh,
+  VehicleMesh,
+  SolarPanelMesh,
+  AirConditionerMesh,
 };

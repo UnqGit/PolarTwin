@@ -86,7 +86,7 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
     >
       <div style={{ position: 'relative', width: width, height: '100%', minHeight: 120 }}>
         {/* Grid lines */}
-        <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, backgroundImage: 'linear-gradient(to right, rgba(255,255,255,0.05) 1px, transparent 1px)', backgroundSize: `${PIXELS_PER_UNIT}px 100%` }} />
+        <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, backgroundImage: 'linear-gradient(to right, var(--border-color) 1px, transparent 1px)', backgroundSize: `${PIXELS_PER_UNIT}px 100%` }} />
         
         {/* Axis labels */}
         {Array.from({ length: Math.ceil(width / PIXELS_PER_UNIT) }).map((_, i) => (
@@ -134,7 +134,7 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
                   padding: '0 8px',
                   fontSize: 11,
                   color: '#fff',
-                  boxShadow: isSelected ? '0 0 0 2px rgba(59,130,246,0.5)' : 'none',
+                  boxShadow: isSelected ? 'var(--shadow-glow)' : 'none',
                   overflow: 'hidden',
                   whiteSpace: 'nowrap',
                   userSelect: 'none'

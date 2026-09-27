@@ -45,13 +45,22 @@ export function lookupMesh(type: string): string {
 
 // ─── built-in registrations (more-specific matches first) ────────────────────
 
-registerMesh('generator',    'GeneratorMesh');
-registerMesh('tank',         'TankMesh');
-registerMesh('pump',         'PumpMesh');
-registerMesh('motor',        'PumpMesh');       // motor reuses the sphere-style pump mesh
-registerMesh('battery',      'BatteryMesh');
-registerMesh('sensor',       'SensorMesh');
-registerMesh('thermometer',  'SensorMesh');
-registerMesh('alarm',        'SensorMesh');
-registerMesh('toggle',       'SensorMesh');
-registerMesh('controller',   'ControllerMesh');
+registerMesh('generator',       'GeneratorMesh');
+registerMesh('tank',            'TankMesh');
+registerMesh('pump',            'PumpMesh');
+registerMesh('motor',           'PumpMesh');
+registerMesh('battery',         'BatteryMesh');
+registerMesh('sensor',          'SensorMesh');
+registerMesh('thermometer',     'SensorMesh');
+registerMesh('toggle',          'SensorMesh');
+registerMesh('controller',      'ControllerMesh');
+registerMesh('antenna',         'AntennaMesh');
+registerMesh('storage',         'StorageMesh');
+registerMesh('vent',            'VentMesh');
+registerMesh('alarm',           'AlarmMesh');
+registerMesh('server',          'ServerMesh');
+registerMesh('vehicle',         'VehicleMesh');
+registerMesh('solar_panel',     'SolarPanelMesh');
+registerMesh('air_conditioner', 'AirConditionerMesh');
+registerMesh('ac',              'AirConditionerMesh');
+registerMesh('hvac',            'AirConditionerMesh');

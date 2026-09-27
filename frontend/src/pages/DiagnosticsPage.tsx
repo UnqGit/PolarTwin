@@ -117,7 +117,7 @@ export function DiagnosticsPage() {
               >
                 <div style={{ width: 80, fontFamily: 'monospace' }}>{r.simulation_time.toFixed(2)}s</div>
                 <div style={{ width: 80 }}>
-                  <span style={{ padding: '2px 6px', borderRadius: 10, fontSize: 10, backgroundColor: r.source === 'SIMULATION' ? '#3b82f640' : '#10b98140', color: r.source === 'SIMULATION' ? '#60a5fa' : '#34d399' }}>
+                  <span style={{ padding: '2px 6px', borderRadius: 10, fontSize: 10, backgroundColor: r.source === 'SIMULATION' ? 'var(--bg-input)' : 'var(--bg-input)', color: r.source === 'SIMULATION' ? 'var(--accent-blue)' : 'var(--accent-cyan)' }}>
                     {r.source.substring(0, 3)}
                   </span>
                 </div>

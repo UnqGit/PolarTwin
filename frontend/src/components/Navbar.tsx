@@ -51,7 +51,7 @@ export function Navbar() {
           color: 'var(--accent-blue)', 
           display: 'flex', 
           alignItems: 'center',
-          background: 'rgba(59, 130, 246, 0.1)',
+          background: 'var(--bg-input)',
           padding: '6px',
           borderRadius: '8px',
           boxShadow: 'var(--shadow-glow)'
@@ -102,7 +102,7 @@ export function Navbar() {
               fontSize: '13px',
               transition: 'all 0.2s ease',
               color: isActive ? 'var(--accent-blue)' : 'var(--text-secondary)',
-              background: isActive ? 'rgba(59, 130, 246, 0.1)' : 'transparent',
+              background: isActive ? 'var(--bg-input)' : 'transparent',
               boxShadow: isActive ? 'inset 0 -2px 0 var(--accent-blue)' : 'none',
             })}
           >

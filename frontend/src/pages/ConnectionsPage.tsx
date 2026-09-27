@@ -127,7 +127,7 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
     const depth1Color = theme === 'light' ? '#1e293b' : '#f1f5f9';
     const depth2Color = theme === 'light' ? '#475569' : '#94a3b8';
     const depth3Color = theme === 'light' ? '#334155' : '#64748b';
-    const outlineColor = theme === 'light' ? '#f8fafc' : '#0f172a';
+    const outlineColor = theme === 'light' ? '#f0f4f8' : '#06060c';
     const edgeColor = theme === 'light' ? '#475569' : '#94a3b8';
     const outlineWidth = theme === 'light' ? 0 : 2;
     cyRef.current.style()
@@ -169,7 +169,7 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
             'background-color': 'data(typeColor)',
             'font-weight': 'normal',
             'font-family': 'Inter, sans-serif',
-            'text-outline-color': theme === 'light' ? '#f8fafc' : '#0f172a',
+            'text-outline-color': theme === 'light' ? '#f0f4f8' : '#06060c',
             'text-outline-width': theme === 'light' ? 0 : 2,
             'text-margin-y': -5,
             'shape': 'round-rectangle',
@@ -222,9 +222,9 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
           selector: '.hovered',
           style: {
             'border-width': 4,
-            'border-color': '#fde047',
-            'line-color': '#fde047',
-            'target-arrow-color': '#fde047',
+            'border-color': theme === 'light' ? '#38bdf8' : '#00d2ff',
+            'line-color': theme === 'light' ? '#38bdf8' : '#00d2ff',
+            'target-arrow-color': theme === 'light' ? '#38bdf8' : '#00d2ff',
             'z-index': 10
           }
         },
@@ -232,9 +232,9 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
           selector: '.selected',
           style: {
             'border-width': 4,
-            'border-color': '#f59e0b',
-            'line-color': '#f59e0b',
-            'target-arrow-color': '#f59e0b',
+            'border-color': theme === 'light' ? '#0ea5e9' : '#00e676',
+            'line-color': theme === 'light' ? '#0ea5e9' : '#00e676',
+            'target-arrow-color': theme === 'light' ? '#0ea5e9' : '#00e676',
             'z-index': 20
           }
         },
