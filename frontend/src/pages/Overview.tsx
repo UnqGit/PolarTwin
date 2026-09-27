@@ -11,88 +11,58 @@ export interface BlockData {
   innerActive: number;
 }
 
-function SubGrid({ allBlocks, title }: { allBlocks: BlockData[], title: string }) {
-  const [active, setActive] = useState<number[]>([]);
-  const [fading, setFading] = useState<number | null>(null);
+function GridCard({ allBlocks }: { allBlocks: BlockData[] }) {
+  const [activeIdx, setActiveIdx] = useState<number>(() => 
+    allBlocks.length > 0 ? Math.floor(Math.random() * allBlocks.length) : 0
+  );
+  const [fading, setFading] = useState<boolean>(false);
 
   useEffect(() => {
-    if (allBlocks.length === 0) return;
-    const count = Math.min(4, allBlocks.length);
-    const initial: number[] = [];
-    const available = Array.from({length: allBlocks.length}, (_, i) => i);
-    for (let i = 0; i < count; i++) {
-      if (available.length === 0) break;
-      const rnd = Math.floor(Math.random() * available.length);
-      initial.push(available.splice(rnd, 1)[0]);
-    }
-    setActive(initial);
-  }, [allBlocks]);
-
-  useEffect(() => {
-    if (allBlocks.length <= active.length || active.length === 0) return;
-    
-    const intervalTime = 3000 + Math.random() * 3000;
+    if (allBlocks.length <= 1) return;
+    const intervalTime = 4000 + Math.random() * 2000;
     
     const interval = setInterval(() => {
-      const replacePos = Math.floor(Math.random() * active.length);
-      setFading(replacePos);
-
+      setFading(true);
       setTimeout(() => {
-        setActive(prev => {
-          const next = [...prev];
-          const available = Array.from({length: allBlocks.length}, (_, i) => i).filter(i => !next.includes(i));
-          if (available.length > 0) {
-            const rnd = Math.floor(Math.random() * available.length);
-            next[replacePos] = available[rnd];
-          }
-          return next;
+        setActiveIdx(prev => {
+          let nextIdx;
+          do {
+            nextIdx = Math.floor(Math.random() * allBlocks.length);
+          } while (nextIdx === prev);
+          return nextIdx;
         });
-        setFading(null);
+        setFading(false);
       }, 500);
     }, intervalTime);
     
     return () => clearInterval(interval);
-  }, [allBlocks, active.length]);
+  }, [allBlocks]);
+
+  if (allBlocks.length === 0) return null;
+  const block = allBlocks[activeIdx];
 
   return (
-    <div className="glass-panel" style={{ padding: '20px', display: 'flex', flexDirection: 'column' }}>
-      <h3 style={{ fontSize: '16px', fontWeight: 600, marginTop: 0, marginBottom: '16px', color: 'var(--text-secondary)' }}>
-        {title}
-      </h3>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', flex: 1 }}>
-        {active.map((idx, i) => {
-          const block = allBlocks[idx];
-          return (
-            <div key={i} style={{
-              borderRadius: '8px',
-              overflow: 'hidden',
-              border: '1px solid var(--border-color)',
-              position: 'relative',
-              aspectRatio: '1',
-              opacity: fading === i ? 0 : 1,
-              transition: 'opacity 0.5s ease-in-out',
-            }}>
-              <div style={{ width: '100%', height: '100%', backgroundImage: `url(${block.img})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.8 }} />
-              <div style={{ 
-                position: 'absolute', 
-                bottom: 0, 
-                left: 0, 
-                right: 0, 
-                background: 'rgba(0,0,0,0.7)', 
-                backdropFilter: 'blur(4px)',
-                padding: '8px 10px', 
-                display: 'flex', 
-                justifyContent: 'space-between',
-                alignItems: 'center'
-              }}>
-                <span style={{ fontSize: '13px', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fff' }}>{block.name}</span>
-                {block.status === 'active' && <CheckCircle size={16} color="#10b981" style={{ flexShrink: 0 }} />}
-                {block.status === 'inactive' && <Box size={16} color="var(--text-tertiary)" style={{ flexShrink: 0 }} />}
-                {block.status === 'failure' && <AlertTriangle size={16} color="#ef4444" style={{ flexShrink: 0 }} />}
-              </div>
-            </div>
-          );
-        })}
+    <div style={{
+      borderRadius: '8px',
+      overflow: 'hidden',
+      border: '1px solid var(--border-color)',
+      position: 'relative',
+      background: 'var(--bg-panel-secondary)',
+      opacity: fading ? 0 : 1,
+      transition: 'opacity 0.5s ease-in-out',
+      aspectRatio: '1',
+    }}>
+      <div style={{ width: '100%', height: '100%', backgroundImage: `url(${block.img})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.8 }} />
+      <div style={{ padding: '20px', position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(transparent, rgba(0,0,0,0.9))' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+          <span style={{ fontWeight: 700, fontSize: '18px', color: '#fff' }}>{block.name}</span>
+          {block.status === 'active' && <CheckCircle size={20} color="#10b981" />}
+          {block.status === 'inactive' && <Box size={20} color="var(--text-tertiary)" />}
+          {block.status === 'failure' && <AlertTriangle size={20} color="#ef4444" />}
+        </div>
+        <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.7)' }}>
+          Inner Components: {block.innerActive} / {block.innerTotal}
+        </div>
       </div>
     </div>
   );
@@ -226,16 +196,16 @@ export function Overview() {
         </div>
       </div>
 
-      <div style={{ marginBottom: '32px' }}>
+      <div className="glass-panel" style={{ padding: '24px' }}>
         <h2 style={{ fontSize: '18px', fontWeight: 600, marginTop: 0, marginBottom: '20px' }}>Featured Components</h2>
         {blocks.length > 0 ? (
-          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${numGrids}, 1fr)`, gap: '24px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '24px' }}>
             {Array.from({ length: numGrids }).map((_, i) => (
-              <SubGrid key={i} allBlocks={blocks} title={`Sub-section ${i + 1}`} />
+              <GridCard key={i} allBlocks={blocks} />
             ))}
           </div>
         ) : (
-          <div className="glass-panel" style={{ padding: '24px', color: 'var(--text-secondary)' }}>
+          <div style={{ color: 'var(--text-secondary)' }}>
             No components available.
           </div>
         )}
