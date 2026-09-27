@@ -13,13 +13,67 @@ class TelemetryDatabase:
     def _create_tables(self):
         with self.conn:
             self.conn.execute("""
+                CREATE TABLE IF NOT EXISTS stations (
+                    id TEXT PRIMARY KEY,
+                    name TEXT,
+                    created_at REAL
+                )
+            """)
+            self.conn.execute("""
+                CREATE TABLE IF NOT EXISTS station_models (
+                    id TEXT PRIMARY KEY,
+                    station_id TEXT,
+                    hierarchy_json TEXT,
+                    connection_json TEXT,
+                    spec_json TEXT,
+                    created_at REAL,
+                    FOREIGN KEY(station_id) REFERENCES stations(id)
+                )
+            """)
+            self.conn.execute("""
+                CREATE TABLE IF NOT EXISTS scenarios (
+                    id TEXT PRIMARY KEY,
+                    station_id TEXT,
+                    name TEXT,
+                    description TEXT,
+                    created_at REAL,
+                    FOREIGN KEY(station_id) REFERENCES stations(id)
+                )
+            """)
+            self.conn.execute("""
+                CREATE TABLE IF NOT EXISTS event_definitions (
+                    id TEXT PRIMARY KEY,
+                    scenario_id TEXT,
+                    component TEXT,
+                    field TEXT,
+                    value_json TEXT,
+                    start_time REAL,
+                    duration REAL,
+                    FOREIGN KEY(scenario_id) REFERENCES scenarios(id)
+                )
+            """)
+            self.conn.execute("""
+                CREATE TABLE IF NOT EXISTS simulation_runs (
+                    id TEXT PRIMARY KEY,
+                    scenario_id TEXT,
+                    station_model_id TEXT,
+                    start_time REAL,
+                    end_time REAL,
+                    status TEXT,
+                    FOREIGN KEY(scenario_id) REFERENCES scenarios(id),
+                    FOREIGN KEY(station_model_id) REFERENCES station_models(id)
+                )
+            """)
+
+            self.conn.execute("""
                 CREATE TABLE IF NOT EXISTS telemetry_records (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     run_id TEXT,
                     station_id TEXT,
                     simulation_time REAL,
                     persistence_time REAL,
-                    source TEXT
+                    source TEXT,
+                    FOREIGN KEY(run_id) REFERENCES simulation_runs(id)
                 )
             """)
             self.conn.execute("""

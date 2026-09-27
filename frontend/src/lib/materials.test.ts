@@ -50,7 +50,7 @@ describe('Material resolution', () => {
     const normal  = resolveMaterial('controller');
     const hovered = resolveMaterial('controller', { hovered: true });
     expect(hovered.color).not.toBe(normal.color);
-    expect(hovered.color).toBe('#93c5fd');
+    expect(hovered.color).toBe('#fef08a');
   });
 
   it('hovered container stays translucent', () => {

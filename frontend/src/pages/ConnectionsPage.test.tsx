@@ -68,7 +68,7 @@ describe('ConnectionsPage', () => {
     expect(screen.getByText('No twin data available.')).toBeInTheDocument();
   });
 
-  it('renders connections list and cytoscape container when data is present', () => {
+  it('renders connections list and cytoscape container when data is present', async () => {
     const mockHierarchy = {
       name: 'Station1',
       type: 'station',
@@ -83,7 +83,7 @@ describe('ConnectionsPage', () => {
       tags: []
     };
     const mockConnections = [
-      { id: '1', source: 'A', target: 'B', connectionType: 'power' as any, relation: 'test' }
+      { id: '1', source: 'A', target: 'B', type: 'power' as any, relation: 'test' }
     ];
 
     render(
@@ -101,7 +101,7 @@ describe('ConnectionsPage', () => {
     );
 
     // Should render ConnectionsList component texts
-    expect(screen.getByText('Source:')).toBeInTheDocument(); // Inner group heading logic
+    expect(await screen.findByText('Source:')).toBeInTheDocument(); // Inner group heading logic
     // Should render Cytoscape container
     expect(screen.getByTestId('cytoscape-container')).toBeInTheDocument();
   });

@@ -454,6 +454,28 @@ export function ConnectionsPage() {
     }
   }, [rawHierarchy, rawConnections, spec]);
 
+  const [renderedConnections, setRenderedConnections] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!sceneLayout) {
+      setRenderedConnections([]);
+      return;
+    }
+    const gen = sceneLayout.connectionRouterGenerator();
+    let frame: number;
+    const tick = () => {
+      const res = gen.next();
+      if (!res.done) {
+        setRenderedConnections([...sceneLayout.connections]);
+        frame = requestAnimationFrame(tick);
+      } else {
+        setRenderedConnections([...sceneLayout.connections]);
+      }
+    };
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [sceneLayout]);
+
   if (isLoadingData) {
     return <div style={{ padding: 24, color: 'var(--text-primary)' }}>Loading...</div>;
   }
@@ -476,13 +498,13 @@ export function ConnectionsPage() {
       <SelectionProvider>
         <div style={{ display: 'flex', width: '100%', height: '100%', position: 'relative' }}>
           <div style={{ width: leftPanelWidth, position: 'absolute', top: 0, left: 0, bottom: 0, borderRight: '1px solid var(--border-color)', backgroundColor: 'var(--bg-panel)', zIndex: 10, display: 'flex', flexDirection: 'column', boxShadow: '4px 0 15px rgba(0,0,0,0.3)' }}>
-            <ConnectionsList connections={sceneLayout.connections} />
+            <ConnectionsList connections={renderedConnections} />
             <div 
               style={{ position: 'absolute', top: 0, right: -2, bottom: 0, width: '4px', cursor: 'ew-resize', zIndex: 50 }}
               onMouseDown={(e) => { e.preventDefault(); setIsResizingLeft(true); }}
             />
           </div>
-          <GraphContainer root={sceneLayout.root} connections={sceneLayout.connections} leftOffset={leftPanelWidth} />
+          <GraphContainer root={sceneLayout.root} connections={renderedConnections} leftOffset={leftPanelWidth} />
         </div>
       </SelectionProvider>
     </HoverContext.Provider>

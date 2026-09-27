@@ -146,7 +146,7 @@ export interface ConnectionRendererProps {
   root: NodeLayout;
 }
 
-export const ConnectionRenderer: React.FC<ConnectionRendererProps> = ({ connections, root }) => {
+export const ConnectionRenderer: React.FC<ConnectionRendererProps> = React.memo(({ connections, root }) => {
   const { hiddenSet } = useSelection();
   
   const hiddenAndDescendants = useMemo(() => {
@@ -173,4 +173,4 @@ export const ConnectionRenderer: React.FC<ConnectionRendererProps> = ({ connecti
       ))}
     </group>
   );
-};
+});

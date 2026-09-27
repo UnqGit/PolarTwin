@@ -85,7 +85,9 @@ export function ScenariosPage() {
   }, [selectedStation]);
 
   useEffect(() => {
+    console.log('EFFECT RUNNING:', { editingType, selectedScenarioId, selectedStation });
     if (editingType === 'scenario' && selectedScenarioId) {
+      console.log('CALLING API getScenarioSource');
       api.getScenarioSource(selectedScenarioId).then(res => {
         const src = res.source.replace(/\r\n/g, '\n');
         setScenarioSource(src);
@@ -217,9 +219,10 @@ export function ScenariosPage() {
   };
 
   const saveSource = async () => {
+    const cleanSource = scenarioSource.replace(/\r/g, '');
     if (editingType === 'scenario' && selectedScenarioId) {
-      await api.updateScenarioSource(selectedScenarioId, scenarioSource);
-      setSavedScenarioSource(scenarioSource);
+      await api.updateScenarioSource(selectedScenarioId, cleanSource);
+      setSavedScenarioSource(cleanSource);
       if (selectedStation) {
         const res = await api.createSimulation(selectedStation, selectedScenarioId);
         setRunId(res.runId);
@@ -228,8 +231,8 @@ export function ScenariosPage() {
         setSimState(null);
       }
     } else if (editingType === 'event' && selectedEventDefId) {
-      await api.updateEventDefinitionSource(selectedEventDefId, scenarioSource);
-      setSavedScenarioSource(scenarioSource);
+      await api.updateEventDefinitionSource(selectedEventDefId, cleanSource);
+      setSavedScenarioSource(cleanSource);
       // Event defs don't need a full simulation restart directly
     }
   };
@@ -309,7 +312,7 @@ export function ScenariosPage() {
         <div 
           key={s.id} 
           style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center', userSelect: 'none',
             fontSize: '13px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', marginBottom: '2px',
             backgroundColor: selectedScenarioId === s.id ? 'var(--bg-input)' : 'transparent',
             color: selectedScenarioId === s.id ? 'var(--text-primary)' : 'var(--text-secondary)',
@@ -322,9 +325,9 @@ export function ScenariosPage() {
             setBottomOpen(true);
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexGrow: 1 }}>
             <FileText size={14} style={{ color: 'var(--accent-blue)' }} />
-            <span>{s.name}.scene</span>
+            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.name}.scene</span>
           </div>
           <button
             onClick={async (e) => {
@@ -373,15 +376,15 @@ export function ScenariosPage() {
             setBottomOpen(true);
           }}
           style={{
-            display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'space-between',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             fontSize: '13px', padding: '4px 8px', borderRadius: '4px', cursor: 'grab', marginBottom: '2px',
             backgroundColor: selectedEventDefId === e.name ? 'var(--bg-input)' : 'transparent',
             color: selectedEventDefId === e.name ? 'var(--text-primary)' : 'var(--text-secondary)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexGrow: 1 }}>
             <FileText size={14} style={{ color: 'var(--accent-cyan)' }} />
-            <span>{e.name}.event</span>
+            <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.name}.event</span>
           </div>
           <button
             onClick={async (evt) => {

@@ -29,26 +29,29 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
 
   const [sortBy, setSortBy] = useState<'source' | 'target' | 'type'>('source');
 
-  // Filter
-  const filtered = connections.filter(c => {
-    if (!search) return true;
-    const q = search.toLowerCase();
-    return c.source.toLowerCase().includes(q) ||
-           c.target.toLowerCase().includes(q) ||
-           c.connectionType.toLowerCase().includes(q);
-  });
+  const { filtered, grouped, sortedKeys } = React.useMemo(() => {
+    // Filter
+    const f = connections.filter(c => {
+      if (!search) return true;
+      const q = search.toLowerCase();
+      return c.source.toLowerCase().includes(q) ||
+             c.target.toLowerCase().includes(q) ||
+             c.connectionType.toLowerCase().includes(q);
+    });
 
-  // Group by chosen sort property
-  const grouped = new Map<string, ConnectionLayout[]>();
-  for (const c of filtered) {
-    const key = sortBy === 'source' ? c.source : sortBy === 'target' ? c.target : c.connectionType;
-    const arr = grouped.get(key) || [];
-    arr.push(c);
-    grouped.set(key, arr);
-  }
+    // Group by chosen sort property
+    const g = new Map<string, ConnectionLayout[]>();
+    for (const c of f) {
+      const key = sortBy === 'source' ? c.source : sortBy === 'target' ? c.target : c.connectionType;
+      const arr = g.get(key) || [];
+      arr.push(c);
+      g.set(key, arr);
+    }
 
-  // Sort groups alphabetically
-  const sortedKeys = Array.from(grouped.keys()).sort();
+    // Sort groups alphabetically
+    const s = Array.from(g.keys()).sort();
+    return { filtered: f, grouped: g, sortedKeys: s };
+  }, [connections, search, sortBy]);
 
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
