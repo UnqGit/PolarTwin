@@ -5,6 +5,7 @@ from pathlib import Path
 
 from packages.shared_models.domain import ComponentSpec, HierarchyComponent
 from packages.shared_models.errors import ParseError
+from .utils import strip_comments
 
 class SpecParseError(ParseError):
     def __init__(self, message, line_number=None, line=None):
@@ -140,8 +141,10 @@ def parse_spec_file(spec_file: Path, hierarchy_components: list[HierarchyCompone
 
     # State machine
     with open(spec_file, "r", encoding="utf-8") as f:
-        for line_number, raw in enumerate(f, start=1):
-            line = raw.split("#", 1)[0].strip()
+        text = strip_comments(f.read())
+        
+        for line_number, raw in enumerate(text.splitlines(), start=1):
+            line = raw.strip()
             if not line:
                 continue
                 

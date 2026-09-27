@@ -235,6 +235,31 @@ def get_scenario_events(scenario_id: str):
             raise HTTPException(400, detail={"message": str(e), "line_number": e.line_number - 1})
         raise HTTPException(400, detail={"message": f"Error parsing scenario: {e}"})
 
+class ParseScenarioRequest(BaseModel):
+    source: str
+
+@app.post("/scenarios/parse")
+def parse_scenario_raw(payload: ParseScenarioRequest):
+    try:
+        from twin_sim.dsl.scene_parser import parse_scene_string
+        events = parse_scene_string(payload.source)
+        return [
+            {
+                "event_ref": e.event_ref,
+                "selector": e.selector,
+                "at": e.at,
+                "duration": e.duration,
+                "payload": e.payload,
+                "source_location": getattr(e, 'source_location', 0),
+                "source_order": getattr(e, 'source_order', 0)
+            }
+            for e in events
+        ]
+    except Exception as e:
+        if hasattr(e, 'line_number') and getattr(e, 'line_number') is not None:
+            raise HTTPException(400, detail={"message": str(e), "line_number": e.line_number - 1})
+        raise HTTPException(400, detail={"message": f"Error parsing scenario: {e}"})
+
 
 # ---------------------------------------------------------------------------
 # Event Definitions
@@ -265,6 +290,14 @@ def update_event_definition(name: str, payload: EventUpdatePayload):
         return _scenario_manager.update_event(name, payload.source)
     except FileNotFoundError as e:
         raise HTTPException(404, str(e))
+
+@app.delete("/event-definitions/{name}", status_code=204)
+def delete_event_definition(name: str):
+    try:
+        _scenario_manager.delete_event(name)
+    except FileNotFoundError as e:
+        raise HTTPException(404, str(e))
+    return None
 
 
 # ---------------------------------------------------------------------------

@@ -207,3 +207,10 @@ class ScenarioManager:
             raise FileNotFoundError(f"Event definition '{name}' not found")
         path.write_text(source, encoding="utf-8")
         return self.get_event(name)
+
+    def delete_event(self, name: str) -> None:
+        path = self.events_dir / f"{name}.event"
+        if path.exists():
+            path.unlink()
+        else:
+            raise FileNotFoundError(f"Event definition '{name}' not found")

@@ -23,6 +23,8 @@ export function ScenariosPage() {
     simState, setSimState
   } = useStation();
 
+  const [savedScenarioSource, setSavedScenarioSource] = useState<string>('');
+
   // Scenarios local state
   const [scenarios, setScenarios] = useState<any[]>([]);
   const [scenarioEvents, setScenarioEvents] = useState<SceneEventData[]>([]);
@@ -35,6 +37,7 @@ export function ScenariosPage() {
   const [eventDefs, setEventDefs] = useState<any[]>([]);
   const [selectedEventDefId, setSelectedEventDefId] = useState<string | null>(null);
   const [editingType, setEditingType] = useState<'scenario' | 'event'>('scenario');
+  const [newFileModal, setNewFileModal] = useState<{type: 'scenario' | 'event', name: string} | null>(null);
 
   // Simulation UI state
   const [telemetryEnabled, setTelemetryEnabled] = useState<boolean>(false);
@@ -82,42 +85,75 @@ export function ScenariosPage() {
   }, [selectedStation]);
 
   useEffect(() => {
-    if (selectedScenarioId) {
-      api.getScenarioSource(selectedScenarioId).then(res => setScenarioSource(res.source)).catch(console.error);
+    if (editingType === 'scenario' && selectedScenarioId) {
+      api.getScenarioSource(selectedScenarioId).then(res => {
+        const src = res.source.replace(/\r\n/g, '\n');
+        setScenarioSource(src);
+        setSavedScenarioSource(src);
+      }).catch(console.error);
       if (selectedStation) {
         api.createSimulation(selectedStation, selectedScenarioId).then(res => {
           setRunId(res.runId);
           setSimStatus(res.status);
         }).catch(console.error);
       }
+    } else if (editingType === 'event' && selectedEventDefId) {
+      api.getEventDefinitionSource(selectedEventDefId).then(res => {
+        const src = res.source.replace(/\r\n/g, '\n');
+        setScenarioSource(src);
+        setSavedScenarioSource(src);
+      }).catch(console.error);
+      setRunId(null);
+      setSimStatus('Ready');
+      setScenarioEvents([]);
     } else {
       setScenarioSource('');
+      setSavedScenarioSource('');
       setRunId(null);
       setSimStatus('Ready');
       setScenarioEvents([]);
     }
-  }, [selectedScenarioId, selectedStation]);
+  }, [selectedScenarioId, selectedEventDefId, editingType, selectedStation]);
+
+  // Ctrl+S handler
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        saveSource();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [editingType, selectedScenarioId, selectedEventDefId, scenarioSource, selectedStation]);
 
   useEffect(() => {
-    if (selectedScenarioId) {
-      api.getScenarioEvents(selectedScenarioId)
-        .then(events => {
-          setScenarioEvents(events);
-          setErrorLine(undefined);
-          setValidationErrors([]);
-        })
-        .catch(err => {
-          console.error(err);
-          if (err.line_number !== undefined) {
-            setErrorLine(err.line_number);
-            setValidationErrors([{ message: err.message, line_number: err.line_number }]);
-          } else {
+    if (editingType === 'scenario' && scenarioSource) {
+      const timer = setTimeout(() => {
+        api.parseScenarioRaw(scenarioSource)
+          .then(events => {
+            setScenarioEvents(events);
             setErrorLine(undefined);
-            setValidationErrors([{ message: err.message || err.toString() }]);
-          }
-        });
+            setValidationErrors([]);
+          })
+          .catch(err => {
+            console.error(err);
+            if (err.line_number !== undefined) {
+              setErrorLine(err.line_number);
+              setValidationErrors([{ message: err.message, line_number: err.line_number }]);
+            } else {
+              setErrorLine(undefined);
+              setValidationErrors([{ message: err.message || err.toString() }]);
+            }
+          });
+      }, 500);
+      return () => clearTimeout(timer);
+    } else if (editingType === 'scenario' && !scenarioSource) {
+      setScenarioEvents([]);
+      setErrorLine(undefined);
+      setValidationErrors([]);
     }
-  }, [selectedScenarioId, scenarioSource]); // Refetch events when source updates and parses
+  }, [scenarioSource, editingType]);
 
   useEffect(() => {
     let interval: any;
@@ -183,6 +219,7 @@ export function ScenariosPage() {
   const saveSource = async () => {
     if (editingType === 'scenario' && selectedScenarioId) {
       await api.updateScenarioSource(selectedScenarioId, scenarioSource);
+      setSavedScenarioSource(scenarioSource);
       if (selectedStation) {
         const res = await api.createSimulation(selectedStation, selectedScenarioId);
         setRunId(res.runId);
@@ -192,6 +229,7 @@ export function ScenariosPage() {
       }
     } else if (editingType === 'event' && selectedEventDefId) {
       await api.updateEventDefinitionSource(selectedEventDefId, scenarioSource);
+      setSavedScenarioSource(scenarioSource);
       // Event defs don't need a full simulation restart directly
     }
   };
@@ -215,16 +253,51 @@ export function ScenariosPage() {
     }
   };
 
+  const handleUpdateEventLocation = (event: SceneEventData, newAt: number, newDuration: number | null) => {
+    if (!event.source_location) return;
+    const lines = scenarioSource.split('\n');
+    const idx = event.source_location - 1;
+    if (idx >= 0 && idx < lines.length) {
+      let line = lines[idx];
+      line = line.replace(/at=[\d\.]+/, `at=${newAt}`);
+      if (newDuration === null) {
+        line = line.replace(/for=([\d\.]+|inf)/, `for=inf`);
+      } else {
+        line = line.replace(/for=([\d\.]+|inf)/, `for=${newDuration}`);
+      }
+      lines[idx] = line;
+      setScenarioSource(lines.join('\n'));
+    }
+  };
+
+  const handleDeleteEventFromTimeline = (event: SceneEventData) => {
+    if (!event.source_location) return;
+    const lines = scenarioSource.split('\n');
+    const idx = event.source_location - 1;
+    if (idx >= 0 && idx < lines.length) {
+      let endIdx = idx;
+      if (lines[idx].trim().endsWith('{')) {
+        let braces = 1;
+        for (let i = idx + 1; i < lines.length; i++) {
+          if (lines[i].includes('{')) braces++;
+          if (lines[i].includes('}')) braces--;
+          endIdx = i;
+          if (braces === 0) break;
+        }
+      }
+      lines.splice(idx, endIdx - idx + 1);
+      setScenarioSource(lines.join('\n'));
+      if (selectedEvent === event) setSelectedEvent(null);
+    }
+  };
+
   const libraryTabContent = (
     <div style={{ padding: '8px' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', marginTop: '8px' }}>
         <h3 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-tertiary)', textTransform: 'uppercase', margin: 0, letterSpacing: '0.05em' }}>Scenarios</h3>
         <button 
-          onClick={async () => {
-            if (selectedStation) {
-              const res = await api.createScenario(selectedStation, 'New Scenario', '');
-              setSelectedScenarioId(res.id);
-            }
+          onClick={() => {
+            setNewFileModal({ type: 'scenario', name: 'New Scenario' });
           }}
           style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '2px' }}
           title="New File..."
@@ -275,15 +348,8 @@ export function ScenariosPage() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', marginTop: '24px' }}>
         <h3 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-tertiary)', textTransform: 'uppercase', margin: 0, letterSpacing: '0.05em' }}>Event Definitions</h3>
         <button
-          onClick={async () => {
-            const name = prompt('Enter new Event Definition name:');
-            if (name && name.trim()) {
-              await api.createEventDefinition(name.trim());
-              api.getEventDefinitions().then(setEventDefs);
-              setEditingType('event');
-              setSelectedEventDefId(name.trim());
-              setSelectedScenarioId(null);
-            }
+          onClick={() => {
+            setNewFileModal({ type: 'event', name: 'New Event' });
           }}
           style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '2px' }}
           title="New File..."
@@ -295,7 +361,10 @@ export function ScenariosPage() {
         <div 
           key={i} 
           draggable
-          onDragStart={(evt) => evt.dataTransfer.setData('text/plain', e.name)}
+          onDragStart={(evt) => {
+            evt.dataTransfer.setData('text/plain', e.name);
+            evt.dataTransfer.setData('application/x-event-def', 'true');
+          }}
           onClick={() => {
             setEditingType('event');
             setSelectedEventDefId(e.name);
@@ -304,14 +373,30 @@ export function ScenariosPage() {
             setBottomOpen(true);
           }}
           style={{
-            display: 'flex', alignItems: 'center', gap: '6px',
+            display: 'flex', alignItems: 'center', gap: '6px', justifyContent: 'space-between',
             fontSize: '13px', padding: '4px 8px', borderRadius: '4px', cursor: 'grab', marginBottom: '2px',
             backgroundColor: selectedEventDefId === e.name ? 'var(--bg-input)' : 'transparent',
             color: selectedEventDefId === e.name ? 'var(--text-primary)' : 'var(--text-secondary)',
           }}
         >
-          <FileText size={14} style={{ color: 'var(--accent-cyan)' }} />
-          <span>{e.name}.event</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <FileText size={14} style={{ color: 'var(--accent-cyan)' }} />
+            <span>{e.name}.event</span>
+          </div>
+          <button
+            onClick={async (evt) => {
+              evt.stopPropagation();
+              if (confirm('Delete event definition?')) {
+                await api.deleteEventDefinition(e.name);
+                if (selectedEventDefId === e.name) setSelectedEventDefId(null);
+                api.getEventDefinitions().then(setEventDefs);
+              }
+            }}
+            style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+            title="Delete Event Definition"
+          >
+            <Trash2 size={12} />
+          </button>
         </div>
       ))}
     </div>
@@ -458,6 +543,7 @@ export function ScenariosPage() {
                           {editingType === 'scenario' 
                             ? (selectedScenarioId ? `${scenarios.find(s => s.id === selectedScenarioId)?.name || 'untitled'}.scene` : 'untitled.scene')
                             : (selectedEventDefId ? `${selectedEventDefId}.event` : 'untitled.event')}
+                          {scenarioSource !== savedScenarioSource ? '*' : ''}
                         </span>
                       </div>
                     ) : (
@@ -466,8 +552,8 @@ export function ScenariosPage() {
                       </div>
                     )}
                   </div>
-                  {bottomTab === 'source' && (
-                    <button onClick={saveSource} style={{ padding: '4px 12px', backgroundColor: 'var(--accent-blue)', color: '#fff', fontSize: '12px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>Save & Reload</button>
+                  {bottomTab === 'source' && scenarioSource !== savedScenarioSource && (
+                    <span style={{ fontSize: 11, color: 'var(--text-tertiary)', paddingRight: 8 }}>Unsaved (Ctrl+S)</span>
                   )}
                 </div>
 
@@ -637,14 +723,82 @@ export function ScenariosPage() {
                 if (ev && !bottomOpen) setBottomOpen(true);
                 if (ev) setBottomTab('inspector');
               }}
-              onAppendEvent={(eventRef, at) => {
+              onAppendEvent={editingType === 'scenario' ? ((eventRef, at) => {
                 const newLine = `\nevent:${eventRef} at=${at} for=1.0`;
                 setScenarioSource(prev => prev + newLine);
-              }}
+              }) : undefined}
+              onUpdateEventLocation={editingType === 'scenario' ? handleUpdateEventLocation : undefined}
+              onDeleteEvent={editingType === 'scenario' ? handleDeleteEventFromTimeline : undefined}
             />
           )}
         </div>
       </div>
+      
+      {/* New File Modal */}
+      {newFileModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ backgroundColor: 'var(--bg-main)', padding: '24px', borderRadius: '8px', width: '300px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', border: '1px solid var(--border-color)' }}>
+            <h3 style={{ marginTop: 0, color: 'var(--text-primary)' }}>New {newFileModal.type === 'scenario' ? 'Scenario' : 'Event'}</h3>
+            <input 
+              autoFocus
+              type="text" 
+              value={newFileModal.name} 
+              onChange={e => setNewFileModal({ ...newFileModal, name: e.target.value })}
+              onKeyDown={async e => {
+                if (e.key === 'Enter') {
+                  const name = newFileModal.name.trim();
+                  if (!name) return;
+                  if (newFileModal.type === 'scenario' && selectedStation) {
+                    const res = await api.createScenario(selectedStation, name, '');
+                    api.getScenarios(selectedStation).then(setScenarios);
+                    setSelectedScenarioId(res.id);
+                    setEditingType('scenario');
+                    setSelectedEventDefId(null);
+                  } else if (newFileModal.type === 'event') {
+                    await api.createEventDefinition(name);
+                    api.getEventDefinitions().then(setEventDefs);
+                    setEditingType('event');
+                    setSelectedEventDefId(name);
+                    setSelectedScenarioId(null);
+                  }
+                  setBottomTab('source');
+                  setBottomOpen(true);
+                  setNewFileModal(null);
+                }
+              }}
+              style={{ width: '100%', padding: '8px', marginTop: '12px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: '4px', boxSizing: 'border-box' }} 
+            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '20px' }}>
+              <button onClick={() => setNewFileModal(null)} style={{ padding: '6px 12px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-primary)' }}>Cancel</button>
+              <button 
+                onClick={async () => {
+                  const name = newFileModal.name.trim();
+                  if (!name) return;
+                  if (newFileModal.type === 'scenario' && selectedStation) {
+                    const res = await api.createScenario(selectedStation, name, '');
+                    api.getScenarios(selectedStation).then(setScenarios);
+                    setSelectedScenarioId(res.id);
+                    setEditingType('scenario');
+                    setSelectedEventDefId(null);
+                  } else if (newFileModal.type === 'event') {
+                    await api.createEventDefinition(name);
+                    api.getEventDefinitions().then(setEventDefs);
+                    setEditingType('event');
+                    setSelectedEventDefId(name);
+                    setSelectedScenarioId(null);
+                  }
+                  setBottomTab('source');
+                  setBottomOpen(true);
+                  setNewFileModal(null);
+                }}
+                style={{ padding: '6px 12px', background: 'var(--accent-blue)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -145,8 +145,10 @@ export const TwinNodeRenderer: React.FC<TwinNodeRendererProps> = React.memo(({
   layout, liveStateRef, depth = 0, containerOcclusion = 'off', hasNonCampusAncestor = false, effectiveLayer = null,
 }) => {
   // ── Read hover state from the centralized HoverContext ───────────────────
-  const { hoveredNodes, hoveredAncestors, selectedAncestors, activeLayer, componentsInteractable } = useContext(HoverContext);
-  const hovered = hoveredNodes.has(layout.name);
+  const { hoveredName, hoveredAssociated, selectedAssociated, hoveredAncestors, selectedAncestors, activeLayer, componentsInteractable } = useContext(HoverContext);
+  const hovered = hoveredName === layout.name;
+  const isHoveredAssociated = hoveredAssociated.has(layout.name);
+  const isSelectedAssociated = selectedAssociated.has(layout.name);
   const descendantHovered = hoveredAncestors?.has(layout.name) ?? false;
   const descendantSelected = selectedAncestors?.has(layout.name) ?? false;
 
@@ -165,8 +167,14 @@ export const TwinNodeRenderer: React.FC<TwinNodeRendererProps> = React.memo(({
   });
 
   const mat = useMemo(
-    () => resolveMaterial(layout.type, { hovered, failed, selected }),
-    [layout.type, hovered, failed, selected]
+    () => resolveMaterial(layout.type, { 
+      hovered, 
+      hoveredAssociated: isHoveredAssociated,
+      selected, 
+      selectedAssociated: isSelectedAssociated,
+      failed 
+    }),
+    [layout.type, hovered, isHoveredAssociated, selected, isSelectedAssociated, failed]
   );
 
   const container = isContainer(layout.type) && layout.children.length > 0;
@@ -224,7 +232,7 @@ export const TwinNodeRenderer: React.FC<TwinNodeRendererProps> = React.memo(({
         <mesh receiveShadow position={[0, yOffset, 0]} userData={isInteractive ? meshUserData : {}} rotation={[-Math.PI / 2, 0, 0]}>
           <planeGeometry args={[layout.dims.width, layout.dims.depth]} />
           <meshStandardMaterial
-            color={hovered ? '#93c5fd' : mat.color}
+            color={mat.color}
             metalness={mat.metalness}
             roughness={mat.roughness}
             opacity={containerOpacity}
@@ -238,7 +246,7 @@ export const TwinNodeRenderer: React.FC<TwinNodeRendererProps> = React.memo(({
         <ContainerMesh
           name={layout.name}
           dims={layout.dims}
-          color={hovered ? '#93c5fd' : mat.color}
+          color={mat.color}
           metalness={mat.metalness}
           roughness={mat.roughness}
           opacity={containerOpacity}
@@ -259,7 +267,7 @@ export const TwinNodeRenderer: React.FC<TwinNodeRendererProps> = React.memo(({
           <group position={[0, yOffset, 0]}>
             <MeshComp
               dims={layout.dims}
-              color={hovered ? '#93c5fd' : mat.color}
+              color={mat.color}
               metalness={mat.metalness}
               roughness={mat.roughness}
               opacity={mat.opacity}
@@ -269,30 +277,60 @@ export const TwinNodeRenderer: React.FC<TwinNodeRendererProps> = React.memo(({
         </>
       )}
 
-      {/* Selection bounding-box outline — bright cyan ring when selected */}
-      {selected && (
+      {/* Selection/Hover bounding-box outline */}
+      {(selected || hovered) && (
         <mesh position={[0, layout.dims.height / 2 + yOffset, 0]}>
           <boxGeometry args={[layout.dims.width + 0.05, layout.dims.height + 0.05, layout.dims.depth + 0.05]} />
-          <meshBasicMaterial color="#22d3ee" transparent opacity={0} depthWrite={false} />
-          <Edges scale={1} threshold={1} color="#22d3ee" />
+          <meshBasicMaterial color={selected ? "#facc15" : "#fef08a"} transparent opacity={0} depthWrite={false} />
+          <Edges scale={1} threshold={1} color={selected ? "#facc15" : "#fef08a"} />
         </mesh>
       )}
 
-
-
-
+      {/* Suspended beams for floors above ground */}
+      {layout.type === 'floor' && typeof layout.level === 'number' && layout.level > 0 && !isHidden && (
+        <group position={[0, yOffset, 0]}>
+          {/* 4 Corner beams stretching down 3.0 units to the previous level */}
+          {[
+            [-layout.dims.width / 2 + 0.2, -layout.dims.depth / 2 + 0.2],
+            [layout.dims.width / 2 - 0.2, -layout.dims.depth / 2 + 0.2],
+            [-layout.dims.width / 2 + 0.2, layout.dims.depth / 2 - 0.2],
+            [layout.dims.width / 2 - 0.2, layout.dims.depth / 2 - 0.2],
+          ].map(([bx, bz], i) => (
+            <mesh key={i} position={[bx, -1.5, bz]}>
+              <cylinderGeometry args={[0.1, 0.1, 3.0, 8]} />
+              <meshStandardMaterial color="#64748b" metalness={0.8} roughness={0.2} opacity={containerOpacity} transparent={containerOpacity < 1.0} />
+            </mesh>
+          ))}
+        </group>
+      )}
       {/* Recursively render children — depth increments at each level */}
-      {layout.children.map((child) => (
-        <TwinNodeRenderer
-          key={child.name}
-          layout={child}
-          liveStateRef={liveStateRef}
-          depth={depth + 1}
-          containerOcclusion={containerOcclusion}
-          hasNonCampusAncestor={nextHasNonCampusAncestor}
-          effectiveLayer={myEffectiveLayer}
-        />
-      ))}
+      {layout.children.map((child, index) => {
+        const prevChild = index > 0 ? layout.children[index - 1] : null;
+        const isFloor = child.type === 'floor';
+        const childLevel = child.level ?? 0;
+        const prevLevel = prevChild?.level ?? 0;
+        const needsLift = isFloor && (prevChild?.type === 'floor') && (childLevel - prevLevel > 1);
+        
+        return (
+          <React.Fragment key={child.name}>
+            {needsLift && !isHidden && (
+              <mesh position={[0, ((childLevel + prevLevel) / 2) * 3.0, 0]}>
+                <boxGeometry args={[1.2, (childLevel - prevLevel) * 3.0, 1.2]} />
+                <meshStandardMaterial color="#475569" metalness={0.5} roughness={0.2} opacity={containerOpacity} transparent={containerOpacity < 1.0} />
+                <Edges scale={1} threshold={15} color="#475569" opacity={0.6} transparent />
+              </mesh>
+            )}
+            <TwinNodeRenderer
+              layout={child}
+              liveStateRef={liveStateRef}
+              depth={depth + 1}
+              containerOcclusion={containerOcclusion}
+              hasNonCampusAncestor={nextHasNonCampusAncestor}
+              effectiveLayer={myEffectiveLayer}
+            />
+          </React.Fragment>
+        );
+      })}
     </group>
   );
 });

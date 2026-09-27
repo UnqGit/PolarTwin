@@ -111,6 +111,18 @@ export const api = {
     }
     return res.json();
   },
+  parseScenarioRaw: async (source: string) => {
+    const res = await fetch(`/api/scenarios/parse`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ source })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw err.detail || new Error("Failed to parse scenario source");
+    }
+    return res.json();
+  },
 
   // Event Definitions
   getEventDefinitions: async () => {
@@ -136,6 +148,10 @@ export const api = {
     });
     if (!res.ok) throw new Error("Failed to update event definition");
     return res.json();
+  },
+  deleteEventDefinition: async (name: string) => {
+    const res = await fetch(`/api/event-definitions/${name}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error("Failed to delete event definition");
   },
 
   // Simulations

@@ -1,2 +1,2 @@
-target @generator
+target @component.type
 set status=failure

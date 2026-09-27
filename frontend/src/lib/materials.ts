@@ -43,7 +43,13 @@ export const GENERIC_MATERIAL: MaterialProps = {
 
 export function resolveMaterial(
   type: string,
-  options: { hovered?: boolean; failed?: boolean; selected?: boolean } = {}
+  options: { 
+    hovered?: boolean; 
+    hoveredAssociated?: boolean;
+    selected?: boolean;
+    selectedAssociated?: boolean;
+    failed?: boolean;
+  } = {}
 ): MaterialProps {
   const t = (type || '').toLowerCase();
 
@@ -55,13 +61,25 @@ export function resolveMaterial(
   if (options.failed) {
     return { ...base, color: '#7f1d1d', opacity: base.opacity, transparent: base.transparent };
   }
-  if (options.hovered) {
-    // Light blue for hover
-    return { ...base, color: '#93c5fd', opacity: base.opacity, transparent: base.transparent };
-  }
+  
   if (options.selected) {
-    // Bright cyan for selected (persistent glow)
-    return { ...base, color: '#22d3ee', opacity: base.opacity, transparent: base.transparent };
+    // Golden overlay
+    return { ...base, color: '#facc15', opacity: base.opacity, transparent: base.transparent };
+  }
+  
+  if (options.selectedAssociated) {
+    // Paler golden overlay
+    return { ...base, color: '#fde047', opacity: base.opacity, transparent: base.transparent };
+  }
+  
+  if (options.hovered) {
+    // Yellow overlay
+    return { ...base, color: '#fef08a', opacity: base.opacity, transparent: base.transparent };
+  }
+  
+  if (options.hoveredAssociated) {
+    // Paler yellow overlay
+    return { ...base, color: '#fef9c3', opacity: base.opacity, transparent: base.transparent };
   }
 
   return base;
