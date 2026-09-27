@@ -73,6 +73,16 @@ _manager = SimulationManager(telemetry_db=_db)
 _scenario_manager = ScenarioManager(DATA_DIR)
 
 
+@app.get("/")
+def read_root():
+    return {
+        "name": "PolarTwin Backend API",
+        "version": "2.0.0",
+        "status": "running",
+        "docs": "/docs"
+    }
+
+
 # ---------------------------------------------------------------------------
 # Request/Response models
 # ---------------------------------------------------------------------------
@@ -537,15 +547,15 @@ def set_component_tolerance(run_id: str, component_id: str, req: ComponentTolera
     if not rec:
         raise HTTPException(status_code=404, detail="Run not found")
     
-    if component_id not in rec.engine.state_by_node:
+    if component_id not in rec.engine.state.base_components:
         raise HTTPException(status_code=404, detail="Component not found in simulation")
         
-    comp = rec.engine.topology.get_node(component_id)
-    if not comp:
-        raise HTTPException(status_code=404, detail="Component not found")
+    comp = rec.engine.state.base_components[component_id]
     
     # Update specification's tolerance
-    comp.specification["tolerance"] = req.value
+    if "tolerance" not in comp.value or not isinstance(comp.value["tolerance"], dict):
+        comp.value["tolerance"] = {}
+    comp.value["tolerance"]["value"] = req.value
     return {"status": "ok", "component": component_id, "tolerance": req.value}
 
 @app.post("/simulations/{run_id}/component/{component_id}/state")
@@ -554,11 +564,12 @@ def set_component_state(run_id: str, component_id: str, updates: dict = Body(...
     if not rec:
         raise HTTPException(status_code=404, detail="Run not found")
     
-    if component_id not in rec.engine.state_by_node:
+    if component_id not in rec.engine.state.base_components:
         raise HTTPException(status_code=404, detail="Component not found in simulation")
     
     # Update state fields
+    comp = rec.engine.state.base_components[component_id]
     for k, v in updates.items():
-        rec.engine.state_by_node[component_id][k] = v
+        comp.value[k] = v
         
     return {"status": "ok", "component": component_id, "updates": updates}
