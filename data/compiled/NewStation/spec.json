@@ -1,0 +1,3683 @@
+[
+  {
+    "name": "Maitri",
+    "type": "station"
+  },
+  {
+    "name": "MainBuilding",
+    "type": "block"
+  },
+  {
+    "name": "MainBuildingTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "MainBuildingAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingGroundFloor",
+    "type": "floor"
+  },
+  {
+    "name": "MainBuildingControlUnit",
+    "type": "system"
+  },
+  {
+    "name": "MainController",
+    "type": "controller"
+  },
+  {
+    "name": "MainControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingPower",
+    "type": "system"
+  },
+  {
+    "name": "MainGenerator",
+    "type": "generator"
+  },
+  {
+    "name": "BackupMainGenerator",
+    "type": "generator"
+  },
+  {
+    "name": "MainGeneratorFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainGeneratorTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainGeneratorPowerSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMainGeneratorFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMainGeneratorTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMainGeneratorPowerSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainPowerController",
+    "type": "controller"
+  },
+  {
+    "name": "MainPowerControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainPowerControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainPowerAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "MainPowerAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainPowerAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainPowerAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingThermalControl",
+    "type": "system"
+  },
+  {
+    "name": "MainBuildingGroundAC",
+    "type": "air_conditioner"
+  },
+  {
+    "name": "BackupMainBuildingGroundAC",
+    "type": "air_conditioner"
+  },
+  {
+    "name": "MainBuildingGroundACTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingGroundACCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingGroundACFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingGroundACOutputTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingGroundACVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMainBuildingGroundACTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMainBuildingGroundACCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMainBuildingGroundACFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMainBuildingGroundACOutputTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMainBuildingGroundACVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingThermalController",
+    "type": "controller"
+  },
+  {
+    "name": "MainBuildingThermalControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingThermalControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingThermalAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "MainBuildingThermalAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingThermalAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingThermalAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingWater",
+    "type": "system"
+  },
+  {
+    "name": "MainBuildingWaterTank",
+    "type": "tank"
+  },
+  {
+    "name": "BackupMainBuildingWaterTank",
+    "type": "tank"
+  },
+  {
+    "name": "MainBuildingWaterPump",
+    "type": "pump"
+  },
+  {
+    "name": "BackupMainBuildingWaterPump",
+    "type": "pump"
+  },
+  {
+    "name": "MainBuildingWaterTankVolumeSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMainBuildingWaterTankVolumeSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingWaterPumpVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingWaterPumpCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingWaterPumpTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingWaterPumpFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMainBuildingWaterPumpVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMainBuildingWaterPumpCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMainBuildingWaterPumpTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMainBuildingWaterPumpFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingWaterController",
+    "type": "controller"
+  },
+  {
+    "name": "MainBuildingWaterControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingWaterControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingWaterAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "MainBuildingWaterAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingWaterAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingWaterAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingLiving",
+    "type": "system"
+  },
+  {
+    "name": "MainBuildingLivingStorage",
+    "type": "storage"
+  },
+  {
+    "name": "MainBuildingLivingTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingLivingController",
+    "type": "controller"
+  },
+  {
+    "name": "MainBuildingLivingControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingLivingControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingLivingAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "MainBuildingLivingAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingLivingAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingLivingAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingDining",
+    "type": "system"
+  },
+  {
+    "name": "MainBuildingDiningStorage",
+    "type": "storage"
+  },
+  {
+    "name": "MainBuildingFoodStorage",
+    "type": "storage"
+  },
+  {
+    "name": "MainBuildingDiningTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingDiningController",
+    "type": "controller"
+  },
+  {
+    "name": "MainBuildingDiningControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingDiningControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingDiningAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "MainBuildingDiningAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingDiningAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingDiningAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingColdStorage",
+    "type": "system"
+  },
+  {
+    "name": "MainBuildingColdStorageUnit",
+    "type": "storage"
+  },
+  {
+    "name": "MainBuildingColdStorageUnitWeightSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingColdStorageUnitCountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingColdStorageTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingColdStorageVent",
+    "type": "vent"
+  },
+  {
+    "name": "MainBuildingColdStorageVentCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingColdStorageVentFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingColdStorageController",
+    "type": "controller"
+  },
+  {
+    "name": "MainBuildingColdStorageControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingColdStorageControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingColdStorageAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "MainBuildingColdStorageAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingColdStorageAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingColdStorageAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingKitchen",
+    "type": "system"
+  },
+  {
+    "name": "MainBuildingKitchenStorage",
+    "type": "storage"
+  },
+  {
+    "name": "MainBuildingKitchenStorageWeightSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingKitchenStorageCountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingKitchenTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingKitchenController",
+    "type": "controller"
+  },
+  {
+    "name": "MainBuildingKitchenControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingKitchenControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingKitchenAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "MainBuildingKitchenAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingKitchenAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingKitchenAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingMedical",
+    "type": "system"
+  },
+  {
+    "name": "MainBuildingMedicalStorage",
+    "type": "storage"
+  },
+  {
+    "name": "MainBuildingMedicalStorageWeightSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingMedicalStorageCountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingMedicalTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingMedicalController",
+    "type": "controller"
+  },
+  {
+    "name": "MainBuildingMedicalControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingMedicalControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingMedicalAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "MainBuildingMedicalAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingMedicalAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingMedicalAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingSafety",
+    "type": "system"
+  },
+  {
+    "name": "MainBuildingFireAlarm",
+    "type": "alarm"
+  },
+  {
+    "name": "MainBuildingEmergencyAlarm",
+    "type": "alarm"
+  },
+  {
+    "name": "MainBuildingFireAlarmVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingEmergencyAlarmVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingFireAlarmCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingEmergencyAlarmCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingSafetyController",
+    "type": "controller"
+  },
+  {
+    "name": "MainBuildingSafetyControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingSafetyControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingSafetyAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "MainBuildingSafetyAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingSafetyAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingSafetyAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingCommunication",
+    "type": "system"
+  },
+  {
+    "name": "MainBuildingCommunicationVentA",
+    "type": "vent"
+  },
+  {
+    "name": "MainBuildingCommunicationVentB",
+    "type": "vent"
+  },
+  {
+    "name": "MainBuildingCommunicationVentAVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingCommunicationVentACurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingCommunicationVentBVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingCommunicationVentBCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingCommunicationVentAFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingCommunicationVentBFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingCommunicationServer",
+    "type": "server"
+  },
+  {
+    "name": "BackupMainBuildingCommunicationServer",
+    "type": "server"
+  },
+  {
+    "name": "MainBuildingCommunicationServerPowerSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingCommunicationServerTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMainBuildingCommunicationServerPowerSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMainBuildingCommunicationServerTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingCommunicationAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "MainBuildingCommunicationAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingCommunicationAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingCommunicationAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingSatelliteAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "MainBuildingSatelliteAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingSatelliteAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingSatelliteAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingCommunicationController",
+    "type": "controller"
+  },
+  {
+    "name": "MainBuildingCommunicationControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingCommunicationControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingOperations",
+    "type": "system"
+  },
+  {
+    "name": "MainBuildingOperationsServer",
+    "type": "server"
+  },
+  {
+    "name": "BackupMainBuildingOperationsServer",
+    "type": "server"
+  },
+  {
+    "name": "MainBuildingOperationsServerPowerSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingOperationsServerTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMainBuildingOperationsServerPowerSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMainBuildingOperationsServerTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingOperationsController",
+    "type": "controller"
+  },
+  {
+    "name": "MainBuildingOperationsControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingOperationsControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingOperationsAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "MainBuildingOperationsAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingOperationsAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingOperationsAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingPA",
+    "type": "system"
+  },
+  {
+    "name": "MainBuildingPAServer",
+    "type": "server"
+  },
+  {
+    "name": "MainBuildingPAServerPowerSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingPAServerTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingPAAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "MainBuildingPAAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingPAAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingPAAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingPAController",
+    "type": "controller"
+  },
+  {
+    "name": "MainBuildingPAControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingPAControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingUpperFloor",
+    "type": "floor"
+  },
+  {
+    "name": "MainBuildingUpperThermalControl",
+    "type": "system"
+  },
+  {
+    "name": "MainBuildingUpperAC",
+    "type": "air_conditioner"
+  },
+  {
+    "name": "BackupMainBuildingUpperAC",
+    "type": "air_conditioner"
+  },
+  {
+    "name": "MainBuildingUpperACVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingUpperACCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingUpperACTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingUpperACFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingUpperACOutputTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMainBuildingUpperACVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMainBuildingUpperACCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMainBuildingUpperACTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMainBuildingUpperACFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMainBuildingUpperACOutputTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingUpperThermalController",
+    "type": "controller"
+  },
+  {
+    "name": "MainBuildingUpperThermalControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingUpperThermalControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingUpperThermalAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "MainBuildingUpperThermalAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingUpperThermalAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingUpperThermalAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingLivingUpper",
+    "type": "system"
+  },
+  {
+    "name": "MainBuildingUpperLivingStorage",
+    "type": "storage"
+  },
+  {
+    "name": "MainBuildingUpperLivingStorageWeightSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingUpperLivingStorageCountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingUpperLivingTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingUpperLivingController",
+    "type": "controller"
+  },
+  {
+    "name": "MainBuildingUpperLivingControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingUpperLivingControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingUpperLivingAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "MainBuildingUpperLivingAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingUpperLivingAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingUpperLivingAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingLounge",
+    "type": "system"
+  },
+  {
+    "name": "MainBuildingLoungeStorage",
+    "type": "storage"
+  },
+  {
+    "name": "MainBuildingLoungeStorageWeightSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingLoungeStorageCountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingLoungeTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingLoungeController",
+    "type": "controller"
+  },
+  {
+    "name": "MainBuildingLoungeControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingLoungeControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingLoungeAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "MainBuildingLoungeAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingLoungeAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingLoungeAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingLaboratories",
+    "type": "system"
+  },
+  {
+    "name": "AtmosphericResearchLab",
+    "type": "system"
+  },
+  {
+    "name": "AtmosphericResearchLabStorage",
+    "type": "storage"
+  },
+  {
+    "name": "AtmosphericResearchLabStorageWeightSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "AtmosphericResearchLabStorageCountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "AtmosphericResearchLabTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "AtmosphericResearchLabController",
+    "type": "controller"
+  },
+  {
+    "name": "AtmosphericResearchLabControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "AtmosphericResearchLabControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "AtmosphericResearchLabAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "AtmosphericResearchLabAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "AtmosphericResearchLabAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "AtmosphericResearchLabAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BiologicalResearchLab",
+    "type": "system"
+  },
+  {
+    "name": "BiologicalResearchLabStorage",
+    "type": "storage"
+  },
+  {
+    "name": "BiologicalResearchLabStorageWeightSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BiologicalResearchLabStorageCountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BiologicalResearchLabTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BiologicalResearchLabController",
+    "type": "controller"
+  },
+  {
+    "name": "BiologicalResearchLabControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BiologicalResearchLabControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BiologicalResearchLabAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "BiologicalResearchLabAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BiologicalResearchLabAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BiologicalResearchLabAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "EarthScienceResearchLab",
+    "type": "system"
+  },
+  {
+    "name": "EarthScienceResearchLabStorage",
+    "type": "storage"
+  },
+  {
+    "name": "EarthScienceResearchLabStorageWeightSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "EarthScienceResearchLabStorageCountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "EarthScienceResearchLabTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "EarthScienceResearchLabController",
+    "type": "controller"
+  },
+  {
+    "name": "EarthScienceResearchLabControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "EarthScienceResearchLabControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "EarthScienceResearchLabAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "EarthScienceResearchLabAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "EarthScienceResearchLabAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "EarthScienceResearchLabAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SpacePhysicsResearchLab",
+    "type": "system"
+  },
+  {
+    "name": "SpacePhysicsResearchLabStorage",
+    "type": "storage"
+  },
+  {
+    "name": "SpacePhysicsResearchLabStorageWeightSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SpacePhysicsResearchLabStorageCountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SpacePhysicsResearchLabTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SpacePhysicsResearchLabController",
+    "type": "controller"
+  },
+  {
+    "name": "SpacePhysicsResearchLabControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SpacePhysicsResearchLabControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SpacePhysicsResearchLabAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "SpacePhysicsResearchLabAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SpacePhysicsResearchLabAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SpacePhysicsResearchLabAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingLaboratoryVent",
+    "type": "vent"
+  },
+  {
+    "name": "MainBuildingLaboratoryVentVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingLaboratoryVentCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingLaboratoryVentFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingLaboratoryTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingLaboratoryController",
+    "type": "controller"
+  },
+  {
+    "name": "MainBuildingLaboratoryControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingLaboratoryControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingLaboratoryAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "MainBuildingLaboratoryAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingLaboratoryAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingLaboratoryAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingEnvironmentalObservation",
+    "type": "system"
+  },
+  {
+    "name": "MainBuildingEnvironmentalTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingHumiditySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingPressureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingWindSpeedSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingCO2Sensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingO2Sensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingEnvironmentalAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "MainBuildingEnvironmentalAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingEnvironmentalAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingEnvironmentalAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingGeophysicalResearch",
+    "type": "system"
+  },
+  {
+    "name": "MaitriSeismicServer",
+    "type": "server"
+  },
+  {
+    "name": "BackupMaitriSeismicServer",
+    "type": "server"
+  },
+  {
+    "name": "MaitriSeismicServerPowerSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MaitriSeismicServerTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMaitriSeismicServerPowerSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMaitriSeismicServerTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MaitriGPSMonitoringServer",
+    "type": "server"
+  },
+  {
+    "name": "BackupMaitriGPSMonitoringServer",
+    "type": "server"
+  },
+  {
+    "name": "MaitriGPSMonitoringServerPowerSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MaitriGPSMonitoringServerTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMaitriGPSMonitoringServerPowerSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMaitriGPSMonitoringServerTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MaitriBuildingGeophysicalVent",
+    "type": "vent"
+  },
+  {
+    "name": "MaitriBuildingGeophysicalVentVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MaitriBuildingGeophysicalVentCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MaitriBuildingGeophysicalVentFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingGeophysicalController",
+    "type": "controller"
+  },
+  {
+    "name": "MainBuildingGeophysicalControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingGeophysicalControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingGeophysicalAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "MainBuildingGeophysicalAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingGeophysicalAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingGeophysicalAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingResearchData",
+    "type": "system"
+  },
+  {
+    "name": "MainBuildingResearchServer",
+    "type": "server"
+  },
+  {
+    "name": "BackupMainBuildingResearchServer",
+    "type": "server"
+  },
+  {
+    "name": "MainBuildingResearchServerPowerSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingResearchServerTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMainBuildingResearchServerPowerSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupMainBuildingResearchServerTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingResearchDataController",
+    "type": "controller"
+  },
+  {
+    "name": "MainBuildingResearchDataControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingResearchDataControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingResearchDataAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "MainBuildingResearchDataAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingResearchDataAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MainBuildingResearchDataAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GeneratorComplex",
+    "type": "block"
+  },
+  {
+    "name": "GeneratorComplexTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GeneratorComplexGenerator1",
+    "type": "generator"
+  },
+  {
+    "name": "GeneratorComplexGenerator2",
+    "type": "generator"
+  },
+  {
+    "name": "GeneratorComplexBackupGenerator1",
+    "type": "generator"
+  },
+  {
+    "name": "GeneratorComplexBackupGenerator2",
+    "type": "generator"
+  },
+  {
+    "name": "GeneratorComplexGenerator1FlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GeneratorComplexGenerator1TemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GeneratorComplexGenerator1PowerSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GeneratorComplexGenerator2FlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GeneratorComplexGenerator2TemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GeneratorComplexGenerator2PowerSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GeneratorComplexBackupGenerator1FlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GeneratorComplexBackupGenerator1TemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GeneratorComplexBackupGenerator1PowerSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GeneratorComplexBackupGenerator2FlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GeneratorComplexBackupGenerator2TemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GeneratorComplexBackupGenerator2PowerSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GeneratorComplexController",
+    "type": "controller"
+  },
+  {
+    "name": "GeneratorComplexControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GeneratorComplexControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GeneratorComplexAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "GeneratorComplexAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GeneratorComplexAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GeneratorComplexAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelFarm",
+    "type": "block"
+  },
+  {
+    "name": "FuelFarmTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelFarmAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "FuelFarmAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelFarmAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelFarmAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelTankA",
+    "type": "tank"
+  },
+  {
+    "name": "FuelTankB",
+    "type": "tank"
+  },
+  {
+    "name": "FuelTankC",
+    "type": "tank"
+  },
+  {
+    "name": "BackupFuelTankA",
+    "type": "tank"
+  },
+  {
+    "name": "FuelTransferPumpA",
+    "type": "pump"
+  },
+  {
+    "name": "FuelTransferPumpB",
+    "type": "pump"
+  },
+  {
+    "name": "BackupFuelTransferPumpA",
+    "type": "pump"
+  },
+  {
+    "name": "BackupFuelTransferPumpB",
+    "type": "pump"
+  },
+  {
+    "name": "FuelTankAVolumeSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelTankBVolumeSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelTankCVolumeSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupFuelTankAVolumeSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelTransferPumpAVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelTransferPumpACurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelTransferPumpATemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelTransferPumpAFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelTransferPumpBVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelTransferPumpBCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelTransferPumpBTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelTransferPumpBFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupFuelTransferPumpAVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupFuelTransferPumpACurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupFuelTransferPumpATemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupFuelTransferPumpAFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupFuelTransferPumpBVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupFuelTransferPumpBCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupFuelTransferPumpBTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupFuelTransferPumpBFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelFarmController",
+    "type": "controller"
+  },
+  {
+    "name": "FuelFarmControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelFarmControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelStation",
+    "type": "block"
+  },
+  {
+    "name": "FuelStationTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelStationTank",
+    "type": "tank"
+  },
+  {
+    "name": "FuelStationPump",
+    "type": "pump"
+  },
+  {
+    "name": "FuelStationTankVolumeSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelStationPumpVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelStationPumpCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelStationPumpTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelStationPumpFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelStationController",
+    "type": "controller"
+  },
+  {
+    "name": "FuelStationControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelStationControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelStationAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "FuelStationAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelStationAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FuelStationAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "LakeWaterPumpHouse",
+    "type": "block"
+  },
+  {
+    "name": "LakeWaterPumpHouseTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "LakeWaterTank",
+    "type": "tank"
+  },
+  {
+    "name": "BackupLakeWaterTank",
+    "type": "tank"
+  },
+  {
+    "name": "LakeWaterPumpA",
+    "type": "pump"
+  },
+  {
+    "name": "LakeWaterPumpB",
+    "type": "pump"
+  },
+  {
+    "name": "LakeWaterTankVolumeSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupLakeWaterTankVolumeSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "LakeWaterPumpAVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "LakeWaterPumpACurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "LakeWaterPumpATemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "LakeWaterPumpAFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "LakeWaterPumpBVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "LakeWaterPumpBCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "LakeWaterPumpBTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "LakeWaterPumpBFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "LakeWaterPumpHouseController",
+    "type": "controller"
+  },
+  {
+    "name": "LakeWaterPumpHouseControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "LakeWaterPumpHouseControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "LakeWaterPumpHouseAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "LakeWaterPumpHouseAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "LakeWaterPumpHouseAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "LakeWaterPumpHouseAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCamp",
+    "type": "block"
+  },
+  {
+    "name": "SummerCampTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "SummerCampAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampFloor",
+    "type": "floor"
+  },
+  {
+    "name": "SummerCampPower",
+    "type": "system"
+  },
+  {
+    "name": "SummerCampPowerVent",
+    "type": "vent"
+  },
+  {
+    "name": "SummerCampPowerVentVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampPowerVentCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampPowerVentFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampGenerator",
+    "type": "generator"
+  },
+  {
+    "name": "BackupSummerCampGenerator",
+    "type": "generator"
+  },
+  {
+    "name": "SummerCampGeneratorFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampGeneratorTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampGeneratorPowerSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupSummerCampGeneratorFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupSummerCampGeneratorTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupSummerCampGeneratorPowerSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampPowerController",
+    "type": "controller"
+  },
+  {
+    "name": "SummerCampPowerControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampPowerControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampPowerAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "SummerCampPowerAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampPowerAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampPowerAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampThermalControl",
+    "type": "system"
+  },
+  {
+    "name": "SummerCampAC",
+    "type": "air_conditioner"
+  },
+  {
+    "name": "BackupSummerCampAC",
+    "type": "air_conditioner"
+  },
+  {
+    "name": "SummerCampACVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampACCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampACTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampACFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampACOutputTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupSummerCampACVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupSummerCampACCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupSummerCampACTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupSummerCampACFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupSummerCampACOutputTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampThermalController",
+    "type": "controller"
+  },
+  {
+    "name": "SummerCampThermalControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampThermalControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampThermalAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "SummerCampThermalAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampThermalAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampThermalAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampLiving",
+    "type": "system"
+  },
+  {
+    "name": "SummerCampLivingStorageA",
+    "type": "storage"
+  },
+  {
+    "name": "SummerCampLivingStorageB",
+    "type": "storage"
+  },
+  {
+    "name": "SummerCampLivingTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampLivingStorageAWeightSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampLivingStorageACountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampLivingStorageBWeightSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampLivingStorageBCountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampLivingController",
+    "type": "controller"
+  },
+  {
+    "name": "SummerCampLivingControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampLivingControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampLivingAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "SummerCampLivingAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampLivingAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampLivingAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampKitchen",
+    "type": "system"
+  },
+  {
+    "name": "SummerCampKitchenStorage",
+    "type": "storage"
+  },
+  {
+    "name": "SummerCampKitchenTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampKitchenStorageWeightSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampKitchenStorageCountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampKitchenController",
+    "type": "controller"
+  },
+  {
+    "name": "SummerCampKitchenControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampKitchenControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampKitchenAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "SummerCampKitchenAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampKitchenAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampKitchenAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampWater",
+    "type": "system"
+  },
+  {
+    "name": "SummerCampWaterTank",
+    "type": "tank"
+  },
+  {
+    "name": "SummerCampWaterPump",
+    "type": "pump"
+  },
+  {
+    "name": "SummerCampWaterTankVolumeSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampWaterPumpVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampWaterPumpCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampWaterPumpTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampWaterPumpFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampWaterController",
+    "type": "controller"
+  },
+  {
+    "name": "SummerCampWaterControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampWaterControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampWaterAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "SummerCampWaterAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampWaterAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampWaterAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampSafety",
+    "type": "system"
+  },
+  {
+    "name": "SummerCampFireAlarm",
+    "type": "alarm"
+  },
+  {
+    "name": "SummerCampEmergencyAlarm",
+    "type": "alarm"
+  },
+  {
+    "name": "SummerCampFireAlarmVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampFireAlarmVCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampEmergencyAlarmVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampEmergencyAlarmCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampSafetyController",
+    "type": "controller"
+  },
+  {
+    "name": "SummerCampSafetyControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampSafetyControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampSafetyAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "SummerCampSafetyAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampSafetyAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SummerCampSafetyAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerModules",
+    "type": "block"
+  },
+  {
+    "name": "ContainerModulesTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerModulesAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "ContainerModulesAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerModulesAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerModulesAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerLiving",
+    "type": "system"
+  },
+  {
+    "name": "ContainerLivingStorage",
+    "type": "storage"
+  },
+  {
+    "name": "ContainerLivingTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerLivingVent",
+    "type": "vent"
+  },
+  {
+    "name": "ContainerLivingVentVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerLivingVentCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerLivingVentFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerLivingController",
+    "type": "controller"
+  },
+  {
+    "name": "ContainerLivingControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerLivingControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerLivingAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "ContainerLivingAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerLivingAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerLivingAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerLaboratory",
+    "type": "system"
+  },
+  {
+    "name": "ContainerLaboratoryStorage",
+    "type": "storage"
+  },
+  {
+    "name": "ContainerLaboratoryTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerLaboratoryVent",
+    "type": "vent"
+  },
+  {
+    "name": "ContainerLaboratoryVentVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerLaboratoryVentCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerLaboratoryVentFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerLaboratoryController",
+    "type": "controller"
+  },
+  {
+    "name": "ContainerLaboratoryControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerLaboratoryControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerLaboratoryAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "ContainerLaboratoryAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerLaboratoryAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerLaboratoryAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerStorage",
+    "type": "system"
+  },
+  {
+    "name": "ContainerGeneralStorage",
+    "type": "storage"
+  },
+  {
+    "name": "ContainerColdStorage",
+    "type": "storage"
+  },
+  {
+    "name": "ContainerGeneralStorageWeightSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerGeneralStorageCountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerColdStorageWeightSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerColdStorageCountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerStorageTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerStorageController",
+    "type": "controller"
+  },
+  {
+    "name": "ContainerStorageControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerStorageControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerStorageAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "ContainerStorageAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerStorageAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ContainerStorageAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WorkshopGarage",
+    "type": "block"
+  },
+  {
+    "name": "WorkshopGarageTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WorkshopStorage",
+    "type": "storage"
+  },
+  {
+    "name": "WorkshopPartsStorage",
+    "type": "storage"
+  },
+  {
+    "name": "WorkshopToolsStorage",
+    "type": "storage"
+  },
+  {
+    "name": "WorkshopStorageWeightSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WorkshopStorageCountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WorkshopPartsStorageWeightSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WorkshopPartsStorageCountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WorkshopToolsStorageWeightSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WorkshopToolsStorageCountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "PistenBully01",
+    "type": "vehicle"
+  },
+  {
+    "name": "PistenBully02",
+    "type": "vehicle"
+  },
+  {
+    "name": "SnowScooter01",
+    "type": "vehicle"
+  },
+  {
+    "name": "SnowScooter02",
+    "type": "vehicle"
+  },
+  {
+    "name": "UtilityVehicle01",
+    "type": "vehicle"
+  },
+  {
+    "name": "WorkshopTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WorkshopController",
+    "type": "controller"
+  },
+  {
+    "name": "WorkshopControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WorkshopControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WorkshopAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "WorkshopAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WorkshopAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WorkshopAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "LogisticsStorage",
+    "type": "block"
+  },
+  {
+    "name": "LogisticsStorageTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "LogisticsStorageAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "LogisticsStorageAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "LogisticsStorageAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "LogisticsStorageAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ExpeditionSupplyStorage",
+    "type": "storage"
+  },
+  {
+    "name": "ExpeditionSupplyStorageWeightSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ExpeditionSupplyStorageCountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FoodReserveStorage",
+    "type": "storage"
+  },
+  {
+    "name": "FoodReserveStorageWeightSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FoodReserveStorageCountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ScientificEquipmentStorage",
+    "type": "storage"
+  },
+  {
+    "name": "ScientificEquipmentStorageWeightSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "ScientificEquipmentStorageCountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SparePartsStorage",
+    "type": "storage"
+  },
+  {
+    "name": "SparePartsStorageWeightSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SparePartsStorageCountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SafetyEquipmentStorage",
+    "type": "storage"
+  },
+  {
+    "name": "SafetyEquipmentStorageWeightSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SafetyEquipmentStorageCountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "LogisticsStorageController",
+    "type": "controller"
+  },
+  {
+    "name": "LogisticsStorageControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "LogisticsStorageControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WasteManagement",
+    "type": "block"
+  },
+  {
+    "name": "WasteManagementTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WasteManagementAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "WasteManagementAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WasteManagementAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WasteManagementAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WasteWaterSystem",
+    "type": "system"
+  },
+  {
+    "name": "WasteWaterTank",
+    "type": "tank"
+  },
+  {
+    "name": "BackupWasteWaterTank",
+    "type": "tank"
+  },
+  {
+    "name": "WasteWaterPump",
+    "type": "pump"
+  },
+  {
+    "name": "BackupWasteWaterPump",
+    "type": "pump"
+  },
+  {
+    "name": "WasteWaterTankVolumeSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupWasteWaterTankVolumeSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WasteWaterPumpVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WasteWaterPumpCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WasteWaterPumpTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WasteWaterPumpFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupWasteWaterPumpVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupWasteWaterPumpCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupWasteWaterPumpTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupWasteWaterPumpFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WasteWaterController",
+    "type": "controller"
+  },
+  {
+    "name": "WasteWaterControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WasteWaterControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WasteWaterAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "WasteWaterAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WasteWaterAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WasteWaterAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WasteStorageSystem",
+    "type": "system"
+  },
+  {
+    "name": "WasteStorage",
+    "type": "storage"
+  },
+  {
+    "name": "WasteStorageWeightSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WasteStorageCountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WasteStorageTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WasteStorageController",
+    "type": "controller"
+  },
+  {
+    "name": "WasteStorageControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WasteStorageControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WasteStorageAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "WasteStorageAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WasteStorageAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "WasteStorageAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FieldResearch",
+    "type": "block"
+  },
+  {
+    "name": "FieldResearchTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FieldResearchAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "FieldResearchAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FieldResearchAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FieldResearchAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FieldResearchStorage",
+    "type": "storage"
+  },
+  {
+    "name": "FieldResearchStorageWeightSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FieldResearchStorageCountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FieldResearchController",
+    "type": "controller"
+  },
+  {
+    "name": "FieldResearchControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "FieldResearchControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GeophysicalObservation",
+    "type": "block"
+  },
+  {
+    "name": "GeophysicalObservationTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GeophysicalObservationAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "GeophysicalObservationAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GeophysicalObservationAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GeophysicalObservationAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SeismologicalObservation",
+    "type": "system"
+  },
+  {
+    "name": "SeismologicalObservationVent",
+    "type": "vent"
+  },
+  {
+    "name": "SeismologicalObservationVentVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SeismologicalObservationVentCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SeismologicalObservationVentFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SeismologicalServer",
+    "type": "server"
+  },
+  {
+    "name": "BackupSeismologicalServer",
+    "type": "server"
+  },
+  {
+    "name": "SeismologicalServerPowerSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SeismologicalServerTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupSeismologicalServerPowerSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupSeismologicalServerTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SeismologicalController",
+    "type": "controller"
+  },
+  {
+    "name": "SeismologicalControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SeismologicalControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SeismologicalAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "SeismologicalAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SeismologicalAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "SeismologicalAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GPSObservation",
+    "type": "system"
+  },
+  {
+    "name": "GPSObservationVent",
+    "type": "vent"
+  },
+  {
+    "name": "GPSObservationVentVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GPSObservationVentCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GPSObservationVentFlowSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GPSObservationServer",
+    "type": "server"
+  },
+  {
+    "name": "BackupGPSObservationServer",
+    "type": "server"
+  },
+  {
+    "name": "GPSObservationServerPowerSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GPSObservationServerTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupGPSObservationServerPowerSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupGPSObservationServerTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GPSObservationController",
+    "type": "controller"
+  },
+  {
+    "name": "GPSObservationControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GPSObservationControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GPSObservationAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "GPSObservationAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GPSObservationAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "GPSObservationAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MeteorologicalObservation",
+    "type": "system"
+  },
+  {
+    "name": "MeteorologicalTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MeteorologicalPressureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MeteorologicalWindSpeedSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MeteorologicalHumiditySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MeteorologicalObservationAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "MeteorologicalObservationAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MeteorologicalObservationAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MeteorologicalObservationAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "StationEnvironmentalMonitoring",
+    "type": "system"
+  },
+  {
+    "name": "MaitriStationTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MaitriStationPersonnelCountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MaitriStationEnvironmentalAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "MaitriStationEnvironmentalAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MaitriStationEnvironmentalAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "MaitriStationEnvironmentalAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "EmergencySupport",
+    "type": "block"
+  },
+  {
+    "name": "EmergencySupportTemperatureSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "EmergencySupportAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "EmergencySupportAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "EmergencySupportAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "EmergencySupportAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "EmergencyStorage",
+    "type": "storage"
+  },
+  {
+    "name": "EmergencyStorageWeightSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "EmergencyStorageCountSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "EmergencyVehicle",
+    "type": "vehicle"
+  },
+  {
+    "name": "EmergencyCommunicationAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "EmergencyCommunicationAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "EmergencyCommunicationAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "EmergencyCommunicationAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupEmergencyCommunicationAntenna",
+    "type": "antenna"
+  },
+  {
+    "name": "BackupEmergencyCommunicationAntennaVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupEmergencyCommunicationAntennaCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupEmergencyCommunicationAntennaFrequencySensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "EmergencyAlarm",
+    "type": "alarm"
+  },
+  {
+    "name": "BackupEmergencyAlarm",
+    "type": "alarm"
+  },
+  {
+    "name": "EmergencyAlarmVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "EmergencyAlarmCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupEmergencyAlarmVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "BackupEmergencyAlarmCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "EmergencyController",
+    "type": "controller"
+  },
+  {
+    "name": "EmergencyControllerVoltageSensor",
+    "type": "sensor",
+    "measures": "generic"
+  },
+  {
+    "name": "EmergencyControllerCurrentSensor",
+    "type": "sensor",
+    "measures": "generic"
+  }
+]

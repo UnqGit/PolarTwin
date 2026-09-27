@@ -40,18 +40,45 @@ def validate_asts(
             
         c_spec = spec_map[comp.name]
         
-        # Collect all rating fields across input, output, state
+        # Collect all fully qualified rating fields across input, output, state
+        # e.g., "input.temperature", "state.pressure"
         required_measurements = set()
-        for scope_data in c_spec.rating.values():
+        for scope, scope_data in c_spec.rating.items():
             if isinstance(scope_data, dict):
-                required_measurements.update(scope_data.keys())
+                for field in scope_data.keys():
+                    required_measurements.add(f"{scope}.{field}")
                 
         if not required_measurements:
             continue
             
         # Collect all measurements from connected sensors
         connected_sensors = sensors_for_component[comp.name]
-        provided_measurements = {s.measures for s in connected_sensors if s.measures}
+        
+        provided_measurements = set()
+        for s in connected_sensors:
+            m = s.measures
+            if not m:
+                continue
+            if "." in m:
+                # Fully qualified (e.g., input.temperature)
+                if m not in required_measurements:
+                    raise CrossValidationError(
+                        f"Sensor '{s.name}' measures '{m}' which does not exist on component '{comp.name}'."
+                    )
+                provided_measurements.add(m)
+            else:
+                # Unscoped (e.g., temperature)
+                matches = [req for req in required_measurements if req.endswith(f".{m}")]
+                if len(matches) == 0:
+                    raise CrossValidationError(
+                        f"Sensor '{s.name}' measures '{m}' which is not found in any rating scope of '{comp.name}'."
+                    )
+                elif len(matches) > 1:
+                    raise CrossValidationError(
+                        f"Sensor '{s.name}' measures '{m}', but '{comp.name}' has multiple matching fields: "
+                        f"{', '.join(sorted(matches))}. Please use a scoped name like '{matches[0]}' in measures."
+                    )
+                provided_measurements.add(matches[0])
         
         missing = required_measurements - provided_measurements
         

@@ -139,11 +139,15 @@ interface TwinNodeRendererProps {
   containerOcclusion?: 'off' | 'off_on_hover';
   hasNonCampusAncestor?: boolean;
   effectiveLayer?: number | null;
+  buildLimit?: number;
 }
 
 export const TwinNodeRenderer: React.FC<TwinNodeRendererProps> = React.memo(({
-  layout, liveStateRef, depth = 0, containerOcclusion = 'off', hasNonCampusAncestor = false, effectiveLayer = null,
+  layout, liveStateRef, depth = 0, containerOcclusion = 'off', hasNonCampusAncestor = false, effectiveLayer = null, buildLimit = Infinity,
 }) => {
+  if (layout.buildIndex !== undefined && layout.buildIndex > buildLimit) {
+    return null;
+  }
   // ── Read hover state from the centralized HoverContext ───────────────────
   const { hoveredName, hoveredAssociated, selectedAssociated, hoveredAncestors, selectedAncestors, activeLayer, componentsInteractable } = useContext(HoverContext);
   const hovered = hoveredName === layout.name;
@@ -327,6 +331,7 @@ export const TwinNodeRenderer: React.FC<TwinNodeRendererProps> = React.memo(({
               containerOcclusion={containerOcclusion}
               hasNonCampusAncestor={nextHasNonCampusAncestor}
               effectiveLayer={myEffectiveLayer}
+              buildLimit={buildLimit}
             />
           </React.Fragment>
         );
