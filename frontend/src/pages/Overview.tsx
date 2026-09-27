@@ -68,26 +68,47 @@ export function Overview() {
     });
   }, [hierarchyData]);
 
-  const [activeBlockIdx, setActiveBlockIdx] = useState(0);
-  const [fade, setFade] = useState(true);
+  const [activeIndices, setActiveIndices] = useState<number[]>([]);
+  const [fadingIndex, setFadingIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    if (blocks.length <= 1) return;
-    const interval = setInterval(() => {
-      setFade(false);
-      setTimeout(() => {
-        let nextIdx;
-        do {
-          nextIdx = Math.floor(Math.random() * blocks.length);
-        } while (nextIdx === activeBlockIdx);
-        setActiveBlockIdx(nextIdx);
-        setFade(true);
-      }, 500); // Wait for fade out
-    }, 4000); // Rotate every 4 seconds
-    return () => clearInterval(interval);
-  }, [blocks, activeBlockIdx]);
+    if (blocks.length === 0) {
+      setActiveIndices([]);
+      return;
+    }
+    const count = Math.max(1, Math.floor(Math.log2(blocks.length)));
+    const initial: number[] = [];
+    const available = Array.from({length: blocks.length}, (_, i) => i);
+    for (let i = 0; i < count; i++) {
+      if (available.length === 0) break;
+      const rnd = Math.floor(Math.random() * available.length);
+      initial.push(available.splice(rnd, 1)[0]);
+    }
+    setActiveIndices(initial);
+  }, [blocks]);
 
-  const currentBlock = blocks[activeBlockIdx];
+  useEffect(() => {
+    if (blocks.length <= activeIndices.length || activeIndices.length === 0) return;
+    
+    const interval = setInterval(() => {
+      const replacePos = Math.floor(Math.random() * activeIndices.length);
+      setFadingIndex(replacePos);
+
+      setTimeout(() => {
+        setActiveIndices(prev => {
+          const next = [...prev];
+          const available = Array.from({length: blocks.length}, (_, i) => i).filter(i => !next.includes(i));
+          if (available.length > 0) {
+            const rnd = Math.floor(Math.random() * available.length);
+            next[replacePos] = available[rnd];
+          }
+          return next;
+        });
+        setFadingIndex(null);
+      }, 500);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [blocks, activeIndices.length]);
 
   return (
     <div style={{ padding: '32px', height: '100%', overflowY: 'auto' }}>
@@ -98,80 +119,7 @@ export function Overview() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '32px' }}>
-        <div className="glass-panel" style={{ padding: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-            <Activity size={20} />
-            <span style={{ fontSize: '14px', fontWeight: 600 }}>Components</span>
-          </div>
-          <div style={{ fontSize: '24px', fontWeight: 700 }}>
-            <span style={{ color: 'var(--accent-blue)' }}>{stats.activeComponents}</span>
-            <span style={{ color: 'var(--text-tertiary)', fontSize: '16px' }}> / {stats.totalComponents}</span>
-          </div>
-        </div>
-
-        <div className="glass-panel" style={{ padding: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-            <Zap size={20} />
-            <span style={{ fontSize: '14px', fontWeight: 600 }}>Power Output</span>
-          </div>
-          <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--accent-amber)' }}>
-            {stats.powerOutput}
-          </div>
-        </div>
-
-        <div className="glass-panel" style={{ padding: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-            <Thermometer size={20} />
-            <span style={{ fontSize: '14px', fontWeight: 600 }}>Station Temp</span>
-          </div>
-          <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--accent-cyan)' }}>
-            {stats.temperature}
-          </div>
-        </div>
-        
-        <div className="glass-panel" style={{ padding: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-            <Package size={20} />
-            <span style={{ fontSize: '14px', fontWeight: 600 }}>Next Supply</span>
-          </div>
-          <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)' }}>
-            {stats.nextSupply}
-          </div>
-        </div>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '24px' }}>
-        <div className="glass-panel" style={{ padding: '24px' }}>
-          <h2 style={{ fontSize: '18px', fontWeight: 600, marginTop: 0, marginBottom: '20px' }}>Featured Block</h2>
-          {currentBlock ? (
-            <div style={{
-              borderRadius: '8px',
-              overflow: 'hidden',
-              border: '1px solid var(--border-color)',
-              position: 'relative',
-              background: 'var(--bg-panel-secondary)',
-              opacity: fade ? 1 : 0,
-              transition: 'opacity 0.5s ease-in-out',
-            }}>
-              <div style={{ height: '180px', backgroundImage: `url(${currentBlock.img})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.8 }} />
-              <div style={{ padding: '20px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <span style={{ fontWeight: 700, fontSize: '18px' }}>{currentBlock.name}</span>
-                  {currentBlock.status === 'active' && <CheckCircle size={20} color="#10b981" />}
-                  {currentBlock.status === 'inactive' && <Box size={20} color="var(--text-tertiary)" />}
-                  {currentBlock.status === 'failure' && <AlertTriangle size={20} color="#ef4444" />}
-                </div>
-                <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
-                  Inner Components: {currentBlock.innerActive} / {currentBlock.innerTotal}
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div style={{ color: 'var(--text-secondary)' }}>No blocks available.</div>
-          )}
-        </div>
-
+      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px', marginBottom: '32px' }}>
         <div className="glass-panel" style={{ padding: '24px', display: 'flex', flexDirection: 'column' }}>
           <h2 style={{ fontSize: '18px', fontWeight: 600, marginTop: 0, marginBottom: '20px' }}>Satellite View</h2>
           <div style={{ 
@@ -184,6 +132,86 @@ export function Overview() {
             minHeight: '200px'
           }} />
         </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          <div className="glass-panel" style={{ padding: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+              <Activity size={20} />
+              <span style={{ fontSize: '14px', fontWeight: 600 }}>Components</span>
+            </div>
+            <div style={{ fontSize: '24px', fontWeight: 700 }}>
+              <span style={{ color: 'var(--accent-blue)' }}>{stats.activeComponents}</span>
+              <span style={{ color: 'var(--text-tertiary)', fontSize: '16px' }}> / {stats.totalComponents}</span>
+            </div>
+          </div>
+
+          <div className="glass-panel" style={{ padding: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+              <Zap size={20} />
+              <span style={{ fontSize: '14px', fontWeight: 600 }}>Power Output</span>
+            </div>
+            <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--accent-amber)' }}>
+              {stats.powerOutput}
+            </div>
+          </div>
+
+          <div className="glass-panel" style={{ padding: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+              <Thermometer size={20} />
+              <span style={{ fontSize: '14px', fontWeight: 600 }}>Station Temp</span>
+            </div>
+            <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--accent-cyan)' }}>
+              {stats.temperature}
+            </div>
+          </div>
+          
+          <div className="glass-panel" style={{ padding: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)', marginBottom: '12px' }}>
+              <Package size={20} />
+              <span style={{ fontSize: '14px', fontWeight: 600 }}>Next Supply</span>
+            </div>
+            <div style={{ fontSize: '24px', fontWeight: 700, color: 'var(--text-primary)' }}>
+              {stats.nextSupply}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="glass-panel" style={{ padding: '24px' }}>
+        <h2 style={{ fontSize: '18px', fontWeight: 600, marginTop: 0, marginBottom: '20px' }}>Featured Components</h2>
+        {activeIndices.length > 0 ? (
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(${activeIndices.length}, 1fr)`, gap: '24px' }}>
+            {activeIndices.map((blockIdx, i) => {
+              const currentBlock = blocks[blockIdx];
+              return (
+                <div key={i} style={{
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                  border: '1px solid var(--border-color)',
+                  position: 'relative',
+                  background: 'var(--bg-panel-secondary)',
+                  opacity: fadingIndex === i ? 0 : 1,
+                  transition: 'opacity 0.5s ease-in-out',
+                }}>
+                  <div style={{ height: '180px', backgroundImage: `url(${currentBlock.img})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.8 }} />
+                  <div style={{ padding: '20px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                      <span style={{ fontWeight: 700, fontSize: '18px' }}>{currentBlock.name}</span>
+                      {currentBlock.status === 'active' && <CheckCircle size={20} color="#10b981" />}
+                      {currentBlock.status === 'inactive' && <Box size={20} color="var(--text-tertiary)" />}
+                      {currentBlock.status === 'failure' && <AlertTriangle size={20} color="#ef4444" />}
+                    </div>
+                    <div style={{ fontSize: '14px', color: 'var(--text-secondary)' }}>
+                      Inner Components: {currentBlock.innerActive} / {currentBlock.innerTotal}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div style={{ color: 'var(--text-secondary)' }}>No blocks available.</div>
+        )}
       </div>
     </div>
   );
