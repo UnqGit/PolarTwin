@@ -237,32 +237,5 @@ export const api = {
     const res = await fetch(`${API_BASE}/simulations/${runId}/log`);
     if (!res.ok) throw new Error("Failed to fetch simulation log");
     return res.json();
-  },
-  setGlobalTolerance: async (runId: string, value: number) => {
-    const res = await fetch(`${API_BASE}/simulations/${runId}/tolerance/global`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ value })
-    });
-    if (!res.ok) throw new Error("Failed to set global tolerance");
-    return res.json();
-  },
-  setComponentTolerance: async (runId: string, componentId: string, value: number) => {
-    const res = await fetch(`${API_BASE}/simulations/${runId}/tolerance/component/${componentId}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ value })
-    });
-    if (!res.ok) throw new Error("Failed to set component tolerance");
-    return res.json();
-  },
-  setComponentState: async (runId: string, componentId: string, stateUpdate: Record<string, any>) => {
-    const res = await fetch(`${API_BASE}/simulations/${runId}/component/${componentId}/state`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(stateUpdate)
-    });
-    if (!res.ok) throw new Error("Failed to set component state");
-    return res.json();
   }
 };
