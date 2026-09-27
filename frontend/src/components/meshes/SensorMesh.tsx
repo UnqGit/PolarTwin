@@ -33,8 +33,8 @@ export const SensorMesh: React.FC<MeshProps> = ({
       </mesh>
 
       {/* Data Transmission Ring (Glowing) */}
-      <mesh position={[0, baseH + stalkH * 0.8, 0]}>
-        <torusGeometry args={[radius * 0.5, 0.02, 16, 32]} rotation={[Math.PI / 2, 0, 0]} />
+      <mesh position={[0, baseH + stalkH * 0.8, 0]} rotation={[Math.PI / 2, 0, 0]}>
+        <torusGeometry args={[radius * 0.5, 0.02, 16, 32]} />
         <meshStandardMaterial color="var(--accent-amber)" emissive="var(--accent-amber)" emissiveIntensity={0.8} />
       </mesh>
 

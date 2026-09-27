@@ -25,3 +25,6 @@ testpaths = ["tests", "packages"]
 [tool.pyright]
 include = ["src", "compiler", "packages"]
 extraPaths = ["."]
+
+[tool.vercel]
+entrypoint = "src.twin_sim.api.main:app"

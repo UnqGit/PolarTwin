@@ -1,3 +1,0 @@
-target @component.type
-
-set status=failure

@@ -1,2 +1,2 @@
-event:generator_failure @generator at=0 for=1
-event:generator_failure @MainGenerator at=2.4 for=3
+
+event:failure @MainGenerator at=0 for=4.4

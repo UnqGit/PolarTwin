@@ -19,6 +19,7 @@ from typing import Any, Dict, List, Optional
 from pydantic import BaseModel
 
 from fastapi import FastAPI, HTTPException, Body
+from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from pydantic import BaseModel
 
@@ -56,6 +57,13 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="PolarTwin Backend API", version="2.0.0", lifespan=lifespan)
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 _db = TelemetryDatabase(str(DB_PATH))
 _manager = SimulationManager(telemetry_db=_db)
 _scenario_manager = ScenarioManager(DATA_DIR)

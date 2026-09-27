@@ -82,8 +82,8 @@ export const TankMesh: React.FC<MeshProps> = ({
           <boxGeometry args={[radius * 0.2, radius * 0.3, radius * 0.2]} />
           <meshStandardMaterial color="#0f172a" />
         </mesh>
-        <mesh position={[radius * 0.3, radius * 0.1, 0]} castShadow>
-           <cylinderGeometry args={[radius * 0.08, radius * 0.08, 0.05, 16]} rotation={[0, 0, -Math.PI/2]} />
+        <mesh position={[radius * 0.3, radius * 0.1, 0]} rotation={[0, 0, -Math.PI/2]} castShadow>
+           <cylinderGeometry args={[radius * 0.08, radius * 0.08, 0.05, 16]} />
            <meshStandardMaterial color="var(--accent-cyan)" emissive="var(--accent-cyan)" emissiveIntensity={0.5} />
         </mesh>
       </group>

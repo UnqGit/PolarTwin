@@ -41,14 +41,14 @@ export const AirConditionerMesh: React.FC<MeshProps> = ({
         isTall ? [0, 0, 0] : [-Math.PI / 2, 0, 0]
       }>
         {/* Fan Shroud */}
-        <mesh>
-          <cylinderGeometry args={[fanR * 1.1, fanR * 1.1, 0.02, 32]} rotation={[Math.PI / 2, 0, 0]} />
+        <mesh rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[fanR * 1.1, fanR * 1.1, 0.02, 32]} />
           <meshStandardMaterial color="#334155" metalness={0.6} />
         </mesh>
         
         {/* Interior Fan Darkness */}
-        <mesh position={[0, 0, -0.01]}>
-          <cylinderGeometry args={[fanR, fanR, 0.01, 32]} rotation={[Math.PI / 2, 0, 0]} />
+        <mesh position={[0, 0, -0.01]} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[fanR, fanR, 0.01, 32]} />
           <meshStandardMaterial color="#020617" />
         </mesh>
         
