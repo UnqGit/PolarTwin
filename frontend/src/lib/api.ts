@@ -133,17 +133,17 @@ export const api = {
     return res.json();
   },
   createEventDefinition: async (stationId: string, name: string) => {
-    const res = await fetch(`${API_BASE}/stations//event-definitions/${name}`, { method: 'POST' });
+    const res = await fetch(`${API_BASE}/stations//event-definitions/${eventId}`, { method: 'POST' });
     if (!res.ok) throw new Error("Failed to create event definition");
     return res.json();
   },
-  getEventDefinitionSource: async (name: string) => {
-    const res = await fetch(`${API_BASE}/event-definitions/${name}`);
+  getEventDefinitionSource: async (eventId: string) => {
+    const res = await fetch(`${API_BASE}/event-definitions/${eventId}`);
     if (!res.ok) throw new Error("Failed to fetch event definition");
     return res.json();
   },
-  updateEventDefinitionSource: async (name: string, source: string) => {
-    const res = await fetch(`${API_BASE}/event-definitions/${name}`, {
+  updateEventDefinitionSource: async (eventId: string, source: string) => {
+    const res = await fetch(`${API_BASE}/event-definitions/${eventId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ source })
@@ -151,8 +151,8 @@ export const api = {
     if (!res.ok) throw new Error("Failed to update event definition");
     return res.json();
   },
-  deleteEventDefinition: async (name: string) => {
-    const res = await fetch(`${API_BASE}/event-definitions/${name}`, { method: 'DELETE' });
+  deleteEventDefinition: async (eventId: string) => {
+    const res = await fetch(`${API_BASE}/event-definitions/${eventId}`, { method: 'DELETE' });
     if (!res.ok) throw new Error("Failed to delete event definition");
   },
 

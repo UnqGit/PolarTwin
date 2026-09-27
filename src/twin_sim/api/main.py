@@ -49,6 +49,9 @@ else:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Auto-discover and register all compiled stations on startup."""
+    from twin_sim.api.migrate import migrate_old_files_to_db
+    migrate_old_files_to_db(_db, DATA_DIR)
+    
     station_names = StationLoader.list_stations(COMPILED_ROOT)
     for name in station_names:
         try:

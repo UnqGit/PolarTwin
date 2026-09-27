@@ -366,7 +366,7 @@ export function ScenariosPage() {
           }}
           onClick={() => {
             setEditingType('event');
-            setSelectedEventDefId(e.name);
+            setSelectedEventDefId(e.id);
             setBottomTab('source');
             setBottomOpen(true);
           }}
