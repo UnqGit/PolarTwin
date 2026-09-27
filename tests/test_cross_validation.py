@@ -47,7 +47,7 @@ class TestCrossValidator(unittest.TestCase):
         # Remove the temperature sensor connection
         self.connections.pop(1)
         
-        with self.assertRaisesRegex(CrossValidationError, "missing sensors for rating fields: temperature"):
+        with self.assertRaisesRegex(CrossValidationError, "missing sensors for rating fields: state.temperature"):
             validate_asts(self.hierarchy, self.connections, self.specs)
 
     def test_sensor_coverage_exemptions(self):

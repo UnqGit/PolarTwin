@@ -20,11 +20,20 @@
 import { describe, it, expect } from 'vitest';
 import {
   buildLayout,
-  buildSceneLayout,
+  buildSceneLayout as _buildSceneLayout,
   type NodeLayout,
 } from '../lib/layout';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
+
+function buildSceneLayout(topology: any, connectionsData: any, spec: any) {
+  const result = _buildSceneLayout(topology, connectionsData, spec);
+  if (result.connectionRouterGenerator) {
+    const gen = result.connectionRouterGenerator();
+    while (!gen.next().done) {}
+  }
+  return result;
+}
 
 function makeTopology(overrides: any = {}) {
   return {

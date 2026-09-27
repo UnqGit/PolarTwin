@@ -41,8 +41,8 @@ describe('meshRegistry — built-in types', () => {
     expect(lookupMesh('thermometer')).toBe('SensorMesh');
   });
 
-  it('returns SensorMesh for "alarm"', () => {
-    expect(lookupMesh('alarm')).toBe('SensorMesh');
+  it('returns AlarmMesh for "alarm"', () => {
+    expect(lookupMesh('alarm')).toBe('AlarmMesh');
   });
 
   it('returns SensorMesh for "toggle"', () => {
@@ -79,11 +79,11 @@ describe('meshRegistry — fallback and edge cases', () => {
 describe('meshRegistry — dynamic registration (extensibility)', () => {
   it('supports registering a new mesh type at runtime', () => {
     // Before registration
-    expect(lookupMesh('solar_panel_array')).toBe('GenericMesh');
+    expect(lookupMesh('custom_mesh_type_xyz_array')).toBe('GenericMesh');
     // Register
-    registerMesh('solar_panel', 'SolarPanelMesh');
+    registerMesh('custom_mesh_type_xyz', 'CustomMeshXYZ');
     // After registration
-    expect(lookupMesh('solar_panel_array')).toBe('SolarPanelMesh');
+    expect(lookupMesh('custom_mesh_type_xyz_array')).toBe('CustomMeshXYZ');
   });
 
   it('newly registered type does not affect unrelated types', () => {
