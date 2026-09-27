@@ -70,7 +70,7 @@ app.add_middleware(
 )
 _db = TelemetryDatabase(str(DB_PATH))
 _manager = SimulationManager(telemetry_db=_db)
-_scenario_manager = ScenarioManager(DATA_DIR)
+_scenario_manager = ScenarioManager(_db)
 
 
 @app.get("/")
@@ -288,36 +288,36 @@ def parse_scenario_raw(payload: ParseScenarioRequest):
 # Event Definitions
 # ---------------------------------------------------------------------------
 
-@app.get("/event-definitions")
-def get_event_definitions():
-    return _scenario_manager.list_events()
+@app.get("/stations/{station_id}/event-definitions")
+def get_event_definitions(station_id: str):
+    return _scenario_manager.list_events(station_id)
 
 
-@app.get("/event-definitions/{name}")
-def get_event_definition(name: str):
+@app.get("/event-definitions/{event_id}")
+def get_event_definition(event_id: str):
     try:
-        return _scenario_manager.get_event(name)
+        return _scenario_manager.get_event(event_id)
     except FileNotFoundError as e:
         raise HTTPException(404, str(e))
 
 class EventUpdatePayload(BaseModel):
     source: str
 
-@app.post("/event-definitions/{name}")
-def create_event_definition(name: str):
-    return _scenario_manager.create_event(name)
+@app.post("/stations/{station_id}/event-definitions/{name}")
+def create_event_definition(station_id: str, name: str):
+    return _scenario_manager.create_event(station_id, name)
 
-@app.put("/event-definitions/{name}")
-def update_event_definition(name: str, payload: EventUpdatePayload):
+@app.put("/event-definitions/{event_id}")
+def update_event_definition(event_id: str, payload: EventUpdatePayload):
     try:
-        return _scenario_manager.update_event(name, payload.source)
+        return _scenario_manager.update_event(event_id, payload.source)
     except FileNotFoundError as e:
         raise HTTPException(404, str(e))
 
-@app.delete("/event-definitions/{name}", status_code=204)
-def delete_event_definition(name: str):
+@app.delete("/event-definitions/{event_id}", status_code=204)
+def delete_event_definition(event_id: str):
     try:
-        _scenario_manager.delete_event(name)
+        _scenario_manager.delete_event(event_id)
     except FileNotFoundError as e:
         raise HTTPException(404, str(e))
     return None

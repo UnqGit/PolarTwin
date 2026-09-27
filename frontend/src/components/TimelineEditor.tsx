@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Trash2 } from 'lucide-react';
 
 export interface SceneEventData {
@@ -21,9 +21,13 @@ interface TimelineEditorProps {
   onDeleteEvent?: (event: SceneEventData) => void;
 }
 
+const AURORA_COLORS = ['#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#d946ef'];
+
 export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime, onSelectEvent, selectedEvent, onAppendEvent, onUpdateEventLocation, onDeleteEvent }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const PIXELS_PER_UNIT = 40; // 40px per simulation hour
+  const SIDEBAR_WIDTH = 150;
+  const ROW_HEIGHT = 32;
 
   const maxTime = Math.max(
     simTime + 5,
@@ -47,28 +51,34 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
     const eventRef = e.dataTransfer.getData('text/plain');
     if (eventRef && onAppendEvent && containerRef.current) {
       const rect = containerRef.current.getBoundingClientRect();
-      const x = e.clientX - rect.left + containerRef.current.scrollLeft;
+      const x = e.clientX - rect.left - SIDEBAR_WIDTH + containerRef.current.scrollLeft;
       const at = Math.max(0, x / PIXELS_PER_UNIT);
       onAppendEvent(eventRef, parseFloat(at.toFixed(1)));
     }
   };
 
-  const [dragState, setDragState] = useState<{event: SceneEventData, type: 'move' | 'resize', initialX: number, initialAt: number, initialDur: number | null} | null>(null);
+  const [dragState, setDragState] = useState<{event: SceneEventData, type: 'move' | 'resize', initialX: number, initialAt: number, initialDur: number | null, currentAt: number, currentDur: number | null} | null>(null);
 
   useEffect(() => {
     if (!dragState) return;
     const handleMove = (e: PointerEvent) => {
-      if (!containerRef.current || !onUpdateEventLocation) return;
       const dx = (e.clientX - dragState.initialX) / PIXELS_PER_UNIT;
       if (dragState.type === 'move') {
         const newAt = Math.max(0, dragState.initialAt + dx);
-        onUpdateEventLocation(dragState.event, parseFloat(newAt.toFixed(1)), dragState.initialDur);
+        setDragState(prev => prev ? { ...prev, currentAt: parseFloat(newAt.toFixed(1)) } : null);
       } else if (dragState.type === 'resize') {
         const newDur = Math.max(0.1, (dragState.initialDur || 5) + dx);
-        onUpdateEventLocation(dragState.event, dragState.initialAt, parseFloat(newDur.toFixed(1)));
+        setDragState(prev => prev ? { ...prev, currentDur: parseFloat(newDur.toFixed(1)) } : null);
       }
     };
-    const handleUp = () => setDragState(null);
+    const handleUp = () => {
+      if (dragState && onUpdateEventLocation) {
+        if (dragState.currentAt !== dragState.initialAt || dragState.currentDur !== dragState.initialDur) {
+          onUpdateEventLocation(dragState.event, dragState.currentAt, dragState.currentDur);
+        }
+      }
+      setDragState(null);
+    };
     window.addEventListener('pointermove', handleMove);
     window.addEventListener('pointerup', handleUp);
     return () => {
@@ -79,90 +89,132 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
 
   return (
     <div 
-      ref={containerRef}
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
-      style={{ flex: 1, position: 'relative', overflowX: 'auto', overflowY: 'auto', padding: '16px 0', backgroundColor: 'var(--bg-main)' }}
+      style={{ flex: 1, display: 'flex', flexDirection: 'row', backgroundColor: 'var(--bg-main)', overflow: 'hidden' }}
     >
-      <div style={{ position: 'relative', width: width, height: '100%', minHeight: 120 }}>
-        {/* Grid lines */}
-        <div style={{ position: 'absolute', top: 0, bottom: 0, left: 0, right: 0, backgroundImage: 'linear-gradient(to right, var(--border-color) 1px, transparent 1px)', backgroundSize: `${PIXELS_PER_UNIT}px 100%` }} />
-        
-        {/* Axis labels */}
-        {Array.from({ length: Math.ceil(width / PIXELS_PER_UNIT) }).map((_, i) => (
-          <div key={i} style={{ position: 'absolute', left: i * PIXELS_PER_UNIT, top: 0, fontSize: 10, color: 'var(--text-tertiary)', transform: 'translateX(-50%)' }}>
-            {i}h
-          </div>
-        ))}
-        
-        {/* Playhead */}
-        <div style={{ position: 'absolute', top: 16, bottom: 0, width: '2px', backgroundColor: '#ef4444', zIndex: 10, boxShadow: '0 0 8px rgba(239,68,68,0.8)', left: `${simTime * PIXELS_PER_UNIT}px`, transition: 'left 0.1s linear' }}>
-          <div style={{ position: 'absolute', top: '-12px', transform: 'translateX(-50%)', backgroundColor: '#ef4444', color: '#fff', fontSize: '10px', padding: '0 4px', borderRadius: '2px' }}>
-            {(simTime || 0).toFixed(1)}
+      {/* Sidebar for layers */}
+      <div style={{ width: SIDEBAR_WIDTH, flexShrink: 0, borderRight: '1px solid var(--border-color)', backgroundColor: 'var(--bg-panel-secondary)', zIndex: 20, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ height: 30, borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', padding: '0 8px', fontSize: 11, color: 'var(--text-tertiary)', fontWeight: 'bold' }}>
+          EVENTS
+        </div>
+        <div style={{ flex: 1, overflowY: 'hidden', position: 'relative' }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
+            <div style={{ marginTop: containerRef.current ? -containerRef.current.scrollTop : 0 }}>
+              {events.map((ev, i) => (
+                <div key={i} style={{ height: ROW_HEIGHT, display: 'flex', alignItems: 'center', padding: '0 8px', borderBottom: '1px solid rgba(255,255,255,0.05)', color: 'var(--text-secondary)', fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', backgroundColor: selectedEvent === ev ? 'var(--bg-input)' : 'transparent' }}>
+                  {ev.event_ref}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Events */}
-        <div style={{ position: 'absolute', top: 30, left: 0, right: 0, bottom: 0, display: 'flex', flexDirection: 'column', gap: 4, padding: '0' }}>
-          {events.map((ev, i) => {
-            const isSelected = selectedEvent === ev;
-            const isInfinite = ev.duration === Infinity || ev.duration === null || ev.duration === undefined;
-            const eventWidth = isInfinite ? PIXELS_PER_UNIT * 2 : Number(ev.duration) * PIXELS_PER_UNIT; 
-            
-            return (
-              <div 
-                key={i}
-                onPointerDown={(e) => {
-                  e.stopPropagation();
-                  onSelectEvent(isSelected ? null : ev);
-                  setDragState({ event: ev, type: 'move', initialX: e.clientX, initialAt: ev.at, initialDur: isInfinite ? null : ev.duration });
-                }}
-                style={{
-                  position: 'absolute',
-                  left: ev.at * PIXELS_PER_UNIT,
-                  top: i * 28,
-                  height: 24,
-                  width: Math.max(10, eventWidth),
-                  background: isInfinite ? 'linear-gradient(to right, var(--accent-blue), transparent)' : 'var(--accent-blue)',
-                  border: isSelected ? '2px solid #fff' : '1px solid rgba(255,255,255,0.2)',
-                  borderRadius: isInfinite ? '4px 0 0 4px' : '4px',
-                  opacity: 0.8,
-                  cursor: 'grab',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '0 8px',
-                  fontSize: 11,
-                  color: '#fff',
-                  boxShadow: isSelected ? 'var(--shadow-glow)' : 'none',
-                  overflow: 'hidden',
-                  whiteSpace: 'nowrap',
-                  userSelect: 'none'
-                }}
-                title={`${ev.event_ref} at ${ev.at} for ${isInfinite ? 'inf' : ev.duration}`}
-              >
-                <span>{ev.event_ref} {ev.selector} {isInfinite ? '→' : ''}</span>
-                {isSelected && (
-                  <button 
-                    onPointerDown={(e) => e.stopPropagation()} 
-                    onClick={(e) => { e.stopPropagation(); onDeleteEvent?.(ev); }}
-                    style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', padding: 2, zIndex: 20 }}
-                  >
-                    <Trash2 size={12} />
-                  </button>
-                )}
-                {!isInfinite && (
-                  <div 
-                    onPointerDown={(e) => {
-                      e.stopPropagation();
-                      setDragState({ event: ev, type: 'resize', initialX: e.clientX, initialAt: ev.at, initialDur: ev.duration });
-                    }}
-                    style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 8, cursor: 'ew-resize', zIndex: 10, background: 'rgba(255,255,255,0.2)' }} 
-                  />
-                )}
+      {/* Timeline track */}
+      <div 
+        ref={containerRef}
+        onDragOver={handleDragOver}
+        onDrop={handleDrop}
+        onScroll={(e) => {
+          // force re-render for sidebar scroll sync (dirty but works)
+          e.currentTarget.style.transform = 'translateZ(0)';
+        }}
+        style={{ flex: 1, position: 'relative', overflowX: 'auto', overflowY: 'auto' }}
+      >
+        <div style={{ position: 'relative', width: width, minHeight: Math.max(120, events.length * ROW_HEIGHT + 30) }}>
+          {/* Header Axis */}
+          <div style={{ position: 'sticky', top: 0, height: 30, backgroundColor: 'var(--bg-panel-secondary)', borderBottom: '1px solid var(--border-color)', zIndex: 10 }}>
+            {Array.from({ length: Math.ceil(width / PIXELS_PER_UNIT) }).map((_, i) => (
+              <div key={i} style={{ position: 'absolute', left: i * PIXELS_PER_UNIT, top: 8, fontSize: 10, color: 'var(--text-tertiary)', transform: 'translateX(-50%)' }}>
+                {i}h
               </div>
-            );
-          })}
+            ))}
+          </div>
+
+          {/* Grid lines */}
+          <div style={{ position: 'absolute', top: 30, bottom: 0, left: 0, right: 0, backgroundImage: 'linear-gradient(to right, var(--border-color) 1px, transparent 1px)', backgroundSize: `${PIXELS_PER_UNIT}px 100%`, zIndex: 0 }} />
+          
+          {/* Playhead */}
+          <div style={{ position: 'absolute', top: 30, bottom: 0, width: '2px', backgroundColor: '#ef4444', zIndex: 10, boxShadow: '0 0 8px rgba(239,68,68,0.8)', left: `${simTime * PIXELS_PER_UNIT}px`, transition: 'left 0.1s linear' }}>
+            <div style={{ position: 'absolute', top: '-24px', transform: 'translateX(-50%)', backgroundColor: '#ef4444', color: '#fff', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
+              {(simTime || 0).toFixed(1)}
+            </div>
+          </div>
+
+          {/* Events */}
+          <div style={{ position: 'absolute', top: 30, left: 0, right: 0, bottom: 0 }}>
+            {events.map((ev, i) => {
+              const isSelected = selectedEvent === ev;
+              const isInfinite = ev.duration === Infinity || ev.duration === null || ev.duration === undefined;
+              const isDragged = dragState?.event === ev;
+              
+              const baseColor = AURORA_COLORS[i % AURORA_COLORS.length];
+              
+              const renderEventBar = (at: number, dur: number | null, isGhost: boolean) => {
+                const w = (dur === null || dur === Infinity) ? PIXELS_PER_UNIT * 2 : Number(dur) * PIXELS_PER_UNIT;
+                return (
+                  <div 
+                    key={isGhost ? 'ghost' : 'real'}
+                    onPointerDown={isGhost ? undefined : (e) => {
+                      e.stopPropagation();
+                      onSelectEvent(isSelected ? null : ev);
+                      setDragState({ event: ev, type: 'move', initialX: e.clientX, initialAt: ev.at, initialDur: isInfinite ? null : ev.duration, currentAt: ev.at, currentDur: isInfinite ? null : ev.duration });
+                    }}
+                    style={{
+                      position: 'absolute',
+                      left: at * PIXELS_PER_UNIT,
+                      top: i * ROW_HEIGHT + (ROW_HEIGHT - 24) / 2,
+                      height: 24,
+                      width: Math.max(10, w),
+                      background: (dur === null || dur === Infinity) ? `linear-gradient(to right, ${baseColor}, transparent)` : baseColor,
+                      border: isSelected && !isGhost ? '2px solid #fff' : `1px solid ${baseColor}`,
+                      borderRadius: (dur === null || dur === Infinity) ? '4px 0 0 4px' : '4px',
+                      opacity: isGhost ? 0.4 : (isDragged ? 0.5 : 0.9),
+                      cursor: isGhost ? 'default' : 'grab',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '0 8px',
+                      fontSize: 11,
+                      color: '#fff',
+                      boxShadow: isSelected && !isGhost ? '0 0 10px rgba(255,255,255,0.3)' : 'none',
+                      overflow: 'hidden',
+                      whiteSpace: 'nowrap',
+                      userSelect: 'none',
+                      zIndex: isGhost ? 5 : 2
+                    }}
+                    title={`${ev.event_ref} at ${at} for ${(dur === null || dur === Infinity) ? 'inf' : dur}`}
+                  >
+                    <span>{ev.event_ref} {ev.selector} {(dur === null || dur === Infinity) ? '→' : ''}</span>
+                    {isSelected && !isGhost && (
+                      <button 
+                        onPointerDown={(e) => e.stopPropagation()} 
+                        onClick={(e) => { e.stopPropagation(); onDeleteEvent?.(ev); }}
+                        style={{ background: 'transparent', border: 'none', color: '#fff', cursor: 'pointer', padding: 2, zIndex: 20 }}
+                      >
+                        <Trash2 size={12} />
+                      </button>
+                    )}
+                    {!(dur === null || dur === Infinity) && !isGhost && (
+                      <div 
+                        onPointerDown={(e) => {
+                          e.stopPropagation();
+                          setDragState({ event: ev, type: 'resize', initialX: e.clientX, initialAt: ev.at, initialDur: ev.duration, currentAt: ev.at, currentDur: ev.duration });
+                        }}
+                        style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: 8, cursor: 'ew-resize', zIndex: 10, background: 'rgba(255,255,255,0.3)' }} 
+                      />
+                    )}
+                  </div>
+                );
+              };
+
+              return (
+                <React.Fragment key={i}>
+                  {renderEventBar(ev.at, isInfinite ? null : ev.duration, false)}
+                  {isDragged && renderEventBar(dragState.currentAt, dragState.currentDur, true)}
+                </React.Fragment>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
