@@ -128,12 +128,12 @@ export const api = {
 
   // Event Definitions
   getEventDefinitions: async (stationId: string) => {
-    const res = await fetch(`${API_BASE}/stations//event-definitions`);
+    const res = await fetch(`${API_BASE}/stations/${stationId}/event-definitions`);
     if (!res.ok) throw new Error("Failed to fetch event definitions");
     return res.json();
   },
   createEventDefinition: async (stationId: string, name: string) => {
-    const res = await fetch(`${API_BASE}/stations//event-definitions/${eventId}`, { method: 'POST' });
+    const res = await fetch(`${API_BASE}/stations/${stationId}/event-definitions/${eventId}`, { method: 'POST' });
     if (!res.ok) throw new Error("Failed to create event definition");
     return res.json();
   },
