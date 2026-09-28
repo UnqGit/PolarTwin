@@ -19,12 +19,21 @@ export const PropertyInspector: React.FC<InspectorProps> = ({ node, connections,
   React.useEffect(() => {
     if (!liveStateRef) return;
     const interval = setInterval(() => {
-      const currentState = (liveStateRef.current?.[node.name] ?? {}) as Record<string, unknown>;
+      const currentState = { ...((liveStateRef.current?.[node.name] ?? {}) as Record<string, unknown>) };
+      
+      // If it's a sensor array, we also need to include grouped sensors in the tracked state
+      // so we trigger re-renders when their state changes.
+      if (node.type === 'sensor array' && node.groupedSensors) {
+        node.groupedSensors.forEach((s: any) => {
+           currentState[s.name] = liveStateRef.current?.[s.name];
+        });
+      }
+      
       // Only trigger re-render if state actually changed structurally
       setLiveState(prev => JSON.stringify(prev) !== JSON.stringify(currentState) ? currentState : prev);
     }, 500);
     return () => clearInterval(interval);
-  }, [node.name, liveStateRef]);
+  }, [node.name, liveStateRef, node.type, node.groupedSensors]);
 
   // Combine keys from spec and liveState
   const specObj = node.spec || {};
