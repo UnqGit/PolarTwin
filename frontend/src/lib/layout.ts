@@ -133,19 +133,19 @@ const OVERLAP_COST = 0;
  * Keys are matched as substrings of the component type (case-insensitive).
  */
 const TYPE_DEFAULTS: Record<string, Dims> = {
-  generator: { width: 2.4, height: 1.8, depth: 1.6 },
-  sensor: { width: 0.6, height: 0.6, depth: 0.6 },
-  controller: { width: 1.2, height: 0.8, depth: 1.0 },
-  battery: { width: 1.0, height: 1.6, depth: 0.8 },
-  motor: { width: 1.2, height: 1.2, depth: 1.4 },
-  pump: { width: 1.0, height: 1.0, depth: 1.0 },
-  tank: { width: 1.4, height: 2.0, depth: 1.4 },
-  alarm: { width: 0.5, height: 0.5, depth: 0.3 },
-  toggle: { width: 0.4, height: 0.4, depth: 0.2 },
-  thermometer: { width: 0.5, height: 0.5, depth: 0.3 },
+  generator: { width: 3.6, height: 2.7, depth: 2.4 },
+  sensor: { width: 0.9, height: 0.9, depth: 0.9 },
+  controller: { width: 1.8, height: 1.2, depth: 1.5 },
+  battery: { width: 1.5, height: 2.4, depth: 1.2 },
+  motor: { width: 1.8, height: 1.8, depth: 2.1 },
+  pump: { width: 1.5, height: 1.5, depth: 1.5 },
+  tank: { width: 2.1, height: 3.0, depth: 2.1 },
+  alarm: { width: 0.75, height: 0.75, depth: 0.45 },
+  toggle: { width: 0.6, height: 0.6, depth: 0.3 },
+  thermometer: { width: 0.75, height: 0.75, depth: 0.45 },
 };
 
-const GENERIC_FALLBACK: Dims = { width: 1.0, height: 1.0, depth: 1.0 };
+const GENERIC_FALLBACK: Dims = { width: 1.5, height: 1.5, depth: 1.5 };
 
 export interface ConnectionProfile {
   width: number;
