@@ -46,8 +46,12 @@ const UnifiedConnection: React.FC<UnifiedConnectionProps> = ({ connection }) => 
 
   const path = connection.path;
   const profile = connection.profile;
-  const beamWidth = profile.width;
-  const beamThickness = profile.height as number;
+  let beamWidth = profile.width;
+  let beamThickness = profile.height as number;
+  if ((connection as any).isBus) {
+     beamWidth *= 1.8;
+     beamThickness *= 1.8;
+  }
 
   const { segments, capSize } = useMemo(() => {
     return {

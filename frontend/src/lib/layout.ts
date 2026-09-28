@@ -47,6 +47,7 @@
  */
 
 // ─── public types ─────────────────────────────────────────────────────────────
+import { transformSensorArrays } from './transformSensors';
 
 export interface Dims {
   width: number;
@@ -133,19 +134,19 @@ const OVERLAP_COST = 0;
  * Keys are matched as substrings of the component type (case-insensitive).
  */
 const TYPE_DEFAULTS: Record<string, Dims> = {
-  generator: { width: 2.4, height: 1.8, depth: 1.6 },
-  sensor: { width: 0.6, height: 0.6, depth: 0.6 },
-  controller: { width: 1.2, height: 0.8, depth: 1.0 },
-  battery: { width: 1.0, height: 1.6, depth: 0.8 },
-  motor: { width: 1.2, height: 1.2, depth: 1.4 },
-  pump: { width: 1.0, height: 1.0, depth: 1.0 },
-  tank: { width: 1.4, height: 2.0, depth: 1.4 },
-  alarm: { width: 0.5, height: 0.5, depth: 0.3 },
-  toggle: { width: 0.4, height: 0.4, depth: 0.2 },
-  thermometer: { width: 0.5, height: 0.5, depth: 0.3 },
+  generator: { width: 3.6, height: 2.7, depth: 2.4 },
+  sensor: { width: 0.9, height: 0.9, depth: 0.9 },
+  controller: { width: 1.8, height: 1.2, depth: 1.5 },
+  battery: { width: 1.5, height: 2.4, depth: 1.2 },
+  motor: { width: 1.8, height: 1.8, depth: 2.1 },
+  pump: { width: 1.5, height: 1.5, depth: 1.5 },
+  tank: { width: 2.1, height: 3.0, depth: 2.1 },
+  alarm: { width: 0.75, height: 0.75, depth: 0.45 },
+  toggle: { width: 0.6, height: 0.6, depth: 0.3 },
+  thermometer: { width: 0.75, height: 0.75, depth: 0.45 },
 };
 
-const GENERIC_FALLBACK: Dims = { width: 1.0, height: 1.0, depth: 1.0 };
+const GENERIC_FALLBACK: Dims = { width: 1.5, height: 1.5, depth: 1.5 };
 
 export interface ConnectionProfile {
   width: number;
@@ -955,20 +956,26 @@ export function buildLayout(node: any, spec: any, rawConnections: any[] = []): N
  * @param spec     — raw specification JSON (spec.json).
  */
 export function buildSceneLayout(topology: any, connectionsData: any, spec: any): SceneLayout {
-  let rootNode = topology;
+  // Apply sensor array grouping transformation
+  const { finalTopology, finalConnections } = transformSensorArrays(
+    Array.isArray(topology) ? topology : [],
+    Array.isArray(connectionsData) ? connectionsData : []
+  );
+
+  let rootNode = finalTopology;
   
   // The backend returns a flat list of nodes where children are string arrays.
   // We need to unflatten this into a nested tree before building the layout.
-  if (Array.isArray(topology)) {
+  if (Array.isArray(finalTopology)) {
     const nodeMap = new Map<string, any>();
     // First pass: clone nodes and initialize empty object children arrays
-    for (const item of topology) {
+    for (const item of finalTopology) {
       nodeMap.set(item.name, { ...item, children: [] });
     }
     
     // Second pass: link children to parents
     let foundRoot = null;
-    for (const item of topology) {
+    for (const item of finalTopology) {
       const node = nodeMap.get(item.name);
       if (!item.parent) {
         foundRoot = node;
@@ -979,12 +986,12 @@ export function buildSceneLayout(topology: any, connectionsData: any, spec: any)
         }
       }
     }
-    rootNode = foundRoot || (topology.length > 0 ? nodeMap.get(topology[0].name) : {});
+    rootNode = foundRoot || (finalTopology.length > 0 ? nodeMap.get(finalTopology[0].name) : {});
   }
 
-  const root = buildLayout(rootNode, spec, connectionsData);
+  const root = buildLayout(rootNode, spec, finalConnections);
   const nodeMap = buildNodeMap(root);
-  const rawConnections: any[] = Array.isArray(connectionsData) ? connectionsData : [];
+  const rawConnections: any[] = finalConnections;
 
 
   // Track used grid cells across all connections for overlap avoidance.
