@@ -81,6 +81,24 @@ export const ConnectionInspector: React.FC<ConnectionInspectorProps> = ({ connec
             </span>
           } 
         />
+        
+        {/* Bus Connections */}
+        {(connection as any).isBus && (connection as any).groupedConnections && (
+          <>
+            <SectionHeader>Bus Connections ({(connection as any).groupedConnections.length})</SectionHeader>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, paddingLeft: 8 }}>
+              {(connection as any).groupedConnections.map((c: any, i: number) => (
+                <div key={i} style={{ padding: '6px', background: 'rgba(255,255,255,0.03)', borderRadius: 4, border: '1px solid var(--border-color)', fontSize: 11 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 2 }}>
+                    <span style={{ color: 'var(--text-primary)', fontWeight: 600 }}>{c.source} → {c.target}</span>
+                    <span style={{ color: 'var(--text-tertiary)' }}>{c.type}</span>
+                  </div>
+                  <div style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>{c.id || c.relation || 'No relation specified'}</div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

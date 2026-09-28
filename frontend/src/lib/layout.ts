@@ -47,6 +47,7 @@
  */
 
 // ─── public types ─────────────────────────────────────────────────────────────
+import { transformSensorArrays } from './transformSensors';
 
 export interface Dims {
   width: number;
@@ -955,20 +956,26 @@ export function buildLayout(node: any, spec: any, rawConnections: any[] = []): N
  * @param spec     — raw specification JSON (spec.json).
  */
 export function buildSceneLayout(topology: any, connectionsData: any, spec: any): SceneLayout {
-  let rootNode = topology;
+  // Apply sensor array grouping transformation
+  const { finalTopology, finalConnections } = transformSensorArrays(
+    Array.isArray(topology) ? topology : [],
+    Array.isArray(connectionsData) ? connectionsData : []
+  );
+
+  let rootNode = finalTopology;
   
   // The backend returns a flat list of nodes where children are string arrays.
   // We need to unflatten this into a nested tree before building the layout.
-  if (Array.isArray(topology)) {
+  if (Array.isArray(finalTopology)) {
     const nodeMap = new Map<string, any>();
     // First pass: clone nodes and initialize empty object children arrays
-    for (const item of topology) {
+    for (const item of finalTopology) {
       nodeMap.set(item.name, { ...item, children: [] });
     }
     
     // Second pass: link children to parents
     let foundRoot = null;
-    for (const item of topology) {
+    for (const item of finalTopology) {
       const node = nodeMap.get(item.name);
       if (!item.parent) {
         foundRoot = node;
@@ -979,12 +986,12 @@ export function buildSceneLayout(topology: any, connectionsData: any, spec: any)
         }
       }
     }
-    rootNode = foundRoot || (topology.length > 0 ? nodeMap.get(topology[0].name) : {});
+    rootNode = foundRoot || (finalTopology.length > 0 ? nodeMap.get(finalTopology[0].name) : {});
   }
 
-  const root = buildLayout(rootNode, spec, connectionsData);
+  const root = buildLayout(rootNode, spec, finalConnections);
   const nodeMap = buildNodeMap(root);
-  const rawConnections: any[] = Array.isArray(connectionsData) ? connectionsData : [];
+  const rawConnections: any[] = finalConnections;
 
 
   // Track used grid cells across all connections for overlap avoidance.

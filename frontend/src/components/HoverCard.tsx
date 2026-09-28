@@ -33,7 +33,7 @@ export const HoverCard: React.FC<HoverCardProps> = ({ root, connections, liveSta
       <div className="glass-panel" style={cardStyle}>
         <div style={headerStyle}>
           <Link2 size={14} color='var(--accent-amber)' style={{ marginRight: 6 }} />
-          CONNECTION
+          {(conn as any).isBus ? 'BUS CONNECTION' : 'CONNECTION'}
         </div>
         <div style={{...titleStyle, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline'}}>
           <span>{conn.source} → {conn.target}</span>
@@ -43,6 +43,9 @@ export const HoverCard: React.FC<HoverCardProps> = ({ root, connections, liveSta
           <Row label="Source" value={conn.source} />
           <Row label="Target" value={conn.target} />
           <Row label="Type" value={conn.connectionType} />
+          {(conn as any).isBus && (conn as any).groupedConnections && (
+            <Row label="Grouped Wires" value={String((conn as any).groupedConnections.length)} />
+          )}
         </div>
       </div>
     );
@@ -58,6 +61,14 @@ export const HoverCard: React.FC<HoverCardProps> = ({ root, connections, liveSta
       if (state.running !== undefined) {
         status = state.running ? 'Active' : 'Inactive';
       }
+    }
+    
+    if (node.type === 'sensor array' && node.groupedSensors) {
+      const activeCount = node.groupedSensors.filter((s: any) => {
+        const state = liveStateRef?.current?.[s.name] as any;
+        return state && state.running;
+      }).length;
+      status = `${activeCount}/${node.groupedSensors.length} Active`;
     }
 
     return (

@@ -62,12 +62,20 @@ export const PropertyInspector: React.FC<InspectorProps> = ({ node, connections,
   // Determine active/inactive/failure status
   let statusStr = "ACTIVE";
   let statusColor = "#4ade80"; // green
-  if (liveState.status) {
+  if (node.type === 'sensor array' && node.groupedSensors) {
+     const activeCount = node.groupedSensors.filter((s: any) => {
+       const st = liveStateRef?.current?.[s.name] as any;
+       return st && st.running;
+     }).length;
+     statusStr = `${activeCount}/${node.groupedSensors.length} ACTIVE`;
+     statusColor = activeCount > 0 ? "#4ade80" : "#94a3b8";
+  } else if (liveState.status) {
     const s = String(liveState.status).toLowerCase();
     if (s === 'active' || s === 'ok') { statusStr = 'ACTIVE'; statusColor = '#4ade80'; }
     else if (s === 'inactive' || s === 'off') { statusStr = 'INACTIVE'; statusColor = '#94a3b8'; }
     else { statusStr = 'FAILURE'; statusColor = '#ef4444'; } // red for failure, error, fault
   }
+
 
   const getSpecDetail = (key: string): any => {
     if (!specObj.rating) return null;
@@ -247,6 +255,46 @@ export const PropertyInspector: React.FC<InspectorProps> = ({ node, connections,
             <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic', marginBottom: 4 }}>other parameters:</div>
             {others.map(renderPropRow)}
           </div>
+        )}
+
+        {/* Grouped Sensors */}
+        {node.type === 'sensor array' && node.groupedSensors && node.groupedSensors.length > 0 && (
+          <>
+            <SectionHeader>Grouped Sensors ({node.groupedSensors.length})</SectionHeader>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingLeft: 8, marginBottom: 8 }}>
+              {node.groupedSensors.map((s: any) => {
+                const sLive = liveStateRef?.current?.[s.name] as any || {};
+                const active = sLive.running;
+                return (
+                  <div key={s.name} style={{
+                    padding: '8px', 
+                    borderRadius: 4, 
+                    background: 'rgba(255,255,255,0.03)',
+                    border: '1px solid var(--hover-overlay)'
+                  }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+                      <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{s.name}</span>
+                      <span style={{ color: active ? '#4ade80' : '#94a3b8', fontSize: 11, fontWeight: 600 }}>{active ? 'ACTIVE' : 'INACTIVE'}</span>
+                    </div>
+                    {/* Render individual sensor data - basic values from live state */}
+                    {Object.keys(sLive).filter(k => !['running', 'status', 'id'].includes(k)).map(k => (
+                       <div key={k} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
+                         <span style={{ color: 'var(--text-tertiary)' }}>{k}</span>
+                         <span style={{ color: 'var(--text-secondary)' }}>{typeof sLive[k] === 'number' ? sLive[k].toFixed(2) : String(sLive[k])}</span>
+                       </div>
+                    ))}
+                    {s.tags && s.tags.length > 0 && (
+                      <div style={{ marginTop: 6, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+                        {s.tags.map((t: string) => (
+                          <span key={t} style={{ background: 'var(--bg-input)', padding: '2px 6px', borderRadius: 8, fontSize: 9, color: 'var(--text-secondary)' }}>{t}</span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </>
         )}
 
         {/* Connections */}
