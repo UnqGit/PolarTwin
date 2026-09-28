@@ -1,35 +1,207 @@
-MaitriCampus:campus @1 {
-    MainBuilding:block @1 {
-        GroundFloor:floor @1 @level=0 {
-            PowerSystem:system @1 {
-                MainGenerator:generator @1
-                BackupBattery:battery @1 backup(MainGenerator)
-                PowerSensor:sensor @1
-                GenEffSensor:sensor @1
-                BattCapSensor:sensor @1
-                GridController:controller @1
-            }
-            HVACSys:system @1 {
-                Heater:generic @1
-                TempSensor:sensor @1
-            }
-        }
-        FirstFloor:floor @1 @level=1 {
-            CommsSystem:system @1 {
-                Radio:antenna @1
-                CommsBattery:battery @1 backup(Radio)
-            }
-        }
+Maitri:station @0 %station %critical {
+
+    EnergyBlock:block @0 %energy_demand {
+
+        MainGenerator:generator @0 %primary
+        BackupGenerator:generator @1 backup(MainGenerator) %backup
+
+        MainGeneratorPower:sensor @1
+        BackupGeneratorPower:sensor @1
+
+        MainGeneratorTemp:sensor @1
+        BackupGeneratorTemp:sensor @1
+
+        MainGeneratorFuelIntake:sensor @1
+        BackupGeneratorFuelIntake:sensor @1
+
+        EnergyBlockVent:vent @0
+        EnergyBlockVentVoltmeter:sensor @1
+        EnergyBlockVentAmmeter:sensor @1
+        EnergyBlockVentFlowrate:sensor @1
+
+        EnergyBlockTemp:sensor @1
+
+        EnergyController:controller @1
+        EnergyControllerVoltmeter:sensor @2
+        EnergyControllerAmmeter:sensor @2
+
+        EnergyDataTransmitter:antenna @1
+        EnergyTransmitterVoltmeter:sensor @2
+        EnergyTransmitterAmmeter:sensor @2
+        EnergyTransmitterFrequency:sensor @2
     }
-    Outpost:block @2 {
-        Ground:floor @2 @level=0 {
-            FuelSystem:system @2 {
-                FuelTank:generic @2
-                TransferPump:pump @2
-                FuelSensor:sensor @2
-                PumpFlowSensor:sensor @2
-                PumpPowSensor:sensor @2
-            }
+
+    HVACBlock:block @0 %thermal_control {
+
+        MainAC:air_conditioner @0 %primary
+        BackupAC:air_conditioner backup(MainAC) @1 %backup
+
+        MainACVoltmeter:sensor @1
+        MainACAmmeter:sensor @1
+        MainACFlowrate:sensor @1
+        MainACOutputTemp:sensor @1
+        MainACTemp:sensor @1
+
+        BackupACVoltmeter:sensor @2
+        BackupACAmmeter:sensor @2
+        BackupACFlowrate:sensor @2
+        BackupACOutputTemp:sensor @2
+        BackupACTemp:sensor @2
+
+        HVACTemp:sensor @1
+        
+        HVACController:controller @1
+        HVACControllerVoltmeter:sensor @2
+        HVACControllerAmmeter:sensor @2
+
+        HVACTransmitter:antenna @1
+        HVACTransmitterVoltmeter:sensor @2
+        HVACTransmitterAmmeter:sensor @2
+        HVACTransmitterFrequency:sensor @2
+    }
+
+    InventoryBlock:block @3 %storage {
+
+        FuelSystem:system @1 %fuel_storage {
+
+            FuelTank:tank @0
+            FuelLevel:sensor @1
+            
+            FuelPump:pump @1
+
+            FuelPumpVoltmeter:sensor @2
+            FuelPumpAmmeter:sensor @2
+            FuelPumpTemp:sensor @2
+            FuelPumpFlowrate:sensor @2
         }
+
+        StorageSystem:system @0 {
+
+            FoodStorage:storage @0
+            EquipmentStorage:storage @1
+
+            FoodWeight:sensor @2
+            FoodCount:sensor @2
+
+            EquipmentWeight:sensor @2
+            EquipmentCount:sensor @2
+        }
+
+        VehicleSystem:system @2 {
+
+            PistenBully01:vehicle @0 %snow_vehicle
+            PistenBully02:vehicle @1 %snow_vehicle
+            SnowScooter01:vehicle @2 %snow_vehicle
+            SnowScooter02:vehicle @3 %snow_vehicle
+            UtilityVehicle01:vehicle @4 %field_vehicle
+        }
+
+        FuelControlTemp:sensor @1
+        StorageControlTemp:sensor @1
+        VehicleControlTemp:sensor @1
+        InventoryTemp:sensor @1
+
+        FuelControlVent:vent @2
+        FuelControlVentVoltmeter:sensor @3
+        FuelControlVentAmmeter:sensor @3
+        FuelControlVentFlowrate:sensor @3
+
+        InventoryController:controller @1
+        InventoryControllerVoltmeter:sensor @2
+        InventoryControllerAmmeter:sensor @2
+
+        InventoryTransmitter:antenna @1
+        InventoryTransmitterVoltmeter:sensor @2
+        InventoryTransmitterAmmeter:sensor @2
+        InventoryTransmitterFrequency:sensor @2
+    }
+
+    ResearchBlock:block @4 {
+
+        WetLaboratory:system @1 {
+        
+            WetLabEquipment:storage @1
+            WetLabEquipmentWeight:sensor @2
+            WetLabCountWeight:sensor @2
+        }
+
+        DryLaboratory:system @1 {
+        
+            DryLabEquipment:storage @1
+            DryLabEquipmentWeight:sensor @2
+            DryLabCountWeight:sensor @2
+        }
+
+        WetLabTemp:sensor @2
+        DryLabTemp:sensor @2
+        ResearchBlockTemp:sensor @2
+
+        ResearchController:controller @1
+        ResearchControllerVoltmeter:sensor @2
+        ResearchControllerAmmeter:sensor @2
+
+        ResearchTransmitter:antenna @1
+        ResearchTransmitterVoltmeter:sensor @2
+        ResearchTransmitterAmmeter:sensor @2
+        ResearchTransmitterFrequency:sensor @2
+    }
+    
+    ControlBlock:block @1 {
+
+        MainServer:server @0
+        MainServerPower:sensor @1
+        MainServerTemp:sensor @1
+
+        ControlVent:vent @0
+        ControlVentVoltmeter:sensor @1
+        ControlVentAmmeter:sensor @1
+        ControlVentFlowrate:sensor @1
+
+        MainController:controller @0
+        MainControllerVoltmeter:sensor @2
+        MainControllerAmmeter:sensor @2
+
+        ControlBlockTemp:sensor @3
+        
+        ControlDataTransmitter:antenna @1
+        ControlTransmitterVoltmeter:sensor @2
+        ControlTransmitterAmmeter:sensor @2
+        ControlTransmitterFrequency:sensor @2
+    }
+
+    WaterAndWasteBlock:block @3 {
+        
+        WaterSystem:system @1 {
+            WaterTank:tank @0
+            WaterLevel:sensor @1
+            WaterPump:pump @1
+
+            WaterPumpVoltmeter:sensor @2
+            WaterPumpAmmeter:sensor @2
+            WaterPumpFlowrate:sensor @2
+        }
+
+        WasteSystem:system @1 {
+            WasteWaterTank:tank @0
+            WasteWaterLevel:sensor @1
+        }
+
+        WaterAndWasteBlockTemp:sensor @2
+        WaterSystemTemp:sensor @3
+        WasteSystemTemp:sensor @3
+
+        WaterBlockVent:vent @1
+        WaterBlockVentVoltmeter:sensor @2
+        WaterBlockVentAmmeter:sensor @2
+        WaterBlockVentFlowrate:sensor @2
+
+        WaterController:controller @1
+        WaterControllerVoltmeter:sensor @2
+        WaterControllerAmmeter:sensor @2
+
+        WaterDataTransmitter:antenna @1
+        WaterTransmitterVoltmeter:sensor @2
+        WaterTransmitterAmmeter:sensor @2
+        WaterTransmitterFrequency:sensor @2
     }
 }

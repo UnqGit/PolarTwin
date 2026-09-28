@@ -1,78 +1,636 @@
-MainBuilding:block {
-    dimension {
-        width = 40
-        length = 20
-        height = 10
-    }
+default:generator {
+	rating@input {
+		flowrate=0:135 unit=”L/hr”
+	}
+	rating@state {
+		temperature=10:95 unit=C
+	}
+	rating@output {
+		power=0:500 unit=kW
+	}
+	dimension {
+		length=4 unit=m
+		width=2 unit=m
+		height=1.75 unit=m
+	}
+	description=”Generates electrical power”
+	representation=generator
 }
-Outpost:block {
-    dimension {
-        width = 15
-        length = 15
-        height = 5
-    }
+
+default:pump {
+	rating@input {
+		voltage=240 unit=V
+		current=0:12 unit=A
+	}
+	rating@state {
+		temperature=10:50 unit=C
+	}
+	rating@output {
+		flowrate=90:600 unit=”L/hr”
+	}
+	dimension {
+		length=0.4 unit=m
+		width=0.3 unit=m
+		height=0.2 unit=m
+	}
+	description=”Pushes liquid”
+	HP=2
+	representation=pump
 }
-GroundFloor:floor {
-    dimension {
-        width = 40
-        length = 20
-        height = 5
-    }
+
+default:solar_panel {
+	rating@input{
+		light_irradiance=0:1000 unit=”W/m2”
+	}
+	rating@output{
+		power=0:400 unit=W
+	}
+	dimension {
+		length=2 unit=m
+		width=1 unit=m
+		height=0.1 unit=m
+	}
+	description=”Converts solar energy into electrical power”
+	representation=solar_panel
 }
-FirstFloor:floor {
-    dimension {
-        width = 40
-        length = 20
-        height = 5
-    }
+
+default:air_conditioner {
+	rating@input {
+		voltage=220 unit=V
+		current=0:9 unit=A
+	}
+	rating@state {
+		temperature=0:65 unit=C
+	}
+	rating@output {
+		flowrate=0:1000 unit=”L/hr”
+		temperature=16:40 unit=C
+	}
+	description=”Provides stable temperature source”
+	representation=air_conditioner
 }
-Ground:floor {
-    dimension {
-        width = 15
-        length = 15
-        height = 5
-    }
+
+default:tank {
+	rating@state{
+		volume=0:3000 unit=L
+	}
+	description=”holds water”
+	representation=tank
 }
-MainGenerator:generator {
-    rating@output {
-        power = 500
-    }
-    rating@state {
-        efficiency = 0.85
-    }
+
+default:storage {
+	rating@state {
+		count=0:200
+		weight=0:1000 unit=kg
+	}
+	dimension {
+		length=5  unit=m
+		width=5  unit=m
+		height=3  unit=m
+	}
+	description=”Stores items”
+	representation=storage
 }
-BackupBattery:battery {
-    rating@state {
-        max_capacity = 1000
-    }
+
+default:alarm {
+	rating@input {
+		voltage=12 unit=V
+		current=0:5 unit=A
+	}
+	description=”Alerts”
+	representation=alarm
 }
-TransferPump:pump {
-    rating@state {
-        max_flow = 50
-    }
-    rating@input {
-        power = 5
-    }
+
+default:antenna {
+	rating@input {
+		voltage=15 unit=V
+		current=0:5 unit=A
+	}
+	rating@state {
+		frequency=40:75 unit=kHz
+	}
+	description=”Transmits signal”
+	representation=antenna
 }
-PowerSensor:sensor measures=power {
+
+default:vehicle {
+	dimension {
+		length=3 unit=m
+		width=1.2 unit=m
+		height=1.2 unit=m
+	}
+	description=”Transportation assist”
+	representation=vehicle
 }
-TempSensor:sensor measures=temperature {
+
+default:server {
+	rating@input {
+		power=200:1000 unit=W
+	}
+	rating@state {
+		temperature=10:50 unit=C
+	}
+	description=”Stores data”
+	representation=server
 }
-FuelSensor:sensor measures=fuel {
+
+default:vent {
+	rating@input {
+		voltage=30 unit=V
+		current=0:2 unit=A
+	}
+	rating@output {
+		flowrate=0:75 unit=”L/hr”
+	}
+	description=”Passes air”
+	representation=vent
 }
-GenEffSensor:sensor measures=efficiency {
+
+default:controller {
+	rating@input {
+		voltage=24 unit=V
+		current=0:15 unit=A
+	}
+	description=”Signals components”
+	representation=controller
 }
-BattCapSensor:sensor measures=max_capacity {
+
+default:station {
+	rating@state {
+		count=0:50 #count of the number of people
+		temperature=0:30 unit=C
+	}
+	description=”Antarctic research station”
+	representation=station
 }
-PumpFlowSensor:sensor measures=max_flow {
+
+default:block {
+	rating@state {
+		temperature=10:30 unit=C
+	}
+	description=”Block inside the research station”
+	representation=block
 }
-PumpPowSensor:sensor measures=power {
+
+default:sensor {
+	measures=voltage
+	rating=0:100 unit=V
+	description=”Measures quantity”
+	representation=sensor
 }
-GridController:controller {
+
+MainGeneratorPower:sensor {
+	measures=power
+	rating=0:600 unit=kW
+	description="Measures power"
 }
-Heater:generic {
+BackupGeneratorPower:sensor {
+	measures=power
+	rating=0:600 unit=kW
+	description="Measures power"
 }
-Radio:antenna {
+MainGeneratorTemp:sensor {
+	measures=temperature
+	rating=-100:200 unit=C
+	description="Measures temperature"
 }
-FuelTank:generic {
+BackupGeneratorTemp:sensor {
+	measures=temperature
+	rating=-100:200 unit=C
+	description="Measures temperature"
+}
+MainGeneratorFuelIntake:sensor {
+	measures=flowrate
+	rating=0:1500 unit="L/hr"
+	description="Measures flowrate"
+}
+BackupGeneratorFuelIntake:sensor {
+	measures=flowrate
+	rating=0:1500 unit="L/hr"
+	description="Measures flowrate"
+}
+EnergyBlockVentVoltmeter:sensor {
+	measures=voltage
+	rating=0:500 unit=V
+	description="Measures voltage"
+}
+EnergyBlockVentAmmeter:sensor {
+	measures=current
+	rating=0:120 unit=A
+	description="Measures current"
+}
+EnergyBlockVentFlowrate:sensor {
+	measures=flowrate
+	rating=0:1500 unit="L/hr"
+	description="Measures flowrate"
+}
+EnergyBlockTemp:sensor {
+	measures=temperature
+	rating=-100:200 unit=C
+	description="Measures temperature"
+}
+EnergyControllerVoltmeter:sensor {
+	measures=voltage
+	rating=0:500 unit=V
+	description="Measures voltage"
+}
+EnergyControllerAmmeter:sensor {
+	measures=current
+	rating=0:120 unit=A
+	description="Measures current"
+}
+EnergyTransmitterVoltmeter:sensor {
+	measures=voltage
+	rating=0:500 unit=V
+	description="Measures voltage"
+}
+EnergyTransmitterAmmeter:sensor {
+	measures=current
+	rating=0:120 unit=A
+	description="Measures current"
+}
+EnergyTransmitterFrequency:sensor {
+	measures=frequency
+	rating=0:1 unit=MHz
+	description="Measures frequency"
+}
+MainACVoltmeter:sensor {
+	measures=voltage
+	rating=0:500 unit=V
+	description="Measures voltage"
+}
+MainACAmmeter:sensor {
+	measures=current
+	rating=0:120 unit=A
+	description="Measures current"
+}
+MainACFlowrate:sensor {
+	measures=flowrate
+	rating=0:1500 unit="L/hr"
+	description="Measures flowrate"
+}
+MainACOutputTemp:sensor {
+	measures=output.temperature
+	rating=-100:200 unit=C
+	description="Measures temperature"
+}
+MainACTemp:sensor {
+	measures=state.temperature
+	rating=-100:200 unit=C
+	description="Measures temperature"
+}
+BackupACVoltmeter:sensor {
+	measures=voltage
+	rating=0:500 unit=V
+	description="Measures voltage"
+}
+BackupACAmmeter:sensor {
+	measures=current
+	rating=0:120 unit=A
+	description="Measures current"
+}
+BackupACFlowrate:sensor {
+	measures=flowrate
+	rating=0:1500 unit="L/hr"
+	description="Measures flowrate"
+}
+BackupACOutputTemp:sensor {
+	measures=output.temperature
+	rating=-100:200 unit=C
+	description="Measures temperature"
+}
+BackupACTemp:sensor {
+	measures=state.temperature
+	rating=-100:200 unit=C
+	description="Measures temperature"
+}
+HVACTemp:sensor {
+	measures=temperature
+	rating=-100:200 unit=C
+	description="Measures temperature"
+}
+HVACControllerVoltmeter:sensor {
+	measures=voltage
+	rating=0:500 unit=V
+	description="Measures voltage"
+}
+HVACControllerAmmeter:sensor {
+	measures=current
+	rating=0:120 unit=A
+	description="Measures current"
+}
+HVACTransmitterVoltmeter:sensor {
+	measures=voltage
+	rating=0:500 unit=V
+	description="Measures voltage"
+}
+HVACTransmitterAmmeter:sensor {
+	measures=current
+	rating=0:120 unit=A
+	description="Measures current"
+}
+HVACTransmitterFrequency:sensor {
+	measures=frequency
+	rating=0:1 unit=MHz
+	description="Measures frequency"
+}
+FuelLevel:sensor {
+	measures=count
+	rating=0:5000 unit=L
+	description="Measures volume"
+}
+FuelPumpVoltmeter:sensor {
+	measures=voltage
+	rating=0:500 unit=V
+	description="Measures voltage"
+}
+FuelPumpAmmeter:sensor {
+	measures=current
+	rating=0:120 unit=A
+	description="Measures current"
+}
+FuelPumpTemp:sensor {
+	measures=temperature
+	rating=-100:200 unit=C
+	description="Measures temperature"
+}
+FuelPumpFlowrate:sensor {
+	measures=flowrate
+	rating=0:1500 unit="L/hr"
+	description="Measures flowrate"
+}
+FoodWeight:sensor {
+	measures=weight
+	rating=0:10000 unit=kg
+	description="Measures weight"
+}
+FoodCount:sensor {
+	measures=count
+	rating=0:10000
+	description="Measures weight"
+}
+EquipmentWeight:sensor {
+	measures=weight
+	rating=0:10000 unit=kg
+	description="Measures weight"
+}
+EquipmentCount:sensor {
+	measures=count
+	rating=0:10000
+	description="Measures weight"
+}
+FuelControlTemp:sensor {
+	measures=temperature
+	rating=-100:200 unit=C
+	description="Measures temperature"
+}
+StorageControlTemp:sensor {
+	measures=temperature
+	rating=-100:200 unit=C
+	description="Measures temperature"
+}
+VehicleControlTemp:sensor {
+	measures=temperature
+	rating=-100:200 unit=C
+	description="Measures temperature"
+}
+InventoryTemp:sensor {
+	measures=temperature
+	rating=-100:200 unit=C
+	description="Measures temperature"
+}
+FuelControlVentVoltmeter:sensor {
+	measures=voltage
+	rating=0:500 unit=V
+	description="Measures voltage"
+}
+FuelControlVentAmmeter:sensor {
+	measures=current
+	rating=0:120 unit=A
+	description="Measures current"
+}
+FuelControlVentFlowrate:sensor {
+	measures=flowrate
+	rating=0:1500 unit="L/hr"
+	description="Measures flowrate"
+}
+InventoryControllerVoltmeter:sensor {
+	measures=voltage
+	rating=0:500 unit=V
+	description="Measures voltage"
+}
+InventoryControllerAmmeter:sensor {
+	measures=current
+	rating=0:120 unit=A
+	description="Measures current"
+}
+InventoryTransmitterVoltmeter:sensor {
+	measures=voltage
+	rating=0:500 unit=V
+	description="Measures voltage"
+}
+InventoryTransmitterAmmeter:sensor {
+	measures=current
+	rating=0:120 unit=A
+	description="Measures current"
+}
+InventoryTransmitterFrequency:sensor {
+	measures=frequency
+	rating=0:1 unit=MHz
+	description="Measures frequency"
+}
+WetLabEquipmentWeight:sensor {
+	measures=weight
+	rating=0:10000 unit=kg
+	description="Measures weight"
+}
+WetLabCountWeight:sensor {
+	measures=weight
+	rating=0:10000 unit=kg
+	description="Measures weight"
+}
+DryLabEquipmentWeight:sensor {
+	measures=weight
+	rating=0:10000 unit=kg
+	description="Measures weight"
+}
+DryLabCountWeight:sensor {
+	measures=weight
+	rating=0:10000 unit=kg
+	description="Measures weight"
+}
+WetLabTemp:sensor {
+	measures=temperature
+	rating=-100:200 unit=C
+	description="Measures temperature"
+}
+DryLabTemp:sensor {
+	measures=temperature
+	rating=-100:200 unit=C
+	description="Measures temperature"
+}
+ResearchBlockTemp:sensor {
+	measures=temperature
+	rating=-100:200 unit=C
+	description="Measures temperature"
+}
+ResearchControllerVoltmeter:sensor {
+	measures=voltage
+	rating=0:500 unit=V
+	description="Measures voltage"
+}
+ResearchControllerAmmeter:sensor {
+	measures=current
+	rating=0:120 unit=A
+	description="Measures current"
+}
+ResearchTransmitterVoltmeter:sensor {
+	measures=voltage
+	rating=0:500 unit=V
+	description="Measures voltage"
+}
+ResearchTransmitterAmmeter:sensor {
+	measures=current
+	rating=0:120 unit=A
+	description="Measures current"
+}
+ResearchTransmitterFrequency:sensor {
+	measures=frequency
+	rating=0:1 unit=MHz
+	description="Measures frequency"
+}
+MainServerPower:sensor {
+	measures=power
+	rating=0:600 unit=kW
+	description="Measures power"
+}
+MainServerTemp:sensor {
+	measures=temperature
+	rating=-100:200 unit=C
+	description="Measures temperature"
+}
+ControlVentVoltmeter:sensor {
+	measures=voltage
+	rating=0:500 unit=V
+	description="Measures voltage"
+}
+ControlVentAmmeter:sensor {
+	measures=current
+	rating=0:120 unit=A
+	description="Measures current"
+}
+ControlVentFlowrate:sensor {
+	measures=flowrate
+	rating=0:1500 unit="L/hr"
+	description="Measures flowrate"
+}
+MainControllerVoltmeter:sensor {
+	measures=voltage
+	rating=0:500 unit=V
+	description="Measures voltage"
+}
+MainControllerAmmeter:sensor {
+	measures=current
+	rating=0:120 unit=A
+	description="Measures current"
+}
+ControlBlockTemp:sensor {
+	measures=temperature
+	rating=-100:200 unit=C
+	description="Measures temperature"
+}
+ControlTransmitterVoltmeter:sensor {
+	measures=voltage
+	rating=0:500 unit=V
+	description="Measures voltage"
+}
+ControlTransmitterAmmeter:sensor {
+	measures=current
+	rating=0:120 unit=A
+	description="Measures current"
+}
+ControlTransmitterFrequency:sensor {
+	measures=frequency
+	rating=0:1 unit=MHz
+	description="Measures frequency"
+}
+WaterLevel:sensor {
+	measures=count
+	rating=0:5000 unit=L
+	description="Measures volume"
+}
+WaterPumpVoltmeter:sensor {
+	measures=voltage
+	rating=0:500 unit=V
+	description="Measures voltage"
+}
+WaterPumpAmmeter:sensor {
+	measures=current
+	rating=0:120 unit=A
+	description="Measures current"
+}
+WaterPumpFlowrate:sensor {
+	measures=flowrate
+	rating=0:1500 unit="L/hr"
+	description="Measures flowrate"
+}
+WasteWaterLevel:sensor {
+	measures=count
+	rating=0:5000 unit=L
+	description="Measures volume"
+}
+WaterAndWasteBlockTemp:sensor {
+	measures=temperature
+	rating=-100:200 unit=C
+	description="Measures temperature"
+}
+WaterSystemTemp:sensor {
+	measures=temperature
+	rating=-100:200 unit=C
+	description="Measures temperature"
+}
+WasteSystemTemp:sensor {
+	measures=temperature
+	rating=-100:200 unit=C
+	description="Measures temperature"
+}
+WaterBlockVentVoltmeter:sensor {
+	measures=voltage
+	rating=0:500 unit=V
+	description="Measures voltage"
+}
+WaterBlockVentAmmeter:sensor {
+	measures=current
+	rating=0:120 unit=A
+	description="Measures current"
+}
+WaterBlockVentFlowrate:sensor {
+	measures=flowrate
+	rating=0:1500 unit="L/hr"
+	description="Measures flowrate"
+}
+WaterControllerVoltmeter:sensor {
+	measures=voltage
+	rating=0:500 unit=V
+	description="Measures voltage"
+}
+WaterControllerAmmeter:sensor {
+	measures=current
+	rating=0:120 unit=A
+	description="Measures current"
+}
+WaterTransmitterVoltmeter:sensor {
+	measures=voltage
+	rating=0:500 unit=V
+	description="Measures voltage"
+}
+WaterTransmitterAmmeter:sensor {
+	measures=current
+	rating=0:120 unit=A
+	description="Measures current"
+}
+WaterTransmitterFrequency:sensor {
+	measures=frequency
+	rating=0:1 unit=MHz
+	description="Measures frequency"
 }
