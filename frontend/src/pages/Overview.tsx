@@ -2,6 +2,8 @@ import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStation } from '../components/StationContext';
 import { Activity, Thermometer, Zap, Box, AlertTriangle, CheckCircle, Package, Radar } from 'lucide-react';
+import { IMAGE_MAP } from '../lib/constants';
+import { Footer } from '../components/Footer';
 
 export interface BlockData {
   id: string;
@@ -69,21 +71,21 @@ function GridCard({ block, fading, onClick }: { block: BlockData; fading: boolea
       transition: 'opacity 0.6s ease',
       opacity: fading ? 0 : 1
     }}>
-      <div 
+      <div
         className="grid-card-inner"
-        style={{ 
-          width: '100%', 
-          height: '100%', 
-          backgroundImage: `url(${block.img})`, 
-          backgroundSize: 'cover', 
-          backgroundPosition: 'center', 
+        style={{
+          width: '100%',
+          height: '100%',
+          backgroundImage: `url(${block.img[Math.abs(block.name.split('').reduce((a: number, b: string) => { a = ((a << 5) - a) + b.charCodeAt(0); return a }, 0)) % block.img.length]})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
           opacity: 0.85,
-        }} 
+        }}
       />
-      <div style={{ 
-        padding: '24px', 
-        position: 'absolute', 
-        bottom: 0, left: 0, right: 0, 
+      <div style={{
+        padding: '24px',
+        position: 'absolute',
+        bottom: 0, left: 0, right: 0,
         background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 60%, transparent 100%)',
         pointerEvents: 'none'
       }}>
@@ -92,7 +94,7 @@ function GridCard({ block, fading, onClick }: { block: BlockData; fading: boolea
             {block.name}
           </span>
         </div>
-        
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, fontSize: '13px', fontWeight: 600 }}>
             {block.status === 'active' && (
@@ -105,7 +107,7 @@ function GridCard({ block, fading, onClick }: { block: BlockData; fading: boolea
               <><AlertTriangle size={14} color="#ef4444" style={{ filter: 'drop-shadow(0 0 6px rgba(239,68,68,0.4))' }} /> <span style={{ color: '#ef4444' }}>FAILURE</span></>
             )}
           </div>
-          
+
           {block.innerTotal > 0 && (
             <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', gap: '6px' }}>
               <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'var(--text-tertiary)' }} />
@@ -121,18 +123,18 @@ function GridCard({ block, fading, onClick }: { block: BlockData; fading: boolea
 export function Overview() {
   const { selectedStation, hierarchy, liveStateRef } = useStation();
   const navigate = useNavigate();
-  
+
   const [telemetry] = useState({
-    powerOutput: 'N/A',
-    temperature: 'N/A',
-    nextSupply: 'N/A'
+    powerOutput: '1.2 MW',
+    temperature: '-18.5 °C',
+    nextSupply: '14 Days'
   });
 
   const hierarchyData = hierarchy || [];
 
   const stats = useMemo(() => {
     const totalComponents = hierarchyData.length;
-    const activeComponents = totalComponents; 
+    const activeComponents = totalComponents;
     return {
       activeComponents,
       totalComponents,
@@ -148,7 +150,7 @@ export function Overview() {
         n.children.forEach((c: string) => parentMap.set(c, n.name));
       }
     });
-    
+
     const getPath = (name: string) => {
       const path = [];
       let curr: string | undefined = parentMap.get(name);
@@ -171,14 +173,6 @@ export function Overview() {
           if (node && node.children) queue.push(...node.children);
         }
       }
-      
-      const imgs = [
-        'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-        'https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-        'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-        'https://images.unsplash.com/photo-1544256718-3b6102796440?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
-        'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80'
-      ];
 
       // Extract real status if available
       let status: 'active' | 'inactive' | 'failure' = 'active';
@@ -191,8 +185,8 @@ export function Overview() {
       return {
         id: b.name,
         name: b.name,
-        status, 
-        img: imgs[i % imgs.length],
+        status,
+        img: IMAGE_MAP[b.type] || IMAGE_MAP.default,
         innerTotal: allDescendants.size,
         innerActive: allDescendants.size,
         path: getPath(b.name)
@@ -220,7 +214,7 @@ export function Overview() {
   // Synchronized rotation
   useEffect(() => {
     if (blocks.length <= numGrids) return; // Not enough blocks to rotate
-    
+
     const intervalTime = 6000; // Rotate every 6s
     const timer = setInterval(() => {
       setIsFading(true);
@@ -247,131 +241,134 @@ export function Overview() {
   };
 
   return (
-    <div className="overview-container fade-enter" style={{ padding: '32px 40px', height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+    <div className="overview-container fade-enter" style={{ height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
       <style>{STYLE_INJECTION}</style>
-      
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
-        <div>
-          <h1 style={{ fontSize: '32px', fontWeight: 800, margin: '0 0 8px 0', letterSpacing: '-0.5px' }}>{selectedStation || 'Loading...'} Overview</h1>
-          <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '15px' }}>System status and high-level telemetry</p>
-        </div>
-      </div>
+      <div style={{ padding: '32px 40px', flex: 1, display: 'flex', flexDirection: 'column' }}>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: '28px', marginBottom: '40px' }}>
-        {/* Satellite View */}
-        <div className="glass-panel" style={{ 
-          padding: 0, 
-          display: 'flex', 
-          flexDirection: 'column', 
-          position: 'relative', 
-          overflow: 'hidden',
-          borderRadius: '16px',
-          border: '1px solid var(--border-color)',
-          boxShadow: '0 10px 30px -10px rgba(0,0,0,0.5)',
-          minHeight: '340px'
-        }}>
-          <div style={{ padding: '24px 32px', position: 'absolute', zIndex: 10, background: 'linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 60%, transparent 100%)', width: '100%' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <Radar size={22} color="var(--accent-cyan)" />
-              <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0, color: '#fff', letterSpacing: '0.5px' }}>Satellite View</h2>
-            </div>
-            <p style={{ margin: '6px 0 0 0', fontSize: '14px', color: 'rgba(255,255,255,0.7)' }}>Live spatial telemetry feed</p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
+          <div>
+            <h1 style={{ fontSize: '32px', fontWeight: 800, margin: '0 0 8px 0', letterSpacing: '-0.5px' }}>{selectedStation || 'Loading...'} Overview</h1>
+            <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '15px' }}>System status and high-level telemetry</p>
           </div>
-          
-          <div style={{ 
-            flex: 1, 
-            backgroundImage: 'url(https://images.unsplash.com/photo-1548266652-996b7dc444be?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80)',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            position: 'relative'
+        </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: '1.6fr 1fr', gap: '28px', marginBottom: '40px' }}>
+          {/* Satellite View */}
+          <div className="glass-panel" style={{
+            padding: 0,
+            display: 'flex',
+            flexDirection: 'column',
+            position: 'relative',
+            overflow: 'hidden',
+            borderRadius: '16px',
+            border: '1px solid var(--border-color)',
+            boxShadow: '0 10px 30px -10px rgba(0,0,0,0.5)',
+            minHeight: '340px'
           }}>
-             <div style={{
-               position: 'absolute',
-               top: 0, left: 0, right: 0, height: '100%',
-               background: 'linear-gradient(to bottom, transparent 0%, rgba(181, 102, 255, 0.1) 50%, rgba(0, 230, 118, 0.2) 100%)',
-               animation: 'scanline 5s linear infinite'
-             }} />
-             
-             <div style={{ position: 'absolute', top: '35%', left: '28%', color: 'var(--accent-cyan)' }}>
-               <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'currentColor', animation: 'pulse-dot 2.5s infinite' }} />
-             </div>
-             <div style={{ position: 'absolute', top: '65%', left: '72%', color: 'var(--accent-blue)' }}>
-               <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'currentColor', animation: 'pulse-dot 3s infinite 1s' }} />
-             </div>
-             <div style={{ position: 'absolute', top: '45%', left: '60%', color: 'var(--accent-amber)' }}>
-               <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'currentColor', animation: 'pulse-dot 4s infinite 0.5s' }} />
-             </div>
-          </div>
-        </div>
-
-        {/* Metric Cards Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-          <div className="glass-panel metric-card" style={{ padding: '28px 24px', borderRadius: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)' }}>
-              <Activity size={24} color="var(--accent-blue)" />
-              <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>Components</span>
-            </div>
-            <div style={{ fontSize: '36px', fontWeight: 800, marginTop: '16px', letterSpacing: '-1px' }}>
-              <span style={{ color: '#fff' }}>{stats.activeComponents}</span>
-              <span style={{ color: 'var(--text-tertiary)', fontSize: '20px', fontWeight: 600 }}> / {stats.totalComponents}</span>
-            </div>
-          </div>
-
-          <div className="glass-panel metric-card" style={{ padding: '28px 24px', borderRadius: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)' }}>
-              <Zap size={24} color="var(--accent-amber)" />
-              <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>Power</span>
-            </div>
-            <div style={{ fontSize: '32px', fontWeight: 800, marginTop: '16px', color: '#fff' }}>
-              {stats.powerOutput}
-            </div>
-          </div>
-
-          <div className="glass-panel metric-card" style={{ padding: '28px 24px', borderRadius: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)' }}>
-              <Thermometer size={24} color="var(--accent-cyan)" />
-              <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>Temp</span>
-            </div>
-            <div style={{ fontSize: '32px', fontWeight: 800, marginTop: '16px', color: '#fff' }}>
-              {stats.temperature}
-            </div>
-          </div>
-          
-          <div className="glass-panel metric-card" style={{ padding: '28px 24px', borderRadius: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)' }}>
-              <Package size={24} color="var(--text-primary)" />
-              <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>Supply</span>
-            </div>
-            <div style={{ fontSize: '32px', fontWeight: 800, marginTop: '16px', color: '#fff' }}>
-              {stats.nextSupply}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-          <h2 style={{ fontSize: '22px', fontWeight: 700, margin: 0, letterSpacing: '-0.5px' }}>Component Matrix</h2>
-        </div>
-        
-        {blocks.length > 0 && activeIndices.length === numGrids ? (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '24px', paddingBottom: '32px' }}>
-            {activeIndices.map((blockIdx, i) => (
-              <div className="fade-enter" style={{ animationDelay: `${i * 0.08}s` }} key={i}>
-                <GridCard 
-                  block={blocks[blockIdx]} 
-                  fading={isFading} 
-                  onClick={() => handleCardClick(blocks[blockIdx])}
-                />
+            <div style={{ padding: '24px 32px', position: 'absolute', zIndex: 10, background: 'linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 60%, transparent 100%)', width: '100%' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <Radar size={22} color="var(--accent-cyan)" />
+                <h2 style={{ fontSize: '20px', fontWeight: 700, margin: 0, color: '#fff', letterSpacing: '0.5px' }}>Satellite View</h2>
               </div>
-            ))}
+              <p style={{ margin: '6px 0 0 0', fontSize: '14px', color: 'rgba(255,255,255,0.7)' }}>Live spatial telemetry feed</p>
+            </div>
+
+            <div style={{
+              flex: 1,
+              backgroundImage: 'url(/maitri_satellite.jpg)',
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
+              position: 'relative'
+            }}>
+              <div style={{
+                position: 'absolute',
+                top: 0, left: 0, right: 0, height: '100%',
+                background: 'linear-gradient(to bottom, transparent 0%, rgba(181, 102, 255, 0.1) 50%, rgba(0, 230, 118, 0.2) 100%)',
+                animation: 'scanline 5s linear infinite'
+              }} />
+
+              <div style={{ position: 'absolute', top: '35%', left: '28%', color: 'var(--accent-cyan)' }}>
+                <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: 'currentColor', animation: 'pulse-dot 2.5s infinite' }} />
+              </div>
+              <div style={{ position: 'absolute', top: '65%', left: '72%', color: 'var(--accent-blue)' }}>
+                <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'currentColor', animation: 'pulse-dot 3s infinite 1s' }} />
+              </div>
+              <div style={{ position: 'absolute', top: '45%', left: '60%', color: 'var(--accent-amber)' }}>
+                <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: 'currentColor', animation: 'pulse-dot 4s infinite 0.5s' }} />
+              </div>
+            </div>
           </div>
-        ) : (
-          <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)', borderRadius: '16px' }}>
-            No components available in the matrix.
+
+          {/* Metric Cards Grid */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            <div className="glass-panel metric-card" style={{ padding: '28px 24px', borderRadius: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)' }}>
+                <Activity size={24} color="var(--accent-blue)" />
+                <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>Components</span>
+              </div>
+              <div style={{ fontSize: '36px', fontWeight: 800, marginTop: '16px', letterSpacing: '-1px' }}>
+                <span style={{ color: 'var(--text-primary)' }}>{stats.activeComponents}</span>
+                <span style={{ color: 'var(--text-tertiary)', fontSize: '20px', fontWeight: 600 }}> / {stats.totalComponents}</span>
+              </div>
+            </div>
+
+            <div className="glass-panel metric-card" style={{ padding: '28px 24px', borderRadius: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)' }}>
+                <Zap size={24} color="var(--accent-amber)" />
+                <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>Power</span>
+              </div>
+              <div style={{ fontSize: '32px', fontWeight: 800, marginTop: '16px', color: 'var(--text-primary)' }}>
+                {stats.powerOutput}
+              </div>
+            </div>
+
+            <div className="glass-panel metric-card" style={{ padding: '28px 24px', borderRadius: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)' }}>
+                <Thermometer size={24} color="var(--accent-cyan)" />
+                <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>Temp</span>
+              </div>
+              <div style={{ fontSize: '32px', fontWeight: 800, marginTop: '16px', color: 'var(--text-primary)' }}>
+                {stats.temperature}
+              </div>
+            </div>
+
+            <div className="glass-panel metric-card" style={{ padding: '28px 24px', borderRadius: '16px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', color: 'var(--text-secondary)' }}>
+                <Package size={24} color="var(--text-primary)" />
+                <span style={{ fontSize: '13px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>Supply</span>
+              </div>
+              <div style={{ fontSize: '32px', fontWeight: 800, marginTop: '16px', color: 'var(--text-primary)' }}>
+                {stats.nextSupply}
+              </div>
+            </div>
           </div>
-        )}
+        </div>
+
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+            <h2 style={{ fontSize: '22px', fontWeight: 700, margin: 0, letterSpacing: '-0.5px' }}>Component Matrix</h2>
+          </div>
+
+          {blocks.length > 0 && activeIndices.length === numGrids ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 240px)', justifyContent: 'center', gap: '24px', paddingBottom: '32px' }}>
+              {activeIndices.map((blockIdx, i) => (
+                <div className="fade-enter" style={{ animationDelay: `${i * 0.08}s` }} key={i}>
+                  <GridCard
+                    block={blocks[blockIdx]}
+                    fading={isFading}
+                    onClick={() => handleCardClick(blocks[blockIdx])}
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="glass-panel" style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)', borderRadius: '16px' }}>
+              No components available in the matrix.
+            </div>
+          )}
+        </div>
       </div>
+      <Footer />
     </div>
   );
 }

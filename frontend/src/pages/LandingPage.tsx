@@ -43,14 +43,26 @@ export function LandingPage() {
           filter: 'brightness(0.6) saturate(1.2)',
           zIndex: 0
         }} />
-        
+
         {/* Overlay Gradient */}
         <div style={{
           position: 'absolute',
           top: 0, left: 0, right: 0, bottom: 0,
-          background: 'linear-gradient(to bottom, transparent 0%, var(--bg-main) 100%)',
+          background: 'linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.6) 100%)',
           zIndex: 1
         }} />
+
+        {/* Smooth Transition Curve */}
+        <div style={{
+          position: 'absolute',
+          bottom: -1, left: 0, right: 0,
+          zIndex: 1,
+          lineHeight: 0
+        }}>
+          <svg viewBox="0 0 1440 320" style={{ width: '100%', height: 'auto', display: 'block' }}>
+            <path fill="var(--bg-main)" fillOpacity="1" d="M0,224L60,213.3C120,203,240,181,360,181.3C480,181,600,203,720,218.7C840,235,960,245,1080,229.3C1200,213,1320,171,1380,149.3L1440,128L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"></path>
+          </svg>
+        </div>
 
         {/* Theme Toggle Button */}
         <div style={{
@@ -59,7 +71,7 @@ export function LandingPage() {
           right: '24px',
           zIndex: 3
         }}>
-          <button 
+          <button
             onClick={toggleTheme}
             style={{
               background: 'rgba(255, 255, 255, 0.1)',
@@ -81,7 +93,7 @@ export function LandingPage() {
             {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           </button>
         </div>
-        
+
         {/* Hero Content */}
         <div style={{
           position: 'relative',
@@ -92,9 +104,9 @@ export function LandingPage() {
           alignItems: 'center',
           gap: '16px'
         }}>
-          <div style={{ 
-            color: 'var(--accent-blue)', 
-            display: 'flex', 
+          <div style={{
+            color: 'var(--accent-blue)',
+            display: 'flex',
             alignItems: 'center',
             background: 'rgba(10, 13, 20, 0.6)',
             padding: '16px',
@@ -106,19 +118,19 @@ export function LandingPage() {
           }}>
             <Snowflake size={48} />
           </div>
-          <h1 style={{ 
-            fontSize: '64px', 
-            fontWeight: 800, 
+          <h1 style={{
+            fontSize: '64px',
+            fontWeight: 800,
             letterSpacing: '-0.03em',
             margin: 0,
-            color: 'var(--text-primary)',
+            color: theme === 'light' ? '#ffffff' : 'var(--text-primary)',
             textShadow: '0 4px 12px rgba(0,0,0,0.2)'
           }}>
             PolarTwin
           </h1>
-          <p style={{ 
-            fontSize: '20px', 
-            color: 'var(--text-secondary)',
+          <p style={{
+            fontSize: '20px',
+            color: theme === 'light' ? 'rgba(255, 255, 255, 0.95)' : 'var(--text-secondary)',
             maxWidth: '600px',
             margin: '0 auto',
             lineHeight: 1.6
@@ -135,7 +147,9 @@ export function LandingPage() {
         maxWidth: '1200px',
         margin: '0 auto',
         width: '100%',
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
+        backgroundImage: `radial-gradient(circle at 10px 10px, ${theme === 'light' ? 'rgba(0,0,0,0.15)' : 'var(--border-color)'} 1px, transparent 1px)`,
+        backgroundSize: '40px 40px'
       }}>
         <div style={{ marginBottom: '40px', textAlign: 'center' }}>
           <h2 style={{ fontSize: '32px', color: 'var(--text-primary)', margin: '0 0 16px 0' }}>Select a Station</h2>
@@ -157,7 +171,7 @@ export function LandingPage() {
             gap: '24px'
           }}>
             {stations.map((station) => (
-              <Link 
+              <Link
                 key={station.station_id}
                 to={`/${station.station_id}/overview`}
                 style={{ textDecoration: 'none', display: 'flex', width: '320px' }}
@@ -179,21 +193,21 @@ export function LandingPage() {
                   height: '100%',
                   boxSizing: 'border-box'
                 }}
-                className="station-card"
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.borderColor = 'var(--accent-blue)';
-                  e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.1)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.borderColor = 'var(--border-color)';
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)';
-                }}>
+                  className="station-card"
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-4px)';
+                    e.currentTarget.style.borderColor = 'var(--accent-blue)';
+                    e.currentTarget.style.boxShadow = '0 12px 24px rgba(0,0,0,0.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.borderColor = 'var(--border-color)';
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.05)';
+                  }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ 
-                      width: '48px', height: '48px', 
-                      borderRadius: '12px', 
+                    <div style={{
+                      width: '48px', height: '48px',
+                      borderRadius: '12px',
                       backgroundColor: 'var(--bg-input)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       color: 'var(--accent-blue)'
@@ -205,7 +219,7 @@ export function LandingPage() {
                       <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Active Deployment</span>
                     </div>
                   </div>
-                  
+
                   <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '14px' }}>
                       <Box size={16} />
@@ -227,6 +241,8 @@ export function LandingPage() {
       <section style={{
         padding: '64px 24px',
         backgroundColor: 'var(--bg-panel-secondary)',
+        backgroundImage: `radial-gradient(circle at 10px 10px, ${theme === 'light' ? 'rgba(0,0,0,0.15)' : 'var(--border-color)'} 1px, transparent 1px)`,
+        backgroundSize: '40px 40px',
         borderTop: '1px solid var(--border-color)',
         borderBottom: '1px solid var(--border-color)'
       }}>
@@ -237,7 +253,7 @@ export function LandingPage() {
               Everything you need to monitor, simulate, and optimize remote research infrastructure.
             </p>
           </div>
-          
+
           <div style={{
             display: 'flex',
             flexWrap: 'wrap',
@@ -253,7 +269,7 @@ export function LandingPage() {
                 Stream live sensor data from physical components directly into the digital twin for instant health monitoring and diagnostics.
               </p>
             </div>
-            
+
             <div style={{ flex: '1 1 300px', maxWidth: '350px', padding: '32px', backgroundColor: 'var(--bg-panel)', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '16px' }}>
               <div style={{ color: 'var(--accent-purple)', padding: '16px', backgroundColor: 'var(--bg-input)', borderRadius: '50%' }}>
                 <MonitorPlay size={32} />
@@ -263,7 +279,7 @@ export function LandingPage() {
                 Design custom timeline events—like extreme weather or power failures—and watch the station components react dynamically.
               </p>
             </div>
-            
+
             <div style={{ flex: '1 1 300px', maxWidth: '350px', padding: '32px', backgroundColor: 'var(--bg-panel)', borderRadius: '16px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: '16px' }}>
               <div style={{ color: 'var(--accent-cyan)', padding: '16px', backgroundColor: 'var(--bg-input)', borderRadius: '50%' }}>
                 <Zap size={32} />
@@ -289,13 +305,13 @@ export function LandingPage() {
         fontSize: '14px'
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Snowflake size={16} style={{ color: 'var(--accent-blue)' }}/>
+          <Snowflake size={16} style={{ color: 'var(--accent-blue)' }} />
           <span>&copy; 2026 PolarTwin. All rights reserved.</span>
         </div>
         <div style={{ display: 'flex', gap: '24px' }}>
-          <a href="#" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>About</a>
-          <a href="#" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Privacy Policy</a>
-          <a href="#" style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Terms of Service</a>
+          <a href="#" onClick={(e) => e.preventDefault()} style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>About</a>
+          <a href="#" onClick={(e) => e.preventDefault()} style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Privacy Policy</a>
+          <a href="#" onClick={(e) => e.preventDefault()} style={{ color: 'var(--text-secondary)', textDecoration: 'none' }}>Terms of Service</a>
         </div>
       </footer>
     </div>

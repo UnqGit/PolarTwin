@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Trash2, Activity, HardDrive, Cpu, Clock, Layers, Filter, FileText } from 'lucide-react';
 import { api } from '../lib/api';
 import { useStation } from '../components/StationContext';
+import { Footer } from '../components/Footer';
 
 interface HistoryRecord {
   id: number;
@@ -392,6 +393,7 @@ export function DiagnosticsPage() {
           )}
         </div>
       </div>
+      <Footer />
     </div>
   );
 }
