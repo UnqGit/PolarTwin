@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Edit2 } from 'lucide-react';
+import { Edit2, Eye, EyeOff } from 'lucide-react';
 import type { ConnectionLayout } from '../lib/layout';
 import { useSelection } from './SelectionContext';
 
@@ -15,17 +15,6 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
   const [search, setSearch] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-
-  // Scroll to selected
-  useEffect(() => {
-    if (selectedName) {
-      const el = itemRefs.current.get(selectedName);
-      if (el && containerRef.current) {
-        // smooth scroll to center
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }
-  }, [selectedName]);
 
   const [sortBy, setSortBy] = useState<'source' | 'target' | 'type'>('source');
 
@@ -54,6 +43,36 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
   }, [connections, search, sortBy]);
 
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+
+  // Scroll to selected and auto-expand groups
+  useEffect(() => {
+    if (selectedName) {
+      // Auto-expand groups containing the selection
+      let groupToExpand = null;
+      for (const [groupKey, items] of grouped.entries()) {
+        if (items.some(c => c.id === selectedName || c.source === selectedName || c.target === selectedName)) {
+          groupToExpand = groupKey;
+          break;
+        }
+      }
+      
+      if (groupToExpand) {
+        setExpandedGroups(prev => {
+          const next = new Set(prev);
+          next.add(groupToExpand);
+          return next;
+        });
+      }
+
+      // Small delay to allow render/expansion before scrolling
+      setTimeout(() => {
+        const el = itemRefs.current.get(selectedName);
+        if (el && containerRef.current) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 50);
+    }
+  }, [selectedName, grouped]);
 
   const toggleGroup = (key: string) => {
     setExpandedGroups(prev => {
@@ -159,6 +178,7 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
 
             const isCollapsed = !expandedGroups.has(groupKey);
             const headingLabel = sortBy === 'source' ? 'Source:' : sortBy === 'target' ? 'Target:' : 'Type:';
+            const hasSelectedChild = groupConnections.some(c => c.id === selectedName || c.source === selectedName || c.target === selectedName);
 
             return (
               <div key={groupKey} style={{ marginBottom: 4 }}>
@@ -171,10 +191,13 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
                     display: 'flex',
                     alignItems: 'center',
                     cursor: 'pointer',
-                    userSelect: 'none'
+                    userSelect: 'none',
+                    background: hasSelectedChild ? 'rgba(34, 197, 94, 0.08)' : 'transparent',
+                    borderLeft: `3px solid ${hasSelectedChild ? 'rgba(34, 197, 94, 0.4)' : 'transparent'}`,
+                    marginLeft: hasSelectedChild ? 0 : 3
                   }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--hover-overlay)'; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                  onMouseEnter={e => { if (!hasSelectedChild) (e.currentTarget as HTMLElement).style.background = 'var(--hover-overlay)'; }}
+                  onMouseLeave={e => { if (!hasSelectedChild) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
                 >
                   <span
                     style={{
@@ -195,7 +218,7 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
                 {!isCollapsed && (
                   <div>
                     {groupConnections.map((c) => {
-                      const isSelected = selectedName === c.id;
+                      const isSelected = selectedName === c.id || selectedName === c.source || selectedName === c.target;
                       let innerLabel = '';
                       let innerValue = '';
                       if (sortBy === 'source') { innerLabel = 'Target:'; innerValue = c.target; }
@@ -212,8 +235,8 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
                           style={{
                             padding: '6px 16px 6px 36px',
                             cursor: 'pointer',
-                            background: isSelected ? 'rgba(34, 211, 238, 0.15)' : 'transparent',
-                            borderLeft: `2px solid ${isSelected ? 'var(--accent-cyan)' : 'transparent'}`,
+                            background: isSelected ? 'rgba(34, 197, 94, 0.15)' : 'transparent',
+                            borderLeft: `3px solid ${isSelected ? '#22c55e' : 'transparent'}`,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
@@ -251,13 +274,12 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
                             <span
                               onClick={(e) => { e.stopPropagation(); toggleVisibility(c.id); }}
                               style={{
-                                cursor: 'pointer', fontSize: 12, padding: '2px 4px',
+                                cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center',
                                 color: hiddenSet.has(c.id) ? 'var(--text-tertiary)' : 'var(--text-secondary)',
-                                opacity: hiddenSet.has(c.id) ? 0.5 : 1,
                               }}
                               title={hiddenSet.has(c.id) ? 'Show connection' : 'Hide connection'}
                             >
-                              {hiddenSet.has(c.id) ? '👁‍🗨' : '👁'}
+                              {hiddenSet.has(c.id) ? <EyeOff size={14} /> : <Eye size={14} />}
                             </span>
                           </div>
                         </div>
