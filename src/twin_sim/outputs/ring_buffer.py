@@ -17,9 +17,9 @@ class RingBufferSink(TelemetrySink):
         with self.lock:
             self.buffer.append(telemetry)
 
-    def write_batch(self, telemetry_list: List[TelemetryMessage]) -> None:
+    def write_batch(self, telemetries: List[TelemetryMessage]) -> None:
         with self.lock:
-            self.buffer.extend(telemetry_list)
+            self.buffer.extend(telemetries)
 
     def get_all(self) -> List[TelemetryMessage]:
         """Return a snapshot of the current buffer."""

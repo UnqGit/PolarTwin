@@ -49,6 +49,9 @@ else:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Auto-discover and register all compiled stations on startup."""
+    from twin_sim.api.migrate import migrate_old_files_to_db
+    migrate_old_files_to_db(_db, DATA_DIR)
+    
     station_names = StationLoader.list_stations(COMPILED_ROOT)
     for name in station_names:
         try:
@@ -70,7 +73,17 @@ app.add_middleware(
 )
 _db = TelemetryDatabase(str(DB_PATH))
 _manager = SimulationManager(telemetry_db=_db)
-_scenario_manager = ScenarioManager(DATA_DIR)
+_scenario_manager = ScenarioManager(_db)
+
+
+@app.get("/")
+def read_root():
+    return {
+        "name": "PolarTwin Backend API",
+        "version": "2.0.0",
+        "status": "running",
+        "docs": "/docs"
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -278,36 +291,36 @@ def parse_scenario_raw(payload: ParseScenarioRequest):
 # Event Definitions
 # ---------------------------------------------------------------------------
 
-@app.get("/event-definitions")
-def get_event_definitions():
-    return _scenario_manager.list_events()
+@app.get("/stations/{station_id}/event-definitions")
+def get_event_definitions(station_id: str):
+    return _scenario_manager.list_events(station_id)
 
 
-@app.get("/event-definitions/{name}")
-def get_event_definition(name: str):
+@app.get("/event-definitions/{event_id}")
+def get_event_definition(event_id: str):
     try:
-        return _scenario_manager.get_event(name)
+        return _scenario_manager.get_event(event_id)
     except FileNotFoundError as e:
         raise HTTPException(404, str(e))
 
 class EventUpdatePayload(BaseModel):
     source: str
 
-@app.post("/event-definitions/{name}")
-def create_event_definition(name: str):
-    return _scenario_manager.create_event(name)
+@app.post("/stations/{station_id}/event-definitions/{name}")
+def create_event_definition(station_id: str, name: str):
+    return _scenario_manager.create_event(station_id, name)
 
-@app.put("/event-definitions/{name}")
-def update_event_definition(name: str, payload: EventUpdatePayload):
+@app.put("/event-definitions/{event_id}")
+def update_event_definition(event_id: str, payload: EventUpdatePayload):
     try:
-        return _scenario_manager.update_event(name, payload.source)
+        return _scenario_manager.update_event(event_id, payload.source)
     except FileNotFoundError as e:
         raise HTTPException(404, str(e))
 
-@app.delete("/event-definitions/{name}", status_code=204)
-def delete_event_definition(name: str):
+@app.delete("/event-definitions/{event_id}", status_code=204)
+def delete_event_definition(event_id: str):
     try:
-        _scenario_manager.delete_event(name)
+        _scenario_manager.delete_event(event_id)
     except FileNotFoundError as e:
         raise HTTPException(404, str(e))
     return None
@@ -537,15 +550,15 @@ def set_component_tolerance(run_id: str, component_id: str, req: ComponentTolera
     if not rec:
         raise HTTPException(status_code=404, detail="Run not found")
     
-    if component_id not in rec.engine.state_by_node:
+    if component_id not in rec.engine.state.base_components:
         raise HTTPException(status_code=404, detail="Component not found in simulation")
         
-    comp = rec.engine.topology.get_node(component_id)
-    if not comp:
-        raise HTTPException(status_code=404, detail="Component not found")
+    comp = rec.engine.state.base_components[component_id]
     
     # Update specification's tolerance
-    comp.specification["tolerance"] = req.value
+    if "tolerance" not in comp.value or not isinstance(comp.value["tolerance"], dict):
+        comp.value["tolerance"] = {}
+    comp.value["tolerance"]["value"] = req.value
     return {"status": "ok", "component": component_id, "tolerance": req.value}
 
 @app.post("/simulations/{run_id}/component/{component_id}/state")
@@ -554,11 +567,12 @@ def set_component_state(run_id: str, component_id: str, updates: dict = Body(...
     if not rec:
         raise HTTPException(status_code=404, detail="Run not found")
     
-    if component_id not in rec.engine.state_by_node:
+    if component_id not in rec.engine.state.base_components:
         raise HTTPException(status_code=404, detail="Component not found in simulation")
     
     # Update state fields
+    comp = rec.engine.state.base_components[component_id]
     for k, v in updates.items():
-        rec.engine.state_by_node[component_id][k] = v
+        comp.value[k] = v
         
     return {"status": "ok", "component": component_id, "updates": updates}

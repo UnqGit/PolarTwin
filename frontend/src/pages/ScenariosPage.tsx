@@ -81,7 +81,7 @@ export function ScenariosPage() {
   useEffect(() => {
     if (!selectedStation) return;
     api.getScenarios(selectedStation).then(setScenarios).catch(console.error);
-    api.getEventDefinitions().then(setEventDefs).catch(console.error);
+    if (selectedStation) api.getEventDefinitions(selectedStation).then(setEventDefs).catch(console.error);
   }, [selectedStation]);
 
   useEffect(() => {
@@ -105,15 +105,11 @@ export function ScenariosPage() {
         setScenarioSource(src);
         setSavedScenarioSource(src);
       }).catch(console.error);
-      setRunId(null);
-      setSimStatus('Ready');
-      setScenarioEvents([]);
+      // keep scenario running
     } else {
       setScenarioSource('');
       setSavedScenarioSource('');
-      setRunId(null);
-      setSimStatus('Ready');
-      setScenarioEvents([]);
+      // keep scenario running
     }
   }, [selectedScenarioId, selectedEventDefId, editingType, selectedStation]);
 
@@ -222,7 +218,7 @@ export function ScenariosPage() {
     const cleanSource = scenarioSource.replace(/\r/g, '');
     if (editingType === 'scenario' && selectedScenarioId) {
       await api.updateScenarioSource(selectedScenarioId, cleanSource);
-      setSavedScenarioSource(cleanSource);
+      setScenarioSource(cleanSource); setSavedScenarioSource(cleanSource);
       if (selectedStation) {
         const res = await api.createSimulation(selectedStation, selectedScenarioId);
         setRunId(res.runId);
@@ -232,7 +228,7 @@ export function ScenariosPage() {
       }
     } else if (editingType === 'event' && selectedEventDefId) {
       await api.updateEventDefinitionSource(selectedEventDefId, cleanSource);
-      setSavedScenarioSource(cleanSource);
+      setScenarioSource(cleanSource); setSavedScenarioSource(cleanSource);
       // Event defs don't need a full simulation restart directly
     }
   };
@@ -370,8 +366,7 @@ export function ScenariosPage() {
           }}
           onClick={() => {
             setEditingType('event');
-            setSelectedEventDefId(e.name);
-            setSelectedScenarioId(null);
+            setSelectedEventDefId(e.id);
             setBottomTab('source');
             setBottomOpen(true);
           }}
@@ -392,7 +387,7 @@ export function ScenariosPage() {
               if (confirm('Delete event definition?')) {
                 await api.deleteEventDefinition(e.name);
                 if (selectedEventDefId === e.name) setSelectedEventDefId(null);
-                api.getEventDefinitions().then(setEventDefs);
+                if (selectedStation) api.getEventDefinitions(selectedStation).then(setEventDefs);
               }
             }}
             style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
@@ -418,13 +413,14 @@ export function ScenariosPage() {
           <select 
             style={{ backgroundColor: 'var(--bg-input)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '4px 8px', outline: 'none' }}
             value={selectedScenarioId || ''}
-            onChange={e => setSelectedScenarioId(e.target.value || null)}
+            onChange={e => { setSelectedScenarioId(e.target.value || null); setEditingType('scenario'); }}
           >
             <option value="">-- Select Scenario --</option>
             {scenarios.map(s => (
               <option key={s.id} value={s.id}>{s.name}</option>
             ))}
           </select>
+          <button onClick={() => { setSelectedScenarioId(null); setScenarioEvents([]); setRunId(null); setSimStatus('Ready'); if (editingType === 'scenario') setScenarioSource(''); }} style={{ fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-input)', color: 'var(--text-secondary)' }}>Deselect</button>
           <span style={{ fontSize: '12px', padding: '4px 8px', backgroundColor: 'var(--bg-input)', borderRadius: '4px', fontFamily: 'monospace', border: '1px solid var(--border-color)' }}>
             {simStatus} | T={(simTime || 0).toFixed(1)}s
           </span>
@@ -704,6 +700,14 @@ export function ScenariosPage() {
                 {timelineOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
               </div>
             </div>
+            {selectedEvent && editingType === 'scenario' && (
+              <button 
+                onClick={() => handleDeleteEventFromTimeline(selectedEvent)} 
+                style={{ fontSize: '10px', padding: '2px 6px', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '4px', cursor: 'pointer', marginRight: '8px' }}
+              >
+                Delete Instance
+              </button>
+            )}
             {selectedComponentName && (
               <button 
                 onClick={() => setSelectedComponentName(null)} 
@@ -759,7 +763,7 @@ export function ScenariosPage() {
                     setSelectedEventDefId(null);
                   } else if (newFileModal.type === 'event') {
                     await api.createEventDefinition(name);
-                    api.getEventDefinitions().then(setEventDefs);
+                    if (selectedStation) api.getEventDefinitions(selectedStation).then(setEventDefs);
                     setEditingType('event');
                     setSelectedEventDefId(name);
                     setSelectedScenarioId(null);
@@ -785,7 +789,7 @@ export function ScenariosPage() {
                     setSelectedEventDefId(null);
                   } else if (newFileModal.type === 'event') {
                     await api.createEventDefinition(name);
-                    api.getEventDefinitions().then(setEventDefs);
+                    if (selectedStation) api.getEventDefinitions(selectedStation).then(setEventDefs);
                     setEditingType('event');
                     setSelectedEventDefId(name);
                     setSelectedScenarioId(null);

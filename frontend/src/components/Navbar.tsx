@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { 
   Box, 
   Activity, 
@@ -13,18 +13,18 @@ import {
 import { useStation } from './StationContext';
 import { useTheme } from './ThemeContext';
 
-const navItems = [
-  { path: '/', icon: Activity, label: 'Overview' },
-  { path: '/twin', icon: MonitorPlay, label: 'Digital Twin' },
-  { path: '/components', icon: Box, label: 'Components' },
-  { path: '/connections', icon: Network, label: 'Connections' },
-  { path: '/scenarios', icon: Settings2, label: 'Scenario/Simulation' },
-  { path: '/diagnostics', icon: History, label: 'History' },
-];
-
 export function Navbar() {
-  const { availableStations, selectedStation, setSelectedStation } = useStation();
+  const { selectedStation } = useStation();
   const { theme, toggleTheme } = useTheme();
+
+  const navItems = [
+    { path: `/${selectedStation}/overview`, icon: Activity, label: 'Overview' },
+    { path: `/${selectedStation}/twin`, icon: MonitorPlay, label: 'Digital Twin' },
+    { path: `/${selectedStation}/components`, icon: Box, label: 'Components' },
+    { path: `/${selectedStation}/connections`, icon: Network, label: 'Connections' },
+    { path: `/${selectedStation}/scenarios`, icon: Settings2, label: 'Scenario/Simulation' },
+    { path: `/${selectedStation}/diagnostics`, icon: History, label: 'History' },
+  ];
 
   return (
     <div className="glass-panel" style={{
@@ -47,43 +47,28 @@ export function Navbar() {
         gap: '12px',
         color: 'var(--text-primary)'
       }}>
-        <div style={{ 
-          color: 'var(--accent-blue)', 
-          display: 'flex', 
-          alignItems: 'center',
-          background: 'var(--bg-input)',
-          padding: '6px',
-          borderRadius: '8px',
-          boxShadow: 'var(--shadow-glow)'
-        }}>
-          <Snowflake size={20} />
-        </div>
-        <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, letterSpacing: '-0.03em' }}>
-          PolarTwin
-        </h1>
+        <Link to="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{ 
+            color: 'var(--accent-blue)', 
+            display: 'flex', 
+            alignItems: 'center',
+            background: 'var(--bg-input)',
+            padding: '6px',
+            borderRadius: '8px',
+            boxShadow: 'var(--shadow-glow)'
+          }}>
+            <Snowflake size={20} />
+          </div>
+          <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, letterSpacing: '-0.03em' }}>
+            PolarTwin
+          </h1>
+        </Link>
         
         <div style={{ width: '1px', height: '24px', background: 'var(--border-color)', margin: '0 8px' }} />
         
-        <select 
-          value={selectedStation} 
-          onChange={(e) => setSelectedStation(e.target.value)}
-          style={{ 
-            background: 'var(--bg-input)', 
-            color: 'var(--text-primary)', 
-            border: '1px solid var(--border-solid)', 
-            borderRadius: '6px',
-            padding: '6px 10px',
-            outline: 'none',
-            fontSize: '13px',
-            fontWeight: 500,
-            cursor: 'pointer',
-            minWidth: '120px'
-          }}
-        >
-          {availableStations.map(station => (
-            <option key={station} value={station}>{station}</option>
-          ))}
-        </select>
+        <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)' }}>
+          {selectedStation || 'Loading...'}
+        </div>
       </div>
 
       <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>

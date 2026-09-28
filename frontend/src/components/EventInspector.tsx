@@ -16,7 +16,7 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
 
   useEffect(() => {
     if (event) {
-      setEditSelector(event.selector || '');
+      setEditSelector(event.selector ? (event.selector.startsWith('@') ? event.selector.slice(1) : event.selector) : '');
       setEditAt(event.at.toString());
       setEditFor(event.duration === Infinity || event.duration === null ? 'inf' : event.duration.toString());
       
@@ -45,7 +45,11 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
     // Construct DSL string
     let snippet = `event:${event.event_ref}`;
     if (editSelector.trim()) {
-      snippet += ` ${editSelector.trim()}`;
+      let sel = editSelector.trim();
+      if (!sel.startsWith('@') && !sel.startsWith('"') && !sel.startsWith("'") && sel !== 'all') {
+        sel = '@' + sel;
+      }
+      snippet += ` ${sel}`;
     }
     snippet += ` at=${editAt.trim()} for=${editFor.trim()}`;
     

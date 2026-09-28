@@ -66,6 +66,28 @@ class TelemetryDatabase:
             """)
 
             self.conn.execute("""
+                CREATE TABLE IF NOT EXISTS scenario_files (
+                    id TEXT PRIMARY KEY,
+                    station_id TEXT,
+                    name TEXT,
+                    source TEXT,
+                    created_at REAL,
+                    updated_at REAL
+                )
+            """)
+            
+            self.conn.execute("""
+                CREATE TABLE IF NOT EXISTS event_files (
+                    id TEXT PRIMARY KEY,
+                    station_id TEXT,
+                    name TEXT,
+                    source TEXT,
+                    created_at REAL,
+                    updated_at REAL
+                )
+            """)
+
+            self.conn.execute("""
                 CREATE TABLE IF NOT EXISTS telemetry_records (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     run_id TEXT,

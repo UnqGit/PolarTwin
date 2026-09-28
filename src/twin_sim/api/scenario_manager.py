@@ -4,32 +4,23 @@ scenario_manager.py — Phase 17 (Scenario & Event API Manager)
 Manages CRUD operations for simulation scenarios (.scene) and event definitions (.event).
 
 Storage Layout:
-- Scenarios are stored per-station: data/source/{station_id}/scenarios/{name}.scene
-- Event Definitions are global: data/events/{name}.event
-
-Scenario IDs are formatted as '{station_id}:{name}' to be globally unique for the /scenarios/{id} endpoints.
+- Scenarios are stored in DB.
+- Event Definitions are stored in DB.
 """
 
 from __future__ import annotations
 
-import os
-from pathlib import Path
-from typing import Any, Dict, List, Optional
-import shutil
+import time
+from typing import Any, Dict, List
+import uuid
 
-from twin_sim.dsl.scene_parser import parse_scene_file, SceneParseError
+from twin_sim.dsl.scene_parser import parse_scene_string, SceneParseError
 from twin_sim.dsl.models import SceneEvent
-
+from twin_sim.telemetry.database import TelemetryDatabase
 
 class ScenarioManager:
-    def __init__(self, data_dir: str | Path):
-        self.data_dir = Path(data_dir)
-        self.source_dir = self.data_dir / "source"
-        self.events_dir = self.data_dir / "events"
-        try:
-            self.events_dir.mkdir(parents=True, exist_ok=True)
-        except OSError:
-            pass  # Ignore on read-only filesystems (e.g., Vercel)
+    def __init__(self, db: TelemetryDatabase):
+        self.db = db
 
     # ------------------------------------------------------------------
     # ID Helpers
@@ -42,121 +33,109 @@ class ScenarioManager:
         parts = scenario_id.split(":", 1)
         return parts[0], parts[1]
 
-    def _get_scenario_path(self, station_id: str, name: str) -> Path:
-        scenarios_dir = self.source_dir / station_id / "scenarios"
-        try:
-            scenarios_dir.mkdir(parents=True, exist_ok=True)
-        except OSError:
-            pass  # Ignore on read-only filesystems
-        return scenarios_dir / f"{name}.scene"
-
     # ------------------------------------------------------------------
     # Scenarios (CRUD)
     # ------------------------------------------------------------------
 
     def list_for_station(self, station_id: str) -> List[Dict[str, Any]]:
-        scenarios_dir = self.source_dir / station_id / "scenarios"
-        if not scenarios_dir.exists():
-            return []
-        
+        cur = self.db.conn.execute("SELECT * FROM scenario_files WHERE station_id = ?", (station_id,))
         results = []
-        for p in scenarios_dir.glob("*.scene"):
-            name = p.stem
+        for row in cur.fetchall():
             results.append({
-                "id": f"{station_id}:{name}",
-                "station_id": station_id,
-                "name": name,
-                "created_at": getattr(p.stat(), 'st_birthtime', p.stat().st_mtime),
-                "updated_at": p.stat().st_mtime
+                "id": row["id"],
+                "station_id": row["station_id"],
+                "name": row["name"],
+                "created_at": row["created_at"],
+                "updated_at": row["updated_at"]
             })
         return sorted(results, key=lambda x: x["name"])
 
     def create(self, station_id: str, name: str, source: str = "") -> Dict[str, Any]:
-        # Basic sanitisation
         name = name.strip().replace("/", "").replace("\\", "").replace(":", "")
         if not name:
             raise ValueError("Scenario name cannot be empty")
             
-        path = self._get_scenario_path(station_id, name)
-        if path.exists():
+        scenario_id = f"{station_id}:{name}"
+        cur = self.db.conn.execute("SELECT id FROM scenario_files WHERE id = ?", (scenario_id,))
+        if cur.fetchone():
             raise ValueError(f"Scenario '{name}' already exists for station '{station_id}'")
             
-        path.write_text(source, encoding="utf-8")
+        now = time.time()
+        self.db.conn.execute(
+            "INSERT INTO scenario_files (id, station_id, name, source, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+            (scenario_id, station_id, name, source, now, now)
+        )
+        self.db.conn.commit()
         return {
-            "id": f"{station_id}:{name}",
+            "id": scenario_id,
             "station_id": station_id,
             "name": name
         }
 
     def get(self, scenario_id: str) -> Dict[str, Any]:
-        station_id, name = self._parse_id(scenario_id)
-        path = self._get_scenario_path(station_id, name)
-        if not path.exists():
+        cur = self.db.conn.execute("SELECT * FROM scenario_files WHERE id = ?", (scenario_id,))
+        row = cur.fetchone()
+        if not row:
             raise FileNotFoundError(f"Scenario '{scenario_id}' not found")
             
         return {
-            "id": scenario_id,
-            "station_id": station_id,
-            "name": name,
-            "created_at": getattr(path.stat(), 'st_birthtime', path.stat().st_mtime),
-            "updated_at": path.stat().st_mtime
+            "id": row["id"],
+            "station_id": row["station_id"],
+            "name": row["name"],
+            "created_at": row["created_at"],
+            "updated_at": row["updated_at"]
         }
 
     def get_source(self, scenario_id: str) -> str:
-        station_id, name = self._parse_id(scenario_id)
-        path = self._get_scenario_path(station_id, name)
-        if not path.exists():
+        cur = self.db.conn.execute("SELECT source FROM scenario_files WHERE id = ?", (scenario_id,))
+        row = cur.fetchone()
+        if not row:
             raise FileNotFoundError(f"Scenario '{scenario_id}' not found")
-        return path.read_text(encoding="utf-8")
+        return row["source"]
 
     def update_source(self, scenario_id: str, source: str) -> Dict[str, Any]:
-        station_id, name = self._parse_id(scenario_id)
-        path = self._get_scenario_path(station_id, name)
-        if not path.exists():
+        cur = self.db.conn.execute("SELECT id FROM scenario_files WHERE id = ?", (scenario_id,))
+        if not cur.fetchone():
             raise FileNotFoundError(f"Scenario '{scenario_id}' not found")
             
-        path.write_text(source, encoding="utf-8")
+        now = time.time()
+        self.db.conn.execute("UPDATE scenario_files SET source = ?, updated_at = ? WHERE id = ?", (source, now, scenario_id))
+        self.db.conn.commit()
         return self.get(scenario_id)
 
     def duplicate(self, scenario_id: str) -> Dict[str, Any]:
-        station_id, name = self._parse_id(scenario_id)
-        path = self._get_scenario_path(station_id, name)
-        if not path.exists():
+        cur = self.db.conn.execute("SELECT * FROM scenario_files WHERE id = ?", (scenario_id,))
+        row = cur.fetchone()
+        if not row:
             raise FileNotFoundError(f"Scenario '{scenario_id}' not found")
             
+        station_id = row["station_id"]
+        name = row["name"]
+        source = row["source"]
+        
         copy_name = f"{name}_copy"
         i = 1
-        while self._get_scenario_path(station_id, copy_name).exists():
+        while True:
+            cur = self.db.conn.execute("SELECT id FROM scenario_files WHERE id = ?", (f"{station_id}:{copy_name}",))
+            if not cur.fetchone():
+                break
             copy_name = f"{name}_copy_{i}"
             i += 1
             
-        new_path = self._get_scenario_path(station_id, copy_name)
-        shutil.copy2(path, new_path)
-        
-        return self.get(f"{station_id}:{copy_name}")
+        return self.create(station_id, copy_name, source)
 
     def delete(self, scenario_id: str) -> None:
-        station_id, name = self._parse_id(scenario_id)
-        path = self._get_scenario_path(station_id, name)
-        if path.exists():
-            path.unlink()
+        self.db.conn.execute("DELETE FROM scenario_files WHERE id = ?", (scenario_id,))
+        self.db.conn.commit()
 
     def get_parsed_events(self, scenario_id: str) -> List[SceneEvent]:
-        station_id, name = self._parse_id(scenario_id)
-        path = self._get_scenario_path(station_id, name)
-        if not path.exists():
-            raise FileNotFoundError(f"Scenario '{scenario_id}' not found")
-        return parse_scene_file(path)
+        source = self.get_source(scenario_id)
+        return parse_scene_string(source)
 
     def validate(self, scenario_id: str) -> Dict[str, Any]:
-        station_id, name = self._parse_id(scenario_id)
-        path = self._get_scenario_path(station_id, name)
-        if not path.exists():
-            raise FileNotFoundError(f"Scenario '{scenario_id}' not found")
-            
         try:
-            # We use the existing scene_parser which will raise SceneParseError if invalid
-            events = parse_scene_file(path)
+            source = self.get_source(scenario_id)
+            events = parse_scene_string(source)
             return {
                 "valid": True,
                 "errors": [],
@@ -179,44 +158,66 @@ class ScenarioManager:
     # Event Definitions
     # ------------------------------------------------------------------
 
-    def list_events(self) -> List[Dict[str, Any]]:
+    def list_events(self, station_id: str) -> List[Dict[str, Any]]:
+        cur = self.db.conn.execute("SELECT * FROM event_files WHERE station_id = ?", (station_id,))
         results = []
-        for p in self.events_dir.glob("*.event"):
-            name = p.stem
+        for row in cur.fetchall():
             results.append({
-                "name": name,
-                "created_at": getattr(p.stat(), 'st_birthtime', p.stat().st_mtime),
-                "updated_at": p.stat().st_mtime
+                "id": row["id"],
+                "station_id": row["station_id"],
+                "name": row["name"],
+                "created_at": row["created_at"],
+                "updated_at": row["updated_at"]
             })
         return sorted(results, key=lambda x: x["name"])
 
-    def get_event(self, name: str) -> Dict[str, Any]:
-        path = self.events_dir / f"{name}.event"
-        if not path.exists():
-            raise FileNotFoundError(f"Event definition '{name}' not found")
+    def get_event(self, event_id: str) -> Dict[str, Any]:
+        cur = self.db.conn.execute("SELECT * FROM event_files WHERE id = ?", (event_id,))
+        row = cur.fetchone()
+        if not row:
+            raise FileNotFoundError(f"Event definition '{event_id}' not found")
         
         return {
-            "name": name,
-            "source": path.read_text(encoding="utf-8"),
-            "created_at": getattr(path.stat(), 'st_birthtime', path.stat().st_mtime),
-            "updated_at": path.stat().st_mtime
+            "id": row["id"],
+            "station_id": row["station_id"],
+            "name": row["name"],
+            "source": row["source"],
+            "created_at": row["created_at"],
+            "updated_at": row["updated_at"]
         }
 
-    def create_event(self, name: str, source: str = "") -> Dict[str, Any]:
-        path = self.events_dir / f"{name}.event"
-        path.write_text(source, encoding="utf-8")
-        return self.get_event(name)
+    def create_event(self, station_id: str, name: str, source: str = "") -> Dict[str, Any]:
+        name = name.strip().replace("/", "").replace("\\", "").replace(":", "")
+        if not name:
+            raise ValueError("Event name cannot be empty")
+            
+        event_id = f"{station_id}:{name}"
+        cur = self.db.conn.execute("SELECT id FROM event_files WHERE id = ?", (event_id,))
+        if cur.fetchone():
+            raise ValueError(f"Event '{name}' already exists for station '{station_id}'")
+            
+        now = time.time()
+        self.db.conn.execute(
+            "INSERT INTO event_files (id, station_id, name, source, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+            (event_id, station_id, name, source, now, now)
+        )
+        self.db.conn.commit()
+        return self.get_event(event_id)
         
-    def update_event(self, name: str, source: str) -> Dict[str, Any]:
-        path = self.events_dir / f"{name}.event"
-        if not path.exists():
-            raise FileNotFoundError(f"Event definition '{name}' not found")
-        path.write_text(source, encoding="utf-8")
-        return self.get_event(name)
+    def update_event(self, event_id: str, source: str) -> Dict[str, Any]:
+        cur = self.db.conn.execute("SELECT id FROM event_files WHERE id = ?", (event_id,))
+        if not cur.fetchone():
+            raise FileNotFoundError(f"Event definition '{event_id}' not found")
+            
+        now = time.time()
+        self.db.conn.execute("UPDATE event_files SET source = ?, updated_at = ? WHERE id = ?", (source, now, event_id))
+        self.db.conn.commit()
+        return self.get_event(event_id)
 
-    def delete_event(self, name: str) -> None:
-        path = self.events_dir / f"{name}.event"
-        if path.exists():
-            path.unlink()
-        else:
-            raise FileNotFoundError(f"Event definition '{name}' not found")
+    def delete_event(self, event_id: str) -> None:
+        cur = self.db.conn.execute("SELECT id FROM event_files WHERE id = ?", (event_id,))
+        if not cur.fetchone():
+            raise FileNotFoundError(f"Event definition '{event_id}' not found")
+            
+        self.db.conn.execute("DELETE FROM event_files WHERE id = ?", (event_id,))
+        self.db.conn.commit()
