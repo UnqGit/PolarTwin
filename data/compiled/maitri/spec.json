@@ -1,121 +1,717 @@
 [
   {
-    "name": "MaitriCampus",
-    "type": "campus"
+    "name": "Maitri",
+    "type": "station",
+    "rating": {
+      "state": {
+        "count": {
+          "min": 0,
+          "max": 50
+        },
+        "temperature": {
+          "min": 0,
+          "max": 30,
+          "unit": "C"
+        }
+      }
+    },
+    "description": "Antarctic research station",
+    "representation": "station"
   },
   {
-    "name": "MainBuilding",
+    "name": "EnergyBlock",
     "type": "block",
-    "dimension": {
-      "width": 40,
-      "length": 20,
-      "height": 10
-    }
-  },
-  {
-    "name": "GroundFloor",
-    "type": "floor",
-    "dimension": {
-      "width": 40,
-      "length": 20,
-      "height": 5
-    }
-  },
-  {
-    "name": "PowerSystem",
-    "type": "system"
+    "rating": {
+      "state": {
+        "temperature": {
+          "min": 10,
+          "max": 30,
+          "unit": "C"
+        }
+      }
+    },
+    "description": "Block inside the research station",
+    "representation": "block"
   },
   {
     "name": "MainGenerator",
     "type": "generator",
     "rating": {
-      "output": {
-        "power": 500
+      "input": {
+        "flowrate": {
+          "min": 0,
+          "max": 135,
+          "unit": "L/hr"
+        }
       },
       "state": {
-        "efficiency": 0.85
+        "temperature": {
+          "min": 10,
+          "max": 95,
+          "unit": "C"
+        }
+      },
+      "output": {
+        "power": {
+          "min": 0,
+          "max": 500,
+          "unit": "kW"
+        }
       }
+    },
+    "dimension": {
+      "length": {
+        "value": 4,
+        "unit": "m"
+      },
+      "width": {
+        "value": 2,
+        "unit": "m"
+      },
+      "height": {
+        "value": 1.75,
+        "unit": "m"
+      }
+    },
+    "description": "Generates electrical power",
+    "representation": "generator"
+  },
+  {
+    "name": "BackupGenerator",
+    "type": "generator",
+    "rating": {
+      "input": {
+        "flowrate": {
+          "min": 0,
+          "max": 135,
+          "unit": "L/hr"
+        }
+      },
+      "state": {
+        "temperature": {
+          "min": 10,
+          "max": 95,
+          "unit": "C"
+        }
+      },
+      "output": {
+        "power": {
+          "min": 0,
+          "max": 500,
+          "unit": "kW"
+        }
+      }
+    },
+    "dimension": {
+      "length": {
+        "value": 4,
+        "unit": "m"
+      },
+      "width": {
+        "value": 2,
+        "unit": "m"
+      },
+      "height": {
+        "value": 1.75,
+        "unit": "m"
+      }
+    },
+    "description": "Generates electrical power",
+    "representation": "generator"
+  },
+  {
+    "name": "MainGeneratorPower",
+    "type": "sensor",
+    "measures": "power",
+    "description": "Measures power",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 600,
+      "unit": "kW"
     }
   },
   {
-    "name": "BackupBattery",
-    "type": "battery",
+    "name": "BackupGeneratorPower",
+    "type": "sensor",
+    "measures": "power",
+    "description": "Measures power",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 600,
+      "unit": "kW"
+    }
+  },
+  {
+    "name": "MainGeneratorTemp",
+    "type": "sensor",
+    "measures": "temperature",
+    "description": "Measures temperature",
+    "representation": "sensor",
+    "rating": {
+      "min": -100,
+      "max": 200,
+      "unit": "C"
+    }
+  },
+  {
+    "name": "BackupGeneratorTemp",
+    "type": "sensor",
+    "measures": "temperature",
+    "description": "Measures temperature",
+    "representation": "sensor",
+    "rating": {
+      "min": -100,
+      "max": 200,
+      "unit": "C"
+    }
+  },
+  {
+    "name": "MainGeneratorFuelIntake",
+    "type": "sensor",
+    "measures": "flowrate",
+    "description": "Measures flowrate",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 1500,
+      "unit": "L/hr"
+    }
+  },
+  {
+    "name": "BackupGeneratorFuelIntake",
+    "type": "sensor",
+    "measures": "flowrate",
+    "description": "Measures flowrate",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 1500,
+      "unit": "L/hr"
+    }
+  },
+  {
+    "name": "EnergyBlockVent",
+    "type": "vent",
+    "rating": {
+      "input": {
+        "voltage": {
+          "value": 30,
+          "unit": "V"
+        },
+        "current": {
+          "min": 0,
+          "max": 2,
+          "unit": "A"
+        }
+      },
+      "output": {
+        "flowrate": {
+          "min": 0,
+          "max": 75,
+          "unit": "L/hr"
+        }
+      }
+    },
+    "description": "Passes air",
+    "representation": "vent"
+  },
+  {
+    "name": "EnergyBlockVentVoltmeter",
+    "type": "sensor",
+    "measures": "voltage",
+    "description": "Measures voltage",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 500,
+      "unit": "V"
+    }
+  },
+  {
+    "name": "EnergyBlockVentAmmeter",
+    "type": "sensor",
+    "measures": "current",
+    "description": "Measures current",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 120,
+      "unit": "A"
+    }
+  },
+  {
+    "name": "EnergyBlockVentFlowrate",
+    "type": "sensor",
+    "measures": "flowrate",
+    "description": "Measures flowrate",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 1500,
+      "unit": "L/hr"
+    }
+  },
+  {
+    "name": "EnergyBlockTemp",
+    "type": "sensor",
+    "measures": "temperature",
+    "description": "Measures temperature",
+    "representation": "sensor",
+    "rating": {
+      "min": -100,
+      "max": 200,
+      "unit": "C"
+    }
+  },
+  {
+    "name": "EnergyController",
+    "type": "controller",
+    "rating": {
+      "input": {
+        "voltage": {
+          "value": 24,
+          "unit": "V"
+        },
+        "current": {
+          "min": 0,
+          "max": 15,
+          "unit": "A"
+        }
+      }
+    },
+    "description": "Signals components",
+    "representation": "controller"
+  },
+  {
+    "name": "EnergyControllerVoltmeter",
+    "type": "sensor",
+    "measures": "voltage",
+    "description": "Measures voltage",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 500,
+      "unit": "V"
+    }
+  },
+  {
+    "name": "EnergyControllerAmmeter",
+    "type": "sensor",
+    "measures": "current",
+    "description": "Measures current",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 120,
+      "unit": "A"
+    }
+  },
+  {
+    "name": "EnergyDataTransmitter",
+    "type": "antenna",
+    "rating": {
+      "input": {
+        "voltage": {
+          "value": 15,
+          "unit": "V"
+        },
+        "current": {
+          "min": 0,
+          "max": 5,
+          "unit": "A"
+        }
+      },
+      "state": {
+        "frequency": {
+          "min": 40,
+          "max": 75,
+          "unit": "kHz"
+        }
+      }
+    },
+    "description": "Transmits signal",
+    "representation": "antenna"
+  },
+  {
+    "name": "EnergyTransmitterVoltmeter",
+    "type": "sensor",
+    "measures": "voltage",
+    "description": "Measures voltage",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 500,
+      "unit": "V"
+    }
+  },
+  {
+    "name": "EnergyTransmitterAmmeter",
+    "type": "sensor",
+    "measures": "current",
+    "description": "Measures current",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 120,
+      "unit": "A"
+    }
+  },
+  {
+    "name": "EnergyTransmitterFrequency",
+    "type": "sensor",
+    "measures": "frequency",
+    "description": "Measures frequency",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 1,
+      "unit": "MHz"
+    }
+  },
+  {
+    "name": "HVACBlock",
+    "type": "block",
     "rating": {
       "state": {
-        "max_capacity": 1000
+        "temperature": {
+          "min": 10,
+          "max": 30,
+          "unit": "C"
+        }
       }
+    },
+    "description": "Block inside the research station",
+    "representation": "block"
+  },
+  {
+    "name": "MainAC",
+    "type": "air_conditioner",
+    "rating": {
+      "input": {
+        "voltage": {
+          "value": 220,
+          "unit": "V"
+        },
+        "current": {
+          "min": 0,
+          "max": 9,
+          "unit": "A"
+        }
+      },
+      "state": {
+        "temperature": {
+          "min": 0,
+          "max": 65,
+          "unit": "C"
+        }
+      },
+      "output": {
+        "flowrate": {
+          "min": 0,
+          "max": 1000,
+          "unit": "L/hr"
+        },
+        "temperature": {
+          "min": 16,
+          "max": 40,
+          "unit": "C"
+        }
+      }
+    },
+    "description": "Provides stable temperature source",
+    "representation": "air_conditioner"
+  },
+  {
+    "name": "BackupAC",
+    "type": "air_conditioner",
+    "rating": {
+      "input": {
+        "voltage": {
+          "value": 220,
+          "unit": "V"
+        },
+        "current": {
+          "min": 0,
+          "max": 9,
+          "unit": "A"
+        }
+      },
+      "state": {
+        "temperature": {
+          "min": 0,
+          "max": 65,
+          "unit": "C"
+        }
+      },
+      "output": {
+        "flowrate": {
+          "min": 0,
+          "max": 1000,
+          "unit": "L/hr"
+        },
+        "temperature": {
+          "min": 16,
+          "max": 40,
+          "unit": "C"
+        }
+      }
+    },
+    "description": "Provides stable temperature source",
+    "representation": "air_conditioner"
+  },
+  {
+    "name": "MainACVoltmeter",
+    "type": "sensor",
+    "measures": "voltage",
+    "description": "Measures voltage",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 500,
+      "unit": "V"
     }
   },
   {
-    "name": "PowerSensor",
+    "name": "MainACAmmeter",
     "type": "sensor",
-    "measures": "power"
-  },
-  {
-    "name": "GenEffSensor",
-    "type": "sensor",
-    "measures": "efficiency"
-  },
-  {
-    "name": "BattCapSensor",
-    "type": "sensor",
-    "measures": "max_capacity"
-  },
-  {
-    "name": "GridController",
-    "type": "controller"
-  },
-  {
-    "name": "HVACSys",
-    "type": "system"
-  },
-  {
-    "name": "Heater",
-    "type": "generic"
-  },
-  {
-    "name": "TempSensor",
-    "type": "sensor",
-    "measures": "temperature"
-  },
-  {
-    "name": "FirstFloor",
-    "type": "floor",
-    "dimension": {
-      "width": 40,
-      "length": 20,
-      "height": 5
+    "measures": "current",
+    "description": "Measures current",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 120,
+      "unit": "A"
     }
   },
   {
-    "name": "CommsSystem",
-    "type": "system"
+    "name": "MainACFlowrate",
+    "type": "sensor",
+    "measures": "flowrate",
+    "description": "Measures flowrate",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 1500,
+      "unit": "L/hr"
+    }
   },
   {
-    "name": "Radio",
-    "type": "antenna"
+    "name": "MainACOutputTemp",
+    "type": "sensor",
+    "measures": "output.temperature",
+    "description": "Measures temperature",
+    "representation": "sensor",
+    "rating": {
+      "min": -100,
+      "max": 200,
+      "unit": "C"
+    }
   },
   {
-    "name": "CommsBattery",
-    "type": "battery"
+    "name": "MainACTemp",
+    "type": "sensor",
+    "measures": "state.temperature",
+    "description": "Measures temperature",
+    "representation": "sensor",
+    "rating": {
+      "min": -100,
+      "max": 200,
+      "unit": "C"
+    }
   },
   {
-    "name": "Outpost",
+    "name": "BackupACVoltmeter",
+    "type": "sensor",
+    "measures": "voltage",
+    "description": "Measures voltage",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 500,
+      "unit": "V"
+    }
+  },
+  {
+    "name": "BackupACAmmeter",
+    "type": "sensor",
+    "measures": "current",
+    "description": "Measures current",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 120,
+      "unit": "A"
+    }
+  },
+  {
+    "name": "BackupACFlowrate",
+    "type": "sensor",
+    "measures": "flowrate",
+    "description": "Measures flowrate",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 1500,
+      "unit": "L/hr"
+    }
+  },
+  {
+    "name": "BackupACOutputTemp",
+    "type": "sensor",
+    "measures": "output.temperature",
+    "description": "Measures temperature",
+    "representation": "sensor",
+    "rating": {
+      "min": -100,
+      "max": 200,
+      "unit": "C"
+    }
+  },
+  {
+    "name": "BackupACTemp",
+    "type": "sensor",
+    "measures": "state.temperature",
+    "description": "Measures temperature",
+    "representation": "sensor",
+    "rating": {
+      "min": -100,
+      "max": 200,
+      "unit": "C"
+    }
+  },
+  {
+    "name": "HVACTemp",
+    "type": "sensor",
+    "measures": "temperature",
+    "description": "Measures temperature",
+    "representation": "sensor",
+    "rating": {
+      "min": -100,
+      "max": 200,
+      "unit": "C"
+    }
+  },
+  {
+    "name": "HVACController",
+    "type": "controller",
+    "rating": {
+      "input": {
+        "voltage": {
+          "value": 24,
+          "unit": "V"
+        },
+        "current": {
+          "min": 0,
+          "max": 15,
+          "unit": "A"
+        }
+      }
+    },
+    "description": "Signals components",
+    "representation": "controller"
+  },
+  {
+    "name": "HVACControllerVoltmeter",
+    "type": "sensor",
+    "measures": "voltage",
+    "description": "Measures voltage",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 500,
+      "unit": "V"
+    }
+  },
+  {
+    "name": "HVACControllerAmmeter",
+    "type": "sensor",
+    "measures": "current",
+    "description": "Measures current",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 120,
+      "unit": "A"
+    }
+  },
+  {
+    "name": "HVACTransmitter",
+    "type": "antenna",
+    "rating": {
+      "input": {
+        "voltage": {
+          "value": 15,
+          "unit": "V"
+        },
+        "current": {
+          "min": 0,
+          "max": 5,
+          "unit": "A"
+        }
+      },
+      "state": {
+        "frequency": {
+          "min": 40,
+          "max": 75,
+          "unit": "kHz"
+        }
+      }
+    },
+    "description": "Transmits signal",
+    "representation": "antenna"
+  },
+  {
+    "name": "HVACTransmitterVoltmeter",
+    "type": "sensor",
+    "measures": "voltage",
+    "description": "Measures voltage",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 500,
+      "unit": "V"
+    }
+  },
+  {
+    "name": "HVACTransmitterAmmeter",
+    "type": "sensor",
+    "measures": "current",
+    "description": "Measures current",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 120,
+      "unit": "A"
+    }
+  },
+  {
+    "name": "HVACTransmitterFrequency",
+    "type": "sensor",
+    "measures": "frequency",
+    "description": "Measures frequency",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 1,
+      "unit": "MHz"
+    }
+  },
+  {
+    "name": "InventoryBlock",
     "type": "block",
-    "dimension": {
-      "width": 15,
-      "length": 15,
-      "height": 5
-    }
-  },
-  {
-    "name": "Ground",
-    "type": "floor",
-    "dimension": {
-      "width": 15,
-      "length": 15,
-      "height": 5
-    }
+    "rating": {
+      "state": {
+        "temperature": {
+          "min": 10,
+          "max": 30,
+          "unit": "C"
+        }
+      }
+    },
+    "description": "Block inside the research station",
+    "representation": "block"
   },
   {
     "name": "FuelSystem",
@@ -123,33 +719,1456 @@
   },
   {
     "name": "FuelTank",
-    "type": "generic"
-  },
-  {
-    "name": "TransferPump",
-    "type": "pump",
+    "type": "tank",
     "rating": {
       "state": {
-        "max_flow": 50
-      },
-      "input": {
-        "power": 5
+        "volume": {
+          "min": 0,
+          "max": 3000,
+          "unit": "L"
+        }
       }
+    },
+    "description": "holds water",
+    "representation": "tank"
+  },
+  {
+    "name": "FuelLevel",
+    "type": "sensor",
+    "measures": "volume",
+    "description": "Measures volume",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 5000,
+      "unit": "L"
     }
   },
   {
-    "name": "FuelSensor",
-    "type": "sensor",
-    "measures": "fuel"
+    "name": "FuelPump",
+    "type": "pump",
+    "rating": {
+      "input": {
+        "voltage": {
+          "value": 240,
+          "unit": "V"
+        },
+        "current": {
+          "min": 0,
+          "max": 12,
+          "unit": "A"
+        }
+      },
+      "state": {
+        "temperature": {
+          "min": 10,
+          "max": 50,
+          "unit": "C"
+        }
+      },
+      "output": {
+        "flowrate": {
+          "min": 90,
+          "max": 600,
+          "unit": "L/hr"
+        }
+      }
+    },
+    "dimension": {
+      "length": {
+        "value": 0.4,
+        "unit": "m"
+      },
+      "width": {
+        "value": 0.3,
+        "unit": "m"
+      },
+      "height": {
+        "value": 0.2,
+        "unit": "m"
+      }
+    },
+    "description": "Pushes liquid",
+    "representation": "pump",
+    "HP": 2
   },
   {
-    "name": "PumpFlowSensor",
+    "name": "FuelPumpVoltmeter",
     "type": "sensor",
-    "measures": "max_flow"
+    "measures": "voltage",
+    "description": "Measures voltage",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 500,
+      "unit": "V"
+    }
   },
   {
-    "name": "PumpPowSensor",
+    "name": "FuelPumpAmmeter",
     "type": "sensor",
-    "measures": "power"
+    "measures": "current",
+    "description": "Measures current",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 120,
+      "unit": "A"
+    }
+  },
+  {
+    "name": "FuelPumpTemp",
+    "type": "sensor",
+    "measures": "temperature",
+    "description": "Measures temperature",
+    "representation": "sensor",
+    "rating": {
+      "min": -100,
+      "max": 200,
+      "unit": "C"
+    }
+  },
+  {
+    "name": "FuelPumpFlowrate",
+    "type": "sensor",
+    "measures": "flowrate",
+    "description": "Measures flowrate",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 1500,
+      "unit": "L/hr"
+    }
+  },
+  {
+    "name": "StorageSystem",
+    "type": "system"
+  },
+  {
+    "name": "FoodStorage",
+    "type": "storage",
+    "rating": {
+      "state": {
+        "count": {
+          "min": 0,
+          "max": 200
+        },
+        "weight": {
+          "min": 0,
+          "max": 1000,
+          "unit": "kg"
+        }
+      }
+    },
+    "dimension": {
+      "length": {
+        "value": 5,
+        "unit": "m"
+      },
+      "width": {
+        "value": 5,
+        "unit": "m"
+      },
+      "height": {
+        "value": 3,
+        "unit": "m"
+      }
+    },
+    "description": "Stores items",
+    "representation": "storage"
+  },
+  {
+    "name": "EquipmentStorage",
+    "type": "storage",
+    "rating": {
+      "state": {
+        "count": {
+          "min": 0,
+          "max": 200
+        },
+        "weight": {
+          "min": 0,
+          "max": 1000,
+          "unit": "kg"
+        }
+      }
+    },
+    "dimension": {
+      "length": {
+        "value": 5,
+        "unit": "m"
+      },
+      "width": {
+        "value": 5,
+        "unit": "m"
+      },
+      "height": {
+        "value": 3,
+        "unit": "m"
+      }
+    },
+    "description": "Stores items",
+    "representation": "storage"
+  },
+  {
+    "name": "FoodWeight",
+    "type": "sensor",
+    "measures": "weight",
+    "description": "Measures weight",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 10000,
+      "unit": "kg"
+    }
+  },
+  {
+    "name": "FoodCount",
+    "type": "sensor",
+    "measures": "count",
+    "description": "Measures weight",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 10000,
+      "unit": "V"
+    }
+  },
+  {
+    "name": "EquipmentWeight",
+    "type": "sensor",
+    "measures": "weight",
+    "description": "Measures weight",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 10000,
+      "unit": "kg"
+    }
+  },
+  {
+    "name": "EquipmentCount",
+    "type": "sensor",
+    "measures": "count",
+    "description": "Measures weight",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 10000,
+      "unit": "V"
+    }
+  },
+  {
+    "name": "VehicleSystem",
+    "type": "system"
+  },
+  {
+    "name": "PistenBully01",
+    "type": "vehicle",
+    "dimension": {
+      "length": {
+        "value": 3,
+        "unit": "m"
+      },
+      "width": {
+        "value": 1.2,
+        "unit": "m"
+      },
+      "height": {
+        "value": 1.2,
+        "unit": "m"
+      }
+    },
+    "description": "Transportation assist",
+    "representation": "vehicle"
+  },
+  {
+    "name": "PistenBully02",
+    "type": "vehicle",
+    "dimension": {
+      "length": {
+        "value": 3,
+        "unit": "m"
+      },
+      "width": {
+        "value": 1.2,
+        "unit": "m"
+      },
+      "height": {
+        "value": 1.2,
+        "unit": "m"
+      }
+    },
+    "description": "Transportation assist",
+    "representation": "vehicle"
+  },
+  {
+    "name": "SnowScooter01",
+    "type": "vehicle",
+    "dimension": {
+      "length": {
+        "value": 3,
+        "unit": "m"
+      },
+      "width": {
+        "value": 1.2,
+        "unit": "m"
+      },
+      "height": {
+        "value": 1.2,
+        "unit": "m"
+      }
+    },
+    "description": "Transportation assist",
+    "representation": "vehicle"
+  },
+  {
+    "name": "SnowScooter02",
+    "type": "vehicle",
+    "dimension": {
+      "length": {
+        "value": 3,
+        "unit": "m"
+      },
+      "width": {
+        "value": 1.2,
+        "unit": "m"
+      },
+      "height": {
+        "value": 1.2,
+        "unit": "m"
+      }
+    },
+    "description": "Transportation assist",
+    "representation": "vehicle"
+  },
+  {
+    "name": "UtilityVehicle01",
+    "type": "vehicle",
+    "dimension": {
+      "length": {
+        "value": 3,
+        "unit": "m"
+      },
+      "width": {
+        "value": 1.2,
+        "unit": "m"
+      },
+      "height": {
+        "value": 1.2,
+        "unit": "m"
+      }
+    },
+    "description": "Transportation assist",
+    "representation": "vehicle"
+  },
+  {
+    "name": "FuelControlTemp",
+    "type": "sensor",
+    "measures": "temperature",
+    "description": "Measures temperature",
+    "representation": "sensor",
+    "rating": {
+      "min": -100,
+      "max": 200,
+      "unit": "C"
+    }
+  },
+  {
+    "name": "StorageControlTemp",
+    "type": "sensor",
+    "measures": "temperature",
+    "description": "Measures temperature",
+    "representation": "sensor",
+    "rating": {
+      "min": -100,
+      "max": 200,
+      "unit": "C"
+    }
+  },
+  {
+    "name": "VehicleControlTemp",
+    "type": "sensor",
+    "measures": "temperature",
+    "description": "Measures temperature",
+    "representation": "sensor",
+    "rating": {
+      "min": -100,
+      "max": 200,
+      "unit": "C"
+    }
+  },
+  {
+    "name": "InventoryTemp",
+    "type": "sensor",
+    "measures": "temperature",
+    "description": "Measures temperature",
+    "representation": "sensor",
+    "rating": {
+      "min": -100,
+      "max": 200,
+      "unit": "C"
+    }
+  },
+  {
+    "name": "FuelControlVent",
+    "type": "vent",
+    "rating": {
+      "input": {
+        "voltage": {
+          "value": 30,
+          "unit": "V"
+        },
+        "current": {
+          "min": 0,
+          "max": 2,
+          "unit": "A"
+        }
+      },
+      "output": {
+        "flowrate": {
+          "min": 0,
+          "max": 75,
+          "unit": "L/hr"
+        }
+      }
+    },
+    "description": "Passes air",
+    "representation": "vent"
+  },
+  {
+    "name": "FuelControlVentVoltmeter",
+    "type": "sensor",
+    "measures": "voltage",
+    "description": "Measures voltage",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 500,
+      "unit": "V"
+    }
+  },
+  {
+    "name": "FuelControlVentAmmeter",
+    "type": "sensor",
+    "measures": "current",
+    "description": "Measures current",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 120,
+      "unit": "A"
+    }
+  },
+  {
+    "name": "FuelControlVentFlowrate",
+    "type": "sensor",
+    "measures": "flowrate",
+    "description": "Measures flowrate",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 1500,
+      "unit": "L/hr"
+    }
+  },
+  {
+    "name": "InventoryController",
+    "type": "controller",
+    "rating": {
+      "input": {
+        "voltage": {
+          "value": 24,
+          "unit": "V"
+        },
+        "current": {
+          "min": 0,
+          "max": 15,
+          "unit": "A"
+        }
+      }
+    },
+    "description": "Signals components",
+    "representation": "controller"
+  },
+  {
+    "name": "InventoryControllerVoltmeter",
+    "type": "sensor",
+    "measures": "voltage",
+    "description": "Measures voltage",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 500,
+      "unit": "V"
+    }
+  },
+  {
+    "name": "InventoryControllerAmmeter",
+    "type": "sensor",
+    "measures": "current",
+    "description": "Measures current",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 120,
+      "unit": "A"
+    }
+  },
+  {
+    "name": "InventoryTransmitter",
+    "type": "antenna",
+    "rating": {
+      "input": {
+        "voltage": {
+          "value": 15,
+          "unit": "V"
+        },
+        "current": {
+          "min": 0,
+          "max": 5,
+          "unit": "A"
+        }
+      },
+      "state": {
+        "frequency": {
+          "min": 40,
+          "max": 75,
+          "unit": "kHz"
+        }
+      }
+    },
+    "description": "Transmits signal",
+    "representation": "antenna"
+  },
+  {
+    "name": "InventoryTransmitterVoltmeter",
+    "type": "sensor",
+    "measures": "voltage",
+    "description": "Measures voltage",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 500,
+      "unit": "V"
+    }
+  },
+  {
+    "name": "InventoryTransmitterAmmeter",
+    "type": "sensor",
+    "measures": "current",
+    "description": "Measures current",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 120,
+      "unit": "A"
+    }
+  },
+  {
+    "name": "InventoryTransmitterFrequency",
+    "type": "sensor",
+    "measures": "frequency",
+    "description": "Measures frequency",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 1,
+      "unit": "MHz"
+    }
+  },
+  {
+    "name": "ResearchBlock",
+    "type": "block",
+    "rating": {
+      "state": {
+        "temperature": {
+          "min": 10,
+          "max": 30,
+          "unit": "C"
+        }
+      }
+    },
+    "description": "Block inside the research station",
+    "representation": "block"
+  },
+  {
+    "name": "WetLaboratory",
+    "type": "system"
+  },
+  {
+    "name": "WetLabEquipment",
+    "type": "storage",
+    "rating": {
+      "state": {
+        "count": {
+          "min": 0,
+          "max": 200
+        },
+        "weight": {
+          "min": 0,
+          "max": 1000,
+          "unit": "kg"
+        }
+      }
+    },
+    "dimension": {
+      "length": {
+        "value": 5,
+        "unit": "m"
+      },
+      "width": {
+        "value": 5,
+        "unit": "m"
+      },
+      "height": {
+        "value": 3,
+        "unit": "m"
+      }
+    },
+    "description": "Stores items",
+    "representation": "storage"
+  },
+  {
+    "name": "WetLabEquipmentWeight",
+    "type": "sensor",
+    "measures": "weight",
+    "description": "Measures weight",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 10000,
+      "unit": "kg"
+    }
+  },
+  {
+    "name": "WetLabCountWeight",
+    "type": "sensor",
+    "measures": "count",
+    "description": "Measures weight",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 10000,
+      "unit": "kg"
+    }
+  },
+  {
+    "name": "DryLaboratory",
+    "type": "system"
+  },
+  {
+    "name": "DryLabEquipment",
+    "type": "storage",
+    "rating": {
+      "state": {
+        "count": {
+          "min": 0,
+          "max": 200
+        },
+        "weight": {
+          "min": 0,
+          "max": 1000,
+          "unit": "kg"
+        }
+      }
+    },
+    "dimension": {
+      "length": {
+        "value": 5,
+        "unit": "m"
+      },
+      "width": {
+        "value": 5,
+        "unit": "m"
+      },
+      "height": {
+        "value": 3,
+        "unit": "m"
+      }
+    },
+    "description": "Stores items",
+    "representation": "storage"
+  },
+  {
+    "name": "DryLabEquipmentWeight",
+    "type": "sensor",
+    "measures": "weight",
+    "description": "Measures weight",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 10000,
+      "unit": "kg"
+    }
+  },
+  {
+    "name": "DryLabCountWeight",
+    "type": "sensor",
+    "measures": "count",
+    "description": "Measures weight",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 10000,
+      "unit": "kg"
+    }
+  },
+  {
+    "name": "WetLabTemp",
+    "type": "sensor",
+    "measures": "temperature",
+    "description": "Measures temperature",
+    "representation": "sensor",
+    "rating": {
+      "min": -100,
+      "max": 200,
+      "unit": "C"
+    }
+  },
+  {
+    "name": "DryLabTemp",
+    "type": "sensor",
+    "measures": "temperature",
+    "description": "Measures temperature",
+    "representation": "sensor",
+    "rating": {
+      "min": -100,
+      "max": 200,
+      "unit": "C"
+    }
+  },
+  {
+    "name": "ResearchBlockTemp",
+    "type": "sensor",
+    "measures": "temperature",
+    "description": "Measures temperature",
+    "representation": "sensor",
+    "rating": {
+      "min": -100,
+      "max": 200,
+      "unit": "C"
+    }
+  },
+  {
+    "name": "ResearchController",
+    "type": "controller",
+    "rating": {
+      "input": {
+        "voltage": {
+          "value": 24,
+          "unit": "V"
+        },
+        "current": {
+          "min": 0,
+          "max": 15,
+          "unit": "A"
+        }
+      }
+    },
+    "description": "Signals components",
+    "representation": "controller"
+  },
+  {
+    "name": "ResearchControllerVoltmeter",
+    "type": "sensor",
+    "measures": "voltage",
+    "description": "Measures voltage",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 500,
+      "unit": "V"
+    }
+  },
+  {
+    "name": "ResearchControllerAmmeter",
+    "type": "sensor",
+    "measures": "current",
+    "description": "Measures current",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 120,
+      "unit": "A"
+    }
+  },
+  {
+    "name": "ResearchTransmitter",
+    "type": "antenna",
+    "rating": {
+      "input": {
+        "voltage": {
+          "value": 15,
+          "unit": "V"
+        },
+        "current": {
+          "min": 0,
+          "max": 5,
+          "unit": "A"
+        }
+      },
+      "state": {
+        "frequency": {
+          "min": 40,
+          "max": 75,
+          "unit": "kHz"
+        }
+      }
+    },
+    "description": "Transmits signal",
+    "representation": "antenna"
+  },
+  {
+    "name": "ResearchTransmitterVoltmeter",
+    "type": "sensor",
+    "measures": "voltage",
+    "description": "Measures voltage",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 500,
+      "unit": "V"
+    }
+  },
+  {
+    "name": "ResearchTransmitterAmmeter",
+    "type": "sensor",
+    "measures": "current",
+    "description": "Measures current",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 120,
+      "unit": "A"
+    }
+  },
+  {
+    "name": "ResearchTransmitterFrequency",
+    "type": "sensor",
+    "measures": "frequency",
+    "description": "Measures frequency",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 1,
+      "unit": "MHz"
+    }
+  },
+  {
+    "name": "ControlBlock",
+    "type": "block",
+    "rating": {
+      "state": {
+        "temperature": {
+          "min": 10,
+          "max": 30,
+          "unit": "C"
+        }
+      }
+    },
+    "description": "Block inside the research station",
+    "representation": "block"
+  },
+  {
+    "name": "MainServer",
+    "type": "server",
+    "rating": {
+      "input": {
+        "power": {
+          "min": 200,
+          "max": 1000,
+          "unit": "W"
+        }
+      },
+      "state": {
+        "temperature": {
+          "min": 10,
+          "max": 50,
+          "unit": "C"
+        }
+      }
+    },
+    "description": "Stores data",
+    "representation": "server"
+  },
+  {
+    "name": "MainServerPower",
+    "type": "sensor",
+    "measures": "power",
+    "description": "Measures power",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 600,
+      "unit": "kW"
+    }
+  },
+  {
+    "name": "MainServerTemp",
+    "type": "sensor",
+    "measures": "temperature",
+    "description": "Measures temperature",
+    "representation": "sensor",
+    "rating": {
+      "min": -100,
+      "max": 200,
+      "unit": "C"
+    }
+  },
+  {
+    "name": "ControlVent",
+    "type": "vent",
+    "rating": {
+      "input": {
+        "voltage": {
+          "value": 30,
+          "unit": "V"
+        },
+        "current": {
+          "min": 0,
+          "max": 2,
+          "unit": "A"
+        }
+      },
+      "output": {
+        "flowrate": {
+          "min": 0,
+          "max": 75,
+          "unit": "L/hr"
+        }
+      }
+    },
+    "description": "Passes air",
+    "representation": "vent"
+  },
+  {
+    "name": "ControlVentVoltmeter",
+    "type": "sensor",
+    "measures": "voltage",
+    "description": "Measures voltage",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 500,
+      "unit": "V"
+    }
+  },
+  {
+    "name": "ControlVentAmmeter",
+    "type": "sensor",
+    "measures": "current",
+    "description": "Measures current",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 120,
+      "unit": "A"
+    }
+  },
+  {
+    "name": "ControlVentFlowrate",
+    "type": "sensor",
+    "measures": "flowrate",
+    "description": "Measures flowrate",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 1500,
+      "unit": "L/hr"
+    }
+  },
+  {
+    "name": "MainController",
+    "type": "controller",
+    "rating": {
+      "input": {
+        "voltage": {
+          "value": 24,
+          "unit": "V"
+        },
+        "current": {
+          "min": 0,
+          "max": 15,
+          "unit": "A"
+        }
+      }
+    },
+    "description": "Signals components",
+    "representation": "controller"
+  },
+  {
+    "name": "MainControllerVoltmeter",
+    "type": "sensor",
+    "measures": "voltage",
+    "description": "Measures voltage",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 500,
+      "unit": "V"
+    }
+  },
+  {
+    "name": "MainControllerAmmeter",
+    "type": "sensor",
+    "measures": "current",
+    "description": "Measures current",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 120,
+      "unit": "A"
+    }
+  },
+  {
+    "name": "ControlBlockTemp",
+    "type": "sensor",
+    "measures": "temperature",
+    "description": "Measures temperature",
+    "representation": "sensor",
+    "rating": {
+      "min": -100,
+      "max": 200,
+      "unit": "C"
+    }
+  },
+  {
+    "name": "ControlDataTransmitter",
+    "type": "antenna",
+    "rating": {
+      "input": {
+        "voltage": {
+          "value": 15,
+          "unit": "V"
+        },
+        "current": {
+          "min": 0,
+          "max": 5,
+          "unit": "A"
+        }
+      },
+      "state": {
+        "frequency": {
+          "min": 40,
+          "max": 75,
+          "unit": "kHz"
+        }
+      }
+    },
+    "description": "Transmits signal",
+    "representation": "antenna"
+  },
+  {
+    "name": "ControlTransmitterVoltmeter",
+    "type": "sensor",
+    "measures": "voltage",
+    "description": "Measures voltage",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 500,
+      "unit": "V"
+    }
+  },
+  {
+    "name": "ControlTransmitterAmmeter",
+    "type": "sensor",
+    "measures": "current",
+    "description": "Measures current",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 120,
+      "unit": "A"
+    }
+  },
+  {
+    "name": "ControlTransmitterFrequency",
+    "type": "sensor",
+    "measures": "frequency",
+    "description": "Measures frequency",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 1,
+      "unit": "MHz"
+    }
+  },
+  {
+    "name": "WaterAndWasteBlock",
+    "type": "block",
+    "rating": {
+      "state": {
+        "temperature": {
+          "min": 10,
+          "max": 30,
+          "unit": "C"
+        }
+      }
+    },
+    "description": "Block inside the research station",
+    "representation": "block"
+  },
+  {
+    "name": "WaterSystem",
+    "type": "system"
+  },
+  {
+    "name": "WaterTank",
+    "type": "tank",
+    "rating": {
+      "state": {
+        "volume": {
+          "min": 0,
+          "max": 3000,
+          "unit": "L"
+        }
+      }
+    },
+    "description": "holds water",
+    "representation": "tank"
+  },
+  {
+    "name": "WaterLevel",
+    "type": "sensor",
+    "measures": "volume",
+    "description": "Measures volume",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 5000,
+      "unit": "L"
+    }
+  },
+  {
+    "name": "WaterPump",
+    "type": "pump",
+    "rating": {
+      "input": {
+        "voltage": {
+          "value": 240,
+          "unit": "V"
+        },
+        "current": {
+          "min": 0,
+          "max": 12,
+          "unit": "A"
+        }
+      },
+      "state": {
+        "temperature": {
+          "min": 10,
+          "max": 50,
+          "unit": "C"
+        }
+      },
+      "output": {
+        "flowrate": {
+          "min": 90,
+          "max": 600,
+          "unit": "L/hr"
+        }
+      }
+    },
+    "dimension": {
+      "length": {
+        "value": 0.4,
+        "unit": "m"
+      },
+      "width": {
+        "value": 0.3,
+        "unit": "m"
+      },
+      "height": {
+        "value": 0.2,
+        "unit": "m"
+      }
+    },
+    "description": "Pushes liquid",
+    "representation": "pump",
+    "HP": 2
+  },
+  {
+    "name": "WaterPumpVoltmeter",
+    "type": "sensor",
+    "measures": "voltage",
+    "description": "Measures voltage",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 500,
+      "unit": "V"
+    }
+  },
+  {
+    "name": "WaterPumpAmmeter",
+    "type": "sensor",
+    "measures": "current",
+    "description": "Measures current",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 120,
+      "unit": "A"
+    }
+  },
+  {
+    "name": "WaterPumpTemp",
+    "type": "sensor",
+    "measures": "temperature",
+    "description": "Measures temperature",
+    "representation": "sensor",
+    "rating": {
+      "min": -50,
+      "max": 100,
+      "unit": "C"
+    }
+  },
+  {
+    "name": "WaterPumpFlowrate",
+    "type": "sensor",
+    "measures": "flowrate",
+    "description": "Measures flowrate",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 1500,
+      "unit": "L/hr"
+    }
+  },
+  {
+    "name": "WasteSystem",
+    "type": "system"
+  },
+  {
+    "name": "WasteWaterTank",
+    "type": "tank",
+    "rating": {
+      "state": {
+        "volume": {
+          "min": 0,
+          "max": 3000,
+          "unit": "L"
+        }
+      }
+    },
+    "description": "holds water",
+    "representation": "tank"
+  },
+  {
+    "name": "WasteWaterLevel",
+    "type": "sensor",
+    "measures": "volume",
+    "description": "Measures volume",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 5000,
+      "unit": "L"
+    }
+  },
+  {
+    "name": "WaterAndWasteBlockTemp",
+    "type": "sensor",
+    "measures": "temperature",
+    "description": "Measures temperature",
+    "representation": "sensor",
+    "rating": {
+      "min": -100,
+      "max": 200,
+      "unit": "C"
+    }
+  },
+  {
+    "name": "WaterSystemTemp",
+    "type": "sensor",
+    "measures": "temperature",
+    "description": "Measures temperature",
+    "representation": "sensor",
+    "rating": {
+      "min": -100,
+      "max": 200,
+      "unit": "C"
+    }
+  },
+  {
+    "name": "WasteSystemTemp",
+    "type": "sensor",
+    "measures": "temperature",
+    "description": "Measures temperature",
+    "representation": "sensor",
+    "rating": {
+      "min": -100,
+      "max": 200,
+      "unit": "C"
+    }
+  },
+  {
+    "name": "WaterBlockVent",
+    "type": "vent",
+    "rating": {
+      "input": {
+        "voltage": {
+          "value": 30,
+          "unit": "V"
+        },
+        "current": {
+          "min": 0,
+          "max": 2,
+          "unit": "A"
+        }
+      },
+      "output": {
+        "flowrate": {
+          "min": 0,
+          "max": 75,
+          "unit": "L/hr"
+        }
+      }
+    },
+    "description": "Passes air",
+    "representation": "vent"
+  },
+  {
+    "name": "WaterBlockVentVoltmeter",
+    "type": "sensor",
+    "measures": "voltage",
+    "description": "Measures voltage",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 500,
+      "unit": "V"
+    }
+  },
+  {
+    "name": "WaterBlockVentAmmeter",
+    "type": "sensor",
+    "measures": "current",
+    "description": "Measures current",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 120,
+      "unit": "A"
+    }
+  },
+  {
+    "name": "WaterBlockVentFlowrate",
+    "type": "sensor",
+    "measures": "flowrate",
+    "description": "Measures flowrate",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 1500,
+      "unit": "L/hr"
+    }
+  },
+  {
+    "name": "WaterController",
+    "type": "controller",
+    "rating": {
+      "input": {
+        "voltage": {
+          "value": 24,
+          "unit": "V"
+        },
+        "current": {
+          "min": 0,
+          "max": 15,
+          "unit": "A"
+        }
+      }
+    },
+    "description": "Signals components",
+    "representation": "controller"
+  },
+  {
+    "name": "WaterControllerVoltmeter",
+    "type": "sensor",
+    "measures": "voltage",
+    "description": "Measures voltage",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 500,
+      "unit": "V"
+    }
+  },
+  {
+    "name": "WaterControllerAmmeter",
+    "type": "sensor",
+    "measures": "current",
+    "description": "Measures current",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 120,
+      "unit": "A"
+    }
+  },
+  {
+    "name": "WaterDataTransmitter",
+    "type": "antenna",
+    "rating": {
+      "input": {
+        "voltage": {
+          "value": 15,
+          "unit": "V"
+        },
+        "current": {
+          "min": 0,
+          "max": 5,
+          "unit": "A"
+        }
+      },
+      "state": {
+        "frequency": {
+          "min": 40,
+          "max": 75,
+          "unit": "kHz"
+        }
+      }
+    },
+    "description": "Transmits signal",
+    "representation": "antenna"
+  },
+  {
+    "name": "WaterTransmitterVoltmeter",
+    "type": "sensor",
+    "measures": "voltage",
+    "description": "Measures voltage",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 500,
+      "unit": "V"
+    }
+  },
+  {
+    "name": "WaterTransmitterAmmeter",
+    "type": "sensor",
+    "measures": "current",
+    "description": "Measures current",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 120,
+      "unit": "A"
+    }
+  },
+  {
+    "name": "WaterTransmitterFrequency",
+    "type": "sensor",
+    "measures": "frequency",
+    "description": "Measures frequency",
+    "representation": "sensor",
+    "rating": {
+      "min": 0,
+      "max": 1,
+      "unit": "MHz"
+    }
   }
 ]

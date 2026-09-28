@@ -12,7 +12,7 @@ def strip_comments(text: str) -> str:
     # 3) Block comments /* ... */
     # 4) Line comments # ...
     pattern = re.compile(
-        r'(?P<string>"(?:\\.|[^"])*"|\'(?:\\.|[^\'])*\')|(?P<block_comment>/\*.*?\*/)|(?P<line_comment>#.*)',
+        r'(?P<string>"(?:\\.|[^"])*"|\'(?:\\.|[^\'])*\')|(?P<block_comment>/\*.*?\*/)|(?P<line_comment>#[^\n]*)',
         re.DOTALL
     )
 

@@ -19,8 +19,8 @@ class SpecParseError(ParseError):
         self.line = line
 
 NUMBER_PATTERN = r"[+-]?(?:\d+(?:\.\d*)?|\.\d+)"
-BARE_WORD_PATTERN = r"[A-Za-z_][A-Za-z0-9_]*"
-UNIT_PATTERN = r"(?:[A-Za-z_][A-Za-z0-9_]*(?:/[A-Za-z0-9_]+)*|%)"
+BARE_WORD_PATTERN = r"[A-Za-z_][A-Za-z0-9_\.]*"
+UNIT_PATTERN = r"(?:[A-Za-z_][A-Za-z0-9_\.]*(?:/[A-Za-z0-9_]+)*|%)"
 
 PROPERTY_PATTERN = re.compile(
     rf"""

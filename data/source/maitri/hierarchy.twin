@@ -178,6 +178,7 @@ Maitri:station @0 %station %critical {
 
             WaterPumpVoltmeter:sensor @2
             WaterPumpAmmeter:sensor @2
+            WaterPumpTemp:sensor @2
             WaterPumpFlowrate:sensor @2
         }
 

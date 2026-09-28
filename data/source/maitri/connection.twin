@@ -246,6 +246,7 @@ WaterController:WaterPump[signal]@controls
 
 WaterPump:WaterPumpVoltmeter[data]@readings
 WaterPump:WaterPumpAmmeter[data]@readings
+WaterPump:WaterPumpTemp[data]@readings
 WaterPump:WaterPumpFlowrate[data]@readings
 
 WasteWaterTank:WasteWaterLevel[data]@readings
@@ -263,22 +264,23 @@ WaterDataTransmitter:WaterTransmitterVoltmeter[data]@readings
 WaterDataTransmitter:WaterTransmitterAmmeter[data]@readings
 WaterDataTransmitter:WaterTransmitterFrequency[data]@readings
 
-WaterAndWasteBlockTemp:WaterTransmitter[data]@readings
-WaterSystemTemp:WaterTransmitter[data]@readings
-WasteSystemTemp:WaterTransmitter[data]@readings
-WaterLevel:WaterTransmitter[data]@readings
-WaterPumpVoltmeter:WaterTransmitter[data]@readings
-WaterPumpAmmeter:WaterTransmitter[data]@readings
-WaterPumpFlowrate:WaterTransmitter[data]@readings
-WasteWaterLevel:WaterTransmitter[data]@readings
-WaterBlockVentVoltmeter:WaterTransmitter[data]@readings
-WaterBlockVentAmmeter:WaterTransmitter[data]@readings
-WaterBlockVentFlowrate:WaterTransmitter[data]@readings
-WaterControllerVoltmeter:WaterTransmitter[data]@readings
-WaterControllerAmmeter:WaterTransmitter[data]@readings
-WaterTransmitterVoltmeter:WaterTransmitter[data]@readings
-WaterTransmitterAmmeter:WaterTransmitter[data]@readings
-WaterTransmitterFrequency:WaterTransmitter[data]@readings
+WaterAndWasteBlockTemp:WaterDataTransmitter[data]@readings
+WaterSystemTemp:WaterDataTransmitter[data]@readings
+WasteSystemTemp:WaterDataTransmitter[data]@readings
+WaterLevel:WaterDataTransmitter[data]@readings
+WaterPumpVoltmeter:WaterDataTransmitter[data]@readings
+WaterPumpAmmeter:WaterDataTransmitter[data]@readings
+WaterPumpTemp:WaterDataTransmitter[data]@readings
+WaterPumpFlowrate:WaterDataTransmitter[data]@readings
+WasteWaterLevel:WaterDataTransmitter[data]@readings
+WaterBlockVentVoltmeter:WaterDataTransmitter[data]@readings
+WaterBlockVentAmmeter:WaterDataTransmitter[data]@readings
+WaterBlockVentFlowrate:WaterDataTransmitter[data]@readings
+WaterControllerVoltmeter:WaterDataTransmitter[data]@readings
+WaterControllerAmmeter:WaterDataTransmitter[data]@readings
+WaterTransmitterVoltmeter:WaterDataTransmitter[data]@readings
+WaterTransmitterAmmeter:WaterDataTransmitter[data]@readings
+WaterTransmitterFrequency:WaterDataTransmitter[data]@readings
 
 ControlBlock:ControlBlockTemp[data]@readings
 MainController:ControlBlock[signal]@controls

@@ -117,26 +117,30 @@ def parse_connection_file(connection_file: Path, hierarchy_components: list[Hier
 
         # Controller rules
         if node.type == "controller":
-            for c in in_conns + out_conns:
-                if c.type != ConnectionType.SIGNAL:
+            # Controllers can have signal connections, power connections in, and data connections out
+            for c in in_conns:
+                if c.type not in (ConnectionType.SIGNAL, ConnectionType.POWER):
                     raise ConnectionParseError(
-                        f"Controller '{node_name}' may only participate in signal connections."
+                        f"Controller '{node_name}' incoming connections must be SIGNAL or POWER."
+                    )
+            for c in out_conns:
+                if c.type not in (ConnectionType.SIGNAL, ConnectionType.DATA):
+                    raise ConnectionParseError(
+                        f"Controller '{node_name}' outgoing connections must be SIGNAL or DATA."
                     )
 
         # Alarm rules
         if node.type == "alarm":
-            if out_count > 0:
-                raise ConnectionParseError(
-                    f"Alarm '{node_name}' must not have any outgoing connections."
-                )
-            if in_count != 1:
-                raise ConnectionParseError(
-                    f"Alarm '{node_name}' must have exactly one incoming connection, found {in_count}."
-                )
-            if in_conns[0].type != ConnectionType.SIGNAL:
+            sig_in = [c for c in in_conns if c.type == ConnectionType.SIGNAL]
+            if len(sig_in) != 1:
                 raise ConnectionParseError(
                     f"Alarm '{node_name}' must have exactly one incoming SIGNAL connection."
                 )
+            for c in out_conns:
+                if c.type != ConnectionType.DATA:
+                    raise ConnectionParseError(
+                        f"Alarm '{node_name}' outgoing connections must be DATA (to be read by sensors)."
+                    )
 
         # Sensor rules
         if node.type == "sensor":

@@ -1,122 +1,1622 @@
 [
   {
-    "source": "MainGenerator",
-    "target": "BackupBattery",
-    "type": "power",
-    "relation": "feed"
+    "source": "EnergyController",
+    "target": "MainGenerator",
+    "type": "signal",
+    "relation": "controls"
   },
   {
-    "source": "BackupBattery",
-    "target": "Heater",
-    "type": "power",
-    "relation": "feed"
+    "source": "EnergyController",
+    "target": "BackupGenerator",
+    "type": "signal",
+    "relation": "controls"
   },
   {
-    "source": "BackupBattery",
-    "target": "Radio",
-    "type": "power",
-    "relation": "feed"
+    "source": "EnergyController",
+    "target": "EnergyBlockVent",
+    "type": "signal",
+    "relation": "controls"
   },
   {
-    "source": "BackupBattery",
-    "target": "TransferPump",
-    "type": "power",
-    "relation": "feed"
-  },
-  {
-    "source": "MainGenerator",
-    "target": "PowerSensor",
-    "type": "data",
-    "relation": "feed"
-  },
-  {
-    "source": "PowerSensor",
-    "target": "Radio",
-    "type": "data",
-    "relation": "feed"
+    "source": "EnergyController",
+    "target": "EnergyBlock",
+    "type": "signal",
+    "relation": "controls"
   },
   {
     "source": "MainGenerator",
-    "target": "GenEffSensor",
+    "target": "MainGeneratorPower",
     "type": "data",
-    "relation": "feed"
+    "relation": "readings"
   },
   {
-    "source": "GenEffSensor",
-    "target": "Radio",
+    "source": "BackupGenerator",
+    "target": "BackupGeneratorPower",
     "type": "data",
-    "relation": "feed"
+    "relation": "readings"
   },
   {
-    "source": "BackupBattery",
-    "target": "BattCapSensor",
+    "source": "MainGenerator",
+    "target": "MainGeneratorTemp",
     "type": "data",
-    "relation": "feed"
+    "relation": "readings"
   },
   {
-    "source": "BattCapSensor",
-    "target": "Radio",
+    "source": "BackupGenerator",
+    "target": "BackupGeneratorTemp",
     "type": "data",
-    "relation": "feed"
+    "relation": "readings"
   },
   {
-    "source": "Heater",
-    "target": "TempSensor",
+    "source": "MainGenerator",
+    "target": "MainGeneratorFuelIntake",
     "type": "data",
-    "relation": "feed"
+    "relation": "readings"
   },
   {
-    "source": "TempSensor",
-    "target": "Radio",
+    "source": "BackupGenerator",
+    "target": "BackupGeneratorFuelIntake",
     "type": "data",
-    "relation": "feed"
+    "relation": "readings"
   },
   {
-    "source": "FuelTank",
-    "target": "FuelSensor",
+    "source": "EnergyBlockVent",
+    "target": "EnergyBlockVentVoltmeter",
     "type": "data",
-    "relation": "feed"
+    "relation": "readings"
   },
   {
-    "source": "FuelSensor",
-    "target": "Radio",
+    "source": "EnergyBlockVent",
+    "target": "EnergyBlockVentAmmeter",
     "type": "data",
-    "relation": "feed"
+    "relation": "readings"
   },
   {
-    "source": "TransferPump",
-    "target": "PumpFlowSensor",
+    "source": "EnergyBlockVent",
+    "target": "EnergyBlockVentFlowrate",
     "type": "data",
-    "relation": "feed"
+    "relation": "readings"
   },
   {
-    "source": "PumpFlowSensor",
-    "target": "Radio",
+    "source": "EnergyBlock",
+    "target": "EnergyBlockTemp",
     "type": "data",
-    "relation": "feed"
+    "relation": "readings"
   },
   {
-    "source": "TransferPump",
-    "target": "PumpPowSensor",
+    "source": "EnergyController",
+    "target": "EnergyControllerVoltmeter",
     "type": "data",
-    "relation": "feed"
+    "relation": "readings"
   },
   {
-    "source": "PumpPowSensor",
-    "target": "Radio",
+    "source": "EnergyController",
+    "target": "EnergyControllerAmmeter",
     "type": "data",
-    "relation": "feed"
+    "relation": "readings"
   },
   {
-    "source": "FuelTank",
-    "target": "TransferPump",
+    "source": "EnergyDataTransmitter",
+    "target": "EnergyTransmitterVoltmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "EnergyDataTransmitter",
+    "target": "EnergyTransmitterAmmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "EnergyDataTransmitter",
+    "target": "EnergyTransmitterFrequency",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "EnergyTransmitterVoltmeter",
+    "target": "EnergyDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "EnergyTransmitterAmmeter",
+    "target": "EnergyDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "EnergyTransmitterFrequency",
+    "target": "EnergyDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "EnergyControllerVoltmeter",
+    "target": "EnergyDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "EnergyControllerAmmeter",
+    "target": "EnergyDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "EnergyBlockTemp",
+    "target": "EnergyDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "EnergyBlockVentVoltmeter",
+    "target": "EnergyDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "EnergyBlockVentAmmeter",
+    "target": "EnergyDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "EnergyBlockVentFlowrate",
+    "target": "EnergyDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "MainGeneratorFuelIntake",
+    "target": "EnergyDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "BackupGeneratorFuelIntake",
+    "target": "EnergyDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "MainGeneratorTemp",
+    "target": "EnergyDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "BackupGeneratorTemp",
+    "target": "EnergyDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "MainGeneratorPower",
+    "target": "EnergyDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "BackupGeneratorPower",
+    "target": "EnergyDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "MainGenerator",
+    "target": "EnergyBlockVent",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "MainGenerator",
+    "target": "EnergyController",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "MainGenerator",
+    "target": "EnergyDataTransmitter",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "MainGenerator",
+    "target": "MainAC",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "MainGenerator",
+    "target": "BackupAC",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "MainGenerator",
+    "target": "HVACController",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "MainGenerator",
+    "target": "HVACTransmitter",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "MainGenerator",
+    "target": "FuelPump",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "MainGenerator",
+    "target": "FuelControlVent",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "MainGenerator",
+    "target": "InventoryController",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "MainGenerator",
+    "target": "InventoryTransmitter",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "MainGenerator",
+    "target": "ResearchController",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "MainGenerator",
+    "target": "ResearchTransmitter",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "MainGenerator",
+    "target": "ControlVent",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "MainGenerator",
+    "target": "MainController",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "MainGenerator",
+    "target": "ControlDataTransmitter",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "MainGenerator",
+    "target": "WaterPump",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "MainGenerator",
+    "target": "WaterBlockVent",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "MainGenerator",
+    "target": "WaterController",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "MainGenerator",
+    "target": "WaterDataTransmitter",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "BackupGenerator",
+    "target": "EnergyBlockVent",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "BackupGenerator",
+    "target": "EnergyController",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "BackupGenerator",
+    "target": "EnergyDataTransmitter",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "BackupGenerator",
+    "target": "MainAC",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "BackupGenerator",
+    "target": "BackupAC",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "BackupGenerator",
+    "target": "HVACController",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "BackupGenerator",
+    "target": "HVACTransmitter",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "BackupGenerator",
+    "target": "FuelPump",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "BackupGenerator",
+    "target": "FuelControlVent",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "BackupGenerator",
+    "target": "InventoryController",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "BackupGenerator",
+    "target": "InventoryTransmitter",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "BackupGenerator",
+    "target": "ResearchController",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "BackupGenerator",
+    "target": "ResearchTransmitter",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "BackupGenerator",
+    "target": "ControlVent",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "BackupGenerator",
+    "target": "MainController",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "BackupGenerator",
+    "target": "ControlDataTransmitter",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "BackupGenerator",
+    "target": "WaterPump",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "BackupGenerator",
+    "target": "WaterBlockVent",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "BackupGenerator",
+    "target": "WaterController",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "BackupGenerator",
+    "target": "WaterDataTransmitter",
+    "type": "power",
+    "relation": "provides_energy"
+  },
+  {
+    "source": "HVACController",
+    "target": "HVACBlock",
+    "type": "signal",
+    "relation": "controls"
+  },
+  {
+    "source": "HVACController",
+    "target": "MainAC",
+    "type": "signal",
+    "relation": "controls"
+  },
+  {
+    "source": "HVACController",
+    "target": "BackupAC",
+    "type": "signal",
+    "relation": "controls"
+  },
+  {
+    "source": "MainAC",
+    "target": "MainACVoltmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "MainAC",
+    "target": "MainACAmmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "MainAC",
+    "target": "MainACFlowrate",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "MainAC",
+    "target": "MainACOutputTemp",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "MainAC",
+    "target": "MainACTemp",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "BackupAC",
+    "target": "BackupACVoltmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "BackupAC",
+    "target": "BackupACAmmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "BackupAC",
+    "target": "BackupACFlowrate",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "BackupAC",
+    "target": "BackupACOutputTemp",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "BackupAC",
+    "target": "BackupACTemp",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "HVACController",
+    "target": "HVACControllerVoltmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "HVACController",
+    "target": "HVACControllerAmmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "HVACTransmitter",
+    "target": "HVACTransmitterVoltmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "HVACTransmitter",
+    "target": "HVACTransmitterAmmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "HVACTransmitter",
+    "target": "HVACTransmitterFrequency",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "HVACBlock",
+    "target": "HVACTemp",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "HVACTemp",
+    "target": "HVACTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "HVACTransmitterVoltmeter",
+    "target": "HVACTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "HVACTransmitterAmmeter",
+    "target": "HVACTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "HVACTransmitterFrequency",
+    "target": "HVACTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "HVACControllerVoltmeter",
+    "target": "HVACTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "HVACControllerAmmeter",
+    "target": "HVACTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "BackupACVoltmeter",
+    "target": "HVACTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "BackupACAmmeter",
+    "target": "HVACTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "BackupACFlowrate",
+    "target": "HVACTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "BackupACOutputTemp",
+    "target": "HVACTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "BackupACTemp",
+    "target": "HVACTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "MainACVoltmeter",
+    "target": "HVACTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "MainACAmmeter",
+    "target": "HVACTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "MainACFlowrate",
+    "target": "HVACTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "MainACOutputTemp",
+    "target": "HVACTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "MainACTemp",
+    "target": "HVACTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "MainAC",
+    "target": "ControlVent",
     "type": "resource",
-    "relation": "feed"
+    "relation": "conditioned_air"
   },
   {
-    "source": "TransferPump",
+    "source": "MainAC",
+    "target": "WaterBlockVent",
+    "type": "resource",
+    "relation": "conditioned_air"
+  },
+  {
+    "source": "MainAC",
+    "target": "EnergyBlockVent",
+    "type": "resource",
+    "relation": "conditioned_air"
+  },
+  {
+    "source": "MainAC",
+    "target": "FuelControlVent",
+    "type": "resource",
+    "relation": "conditioned_air"
+  },
+  {
+    "source": "BackupAC",
+    "target": "ControlVent",
+    "type": "resource",
+    "relation": "conditioned_air"
+  },
+  {
+    "source": "BackupAC",
+    "target": "WaterBlockVent",
+    "type": "resource",
+    "relation": "conditioned_air"
+  },
+  {
+    "source": "BackupAC",
+    "target": "EnergyBlockVent",
+    "type": "resource",
+    "relation": "conditioned_air"
+  },
+  {
+    "source": "BackupAC",
+    "target": "FuelControlVent",
+    "type": "resource",
+    "relation": "conditioned_air"
+  },
+  {
+    "source": "ResearchController",
+    "target": "ResearchBlock",
+    "type": "signal",
+    "relation": "controls"
+  },
+  {
+    "source": "ResearchController",
+    "target": "WetLaboratory",
+    "type": "signal",
+    "relation": "controls"
+  },
+  {
+    "source": "ResearchController",
+    "target": "DryLaboratory",
+    "type": "signal",
+    "relation": "controls"
+  },
+  {
+    "source": "WetLabEquipment",
+    "target": "WetLabEquipmentWeight",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WetLabEquipment",
+    "target": "WetLabCountWeight",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "DryLabEquipment",
+    "target": "DryLabEquipmentWeight",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "DryLabEquipment",
+    "target": "DryLabCountWeight",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WetLaboratory",
+    "target": "WetLabTemp",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "DryLaboratory",
+    "target": "DryLabTemp",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "ResearchBlock",
+    "target": "ResearchBlockTemp",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "ResearchController",
+    "target": "ResearchControllerVoltmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "ResearchController",
+    "target": "ResearchControllerAmmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "ResearchTransmitter",
+    "target": "ResearchTransmitterVoltmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "ResearchTransmitter",
+    "target": "ResearchTransmitterAmmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "ResearchTransmitter",
+    "target": "ResearchTransmitterFrequency",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "ResearchTransmitterVoltmeter",
+    "target": "ResearchTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "ResearchTransmitterAmmeter",
+    "target": "ResearchTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "ResearchTransmitterFrequency",
+    "target": "ResearchTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "ResearchControllerVoltmeter",
+    "target": "ResearchTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "ResearchControllerAmmeter",
+    "target": "ResearchTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "WetLabTemp",
+    "target": "ResearchTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "DryLabTemp",
+    "target": "ResearchTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "ResearchBlockTemp",
+    "target": "ResearchTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "DryLabEquipmentWeight",
+    "target": "ResearchTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "DryLabCountWeight",
+    "target": "ResearchTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "WetLabEquipmentWeight",
+    "target": "ResearchTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "WetLabCountWeight",
+    "target": "ResearchTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "InventoryController",
+    "target": "InventoryBlock",
+    "type": "signal",
+    "relation": "controls"
+  },
+  {
+    "source": "InventoryController",
+    "target": "FuelSystem",
+    "type": "signal",
+    "relation": "controls"
+  },
+  {
+    "source": "InventoryController",
+    "target": "StorageSystem",
+    "type": "signal",
+    "relation": "controls"
+  },
+  {
+    "source": "InventoryController",
+    "target": "VehicleSystem",
+    "type": "signal",
+    "relation": "controls"
+  },
+  {
+    "source": "InventoryBlock",
+    "target": "InventoryTemp",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "FuelSystem",
+    "target": "FuelControlTemp",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "StorageSystem",
+    "target": "StorageControlTemp",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "VehicleSystem",
+    "target": "VehicleControlTemp",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "FuelTank",
+    "target": "FuelLevel",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "FuelTank",
+    "target": "FuelPump",
+    "type": "resource",
+    "relation": "fuel_supply"
+  },
+  {
+    "source": "FuelPump",
     "target": "MainGenerator",
     "type": "resource",
-    "relation": "feed"
+    "relation": "fuel_supply"
+  },
+  {
+    "source": "FuelPump",
+    "target": "BackupGenerator",
+    "type": "resource",
+    "relation": "fuel_supply"
+  },
+  {
+    "source": "FuelPump",
+    "target": "FuelPumpVoltmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "FuelPump",
+    "target": "FuelPumpAmmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "FuelPump",
+    "target": "FuelPumpTemp",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "FuelPump",
+    "target": "FuelPumpFlowrate",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "FoodStorage",
+    "target": "FoodWeight",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "FoodStorage",
+    "target": "FoodCount",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "EquipmentStorage",
+    "target": "EquipmentWeight",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "EquipmentStorage",
+    "target": "EquipmentCount",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "FuelControlVent",
+    "target": "FuelControlVentVoltmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "FuelControlVent",
+    "target": "FuelControlVentAmmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "FuelControlVent",
+    "target": "FuelControlVentFlowrate",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "InventoryController",
+    "target": "FuelPump",
+    "type": "signal",
+    "relation": "controls"
+  },
+  {
+    "source": "InventoryController",
+    "target": "InventoryControllerVoltmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "InventoryController",
+    "target": "InventoryControllerAmmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "InventoryTransmitter",
+    "target": "InventoryTransmitterVoltmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "InventoryTransmitter",
+    "target": "InventoryTransmitterAmmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "InventoryTransmitter",
+    "target": "InventoryTransmitterFrequency",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "InventoryTemp",
+    "target": "InventoryTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "FuelControlTemp",
+    "target": "InventoryTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "StorageControlTemp",
+    "target": "InventoryTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "VehicleControlTemp",
+    "target": "InventoryTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "FuelLevel",
+    "target": "InventoryTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "FuelPumpVoltmeter",
+    "target": "InventoryTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "FuelPumpAmmeter",
+    "target": "InventoryTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "FuelPumpTemp",
+    "target": "InventoryTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "FuelPumpFlowrate",
+    "target": "InventoryTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "FoodWeight",
+    "target": "InventoryTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "FoodCount",
+    "target": "InventoryTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "EquipmentWeight",
+    "target": "InventoryTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "EquipmentCount",
+    "target": "InventoryTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "FuelControlVentVoltmeter",
+    "target": "InventoryTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "FuelControlVentAmmeter",
+    "target": "InventoryTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "FuelControlVentFlowrate",
+    "target": "InventoryTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "InventoryControllerVoltmeter",
+    "target": "InventoryTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "InventoryControllerAmmeter",
+    "target": "InventoryTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "InventoryTransmitterVoltmeter",
+    "target": "InventoryTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "InventoryTransmitterAmmeter",
+    "target": "InventoryTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "InventoryTransmitterFrequency",
+    "target": "InventoryTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "WaterController",
+    "target": "WaterAndWasteBlock",
+    "type": "signal",
+    "relation": "controls"
+  },
+  {
+    "source": "WaterController",
+    "target": "WaterSystem",
+    "type": "signal",
+    "relation": "controls"
+  },
+  {
+    "source": "WaterController",
+    "target": "WasteSystem",
+    "type": "signal",
+    "relation": "controls"
+  },
+  {
+    "source": "WaterAndWasteBlock",
+    "target": "WaterAndWasteBlockTemp",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterSystem",
+    "target": "WaterSystemTemp",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WasteSystem",
+    "target": "WasteSystemTemp",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterTank",
+    "target": "WaterLevel",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterTank",
+    "target": "WaterPump",
+    "type": "resource",
+    "relation": "water_supply"
+  },
+  {
+    "source": "WaterController",
+    "target": "WaterPump",
+    "type": "signal",
+    "relation": "controls"
+  },
+  {
+    "source": "WaterPump",
+    "target": "WaterPumpVoltmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterPump",
+    "target": "WaterPumpAmmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterPump",
+    "target": "WaterPumpTemp",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterPump",
+    "target": "WaterPumpFlowrate",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WasteWaterTank",
+    "target": "WasteWaterLevel",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterController",
+    "target": "WaterBlockVent",
+    "type": "signal",
+    "relation": "controls"
+  },
+  {
+    "source": "WaterBlockVent",
+    "target": "WaterBlockVentVoltmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterBlockVent",
+    "target": "WaterBlockVentAmmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterBlockVent",
+    "target": "WaterBlockVentFlowrate",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterController",
+    "target": "WaterControllerVoltmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterController",
+    "target": "WaterControllerAmmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterDataTransmitter",
+    "target": "WaterTransmitterVoltmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterDataTransmitter",
+    "target": "WaterTransmitterAmmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterDataTransmitter",
+    "target": "WaterTransmitterFrequency",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterAndWasteBlockTemp",
+    "target": "WaterDataTransmitter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterSystemTemp",
+    "target": "WaterDataTransmitter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WasteSystemTemp",
+    "target": "WaterDataTransmitter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterLevel",
+    "target": "WaterDataTransmitter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterPumpVoltmeter",
+    "target": "WaterDataTransmitter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterPumpAmmeter",
+    "target": "WaterDataTransmitter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterPumpTemp",
+    "target": "WaterDataTransmitter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterPumpFlowrate",
+    "target": "WaterDataTransmitter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WasteWaterLevel",
+    "target": "WaterDataTransmitter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterBlockVentVoltmeter",
+    "target": "WaterDataTransmitter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterBlockVentAmmeter",
+    "target": "WaterDataTransmitter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterBlockVentFlowrate",
+    "target": "WaterDataTransmitter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterControllerVoltmeter",
+    "target": "WaterDataTransmitter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterControllerAmmeter",
+    "target": "WaterDataTransmitter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterTransmitterVoltmeter",
+    "target": "WaterDataTransmitter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterTransmitterAmmeter",
+    "target": "WaterDataTransmitter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterTransmitterFrequency",
+    "target": "WaterDataTransmitter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "ControlBlock",
+    "target": "ControlBlockTemp",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "MainController",
+    "target": "ControlBlock",
+    "type": "signal",
+    "relation": "controls"
+  },
+  {
+    "source": "MainController",
+    "target": "MainServer",
+    "type": "signal",
+    "relation": "controls"
+  },
+  {
+    "source": "MainServer",
+    "target": "MainServerPower",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "MainServer",
+    "target": "MainServerTemp",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "MainServer",
+    "target": "MainController",
+    "type": "signal",
+    "relation": "signal_change"
+  },
+  {
+    "source": "ControlVent",
+    "target": "ControlVentVoltmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "ControlVent",
+    "target": "ControlVentAmmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "ControlVent",
+    "target": "ControlVentFlowrate",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "MainController",
+    "target": "MainControllerVoltmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "MainController",
+    "target": "MainControllerAmmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "ControlDataTransmitter",
+    "target": "ControlTransmitterVoltmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "ControlDataTransmitter",
+    "target": "ControlTransmitterAmmeter",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "ControlDataTransmitter",
+    "target": "ControlTransmitterFrequency",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "ControlBlockTemp",
+    "target": "ControlDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "MainServerPower",
+    "target": "ControlDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "MainServerTemp",
+    "target": "ControlDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "ControlVentVoltmeter",
+    "target": "ControlDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "ControlVentAmmeter",
+    "target": "ControlDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "ControlVentFlowrate",
+    "target": "ControlDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "MainControllerVoltmeter",
+    "target": "ControlDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "MainControllerAmmeter",
+    "target": "ControlDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "ControlTransmitterVoltmeter",
+    "target": "ControlDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "ControlTransmitterAmmeter",
+    "target": "ControlDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "ControlTransmitterFrequency",
+    "target": "ControlDataTransmitter",
+    "type": "data",
+    "relation": "transmits_readings"
+  },
+  {
+    "source": "MainController",
+    "target": "WaterController",
+    "type": "signal",
+    "relation": "signal_change"
+  },
+  {
+    "source": "MainController",
+    "target": "EnergyController",
+    "type": "signal",
+    "relation": "signal_change"
+  },
+  {
+    "source": "MainController",
+    "target": "ResearchController",
+    "type": "signal",
+    "relation": "signal_change"
+  },
+  {
+    "source": "MainController",
+    "target": "InventoryController",
+    "type": "signal",
+    "relation": "signal_change"
+  },
+  {
+    "source": "MainController",
+    "target": "HVACController",
+    "type": "signal",
+    "relation": "signal_change"
+  },
+  {
+    "source": "ControlDataTransmitter",
+    "target": "MainServer",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "WaterDataTransmitter",
+    "target": "MainServer",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "EnergyDataTransmitter",
+    "target": "MainServer",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "HVACTransmitter",
+    "target": "MainServer",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "ResearchTransmitter",
+    "target": "MainServer",
+    "type": "data",
+    "relation": "readings"
+  },
+  {
+    "source": "InventoryTransmitter",
+    "target": "MainServer",
+    "type": "data",
+    "relation": "readings"
   }
 ]
