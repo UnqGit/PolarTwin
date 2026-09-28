@@ -1,45 +1,15 @@
-import React, { useEffect, useRef, useState, useMemo } from 'react';
-import cytoscape from 'cytoscape';
-import elk from 'cytoscape-elk';
-import { Target } from 'lucide-react';
-import { useStation } from '../components/StationContext';
-import { SelectionProvider, useSelection } from '../components/SelectionContext';
-import { HoverContext } from '../components/HoverContext';
-import { ConnectionsList } from '../components/ConnectionsList';
-import { HoverCard } from '../components/HoverCard';
-import { PropertyInspector } from '../components/PropertyInspector';
-import { ConnectionInspector } from '../components/ConnectionInspector';
-import { useTheme } from '../components/ThemeContext';
-import { TYPE_MATERIALS, GENERIC_MATERIAL } from '../lib/materials';
-import type { NodeLayout, NodeInfo, ConnectionLayout } from '../lib/layout';
-import { buildSceneLayout } from '../lib/layout';
+import re
 
-cytoscape.use(elk);
+with open('src/pages/ConnectionsPage.tsx', 'r') as f:
+    content = f.read()
 
-function resolveColor(type: string): string {
-  const t = (type || '').toLowerCase();
-  for (const { match, mat } of TYPE_MATERIALS) {
-    if (t.includes(match)) return mat.color;
-  }
-  return GENERIC_MATERIAL.color;
-}
+start_marker = "function buildNodesMap(root: NodeLayout): Map<string, NodeInfo> {"
+end_marker = "export function ConnectionsPage() {"
 
-// Connection-type → edge color
-const CONN_TYPE_COLORS: Record<string, { light: string; dark: string }> = {
-  power:    { light: '#d97706', dark: '#f59e0b' },
-  data:     { light: '#0891b2', dark: '#22d3ee' },
-  signal:   { light: '#7c3aed', dark: '#a78bfa' },
-  resource: { light: '#059669', dark: '#34d399' },
-};
+start_idx = content.find(start_marker)
+end_idx = content.find(end_marker)
 
-function edgeColor(connType: string, theme: string): string {
-  const entry = CONN_TYPE_COLORS[connType?.toLowerCase()];
-  if (entry) return theme === 'light' ? entry.light : entry.dark;
-  return theme === 'light' ? '#475569' : '#94a3b8';
-}
-
-// Traverse hierarchy tree to collect NodeInfo map
-function buildNodesMap(root: NodeLayout): Map<string, NodeInfo> {
+new_content = """function buildNodesMap(root: NodeLayout): Map<string, NodeInfo> {
   const map = new Map<string, NodeInfo>();
   function visit(node: NodeLayout, parentName?: string) {
     map.set(node.name, {
@@ -154,9 +124,20 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
         
         bundleGroups.get(bKey)!.count++;
         
+        const hubSrc = pA === A ? `hub-${A}-${B}` : `hub-${B}-${A}`;
+        const hubTgt = pB === B ? `hub-${B}-${A}` : `hub-${A}-${B}`;
+        
+        els.push({
+          data: { id: `v-src-${c.id}`, source: c.source, target: hubSrc, represents: c.id, connType: c.connectionType, bKey },
+          classes: 'visual-edge'
+        });
+        els.push({
+          data: { id: `v-tgt-${c.id}`, source: hubTgt, target: c.target, represents: c.id, connType: c.connectionType, bKey },
+          classes: 'visual-edge'
+        });
         els.push({
           data: { id: c.id, source: c.source, target: c.target, originalId: c.id, connType: c.connectionType },
-          classes: 'real-edge'
+          classes: 'real-edge hidden'
         });
       }
     });
@@ -174,72 +155,81 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
     if (!cyRef.current) return;
     const cy = cyRef.current;
 
-    cy.elements().removeClass('hovered selected parent-selected connection-selected highlighted neighbor dimmed hidden selected-parent');
+    cy.elements().removeClass('hovered selected highlighted neighbor dimmed hidden');
 
     if (hiddenSet.size > 0) {
-      cy.elements().filter((e: any) => hiddenSet.has(e.data('originalId')) || hiddenSet.has(e.data('represents'))).addClass('hidden');
+      cy.elements().filter((e: any) => hiddenSet.has(e.data('originalId'))).addClass('hidden');
     }
-
-    cy.edges('.bundle-edge').forEach((bEdge: any) => {
-      // Keep bundle edges logic if needed, but they are visually hidden now
-    });
 
     if (hoveredName) {
       const hovNode = cy.getElementById(hoveredName);
       if (hovNode.nonempty()) hovNode.addClass('hovered');
       
-      const realEdges = cy.edges().filter((e: any) => e.data('originalId') === hoveredName || (e.isEdge() && !e.hasClass('bundle-edge') && (e.source().id() === hoveredName || e.target().id() === hoveredName)));
+      const realEdges = cy.edges().filter((e: any) => e.data('originalId') === hoveredName || (e.isEdge() && !e.hasClass('visual-edge') && !e.hasClass('bundle-edge') && (e.source().id() === hoveredName || e.target().id() === hoveredName)));
       realEdges.addClass('hovered');
+      realEdges.forEach((re: any) => {
+        cy.edges(`.visual-edge[represents = "${re.id()}"]`).addClass('hovered');
+      });
     }
 
     if (selectedName) {
       const selNode = cy.getElementById(selectedName);
 
       if (selNode.nonempty() && selNode.isNode()) {
-        if (selNode.isParent()) {
-          selNode.addClass('parent-selected');
-        } else {
-          selNode.addClass('selected');
+        selNode.addClass('selected');
 
-          const connectedEdges = selNode.connectedEdges('.internal-edge, .real-edge');
-          connectedEdges.addClass('highlighted');
+        const internalEdges = selNode.connectedEdges('.internal-edge');
+        internalEdges.addClass('highlighted');
+        
+        const visualEdges = selNode.connectedEdges('.visual-edge');
+        visualEdges.addClass('highlighted');
+        
+        const repIds = new Set();
+        visualEdges.forEach((e: any) => repIds.add(e.data('represents')));
+        
+        const allVisual = cy.edges('.visual-edge').filter((e: any) => repIds.has(e.data('represents')));
+        allVisual.addClass('highlighted');
+        
+        const bKeys = new Set();
+        allVisual.forEach((e: any) => bKeys.add(e.data('bKey')));
+        const bundles = cy.edges('.bundle-edge').filter((e: any) => bKeys.has(e.data('bKey')));
+        bundles.addClass('highlighted');
 
-          const neighbors = connectedEdges.connectedNodes().not(selNode);
-          neighbors.addClass('neighbor');
+        const neighbors = internalEdges.connectedNodes().union(allVisual.connectedNodes().not('.hub-node')).not(selNode);
+        neighbors.addClass('neighbor');
 
-          let relevant = selNode.union(connectedEdges).union(neighbors).union(selNode.ancestors()).union(neighbors.ancestors());
-          cy.elements().not(relevant).not('.hub-node').not('.bundle-edge').addClass('dimmed');
-        }
+        let relevant = selNode.union(internalEdges).union(allVisual).union(bundles).union(neighbors).union(selNode.ancestors()).union(neighbors.ancestors());
+        if (selNode.isParent()) relevant = relevant.union(selNode.descendants());
+
+        cy.elements().not(relevant).not('.real-edge').addClass('dimmed');
+
       } else {
         const realEdge = cy.getElementById(selectedName);
         if (realEdge.nonempty()) {
           if (realEdge.hasClass('internal-edge')) {
-             realEdge.addClass('connection-selected highlighted');
+             realEdge.addClass('selected highlighted');
              const src = realEdge.source();
              const tgt = realEdge.target();
              src.addClass('neighbor');
              tgt.addClass('neighbor');
-
-             const topSrc = src.ancestors().filter((n: any) => n.data('depth') !== 0).last();
-             if (topSrc.nonempty()) topSrc.addClass('selected-parent');
-
              const relevant = realEdge.union(src).union(tgt).union(src.ancestors()).union(tgt.ancestors());
-             cy.elements().not(relevant).not('.hub-node').not('.bundle-edge').addClass('dimmed');
-           } else if (realEdge.hasClass('real-edge')) {
-             realEdge.addClass('connection-selected highlighted');
+             cy.elements().not(relevant).not('.real-edge').addClass('dimmed');
+          } else if (realEdge.hasClass('real-edge')) {
+             const visualEdges = cy.edges(`.visual-edge[represents = "${selectedName}"]`);
+             visualEdges.addClass('selected highlighted');
+             
+             const bKeys = new Set();
+             visualEdges.forEach((e: any) => bKeys.add(e.data('bKey')));
+             const bundles = cy.edges('.bundle-edge').filter((e: any) => bKeys.has(e.data('bKey')));
+             bundles.addClass('highlighted');
              
              const src = realEdge.source();
              const tgt = realEdge.target();
              src.addClass('neighbor');
              tgt.addClass('neighbor');
-
-             const topSrc = src.ancestors().filter((n: any) => n.data('depth') !== 0).last();
-             const topTgt = tgt.ancestors().filter((n: any) => n.data('depth') !== 0).last();
-             if (topSrc.nonempty()) topSrc.addClass('selected-parent');
-             if (topTgt.nonempty() && topTgt !== topSrc) topTgt.addClass('selected-parent');
              
-             const relevant = realEdge.union(src).union(tgt).union(src.ancestors()).union(tgt.ancestors());
-             cy.elements().not(relevant).not('.hub-node').not('.bundle-edge').addClass('dimmed');
+             const relevant = visualEdges.union(bundles).union(src).union(tgt).union(src.ancestors()).union(tgt.ancestors());
+             cy.elements().not(relevant).not('.real-edge').addClass('dimmed');
           }
         }
       }
@@ -272,8 +262,8 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
 
     for (const [type, colors] of Object.entries(CONN_TYPE_COLORS)) {
       const c = theme === 'light' ? colors.light : colors.dark;
-      (ss as any).selector(`edge.internal-edge[connType = "${type}"]:not(.connection-selected)`).style({ 'line-color': c, 'target-arrow-color': c });
-      (ss as any).selector(`edge.real-edge[connType = "${type}"]:not(.connection-selected)`).style({ 'line-color': c, 'target-arrow-color': c });
+      (ss as any).selector(`edge.internal-edge[connType = "${type}"]`).style({ 'line-color': c, 'target-arrow-color': c });
+      (ss as any).selector(`edge.visual-edge[connType = "${type}"]`).style({ 'line-color': c, 'target-arrow-color': c });
     }
     ss.update();
   }, [theme]);
@@ -320,38 +310,20 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
         {
           selector: ':parent',
           style: {
-            'background-opacity': 0.04,
-            'background-color': theme === 'light' ? '#cbd5e1' : '#334155',
+            'background-opacity': 0.06,
             'border-width': 2,
-            'border-color': theme === 'light' ? '#94a3b8' : '#475569',
+            'border-color': 'data(typeColor)',
             'border-style': 'solid',
-            'padding': '30px',
+            'padding': '40px',
             'text-valign': 'top',
             'text-halign': 'center',
             'font-weight': 'bold',
-            'font-size': '16px',
-            'text-transform': 'uppercase',
             'text-outline-width': 0,
-            'text-margin-y': -8
+            'text-margin-y': -5
           }
         },
         {
-          selector: '.selected-parent',
-          style: {
-            'border-color': theme === 'light' ? '#86efac' : '#4ade80',
-            'border-width': 2,
-          }
-        },
-        {
-          selector: '.parent-selected',
-          style: {
-            'border-color': theme === 'light' ? '#16a34a' : '#22c55e',
-            'border-width': 3,
-            'z-index': 20
-          }
-        },
-        {
-          selector: 'edge.internal-edge, edge.real-edge',
+          selector: 'edge.internal-edge',
           style: {
             'width': 2,
             'curve-style': 'taxi',
@@ -362,16 +334,50 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
           } as any
         },
         {
+          selector: 'edge.visual-edge',
+          style: {
+            'width': 2,
+            'curve-style': 'taxi',
+            'taxi-direction': 'auto',
+            'opacity': 0.3,
+            'target-arrow-shape': 'none',
+          } as any
+        },
+        {
           selector: '.bundle-edge',
           style: {
-            'display': 'none'
+            'width': 6,
+            'line-style': 'dashed',
+            'curve-style': 'taxi',
+            'taxi-direction': 'auto',
+            'label': 'data(label)',
+            'font-size': '12px',
+            'font-weight': 'bold',
+            'text-background-color': theme === 'light' ? '#f1f5f9' : '#1e293b',
+            'text-background-opacity': 1,
+            'text-background-padding': '4px' as any,
+            'text-background-shape': 'roundrectangle',
+            'color': theme === 'light' ? '#475569' : '#94a3b8',
+            'line-color': theme === 'light' ? '#cbd5e1' : '#334155',
+            'target-arrow-shape': 'none',
+            'z-index': 1,
           } as any
         },
         {
           selector: '.hub-node',
           style: {
-            'display': 'none'
-          } as any
+            'width': 10,
+            'height': 10,
+            'background-color': theme === 'light' ? '#94a3b8' : '#475569',
+            'shape': 'ellipse',
+            'label': '',
+            'border-width': 2,
+            'border-color': theme === 'light' ? '#ffffff' : '#0f172a'
+          }
+        },
+        {
+          selector: '.real-edge',
+          style: { 'display': 'none' }
         },
         {
           selector: '.hidden',
@@ -379,7 +385,7 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
         },
         {
           selector: '.dimmed',
-          style: { 'opacity': 0.35 }
+          style: { 'opacity': 0.12 }
         },
         {
           selector: '.highlighted',
@@ -390,22 +396,16 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
           }
         },
         {
-          selector: 'edge.connection-selected',
-          style: { 
-             'width': 5, 
-             'z-index': 25, 
-             'line-color': theme === 'light' ? '#16a34a' : '#22c55e', 
-             'target-arrow-color': theme === 'light' ? '#16a34a' : '#22c55e',
-             'opacity': 1
-          } as any
+          selector: '.visual-edge.highlighted',
+          style: { 'width': 4, 'z-index': 20 }
         },
         {
-          selector: 'node.selected',
-          style: {
-             'border-width': 4,
-             'border-color': theme === 'light' ? '#16a34a' : '#22c55e',
-             'z-index': 20
-          }
+          selector: '.visual-edge.selected',
+          style: { 'width': 5, 'z-index': 25, 'line-color': theme === 'light' ? '#0ea5e9' : '#00e676' }
+        },
+        {
+          selector: '.internal-edge.selected',
+          style: { 'width': 4, 'z-index': 25, 'line-color': theme === 'light' ? '#0ea5e9' : '#00e676', 'target-arrow-color': theme === 'light' ? '#0ea5e9' : '#00e676' }
         },
         {
           selector: 'node.neighbor',
@@ -434,14 +434,14 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
         'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
         'elk.layered.crossingMinimization.greedySwitch.type': 'TWO_SIDED',
         'elk.layered.thoroughness': '100',
-        'elk.layered.spacing.nodeNodeBetweenLayers': '60',
-        'elk.spacing.nodeNode': '40',
-        'elk.spacing.edgeNode': '30',
+        'elk.layered.spacing.nodeNodeBetweenLayers': '100',
+        'elk.spacing.nodeNode': '60',
+        'elk.spacing.edgeNode': '40',
         'elk.spacing.edgeEdge': '20',
-        'elk.layered.spacing.edgeNodeBetweenLayers': '30',
+        'elk.layered.spacing.edgeNodeBetweenLayers': '50',
         'elk.layered.spacing.edgeEdgeBetweenLayers': '25',
         'elk.hierarchyHandling': 'INCLUDE_CHILDREN',
-        'elk.padding': '[top=30,left=20,bottom=20,right=20]',
+        'elk.padding': '[top=50,left=30,bottom=30,right=30]',
         'elk.randomSeed': '1',
       },
     } as any).run();
@@ -476,31 +476,22 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
       setHoveredName(null);
     };
 
-    const handleEdgeTap = (e: cytoscape.EventObject) => {
-      e.stopPropagation();
-      if (e.target.hasClass('bundle-edge')) return;
-      const id = e.target.hasClass('visual-edge') ? e.target.data('represents') : e.target.id();
-      setSelectedName(id);
-    };
-
-    const handleNodeTap = (e: cytoscape.EventObject) => {
-      e.stopPropagation();
-      const node = e.target;
-      if (node.hasClass('hub-node')) return;
-      setSelectedName(node.id());
-    };
-
-    const handleBgTap = (e: cytoscape.EventObject) => {
+    const handleTap = (e: cytoscape.EventObject) => {
       if (e.target === cy) {
         setSelectedName(null);
+      } else if (e.target.isEdge()) {
+        if (e.target.hasClass('bundle-edge')) return;
+        const id = e.target.hasClass('visual-edge') ? e.target.data('represents') : e.target.id();
+        setSelectedName(id);
+      } else {
+        if (e.target.hasClass('hub-node')) return;
+        setSelectedName(e.target.id());
       }
     };
 
     cy.on('mouseover', 'node, edge', handleMouseOver);
     cy.on('mouseout', 'node, edge', handleMouseOut);
-    cy.on('tap', 'edge', handleEdgeTap);
-    cy.on('tap', 'node', handleNodeTap);
-    cy.on('tap', handleBgTap);
+    cy.on('tap', handleTap);
 
     cy.on('zoom', () => {
       const z = cy.zoom();
@@ -606,88 +597,7 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
     </div>
   );
 };
-export function ConnectionsPage() {
-  const { hierarchy: rawHierarchy, connections: rawConnections, isLoadingData, spec } = useStation();
-  const [hoveredName, setHoveredName] = useState<string | null>(null);
+"""
 
-  const [leftPanelWidth, setLeftPanelWidth] = useState(300);
-  const [isResizingLeft, setIsResizingLeft] = useState(false);
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      if (isResizingLeft) {
-        setLeftPanelWidth(prev => Math.max(200, Math.min(600, prev + e.movementX)));
-      }
-    };
-    const handleMouseUp = () => {
-      setIsResizingLeft(false);
-    };
-
-    if (isResizingLeft) {
-      document.addEventListener('mousemove', handleMouseMove);
-      document.addEventListener('mouseup', handleMouseUp);
-    }
-    return () => {
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [isResizingLeft]);
-
-  const sceneLayout = useMemo(() => {
-    if (!rawHierarchy || !rawConnections) return null;
-    try {
-      return buildSceneLayout(rawHierarchy, rawConnections, spec || {});
-    } catch (e) {
-      console.error(e);
-      return null;
-    }
-  }, [rawHierarchy, rawConnections, spec]);
-
-  const [renderedConnections, setRenderedConnections] = useState<any[]>([]);
-
-  useEffect(() => {
-    if (!sceneLayout) {
-      setRenderedConnections([]);
-      return;
-    }
-    const gen = sceneLayout.connectionRouterGenerator();
-    while (!gen.next().done) {
-      // Synchronously exhaust the generator
-    }
-    setRenderedConnections([...sceneLayout.connections]);
-  }, [sceneLayout]);
-
-  if (isLoadingData) {
-    return <div style={{ padding: 24, color: 'var(--text-primary)' }}>Loading...</div>;
-  }
-
-  if (!rawHierarchy || !rawConnections || !sceneLayout) {
-    return <div style={{ padding: 24, color: 'var(--text-primary)' }}>No twin data available.</div>;
-  }
-
-  return (
-    <HoverContext.Provider value={{
-      hoveredName,
-      hoveredNodes: new Set(),
-      hoveredAncestors: new Set(),
-      selectedAncestors: new Set(),
-      activeLayer: null,
-      componentsInteractable: true,
-      connectionsInteractable: true,
-      setHoveredName
-    }}>
-      <SelectionProvider>
-        <div style={{ display: 'flex', width: '100%', height: '100%', position: 'relative' }}>
-          <div style={{ width: leftPanelWidth, position: 'absolute', top: 0, left: 0, bottom: 0, borderRight: '1px solid var(--border-color)', backgroundColor: 'var(--bg-panel)', zIndex: 10, display: 'flex', flexDirection: 'column', boxShadow: '4px 0 15px rgba(0,0,0,0.3)' }}>
-            <ConnectionsList connections={renderedConnections} />
-            <div 
-              style={{ position: 'absolute', top: 0, right: -2, bottom: 0, width: '4px', cursor: 'ew-resize', zIndex: 50 }}
-              onMouseDown={(e) => { e.preventDefault(); setIsResizingLeft(true); }}
-            />
-          </div>
-          <GraphContainer root={sceneLayout.root} connections={renderedConnections} leftOffset={leftPanelWidth} />
-        </div>
-      </SelectionProvider>
-    </HoverContext.Provider>
-  );
-}
+with open('src/pages/ConnectionsPage.tsx', 'w') as f:
+    f.write(content[:start_idx] + new_content + content[end_idx:])
