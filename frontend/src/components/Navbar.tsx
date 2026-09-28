@@ -12,6 +12,8 @@ import {
 } from 'lucide-react';
 import { useStation } from './StationContext';
 import { useTheme } from './ThemeContext';
+import { SimulationManager } from './SimulationManager';
+
 
 export function Navbar() {
   const { selectedStation } = useStation();
@@ -98,6 +100,7 @@ export function Navbar() {
       </nav>
       
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '16px' }}>
+        <SimulationManager />
         <button 
           onClick={toggleTheme}
           style={{

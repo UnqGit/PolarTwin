@@ -153,8 +153,8 @@ export function DiagnosticsPage() {
       <div className="glass-panel" style={{ display: 'flex', flex: 1, overflow: 'hidden', margin: '0 24px 24px 24px', borderRadius: '0 0 16px 16px', borderTop: 'none' }}>
         
         {/* Timeline / Table */}
-        <div style={{ width: '40%', borderRight: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', backgroundColor: 'rgba(0,0,0,0.2)' }}>
-          <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'rgba(0,0,0,0.4)', fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', display: 'flex', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+        <div style={{ width: '40%', borderRight: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-panel)' }}>
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-panel-secondary)', fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', display: 'flex', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
             <div style={{ width: 80 }}>Time (s)</div>
             <div style={{ width: 80 }}>Source</div>
             <div style={{ flex: 1 }}>Run ID</div>
@@ -178,7 +178,7 @@ export function DiagnosticsPage() {
                     fontSize: 13,
                     backgroundColor: isSelected ? 'var(--bg-panel-secondary)' : 'transparent',
                     borderLeft: `3px solid ${isSelected ? 'var(--accent-blue)' : 'transparent'}`,
-                    color: isSelected ? '#fff' : 'var(--text-primary)',
+                    color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)',
                     alignItems: 'center'
                   }}
                 >
@@ -257,15 +257,15 @@ export function DiagnosticsPage() {
                 </div>
                 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 16 }}>
-                  <div style={{ background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: 12, border: '1px solid var(--border-color)' }}>
+                  <div style={{ background: 'var(--bg-panel-secondary)', padding: '16px', borderRadius: 12, border: '1px solid var(--border-color)' }}>
                     <div style={{ fontSize: 11, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}><Clock size={12} /> Sim Time</div>
                     <div style={{ fontSize: 24, fontWeight: 700, color: 'var(--text-primary)' }}>{recordDetail.time.toFixed(3)}s</div>
                   </div>
-                  <div style={{ background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: 12, border: '1px solid var(--border-color)' }}>
+                  <div style={{ background: 'var(--bg-panel-secondary)', padding: '16px', borderRadius: 12, border: '1px solid var(--border-color)' }}>
                     <div style={{ fontSize: 11, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}><Layers size={12} /> Source</div>
                     <div style={{ fontSize: 18, fontWeight: 600, color: recordDetail.source === 'SIMULATION' ? 'var(--accent-cyan)' : 'var(--accent-blue)', marginTop: 4 }}>{recordDetail.source}</div>
                   </div>
-                  <div style={{ background: 'rgba(0,0,0,0.2)', padding: '16px', borderRadius: 12, border: '1px solid var(--border-color)', gridColumn: 'span 2' }}>
+                  <div style={{ background: 'var(--bg-panel-secondary)', padding: '16px', borderRadius: 12, border: '1px solid var(--border-color)', gridColumn: 'span 2' }}>
                     <div style={{ fontSize: 11, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 }}>Run ID</div>
                     <div style={{ fontSize: 14, fontFamily: 'monospace', color: 'var(--text-primary)' }}>{recordDetail.run_id}</div>
                     <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 8 }}>Persisted: {new Date(recordDetail.persistence_time * 1000).toLocaleString()}</div>
@@ -286,12 +286,12 @@ export function DiagnosticsPage() {
                             {Object.entries(val).map(([subKey, subVal]) => (
                               <div key={subKey} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, borderBottom: '1px solid var(--border-color)', paddingBottom: 6 }}>
                                 <span style={{ color: 'var(--text-secondary)' }}>{subKey}</span>
-                                <span style={{ color: '#fff', fontWeight: 500 }}>{String(subVal)}</span>
+                                <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{String(subVal)}</span>
                               </div>
                             ))}
                           </div>
                         ) : (
-                          <div style={{ fontSize: 20, fontWeight: 700, color: '#fff' }}>{String(val)}</div>
+                          <div style={{ fontSize: 20, fontWeight: 700, color: 'var(--text-primary)' }}>{String(val)}</div>
                         )}
                       </div>
                     ))}
@@ -308,7 +308,7 @@ export function DiagnosticsPage() {
                   {recordDetail.components.slice(0, 100).map((c: any, i: number) => (
                     <div key={i} className="diag-row glass-panel" style={{ display: 'flex', alignItems: 'center', padding: '14px 20px', borderRadius: 10, border: '1px solid var(--border-solid)' }}>
                       <div style={{ flex: 1 }}>
-                        <div style={{ fontSize: 15, color: '#fff', fontWeight: 600, letterSpacing: '-0.3px' }}>{c.component_name}</div>
+                        <div style={{ fontSize: 15, color: 'var(--text-primary)', fontWeight: 600, letterSpacing: '-0.3px' }}>{c.component_name}</div>
                         <div style={{ fontSize: 12, color: 'var(--accent-amber)', marginTop: 4, textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.5px' }}>{c.type}</div>
                       </div>
                       <div style={{ width: 120, paddingRight: 24 }}>
@@ -323,14 +323,14 @@ export function DiagnosticsPage() {
                       </div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, flex: 2, paddingLeft: 16 }}>
                         {Object.entries(c.value_json || {}).map(([key, val]: [string, any]) => (
-                          <div key={key} style={{ padding: '8px 12px', borderRadius: 8, background: 'rgba(0,0,0,0.3)', minWidth: 120 }}>
+                          <div key={key} style={{ padding: '8px 12px', borderRadius: 8, background: 'var(--bg-input)', minWidth: 120 }}>
                             <div style={{ fontSize: 10, color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4, fontWeight: 600 }}>{key}</div>
                             {typeof val === 'object' && val !== null ? (
                               <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                                 {Object.entries(val).map(([subKey, subVal]) => (
-                                  <div key={subKey} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: 2 }}>
+                                  <div key={subKey} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, borderBottom: '1px solid var(--border-color)', paddingBottom: 2 }}>
                                     <span style={{ color: 'var(--text-secondary)' }}>{subKey}</span>
-                                    <span style={{ color: '#fff' }}>{String(subVal)}</span>
+                                    <span style={{ color: 'var(--text-primary)' }}>{String(subVal)}</span>
                                   </div>
                                 ))}
                               </div>
@@ -343,7 +343,7 @@ export function DiagnosticsPage() {
                     </div>
                   ))}
                   {recordDetail.components.length > 100 && (
-                    <div style={{ padding: 16, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 13, background: 'rgba(0,0,0,0.2)', borderRadius: 10 }}>
+                    <div style={{ padding: 16, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 13, background: 'var(--bg-panel-secondary)', borderRadius: 10 }}>
                       ... and {recordDetail.components.length - 100} more components
                     </div>
                   )}
@@ -376,7 +376,7 @@ export function DiagnosticsPage() {
                     </div>
                   ))}
                   {recordDetail.connections.length > 100 && (
-                    <div style={{ padding: 16, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 13, background: 'rgba(0,0,0,0.2)', borderRadius: 10 }}>
+                    <div style={{ padding: 16, textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 13, background: 'var(--bg-panel-secondary)', borderRadius: 10 }}>
                       ... and {recordDetail.connections.length - 100} more connections
                     </div>
                   )}

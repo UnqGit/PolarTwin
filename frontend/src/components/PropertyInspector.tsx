@@ -47,7 +47,7 @@ export const PropertyInspector: React.FC<InspectorProps> = ({ node, connections,
   }
   const allKeys = Array.from(new Set([...Object.keys(specObj), ...Object.keys(liveState), ...ratingKeys]));
 
-  const ignoreKeys = ['dummy', 'length', 'width', 'breadth', 'height', 'unit', 'inputs', 'status', 'rating', 'id', 'name', 'type', 'position', 'rotation', 'scale', 'measures'];
+  const ignoreKeys = ['dummy', 'length', 'width', 'breadth', 'height', 'unit', 'inputs', 'status', 'rating', 'id', 'name', 'type', 'position', 'rotation', 'scale', 'measures', 'failure_time', 'tolerance'];
   const propKeys = allKeys.filter(k => !ignoreKeys.includes(k.toLowerCase()));
 
   // Categorize properties
@@ -109,29 +109,53 @@ export const PropertyInspector: React.FC<InspectorProps> = ({ node, connections,
     
     let isOob = false;
     let limitStr = '';
+    let displayVal: any = undefined;
     
-    if (specVal !== undefined) {
-       if (typeof specVal === 'object' && specVal !== null) {
-          const min = (specVal as any).min;
-          const max = (specVal as any).max;
-          if (min !== undefined && max !== undefined) {
-             limitStr = `${min} : ${max}`;
-             if (typeof liveVal === 'number' && (liveVal < min || liveVal > max)) isOob = true;
-          }
-       } else if (typeof specVal === 'number') {
-          limitStr = `≤ ${specVal}`;
-          if (typeof liveVal === 'number' && liveVal > specVal) isOob = true;
-       }
+    // Handle nested dict values from runtime state (e.g., power: { value: 100, min: 0, max: 1000 })
+    if (typeof liveVal === 'object' && liveVal !== null && !Array.isArray(liveVal)) {
+      const liveObj = liveVal as Record<string, any>;
+      const numericVal = liveObj.value ?? liveObj.current;
+      const min = liveObj.min;
+      const max = liveObj.max;
+      
+      if (min !== undefined && max !== undefined) {
+        limitStr = `${min} : ${max}`;
+        if (typeof numericVal === 'number' && (numericVal < min || numericVal > max)) isOob = true;
+      } else if (max !== undefined) {
+        limitStr = `≤ ${max}`;
+        if (typeof numericVal === 'number' && numericVal > max) isOob = true;
+      }
+      
+      displayVal = numericVal;
+    } else if (liveVal !== undefined) {
+      displayVal = liveVal;
+    }
+    
+    // Fallback to spec if no live value
+    if (displayVal === undefined && specVal !== undefined) {
+      if (typeof specVal === 'object' && specVal !== null) {
+        const min = (specVal as any).min;
+        const max = (specVal as any).max;
+        if (min !== undefined && max !== undefined) {
+          limitStr = `${min} : ${max}`;
+        }
+        displayVal = (specVal as any).value ?? (specVal as any).current;
+      } else if (typeof specVal === 'number') {
+        limitStr = `≤ ${specVal}`;
+        displayVal = specVal;
+      } else {
+        displayVal = specVal;
+      }
     }
 
     const unit = getUnit(k);
     let valStr = '';
     
-    const displayVal = liveVal !== undefined ? liveVal : (specVal !== undefined && typeof specVal !== 'object' ? specVal : undefined);
-    
-    if (displayVal !== undefined) {
+    if (displayVal !== undefined && displayVal !== null) {
       if (typeof displayVal === 'number') {
          valStr = `${displayVal.toFixed(2)}`;
+      } else if (typeof displayVal === 'boolean') {
+         valStr = displayVal ? 'Yes' : 'No';
       } else {
          valStr = String(displayVal);
       }
@@ -153,7 +177,7 @@ export const PropertyInspector: React.FC<InspectorProps> = ({ node, connections,
           <div style={{ 
             color: isOob ? '#ef4444' : 'var(--text-primary)', 
             fontWeight: isOob ? 600 : 400 
-          }}>{valStr}</div>
+          }}>{valStr || '—'}</div>
         </div>
       </div>
     );

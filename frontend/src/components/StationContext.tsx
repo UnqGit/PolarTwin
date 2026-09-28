@@ -131,9 +131,7 @@ export const StationProvider: React.FC<{ children: ReactNode, stationId?: string
           if (data.components) {
             const newState: Record<string, unknown> = {};
             data.components.forEach((c: any) => {
-              if (c.value) {
-                Object.assign(newState, c.value);
-              }
+              newState[c.name] = { ...c.value, status: c.status };
             });
             liveStateRef.current = newState;
           }

@@ -271,8 +271,29 @@ export function ScenariosPage() {
     const lines = scenarioSource.split('\n');
     const idx = event.source_location - 1; // source_location is 1-indexed
     if (idx >= 0 && idx < lines.length) {
-      lines[idx] = newSourceSnippet;
-      setScenarioSource(lines.join('\n'));
+      // If the event had a multi-line block, replace all lines
+      let endIdx = idx;
+      if (lines[idx].trim().endsWith('{')) {
+        let braces = 1;
+        for (let i = idx + 1; i < lines.length; i++) {
+          if (lines[i].includes('{')) braces++;
+          if (lines[i].includes('}')) braces--;
+          endIdx = i;
+          if (braces === 0) break;
+        }
+      }
+      lines.splice(idx, endIdx - idx + 1, ...newSourceSnippet.split('\n'));
+      const newSource = lines.join('\n');
+      setScenarioSource(newSource);
+      // Re-parse and update selectedEvent so the inspector refreshes
+      api.parseScenarioRaw(newSource)
+        .then(events => {
+          setScenarioEvents(events);
+          // Find the updated event at the same source location
+          const updated = events.find((ev: SceneEventData) => ev.source_location === event.source_location);
+          if (updated) setSelectedEvent(updated);
+        })
+        .catch(console.error);
     }
   };
 
@@ -397,8 +418,8 @@ export function ScenariosPage() {
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             fontSize: '13px', padding: '4px 8px', borderRadius: '4px', cursor: 'grab', marginBottom: '2px',
-            backgroundColor: selectedEventDefId === e.name ? 'var(--bg-input)' : 'transparent',
-            color: selectedEventDefId === e.name ? 'var(--text-primary)' : 'var(--text-secondary)',
+            backgroundColor: selectedEventDefId === e.id ? 'var(--bg-input)' : 'transparent',
+            color: selectedEventDefId === e.id ? 'var(--text-primary)' : 'var(--text-secondary)',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexGrow: 1 }}>
@@ -409,8 +430,8 @@ export function ScenariosPage() {
             onClick={async (evt) => {
               evt.stopPropagation();
               if (confirm('Delete event definition?')) {
-                await api.deleteEventDefinition(e.name);
-                if (selectedEventDefId === e.name) setSelectedEventDefId(null);
+                await api.deleteEventDefinition(e.id);
+                if (selectedEventDefId === e.id) setSelectedEventDefId(null);
                 if (selectedStation) api.getEventDefinitions(selectedStation).then(setEventDefs);
               }
             }}
@@ -493,7 +514,33 @@ export function ScenariosPage() {
               Reset All
             </button>
             <button 
-              onClick={() => setTelemetryEnabled(!telemetryEnabled)}
+              onClick={async () => {
+                const newEnabled = !telemetryEnabled;
+                setTelemetryEnabled(newEnabled);
+                if (runId) {
+                  try {
+                    await api.setTelemetryPublishing(runId, newEnabled);
+                    if (newEnabled) {
+                      // Start periodic flush
+                      const flushInterval = setInterval(async () => {
+                        if (!runId) { clearInterval(flushInterval); return; }
+                        try {
+                          await fetch(`${import.meta.env.VITE_API_URL || '/api'}/simulations/${runId}/telemetry/flush`, { method: 'POST' });
+                        } catch (e) { console.error('Flush error:', e); }
+                      }, 5000);
+                      // Store interval ID for cleanup
+                      (window as any).__telemetryFlushInterval = flushInterval;
+                    } else {
+                      // Final flush and clear interval
+                      if ((window as any).__telemetryFlushInterval) {
+                        clearInterval((window as any).__telemetryFlushInterval);
+                        delete (window as any).__telemetryFlushInterval;
+                      }
+                      await fetch(`${import.meta.env.VITE_API_URL || '/api'}/simulations/${runId}/telemetry/flush`, { method: 'POST' });
+                    }
+                  } catch (e) { console.error('Telemetry toggle error:', e); }
+                }
+              }}
               style={{ 
                 fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', border: '1px solid var(--border-color)',
                 backgroundColor: telemetryEnabled ? 'rgba(239, 68, 68, 0.2)' : 'var(--bg-input)',
@@ -787,10 +834,10 @@ export function ScenariosPage() {
                     setEditingType('scenario');
                     setSelectedEventDefId(null);
                   } else if (newFileModal.type === 'event' && selectedStation) {
-                    await api.createEventDefinition(selectedStation, name);
+                    const res = await api.createEventDefinition(selectedStation, name);
                     if (selectedStation) api.getEventDefinitions(selectedStation).then(setEventDefs);
                     setEditingType('event');
-                    setSelectedEventDefId(name);
+                    setSelectedEventDefId(res.id);
                     setSelectedScenarioId(null);
                   }
                   setBottomTab('source');
@@ -813,10 +860,10 @@ export function ScenariosPage() {
                     setEditingType('scenario');
                     setSelectedEventDefId(null);
                   } else if (newFileModal.type === 'event' && selectedStation) {
-                    await api.createEventDefinition(selectedStation, name);
+                    const res = await api.createEventDefinition(selectedStation, name);
                     if (selectedStation) api.getEventDefinitions(selectedStation).then(setEventDefs);
                     setEditingType('event');
-                    setSelectedEventDefId(name);
+                    setSelectedEventDefId(res.id);
                     setSelectedScenarioId(null);
                   }
                   setBottomTab('source');
