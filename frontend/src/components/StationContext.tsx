@@ -59,11 +59,11 @@ export const StationContext = createContext<StationContextType>({
 
 export const useStation = () => useContext(StationContext);
 
-export const StationProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const StationProvider: React.FC<{ children: ReactNode, stationId?: string }> = ({ children, stationId }) => {
   const [availableStations, setAvailableStations] = useState<string[]>([]);
-  const [selectedStation, setSelectedStationState] = useState<string>(() => {
-    return localStorage.getItem('polartwin_selected_station') || '';
-  });
+  
+  // We use the route param if provided, otherwise fallback (for safety)
+  const selectedStation = stationId || '';
   
   const [hierarchy, setHierarchy] = useState<any | null>(null);
   const [connections, setConnections] = useState<any | null>(null);
@@ -86,15 +86,9 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
       .then(data => {
         const stationIds = data.map(s => s.station_id);
         setAvailableStations(stationIds);
-        
-        if (stationIds.length > 0 && (!selectedStation || !stationIds.includes(selectedStation))) {
-          const defaultStation = stationIds[0];
-          setSelectedStationState(defaultStation);
-          localStorage.setItem('polartwin_selected_station', defaultStation);
-        }
       })
       .catch(err => console.error("Failed to fetch stations:", err));
-  }, []); // Run once on mount
+  }, []);
 
   // Fetch data when selectedStation changes
   useEffect(() => {
@@ -105,53 +99,74 @@ export const StationProvider: React.FC<{ children: ReactNode }> = ({ children })
       return;
     }
 
-    let isMounted = true;
     setIsLoadingData(true);
-
+    
     Promise.all([
-      api.getHierarchy(selectedStation),
-      api.getConnections(selectedStation),
-      api.getSpec(selectedStation)
+      api.getHierarchy(selectedStation).catch(e => { console.error(e); return null; }),
+      api.getConnections(selectedStation).catch(e => { console.error(e); return null; }),
+      api.getSpec(selectedStation).catch(e => { console.error(e); return null; })
     ])
-    .then(([hierarchyData, connectionsData, specData]) => {
-      if (!isMounted) return;
-      setHierarchy(hierarchyData);
-      setConnections(connectionsData);
-      setSpec(specData);
+    .then(([hData, cData, sData]) => {
+      setHierarchy(hData);
+      setConnections(cData);
+      setSpec(sData);
       setIsLoadingData(false);
     })
     .catch(err => {
-      console.error("Failed to fetch station data:", err);
-      if (isMounted) setIsLoadingData(false);
+      console.error("Failed to load station data:", err);
+      setIsLoadingData(false);
     });
 
-    return () => {
-      isMounted = false;
-    };
   }, [selectedStation]);
 
-  const setSelectedStation = (station: string) => {
-    setSelectedStationState(station);
-    localStorage.setItem('polartwin_selected_station', station);
-  };
+  // Telemetry loop
+  useEffect(() => {
+    if (runId && simStatus === 'running') {
+      const interval = setInterval(() => {
+        api.getSimulationState(runId).then(data => {
+          setSimStatus(data.status);
+          setSimTime(data.simulation_time);
+          setSimState(data);
+          
+          if (data.components) {
+            const newState: Record<string, unknown> = {};
+            data.components.forEach((c: any) => {
+              if (c.value) {
+                Object.assign(newState, c.value);
+              }
+            });
+            liveStateRef.current = newState;
+          }
+        }).catch(err => console.error("Error polling sim state:", err));
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+  }, [runId, simStatus]);
 
   return (
-    <StationContext.Provider value={{ 
-      availableStations, 
-      selectedStation, 
-      setSelectedStation,
+    <StationContext.Provider value={{
+      availableStations,
+      selectedStation,
+      setSelectedStation: () => {}, // No-op now, driven by URL
       hierarchy,
       connections,
       spec,
       isLoadingData,
       liveStateRef,
-      selectedScenarioId, setSelectedScenarioId,
-      scenarioSource, setScenarioSource,
-      runId, setRunId,
-      simStatus, setSimStatus,
-      simTime, setSimTime,
-      simLog, setSimLog,
-      simState, setSimState
+      selectedScenarioId,
+      setSelectedScenarioId,
+      scenarioSource,
+      setScenarioSource,
+      runId,
+      setRunId,
+      simStatus,
+      setSimStatus,
+      simTime,
+      setSimTime,
+      simLog,
+      setSimLog,
+      simState,
+      setSimState,
     }}>
       {children}
     </StationContext.Provider>
