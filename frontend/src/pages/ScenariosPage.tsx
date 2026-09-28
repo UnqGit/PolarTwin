@@ -9,6 +9,30 @@ import { EventInspector } from '../components/EventInspector';
 import { SimulationMonitor } from '../components/SimulationMonitor';
 import { Play, Pause, RefreshCw, StepForward, Code, List, Activity, Library, ChevronUp, ChevronDown, MousePointer2, LayoutDashboard, Plus, Trash2, GitCompare, FileText, FilePlus } from 'lucide-react';
 import { ScenarioComparison } from '../components/ScenarioComparison';
+const STYLE_INJECTION = `
+  .glass-btn-sm {
+    transition: all 0.2s ease;
+  }
+  .glass-btn-sm:hover {
+    background: var(--accent-blue) !important;
+    color: #fff !important;
+    border-color: var(--accent-blue) !important;
+    box-shadow: 0 0 10px rgba(0, 230, 118, 0.3);
+  }
+  .topbar-select {
+    transition: border-color 0.2s;
+  }
+  .topbar-select:hover {
+    border-color: var(--accent-blue) !important;
+  }
+  .page-container::-webkit-scrollbar {
+    display: none;
+  }
+  .page-container {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+`;
 
 export function ScenariosPage() {
   const { 
@@ -405,7 +429,8 @@ export function ScenariosPage() {
   ], [libraryTabContent]);
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: 'var(--bg-main)', color: 'var(--text-primary)', overflow: 'hidden' }}>
+    <div className="page-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: 'var(--bg-main)', color: 'var(--text-primary)', overflow: 'hidden' }}>
+      <style>{STYLE_INJECTION}</style>
       
       {/* Top Bar */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px', backgroundColor: 'var(--bg-panel-secondary)', borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
@@ -420,7 +445,7 @@ export function ScenariosPage() {
               <option key={s.id} value={s.id}>{s.name}</option>
             ))}
           </select>
-          <button onClick={() => { setSelectedScenarioId(null); setScenarioEvents([]); setRunId(null); setSimStatus('Ready'); if (editingType === 'scenario') setScenarioSource(''); }} style={{ fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-input)', color: 'var(--text-secondary)' }}>Deselect</button>
+          <button className="glass-btn-sm" onClick={() => { setSelectedScenarioId(null); setScenarioEvents([]); setRunId(null); setSimStatus('Ready'); if (editingType === 'scenario') setScenarioSource(''); }} style={{ fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-input)', color: 'var(--text-secondary)' }}>Deselect</button>
           <span style={{ fontSize: '12px', padding: '4px 8px', backgroundColor: 'var(--bg-input)', borderRadius: '4px', fontFamily: 'monospace', border: '1px solid var(--border-color)' }}>
             {simStatus} | T={(simTime || 0).toFixed(1)}s
           </span>
@@ -761,8 +786,8 @@ export function ScenariosPage() {
                     setSelectedScenarioId(res.id);
                     setEditingType('scenario');
                     setSelectedEventDefId(null);
-                  } else if (newFileModal.type === 'event') {
-                    await api.createEventDefinition(name);
+                  } else if (newFileModal.type === 'event' && selectedStation) {
+                    await api.createEventDefinition(selectedStation, name);
                     if (selectedStation) api.getEventDefinitions(selectedStation).then(setEventDefs);
                     setEditingType('event');
                     setSelectedEventDefId(name);
@@ -787,8 +812,8 @@ export function ScenariosPage() {
                     setSelectedScenarioId(res.id);
                     setEditingType('scenario');
                     setSelectedEventDefId(null);
-                  } else if (newFileModal.type === 'event') {
-                    await api.createEventDefinition(name);
+                  } else if (newFileModal.type === 'event' && selectedStation) {
+                    await api.createEventDefinition(selectedStation, name);
                     if (selectedStation) api.getEventDefinitions(selectedStation).then(setEventDefs);
                     setEditingType('event');
                     setSelectedEventDefId(name);

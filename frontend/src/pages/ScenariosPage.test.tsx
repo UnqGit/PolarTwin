@@ -69,7 +69,7 @@ describe('ScenariosPage', () => {
 
   it('renders scenarios library and timeline editors', async () => {
     render(
-      <StationContext.Provider value={mockStation}>
+      <StationContext.Provider value={mockStation as any}>
         <ScenariosPage />
       </StationContext.Provider>
     );
@@ -90,7 +90,7 @@ describe('ScenariosPage', () => {
 
   it.skip('loads a scenario and initializes simulation', async () => {
     render(
-      <StationContext.Provider value={{...mockStation, selectedScenarioId: 'scen-1'}}>
+      <StationContext.Provider value={{...mockStation, selectedScenarioId: 'scen-1'} as any}>
         <ScenariosPage />
       </StationContext.Provider>
     );
@@ -114,7 +114,7 @@ describe('ScenariosPage', () => {
 
   it('handles playback controls', async () => {
     render(
-      <StationContext.Provider value={mockStation}>
+      <StationContext.Provider value={mockStation as any}>
         <ScenariosPage />
       </StationContext.Provider>
     );
@@ -140,7 +140,7 @@ describe('ScenariosPage', () => {
     (api.getScenarioSource as any).mockResolvedValue({ source: 'event:failure @Generator1 at=1.0 for=2.0\nevent:failure @Generator1 at=1.0 for=2.0\n' });
 
     render(
-      <StationContext.Provider value={{...mockStation, selectedScenarioId: 'scen-1'}}>
+      <StationContext.Provider value={{...mockStation, selectedScenarioId: 'scen-1'} as any}>
         <ScenariosPage />
       </StationContext.Provider>
     );

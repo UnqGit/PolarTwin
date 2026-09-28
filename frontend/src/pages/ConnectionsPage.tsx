@@ -392,8 +392,10 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
       
       {selectedName && root && connections && (
         <div style={{
-          width: 400, flexShrink: 0,
+          position: 'absolute', right: 0, top: 0, bottom: 0,
+          width: 400, zIndex: 100,
           background: 'var(--bg-panel)', borderLeft: '1px solid var(--border-color)',
+          boxShadow: '-4px 0 15px rgba(0,0,0,0.3)',
           display: 'flex', flexDirection: 'column', overflow: 'hidden'
         }}>
           <div style={{ padding: 16, borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
@@ -462,18 +464,10 @@ export function ConnectionsPage() {
       return;
     }
     const gen = sceneLayout.connectionRouterGenerator();
-    let frame: number;
-    const tick = () => {
-      const res = gen.next();
-      if (!res.done) {
-        setRenderedConnections([...sceneLayout.connections]);
-        frame = requestAnimationFrame(tick);
-      } else {
-        setRenderedConnections([...sceneLayout.connections]);
-      }
-    };
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
+    while (!gen.next().done) {
+      // Synchronously exhaust the generator
+    }
+    setRenderedConnections([...sceneLayout.connections]);
   }, [sceneLayout]);
 
   if (isLoadingData) {

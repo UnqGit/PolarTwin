@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { TwinViewer, type LightingMode } from '../components/TwinViewer';
+import { TwinViewer } from '../components/TwinViewer';
 import { useStation } from '../components/StationContext';
 
 export function DigitalTwin() {

@@ -59,7 +59,7 @@ describe('DiagnosticsPage', () => {
         availableStations: [],
         isLoadingData: false,
         setSelectedStation: vi.fn()
-      }}>
+      } as any}>
         <DiagnosticsPage />
       </StationContext.Provider>
     );
@@ -77,7 +77,7 @@ describe('DiagnosticsPage', () => {
         availableStations: [],
         isLoadingData: false,
         setSelectedStation: vi.fn()
-      }}>
+      } as any}>
         <DiagnosticsPage />
       </StationContext.Provider>
     );
@@ -108,7 +108,7 @@ describe('DiagnosticsPage', () => {
         availableStations: [],
         isLoadingData: false,
         setSelectedStation: vi.fn()
-      }}>
+      } as any}>
         <DiagnosticsPage />
       </StationContext.Provider>
     );

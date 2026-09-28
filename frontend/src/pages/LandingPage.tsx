@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, type StationManifest } from '../lib/api';
 import { Snowflake, Activity, Box, MapPin, Radio, MonitorPlay, Zap, Sun, Moon } from 'lucide-react';
@@ -26,8 +26,8 @@ export function LandingPage() {
       {/* Hero Section */}
       <section style={{
         position: 'relative',
-        height: '60vh',
-        minHeight: '400px',
+        height: '45vh',
+        minHeight: '350px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -48,7 +48,7 @@ export function LandingPage() {
         <div style={{
           position: 'absolute',
           top: 0, left: 0, right: 0, bottom: 0,
-          background: 'linear-gradient(to bottom, rgba(10,13,20,0.3) 0%, var(--bg-main) 100%)',
+          background: 'linear-gradient(to bottom, transparent 0%, var(--bg-main) 100%)',
           zIndex: 1
         }} />
 
@@ -87,7 +87,6 @@ export function LandingPage() {
           position: 'relative',
           zIndex: 2,
           textAlign: 'center',
-          color: '#ffffff',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -112,13 +111,14 @@ export function LandingPage() {
             fontWeight: 800, 
             letterSpacing: '-0.03em',
             margin: 0,
-            textShadow: '0 4px 12px rgba(0,0,0,0.5)'
+            color: 'var(--text-primary)',
+            textShadow: '0 4px 12px rgba(0,0,0,0.2)'
           }}>
             PolarTwin
           </h1>
           <p style={{ 
             fontSize: '20px', 
-            color: 'rgba(255,255,255,0.8)',
+            color: 'var(--text-secondary)',
             maxWidth: '600px',
             margin: '0 auto',
             lineHeight: 1.6
@@ -131,7 +131,7 @@ export function LandingPage() {
       {/* Stations Grid Section */}
       <section style={{
         flex: 1,
-        padding: '64px 24px',
+        padding: '32px 24px 64px 24px',
         maxWidth: '1200px',
         margin: '0 auto',
         width: '100%',
