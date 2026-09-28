@@ -133,7 +133,7 @@ export const api = {
     return res.json();
   },
   createEventDefinition: async (stationId: string, name: string) => {
-    const res = await fetch(`${API_BASE}/stations/${stationId}/event-definitions/${eventId}`, { method: 'POST' });
+    const res = await fetch(`${API_BASE}/stations/${stationId}/event-definitions/${name}`, { method: 'POST' });
     if (!res.ok) throw new Error("Failed to create event definition");
     return res.json();
   },
@@ -157,6 +157,11 @@ export const api = {
   },
 
   // Simulations
+  listSimulations: async () => {
+    const res = await fetch(`${API_BASE}/simulations`);
+    if (!res.ok) throw new Error("Failed to list simulations");
+    return res.json();
+  },
   createSimulation: async (stationId: string, scenarioId?: string, globalTolerance: number = 10.0) => {
     const res = await fetch(`${API_BASE}/simulations`, {
       method: 'POST',
@@ -196,7 +201,7 @@ export const api = {
     return res.json();
   },
   setComponentState: async (runId: string, componentId: string, stateUpdate: Record<string, unknown>) => {
-    const res = await fetch(`${API_BASE}/simulations/${runId}/components/${componentId}/state`, {
+    const res = await fetch(`${API_BASE}/simulations/${runId}/component/${componentId}/state`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(stateUpdate)
@@ -205,7 +210,7 @@ export const api = {
     return res.json();
   },
   setComponentTolerance: async (runId: string, componentId: string, tolerance: number) => {
-    const res = await fetch(`${API_BASE}/simulations/${runId}/components/${componentId}/tolerance`, {
+    const res = await fetch(`${API_BASE}/simulations/${runId}/tolerance/component/${componentId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ value: tolerance })
@@ -214,7 +219,7 @@ export const api = {
     return res.json();
   },
   setGlobalTolerance: async (runId: string, tolerance: number) => {
-    const res = await fetch(`${API_BASE}/simulations/${runId}/tolerance`, {
+    const res = await fetch(`${API_BASE}/simulations/${runId}/tolerance/global`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ value: tolerance })

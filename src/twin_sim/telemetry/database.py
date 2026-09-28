@@ -211,7 +211,7 @@ class TelemetryDatabase:
                    (SELECT COUNT(*) FROM telemetry_component_states WHERE record_id = r.id) as component_count,
                    (SELECT COUNT(*) FROM telemetry_connection_states WHERE record_id = r.id) as connection_count
             FROM telemetry_records r
-            WHERE r.station_id = ?
+            WHERE LOWER(r.station_id) = LOWER(?)
         """
         params = [station_id]
         if run_id:

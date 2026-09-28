@@ -38,7 +38,7 @@ class ScenarioManager:
     # ------------------------------------------------------------------
 
     def list_for_station(self, station_id: str) -> List[Dict[str, Any]]:
-        cur = self.db.conn.execute("SELECT * FROM scenario_files WHERE station_id = ?", (station_id,))
+        cur = self.db.conn.execute("SELECT * FROM scenario_files WHERE LOWER(station_id) = LOWER(?)", (station_id,))
         results = []
         for row in cur.fetchall():
             results.append({
@@ -159,7 +159,7 @@ class ScenarioManager:
     # ------------------------------------------------------------------
 
     def list_events(self, station_id: str) -> List[Dict[str, Any]]:
-        cur = self.db.conn.execute("SELECT * FROM event_files WHERE station_id = ?", (station_id,))
+        cur = self.db.conn.execute("SELECT * FROM event_files WHERE LOWER(station_id) = LOWER(?)", (station_id,))
         results = []
         for row in cur.fetchall():
             results.append({
