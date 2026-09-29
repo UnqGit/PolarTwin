@@ -249,7 +249,7 @@ def get_scenario_events(scenario_id: str):
                 "event_ref": e.event_ref,
                 "selector": e.selector,
                 "at": e.at,
-                "duration": e.duration,
+                "duration": None if e.duration == float("inf") else e.duration,
                 "payload": e.payload,
                 "source_location": getattr(e, 'source_location', 0),
                 "source_order": getattr(e, 'source_order', 0)
@@ -260,7 +260,7 @@ def get_scenario_events(scenario_id: str):
         raise HTTPException(404, str(e))
     except Exception as e:
         if hasattr(e, 'line_number') and getattr(e, 'line_number') is not None:
-            raise HTTPException(400, detail={"message": str(e), "line_number": e.line_number - 1})
+            raise HTTPException(400, detail={"message": str(e), "line_number": getattr(e, 'line_number') - 1})
         raise HTTPException(400, detail={"message": f"Error parsing scenario: {e}"})
 
 class ParseScenarioRequest(BaseModel):
@@ -276,7 +276,7 @@ def parse_scenario_raw(payload: ParseScenarioRequest):
                 "event_ref": e.event_ref,
                 "selector": e.selector,
                 "at": e.at,
-                "duration": e.duration,
+                "duration": None if e.duration == float("inf") else e.duration,
                 "payload": e.payload,
                 "source_location": getattr(e, 'source_location', 0),
                 "source_order": getattr(e, 'source_order', 0)
@@ -285,7 +285,7 @@ def parse_scenario_raw(payload: ParseScenarioRequest):
         ]
     except Exception as e:
         if hasattr(e, 'line_number') and getattr(e, 'line_number') is not None:
-            raise HTTPException(400, detail={"message": str(e), "line_number": e.line_number - 1})
+            raise HTTPException(400, detail={"message": str(e), "line_number": getattr(e, 'line_number') - 1})
         raise HTTPException(400, detail={"message": f"Error parsing scenario: {e}"})
 
 
@@ -481,17 +481,8 @@ def get_simulation_log(run_id: str):
     log = _manager.get_log(run_id)
     if log is None:
         raise HTTPException(404, "Simulation not found")
-    # Serialise engine telemetry for JSON response
-    return [
-        {
-            "time": r["time"],
-            "persistence_time": r["persistence_time"],
-            "source": r.get("source", "SIMULATION"),
-            "component_count": len(r.get("components", [])),
-            "connection_count": len(r.get("connections", [])),
-        }
-        for r in log
-    ]
+    # Return logs directly, they are already simple dicts
+    return log
 
 
 # ---------------------------------------------------------------------------
@@ -557,6 +548,10 @@ def get_run_metadata(run_id: str):
 def get_component_history(run_id: str, component_id: str):
     return _db.get_component_history(run_id, component_id)
 
+@app.get("/telemetry/runs/{run_id}/connections/{connection_id}/history")
+def get_connection_history(run_id: str, connection_id: str):
+    return _db.get_connection_history(run_id, connection_id)
+
 @app.get("/telemetry/runs/{run_id}/external/history")
 def get_external_history(run_id: str):
     return _db.get_external_history(run_id)
@@ -595,7 +590,6 @@ def set_component_tolerance(run_id: str, component_id: str, req: ComponentTolera
     
     # Update specification's tolerance
     comp.value["tolerance"] = req.value
-    save_station_values(rec.station_id, component_id, {"tolerance": req.value})
     return {"status": "ok", "component": component_id, "tolerance": req.value}
 
 @app.post("/simulations/{run_id}/component/{component_id}/state")

@@ -89,7 +89,7 @@ class TestConnectionParser(unittest.TestCase):
             f.write("Node1:Alarm1[signal]@m1\nAlarm1:Node2[signal]@m2\n")
             f_path = Path(f.name)
         try:
-            with self.assertRaisesRegex(ConnectionParseError, "must not have any outgoing"):
+            with self.assertRaisesRegex(ConnectionParseError, "must be DATA"):
                 parse_connection_file(f_path, hierarchy)
         finally:
             f_path.unlink()

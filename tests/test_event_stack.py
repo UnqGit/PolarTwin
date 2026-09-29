@@ -19,7 +19,7 @@ class TestEventStack(unittest.TestCase):
         self.assertEqual(eff.value["voltage"], 100)
         
         # Apply inf event
-        self.manager.apply_infinite_event(self.comp, "value.voltage", 150)
+        self.manager.apply_infinite_event("inf1", 0, 0.0, self.comp, "value.voltage", 150)
         
         eff = self.manager.get_effective_state_dict()["components"][0]
         self.assertEqual(eff.value["voltage"], 150)

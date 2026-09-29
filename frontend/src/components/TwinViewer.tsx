@@ -140,20 +140,38 @@ const HoverManager: React.FC<HoverManagerProps> = ({
   const { selectedName, setSelectedName } = React.useContext(SelectionContext);
 
   const [hasPointerMoved, setHasPointerMoved] = useState(false);
+  const isPointerInside = React.useRef(true);
 
   useEffect(() => {
     const el = gl?.domElement;
     if (!el) return;
     const onMove = () => {
       setHasPointerMoved(true);
-      el.removeEventListener('pointermove', onMove);
+      isPointerInside.current = true;
+    };
+    const onLeave = () => {
+      isPointerInside.current = false;
+      if (hoveredNameRef.current !== null) {
+        hoveredNameRef.current = null;
+        setHoveredName(null);
+        if (onHoverChange) onHoverChange(null);
+      }
+    };
+    const onEnter = () => {
+      isPointerInside.current = true;
     };
     el.addEventListener('pointermove', onMove);
-    return () => el.removeEventListener('pointermove', onMove);
-  }, [gl]);
+    el.addEventListener('pointerleave', onLeave);
+    el.addEventListener('pointerenter', onEnter);
+    return () => {
+      el.removeEventListener('pointermove', onMove);
+      el.removeEventListener('pointerleave', onLeave);
+      el.removeEventListener('pointerenter', onEnter);
+    };
+  }, [gl, setHoveredName, onHoverChange, hoveredNameRef]);
 
   useFrame(({ raycaster, scene }) => {
-    if (!hasPointerMoved) return;
+    if (!hasPointerMoved || !isPointerInside.current) return;
     
     const intersects = raycaster.intersectObjects(scene.children, true);
 

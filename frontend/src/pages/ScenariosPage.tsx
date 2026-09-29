@@ -7,8 +7,8 @@ import { DSLEditor } from '../components/DSLEditor';
 import type { SceneEventData } from '../components/TimelineEditor';
 import { EventInspector } from '../components/EventInspector';
 import { SimulationMonitor } from '../components/SimulationMonitor';
-import { Play, Pause, RefreshCw, StepForward, Code, List, Activity, Library, ChevronUp, ChevronDown, MousePointer2, LayoutDashboard, Plus, Trash2, GitCompare, FileText, FilePlus, Edit2, PanelLeft, PanelRight, PanelBottom } from 'lucide-react';
-import { ScenarioComparison } from '../components/ScenarioComparison';
+import { Play, Pause, RefreshCw, StepForward, Code, List, Activity, Library, ChevronUp, ChevronDown, MousePointer2, LayoutDashboard, Trash2, FileText, FilePlus, PanelLeft, PanelRight, PanelBottom } from 'lucide-react';
+import { formatTime } from '../utils';
 const STYLE_INJECTION = `
   .glass-btn-sm {
     transition: all 0.2s ease;
@@ -56,6 +56,7 @@ export function ScenariosPage() {
   const [selectedComponentName, setSelectedComponentName] = useState<string | null>(null);
   const [errorLine, setErrorLine] = useState<number | undefined>(undefined);
   const [validationErrors, setValidationErrors] = useState<{ message: string; line_number?: number }[]>([]);
+  const [compileLogs, setCompileLogs] = useState<{message: string, isError: boolean}[]>([]);
 
   // Events library
   const [eventDefs, setEventDefs] = useState<any[]>([]);
@@ -74,7 +75,7 @@ export function ScenariosPage() {
   const [timelineOpen, setTimelineOpen] = useState(true);
   const [bottomOpen, setBottomOpen] = useState(false);
   const [leftOpen, setLeftOpen] = useState(true);
-  const [bottomTab, setBottomTab] = useState<'source' | 'log' | 'diagnostics' | 'inspector' | 'monitor' | 'compare'>('source');
+  const [bottomTab, setBottomTab] = useState<'source' | 'log' | 'diagnostics' | 'inspector' | 'monitor'>('source');
 
   const [rightPanelWidth, setRightPanelWidth] = useState(450);
   const [bottomPanelHeight, setBottomPanelHeight] = useState(192);
@@ -108,25 +109,22 @@ export function ScenariosPage() {
 
   useEffect(() => {
     if (!selectedStation) return;
-    api.getScenarios(selectedStation).then(setScenarios).catch(console.error);
+    api.getScenarios(selectedStation).then(res => {
+      setScenarios(res);
+      if (res.length > 0 && !selectedScenarioId && !selectedEventDefId) {
+        setSelectedScenarioId(res[0].id);
+      }
+    }).catch(console.error);
     if (selectedStation) api.getEventDefinitions(selectedStation).then(setEventDefs).catch(console.error);
-  }, [selectedStation]);
+  }, [selectedStation, selectedScenarioId, selectedEventDefId]);
 
   useEffect(() => {
-    console.log('EFFECT RUNNING:', { editingType, selectedScenarioId, selectedStation });
     if (editingType === 'scenario' && selectedScenarioId) {
-      console.log('CALLING API getScenarioSource');
       api.getScenarioSource(selectedScenarioId).then(res => {
         const src = res.source.replace(/\r\n/g, '\n');
         setScenarioSource(src);
         setSavedScenarioSource(src);
       }).catch(console.error);
-      if (selectedStation) {
-        api.createSimulation(selectedStation, selectedScenarioId, 10.0, Object.keys(valueOverrides).length > 0 ? valueOverrides : undefined).then(res => {
-          setRunId(res.runId);
-          setSimStatus(res.status);
-        }).catch(console.error);
-      }
     } else if (editingType === 'event' && selectedEventDefId) {
       api.getEventDefinitionSource(selectedEventDefId).then(res => {
         const src = res.source.replace(/\r\n/g, '\n');
@@ -141,28 +139,23 @@ export function ScenariosPage() {
     }
   }, [selectedScenarioId, selectedEventDefId, editingType, selectedStation]);
 
-  // Ctrl+S handler
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
-        e.preventDefault();
-        saveSource();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [editingType, selectedScenarioId, selectedEventDefId, scenarioSource, selectedStation]);
+  // Ctrl+S handler is implemented below saveSource
 
   useEffect(() => {
     if (editingType === 'scenario' && scenarioSource) {
       const timer = setTimeout(() => {
+        const start = performance.now();
         api.parseScenarioRaw(scenarioSource)
           .then(events => {
+            const end = performance.now();
+            setCompileLogs([{ message: `Successfully compiled in ${(end - start).toFixed(1)}ms`, isError: false }]);
             setScenarioEvents(events);
             setErrorLine(undefined);
             setValidationErrors([]);
           })
           .catch(err => {
+            const end = performance.now();
+            setCompileLogs([{ message: `Failed to compile after ${(end - start).toFixed(1)}ms`, isError: true }]);
             console.error(err);
             if (err.line_number !== undefined) {
               setErrorLine(err.line_number);
@@ -178,32 +171,31 @@ export function ScenariosPage() {
       setScenarioEvents([]);
       setErrorLine(undefined);
       setValidationErrors([]);
+      setCompileLogs([]);
     }
   }, [scenarioSource, editingType]);
 
+  // Auto-stop simulation when simulationDuration is reached
   useEffect(() => {
-    let interval: any;
-    if (runId && (simStatus === 'RUNNING' || simStatus === 'running')) {
-      interval = setInterval(() => {
-        api.getSimulationState(runId).then(state => {
-          if (state) {
-            setSimTime(state.simulation_time);
-            setSimState(state);
-            setSimStatus(state.status);
-            if (simulationDuration > 0 && state.simulation_time >= simulationDuration) {
-              api.resetSimulation(runId).then(() => {
-                setRunId(null);
-                setSimStatus('Ready');
-                setSimTime(0);
-                setSimState(null);
-              });
-            }
-          }
-        }).catch(console.error);
-      }, 1000);
+    if (runId && simulationDuration > 0 && simTime >= simulationDuration && (simStatus === 'RUNNING' || simStatus === 'running')) {
+      handleStartStop(); // This handles stopping and flushing telemetry
     }
-    return () => clearInterval(interval);
-  }, [runId, simStatus, simulationDuration]);
+  }, [runId, simTime, simStatus, simulationDuration]);
+
+  // Auto-flush telemetry periodically while running
+  useEffect(() => {
+    let flushInterval: any;
+    if (runId && (simStatus === 'RUNNING' || simStatus === 'running' || simStatus === 'PAUSED' || simStatus === 'paused')) {
+      flushInterval = setInterval(async () => {
+        try {
+          await fetch(`${import.meta.env.VITE_API_URL || '/api'}/simulations/${runId}/telemetry/flush`, { method: 'POST' });
+        } catch (e) { console.error('Flush error:', e); }
+      }, 5000);
+    }
+    return () => {
+      if (flushInterval) clearInterval(flushInterval);
+    };
+  }, [runId, simStatus]);
 
   const handleStartStop = async () => {
     if (!runId) {
@@ -213,10 +205,24 @@ export function ScenariosPage() {
         const res = await api.createSimulation(selectedStation, selectedScenarioId, 20.0, Object.keys(valueOverrides).length > 0 ? valueOverrides : undefined);
         setRunId(res.runId);
         setSimStatus(res.status);
+        if (telemetryEnabled) {
+          await api.setTelemetryPublishing(res.runId, true);
+        }
       } catch (err: any) {
         alert("Failed to start simulation: " + (err.message || err.toString()));
       }
     } else {
+      if (telemetryEnabled) {
+        try {
+          await fetch(`${import.meta.env.VITE_API_URL || '/api'}/simulations/${runId}/telemetry/flush`, { method: 'POST' });
+        } catch (e) {
+          console.error('Final flush error:', e);
+        }
+        if ((window as any).__telemetryFlushInterval) {
+          clearInterval((window as any).__telemetryFlushInterval);
+          delete (window as any).__telemetryFlushInterval;
+        }
+      }
       await api.stopSimulation(runId);
       setRunId(null);
       setSimStatus('Ready');
@@ -267,7 +273,7 @@ export function ScenariosPage() {
       }
 
       const fullState = await api.getTelemetryRecord(targetRecord.id);
-      const mappedState: any = { components: {}, connections: {}, external: fullState.external?.[0]?.external_json || {} };
+      const mappedState: any = { components: {}, connections: {}, external: fullState.external || {} };
 
       fullState.components.forEach((c: any) => {
         mappedState.components[c.component_name] = { status: c.status, value: c.value_json };
@@ -314,21 +320,25 @@ export function ScenariosPage() {
     if (editingType === 'scenario' && selectedScenarioId) {
       await api.updateScenarioSource(selectedScenarioId, cleanSource);
       setScenarioSource(cleanSource); setSavedScenarioSource(cleanSource);
-      if (selectedStation) {
-        const res = await api.createSimulation(selectedStation, selectedScenarioId, 10.0, Object.keys(valueOverrides).length > 0 ? valueOverrides : undefined);
-        setRunId(res.runId);
-        setSimStatus(res.status);
-        setSimTime(0);
-        setSimState(null);
-      }
     } else if (editingType === 'event' && selectedEventDefId) {
       await api.updateEventDefinitionSource(selectedEventDefId, cleanSource);
       setScenarioSource(cleanSource); setSavedScenarioSource(cleanSource);
-      // Event defs don't need a full simulation restart directly
     }
   };
 
-  const toggleBottomTab = (tab: 'source' | 'log' | 'diagnostics' | 'inspector' | 'monitor' | 'compare') => {
+  // Ctrl+S handler using latest saveSource
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        saveSource();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [saveSource]);
+
+  const toggleBottomTab = (tab: 'source' | 'log' | 'diagnostics' | 'inspector' | 'monitor') => {
     if (bottomOpen && bottomTab === tab) {
       setBottomOpen(false);
     } else {
@@ -430,11 +440,19 @@ export function ScenariosPage() {
             color: selectedScenarioId === s.id ? 'var(--text-primary)' : 'var(--text-secondary)',
           }}
           onClick={() => {
-            setEditingType('scenario');
-            setSelectedScenarioId(s.id);
-            setSelectedEventDefId(null);
-            setBottomTab('source');
-            setBottomOpen(true);
+            if (selectedScenarioId === s.id) {
+              setSelectedScenarioId(null);
+              setScenarioEvents([]);
+              setRunId(null);
+              setSimStatus('Ready');
+              if (editingType === 'scenario') setScenarioSource('');
+            } else {
+              setEditingType('scenario');
+              setSelectedScenarioId(s.id);
+              setSelectedEventDefId(null);
+              setBottomTab('source');
+              setBottomOpen(true);
+            }
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexGrow: 1 }}>
@@ -481,10 +499,14 @@ export function ScenariosPage() {
             evt.dataTransfer.setData('application/x-event-def', 'true');
           }}
           onClick={() => {
-            setEditingType('event');
-            setSelectedEventDefId(e.id);
-            setBottomTab('source');
-            setBottomOpen(true);
+            if (selectedEventDefId === e.id) {
+              setSelectedEventDefId(null);
+            } else {
+              setEditingType('event');
+              setSelectedEventDefId(e.id);
+              setBottomTab('source');
+              setBottomOpen(true);
+            }
           }}
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -538,9 +560,20 @@ export function ScenariosPage() {
             ))}
           </select>
           <button className="glass-btn-sm" onClick={() => { setSelectedScenarioId(null); setScenarioEvents([]); setRunId(null); setSimStatus('Ready'); if (editingType === 'scenario') setScenarioSource(''); }} style={{ fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-input)', color: 'var(--text-secondary)' }}>Deselect</button>
+          
+          <button className="glass-btn-sm" onClick={saveSource} style={{ fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-input)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <FileText size={14} />
+            Save
+          </button>
+          {scenarioSource !== savedScenarioSource && (
+            <span style={{ fontSize: '12px', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#f59e0b' }} />
+              Unsaved changes
+            </span>
+          )}
 
           <span style={{ fontSize: '12px', padding: '4px 8px', backgroundColor: 'var(--bg-input)', borderRadius: '4px', fontFamily: 'monospace', border: '1px solid var(--border-color)' }}>
-            {simStatus} | T={(simTime || 0).toFixed(1)}s
+            {simStatus} | T={formatTime(simTime || 0)}
           </span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -602,32 +635,8 @@ export function ScenariosPage() {
               Reset All
             </button>
             <button
-              onClick={async () => {
-                const newEnabled = !telemetryEnabled;
-                setTelemetryEnabled(newEnabled);
-                if (runId) {
-                  try {
-                    await api.setTelemetryPublishing(runId, newEnabled);
-                    if (newEnabled) {
-                      // Start periodic flush
-                      const flushInterval = setInterval(async () => {
-                        if (!runId) { clearInterval(flushInterval); return; }
-                        try {
-                          await fetch(`${import.meta.env.VITE_API_URL || '/api'}/simulations/${runId}/telemetry/flush`, { method: 'POST' });
-                        } catch (e) { console.error('Flush error:', e); }
-                      }, 5000);
-                      // Store interval ID for cleanup
-                      (window as any).__telemetryFlushInterval = flushInterval;
-                    } else {
-                      // Final flush and clear interval
-                      if ((window as any).__telemetryFlushInterval) {
-                        clearInterval((window as any).__telemetryFlushInterval);
-                        delete (window as any).__telemetryFlushInterval;
-                      }
-                      await fetch(`${import.meta.env.VITE_API_URL || '/api'}/simulations/${runId}/telemetry/flush`, { method: 'POST' });
-                    }
-                  } catch (e) { console.error('Telemetry toggle error:', e); }
-                }
+              onClick={() => {
+                setTelemetryEnabled(!telemetryEnabled);
               }}
               style={{
                 fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', border: '1px solid var(--border-color)',
@@ -793,7 +802,7 @@ export function ScenariosPage() {
                     </div>
                   ) : (
                     <div style={{ fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '4px 0' }}>
-                      {bottomTab === 'log' ? 'Simulation Log' : bottomTab === 'compare' ? 'Scenario Comparison' : bottomTab}
+                      {bottomTab === 'log' ? 'Simulation Log' : bottomTab}
                     </div>
                   )}
                 </div>
@@ -814,27 +823,36 @@ export function ScenariosPage() {
               )}
 
               {bottomTab === 'log' && (
-                <div style={{ padding: '16px', height: '100%', overflowY: 'auto', fontFamily: 'monospace', fontSize: '14px' }}>
-                  {simLog.length === 0 ? (
-                    <div style={{ color: 'var(--text-tertiary)' }}>No log entries yet.</div>
-                  ) : (
-                    simLog.map((log, i) => (
-                      <div key={i} style={{ marginBottom: '4px', color: 'var(--text-primary)' }}>
-                        <span style={{ color: 'var(--text-tertiary)' }}>[{log.time.toFixed(1)}s]</span> {JSON.stringify(log)}
-                      </div>
-                    ))
-                  )}
+                <div style={{ padding: '16px', height: '100%', overflowY: 'auto', fontFamily: 'monospace', fontSize: '13px' }}>
+                  {compileLogs.map((log, i) => (
+                    <div key={`comp-${i}`} style={{ color: log.isError ? '#ef4444' : '#10b981', marginBottom: '8px' }}>
+                      [Compiler] {log.message}
+                    </div>
+                  ))}
+                  {validationErrors.map((err, i) => (
+                    <div key={`err-${i}`} style={{ color: '#ef4444', marginBottom: '8px' }}>
+                      [Parse Error] {err.line_number !== undefined ? `Line ${err.line_number + 1}: ` : ''}{err.message}
+                    </div>
+                  ))}
+                  
+                  {runId && <div style={{ borderTop: '1px solid var(--border-color)', margin: '12px 0' }} />}
+                  
+                  {runId && simLog.map((log, i) => (
+                    <div key={`sim-${i}`} style={{ marginBottom: '4px', color: log.level === 'ERROR' ? '#ef4444' : log.level === 'WARN' ? '#f59e0b' : 'var(--text-primary)' }}>
+                      <span style={{ color: 'var(--text-tertiary)' }}>[{formatTime(log.time || 0)}]</span> {log.message || JSON.stringify(log)}
+                    </div>
+                  ))}
                 </div>
               )}
 
               {bottomTab === 'diagnostics' && (
-                <div style={{ padding: '16px', height: '100%', overflowY: 'auto' }}>
-                  {validationErrors.length === 0 ? (
-                    <div style={{ color: 'var(--text-tertiary)' }}>No diagnostics or validation errors.</div>
+                <div style={{ padding: '16px', height: '100%', overflowY: 'auto', fontFamily: 'monospace', fontSize: '13px' }}>
+                  {simLog.length === 0 ? (
+                    <div style={{ color: 'var(--text-tertiary)' }}>No simulation diagnostics recorded yet.</div>
                   ) : (
-                    validationErrors.map((err, i) => (
-                      <div key={i} style={{ color: '#ef4444', marginBottom: '8px', fontSize: '13px' }}>
-                        {err.line_number !== undefined ? `Line ${err.line_number + 1}: ` : ''}{err.message}
+                    simLog.map((log, i) => (
+                      <div key={`sim-${i}`} style={{ marginBottom: '4px', color: log.level === 'ERROR' ? '#ef4444' : log.level === 'WARN' ? '#f59e0b' : 'var(--text-primary)' }}>
+                        <span style={{ color: 'var(--text-tertiary)' }}>[{log.time?.toFixed(1) || '0.0'}h]</span> {log.message || JSON.stringify(log)}
                       </div>
                     ))
                   )}
@@ -851,10 +869,6 @@ export function ScenariosPage() {
 
               {bottomTab === 'monitor' && (
                 <SimulationMonitor simState={simState} />
-              )}
-
-              {bottomTab === 'compare' && (
-                <ScenarioComparison stationId={selectedStation || ''} />
               )}
             </div>
           )}
@@ -895,13 +909,6 @@ export function ScenariosPage() {
               style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: bottomOpen && bottomTab === 'monitor' ? 'var(--accent-blue)' : 'var(--text-secondary)' }}
             >
               <LayoutDashboard size={20} />
-            </button>
-            <button
-              onClick={() => toggleBottomTab('compare')}
-              title="Compare Scenarios"
-              style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: bottomOpen && bottomTab === 'compare' ? 'var(--accent-blue)' : 'var(--text-secondary)' }}
-            >
-              <GitCompare size={20} />
             </button>
           </div>
         </div>

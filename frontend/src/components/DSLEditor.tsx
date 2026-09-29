@@ -91,14 +91,6 @@ export function DSLEditor({ value, onChange, selectedLine, errorLine }: DSLEdito
     }
   }, [selectedLine, errorLine, monaco]);
 
-  useEffect(() => {
-    if (editorRef.current) {
-      const currentModelValue = editorRef.current.getValue();
-      if (value !== currentModelValue) {
-        editorRef.current.setValue(value);
-      }
-    }
-  }, [value]);
 
   return (
     <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
@@ -110,6 +102,7 @@ export function DSLEditor({ value, onChange, selectedLine, errorLine }: DSLEdito
         height="100%"
         language="twin-dsl"
         theme={currentTheme}
+        value={value}
         onChange={(val) => onChange(val || '')}
         onMount={handleEditorDidMount}
         beforeMount={handleEditorWillMount}

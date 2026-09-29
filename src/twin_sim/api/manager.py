@@ -148,6 +148,22 @@ class RunRecord:
     def state_snapshot(self) -> Dict[str, Any]:
         """Return the current effective simulation state as a JSON-serialisable dict."""
         eff = self.engine.state.get_effective_state_dict()
+        
+        # Clean infinite values for JSON parsing in JS
+        active_evs = []
+        for layer in self.engine.state.active_layers + self.engine.state.permanent_layers:
+            d = layer.model_dump()
+            if d.get("end_time") == float("inf"):
+                d["end_time"] = None
+            active_evs.append(d)
+            
+        upcoming_evs = []
+        for scene in self.engine.scenes:
+            d = scene.model_dump()
+            if d.get("duration") == float("inf"):
+                d["duration"] = None
+            upcoming_evs.append(d)
+            
         return {
             "run_id": self.run_id,
             "station_id": self.station_id,
@@ -157,8 +173,8 @@ class RunRecord:
             "components": [c.model_dump() for c in eff["components"]],
             "connections": [c.model_dump() for c in eff["connections"]],
             "external": eff["external"].model_dump() if hasattr(eff["external"], "model_dump") else {},
-            "active_events": [layer.model_dump() for layer in self.engine.state.active_layers + self.engine.state.permanent_layers],
-            "upcoming_events": [scene.model_dump() for scene in self.engine.scenes],
+            "active_events": active_evs,
+            "upcoming_events": upcoming_evs,
         }
 
     def summary(self) -> Dict[str, Any]:
@@ -298,6 +314,7 @@ class SimulationManager:
     def stop_run(self, run_id: str) -> bool:
         rec = self.get_run(run_id)
         if rec:
+            self.flush_telemetry(run_id)
             rec.stop()
             if self._telemetry_db:
                 self._telemetry_db.update_run_status(run_id, "FINISHED")
@@ -360,18 +377,32 @@ class SimulationManager:
         if self._telemetry_db is None:
             return 0
         rec = self.get_run(run_id)
-        if not rec or not rec.engine.telemetry:
+        if not rec:
             return 0
 
+        # Flush telemetry records
         records = rec.engine.telemetry[:]
         rec.engine.telemetry.clear()
 
-        self._telemetry_db.insert_telemetry_batch(
-            run_id=run_id,
-            station_id=rec.station_id,
-            source="SIMULATION",
-            records=records,
-        )
+        if records or getattr(rec.engine, 'logs', []):
+            if not rec._db_created and self._telemetry_db:
+                self._telemetry_db.create_simulation_run(rec.run_id, rec.station_id, rec.scenario_id)
+                rec._db_created = True
+
+        if records:
+            self._telemetry_db.insert_telemetry_batch(
+                run_id=run_id,
+                station_id=rec.station_id,
+                source="SIMULATION",
+                records=records,
+            )
+        
+        # Flush simulation logs
+        logs = getattr(rec.engine, 'logs', [])[:]
+        if logs:
+            self._telemetry_db.insert_simulation_logs(run_id, logs)
+            rec.engine.logs.clear()
+            
         return len(records)
 
     # ------------------------------------------------------------------
@@ -385,11 +416,14 @@ class SimulationManager:
         return None
 
     def get_log(self, run_id: str) -> Optional[List[Dict[str, Any]]]:
-        """Return all buffered telemetry from the engine (not yet persisted to DB)."""
+        """Return persisted logs and any un-flushed logs."""
+        logs = []
+        if self._telemetry_db:
+            logs.extend(self._telemetry_db.get_simulation_logs(run_id))
         rec = self.get_run(run_id)
-        if rec:
-            return list(rec.engine.telemetry)
-        return None
+        if rec and hasattr(rec.engine, 'logs'):
+            logs.extend(rec.engine.logs)
+        return logs
 
     def get_persisted_telemetry(self, run_id: str) -> Optional[Dict[str, Any]]:
         """Get the latest persisted telemetry record from DB."""

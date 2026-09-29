@@ -127,7 +127,7 @@ export const StationProvider: React.FC<{ children: ReactNode, stationId?: string
 
   // Telemetry loop
   useEffect(() => {
-    if (runId && simStatus === 'running') {
+    if (runId && (simStatus === 'running' || simStatus === 'RUNNING')) {
       const interval = setInterval(() => {
         api.getSimulationState(runId).then(data => {
           setSimStatus(data.status);
@@ -142,6 +142,10 @@ export const StationProvider: React.FC<{ children: ReactNode, stationId?: string
             liveStateRef.current = newState;
           }
         }).catch(err => console.error("Error polling sim state:", err));
+
+        api.getSimulationLog(runId).then(logs => {
+          setSimLog(logs);
+        }).catch(err => console.error("Error polling sim log:", err));
       }, 1000);
       return () => clearInterval(interval);
     }

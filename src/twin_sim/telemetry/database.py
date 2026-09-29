@@ -129,6 +129,16 @@ class TelemetryDatabase:
                     FOREIGN KEY(record_id) REFERENCES telemetry_records(id)
                 )
             """)
+            self.conn.execute("""
+                CREATE TABLE IF NOT EXISTS simulation_logs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    run_id TEXT,
+                    simulation_time REAL,
+                    level TEXT,
+                    message TEXT,
+                    FOREIGN KEY(run_id) REFERENCES simulation_runs(id)
+                )
+            """)
             
             # Indexes
             self.conn.execute("CREATE INDEX IF NOT EXISTS idx_record_run ON telemetry_records(run_id, simulation_time)")
@@ -318,6 +328,35 @@ class TelemetryDatabase:
             for row in cur.fetchall()
         ]
 
+
+    def get_connection_history(self, run_id: str, connection_id: str) -> List[Dict[str, Any]]:
+        # connection_id format from frontend: source--target--index
+        try:
+            if '--' in connection_id:
+                parts = connection_id.split('--')
+                source, target = parts[0], parts[1]
+            else:
+                source, target, _ = connection_id.split('-')
+        except ValueError:
+            return []
+            
+        query = '''
+            SELECT r.simulation_time, c.status
+            FROM telemetry_records r
+            JOIN telemetry_connection_states c ON r.id = c.record_id
+            WHERE r.run_id = ? AND c.source_name = ? AND c.target_name = ?
+            ORDER BY r.simulation_time ASC
+        '''
+        cur = self.conn.execute(query, (run_id, source, target))
+        return [
+            {
+                "time": row["simulation_time"],
+                "status": row["status"],
+                "value": {}
+            }
+            for row in cur.fetchall()
+        ]
+
     def get_external_history(self, run_id: str) -> List[Dict[str, Any]]:
         query = """
             SELECT r.simulation_time, e.external_json
@@ -357,6 +396,9 @@ class TelemetryDatabase:
         
         # Populate run metadata (counts) if necessary, or just return them
         return runs
+
+    def insert_simulation_logs(self, run_id: str, logs: List[Dict[str, Any]]) -> None:
+        if not logs: return
         with self.conn:
             self.conn.executemany(
                 "INSERT INTO simulation_logs (run_id, simulation_time, level, message) VALUES (?, ?, ?, ?)",

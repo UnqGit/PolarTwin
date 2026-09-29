@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Trash2 } from 'lucide-react';
+import { formatTime } from '../utils';
 
 export interface SceneEventData {
   event_ref: string;
@@ -178,7 +179,7 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
           {/* Playhead */}
           <div style={{ position: 'absolute', top: 30, bottom: 0, width: '2px', backgroundColor: '#ef4444', zIndex: 10, boxShadow: '0 0 8px rgba(239,68,68,0.8)', left: `${simTime * PIXELS_PER_UNIT}px`, transition: 'left 0.1s linear' }}>
             <div style={{ position: 'absolute', top: '-24px', transform: 'translateX(-50%)', backgroundColor: '#ef4444', color: '#fff', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
-              {(simTime || 0).toFixed(1)}
+              {formatTime(simTime || 0)}
             </div>
           </div>
 

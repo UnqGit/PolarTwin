@@ -130,7 +130,30 @@ class ScenarioManager:
 
     def get_parsed_events(self, scenario_id: str) -> List[SceneEvent]:
         source = self.get_source(scenario_id)
-        return parse_scene_string(source)
+        events = parse_scene_string(source)
+        
+        # Merge event definitions for inline events
+        for ev in events:
+            if not ev.payload:  # empty dict
+                try:
+                    event_def = self.get_event(f"{scenario_id.split(':')[0]}:{ev.event_ref}")
+                    from twin_sim.dsl.event_parser import parse_event_file
+                    import tempfile
+                    import os
+                    # A bit hacky, but parse_event_file needs a Path. We can parse string directly if we write a helper, or just use a temp file.
+                    # Alternatively, write a parse_event_string function. Let's just create a temp file.
+                    fd, path = tempfile.mkstemp(suffix=".event")
+                    with os.fdopen(fd, "w") as f:
+                        f.write(event_def["source"])
+                    from pathlib import Path
+                    parsed_def = parse_event_file(Path(path))
+                    os.remove(path)
+                    ev.payload = parsed_def.set_fixed
+                    if not ev.selector:
+                        ev.selector = f"@{parsed_def.target}"
+                except FileNotFoundError:
+                    pass
+        return events
 
     def validate(self, scenario_id: str) -> Dict[str, Any]:
         try:

@@ -43,11 +43,23 @@ def _v(data: Any, key: str, default: float) -> float:
     except (TypeError, ValueError):
         return default
 
-
 def _set_v(data: Any, key: str, value: float):
     """Set a value inside a dict-like value object."""
     if isinstance(data, dict):
         data[key] = value
+
+def _update_field(c, field: str, new_val: float):
+    obj = c.value.get(field)
+    if isinstance(obj, dict):
+        obj["value"] = new_val
+    elif obj is not None:
+        # Upgrade scalar to dict to preserve its value as max
+        c.value[field] = {
+            "value": new_val,
+            "max": float(obj)
+        }
+    else:
+        c.value[field] = new_val
 
 
 class HierarchyNode:
@@ -230,6 +242,9 @@ class SimulationEngineCore:
         # Telemetry list (one entry per tick when publishing is enabled)
         self.telemetry: List[Dict[str, Any]] = []
         self.telemetry_publishing: bool = False
+        
+        # Simulation event logs
+        self.logs: List[Dict[str, Any]] = []
 
         # Build connection graph from initial base connections
         self._conn_graph = ConnectionGraph(
@@ -263,6 +278,8 @@ class SimulationEngineCore:
         base_comps = self.state.base_components
         base_conns = self.state.base_connections
         external = self.state.base_external
+        
+        prev_statuses = {name: c.status for name, c in base_comps.items()}
 
         # Build effective status map (considers event layers) for hierarchical checks
         eff = self.state.get_effective_state_dict()
@@ -300,13 +317,24 @@ class SimulationEngineCore:
 
         # ── Step 14-15: Write runtime state ──────────────────────────────
         # (base_comps and base_conns are already the runtime state; we mutate in-place)
+        
+        # Log status changes
+        for name, c in base_comps.items():
+            prev = prev_statuses.get(name)
+            if prev and c.status != prev:
+                level = "ERROR" if c.status == "failure" else ("WARN" if c.status == "inactive" else "INFO")
+                self.logs.append({
+                    "time": self.time,
+                    "level": level,
+                    "message": f"Component '{name}' status changed from {prev.upper()} to {c.status.upper()}"
+                })
 
         # ── Recalculate effective state with new physics base ─────────────
         self.state.recalculate_effective_state()
 
         # ── Steps 17-18: Telemetry ───────────────────────────────────────
-        if self.telemetry_publishing:
-            self.telemetry.append(self._snapshot(base_comps, base_conns, external))
+        # if self.telemetry_publishing:
+        self.telemetry.append(self._snapshot(self.state.effective_components, self.state.effective_connections, self.state.effective_external))
 
     def run_duration(self, hours: float):
         """Run for the given number of simulation hours."""
@@ -341,11 +369,10 @@ class SimulationEngineCore:
 
                 is_inf = scene.duration == float("inf")
                 for field, value in scene.payload.items():
-                    field_path = field if field in ("status",) else f"value.{field}"
-                    if isinstance(target, RuntimeComponent) and field == "status":
-                        field_path = "status"
-                    elif isinstance(target, RuntimeConnection) and field == "status":
-                        field_path = "status"
+                    if not isinstance(target, (RuntimeComponent, RuntimeConnection)):
+                        field_path = field
+                    else:
+                        field_path = field if field in ("status",) else f"value.{field}"
 
                     if is_inf:
                         self.state.apply_infinite_event(scene.event_ref, 0, scene.at, target, field_path, value)
@@ -356,10 +383,17 @@ class SimulationEngineCore:
                             target, field_path, value
                         )
 
-            if self.telemetry_publishing:
-                snap = self._snapshot(eff_comps, self.state.effective_connections, ext)
-                snap["source"] = scene.event_ref
-                self.telemetry.append(snap)
+            # Log event start
+            self.logs.append({
+                "time": self.time,
+                "level": "INFO",
+                "message": f"Event '{scene.event_ref}' started" + (f" targeting {scene.selector}" if scene.selector else "")
+            })
+
+            # if self.telemetry_publishing:
+            snap = self._snapshot(eff_comps, self.state.effective_connections, ext)
+            snap["source"] = scene.event_ref
+            self.telemetry.append(snap)
 
     def _resolve_scene_targets(
         self,
@@ -376,9 +410,11 @@ class SimulationEngineCore:
             return targets
 
         # @external.network / @external.weather / @external.supplies
-        if selector == "@external.network" or selector == "@network":
+        base_sel = selector.split('.')[0] if '.' in selector and not selector.startswith('@(') else selector
+        full_base = selector
+        if selector.startswith('@external.network') or selector.startswith('@network'):
             targets.append((ext.network, "external"))
-        elif selector == "@external.weather" or selector == "@weather":
+        elif selector.startswith('@external.weather') or selector.startswith('@weather'):
             targets.append((ext.weather, "external"))
         elif selector.startswith("@(") and "|" in selector:
             # Connection selector: @(source|type|target)
@@ -399,7 +435,7 @@ class SimulationEngineCore:
                 if base_conn:
                     targets.append((base_conn, "connection"))
         elif selector.startswith("@"):
-            sel_val = selector[1:]  # strip leading @
+            sel_val = base_sel[1:]  # strip leading @
 
             # Try as component name first (exact match)
             if sel_val in eff_comps:
@@ -505,10 +541,15 @@ class SimulationEngineCore:
         Also handles pump → flowrate distribution.
         """
         # --- Power allocation from generators ---
-        generators = [c for c in base_comps.values() if c.type == "generator" and c.status == "active"]
+        generators = [c for c in base_comps.values() if c.type == "generator"]
         for gen in generators:
+            if gen.status != "active":
+                _update_field(base_comps[gen.name], "power", 0.0)
+                continue
+                
             consumer_names = self._conn_graph.active_power_targets(gen.name)
             if not consumer_names:
+                _update_field(base_comps[gen.name], "power", 0.0)
                 continue
 
             # Total demanded power
@@ -521,12 +562,14 @@ class SimulationEngineCore:
             p_curr = _v(base_comps[gen.name].value.get("power", {}), "value", 0.0)
 
             if total_demanded <= 0:
+                p_obj = base_comps[gen.name].value.get("power", {})
+                _update_field(base_comps[gen.name], "power", 0.0)
                 continue
 
             if total_demanded <= p_max:
                 # Generator can satisfy all demand; output = total demanded
                 p_obj = base_comps[gen.name].value.get("power", {})
-                _set_v(p_obj, "value", total_demanded)
+                _update_field(base_comps[gen.name], "power", total_demanded)
             else:
                 # Generator cannot satisfy full demand
                 ratio = p_max / total_demanded if total_demanded > 0 else 0.0
@@ -534,12 +577,12 @@ class SimulationEngineCore:
                 if ratio >= 0.35:
                     # Proportional allocation: each consumer gets x * requested
                     p_obj = base_comps[gen.name].value.get("power", {})
-                    _set_v(p_obj, "value", p_max)
+                    _update_field(base_comps[gen.name], "power", p_max)
                     for n in consumer_names:
                         if n in base_comps:
                             c_p_obj = base_comps[n].value.get("power", {})
                             c_demand = _v(c_p_obj, "value", 0.0)
-                            _set_v(c_p_obj, "value", ratio * c_demand)
+                            _update_field(base_comps[n], "power", ratio * c_demand)
                 else:
                     # Below 35%: shut down lowest-priority consumer
                     # Try activating an inactive component first
@@ -548,8 +591,11 @@ class SimulationEngineCore:
                         self._deactivate_lowest_priority(base_comps, consumer_names)
 
         # --- Flowrate allocation from tanks/pumps ---
-        tanks = [c for c in base_comps.values() if c.type == "tank" and c.status == "active"]
+        tanks = [c for c in base_comps.values() if c.type == "tank"]
         for tank in tanks:
+            if tank.status != "active":
+                continue
+                
             pump_names = self._conn_graph.active_resource_targets(tank.name)
             if not pump_names:
                 continue
@@ -597,8 +643,9 @@ class SimulationEngineCore:
 
         # Sort by priority (ascending = higher priority first)
         if self.hierarchy:
+            hier = self.hierarchy
             inactive_consumers.sort(
-                key=lambda n: self.hierarchy.nodes.get(n, HierarchyNode({"name": n, "type": "generic"})).priority
+                key=lambda n: hier.nodes.get(n, HierarchyNode({"name": n, "type": "generic"})).priority
             )
 
         for candidate in inactive_consumers:
@@ -626,8 +673,9 @@ class SimulationEngineCore:
 
         if self.hierarchy:
             # Highest priority number = lowest priority
+            hier = self.hierarchy
             active_consumers.sort(
-                key=lambda n: -(self.hierarchy.nodes.get(n, HierarchyNode({"name": n, "type": "generic"})).priority)
+                key=lambda n: -(hier.nodes.get(n, HierarchyNode({"name": n, "type": "generic"})).priority)
             )
         # Deactivate the first (lowest priority)
         base_comps[active_consumers[0]].status = "inactive"
@@ -654,7 +702,7 @@ class SimulationEngineCore:
                         p_obj = comp.value.get("power", {})
                         p_max = _v(p_obj, "max", 0.0)
                         if p_max > 0:
-                            _set_v(p_obj, "value", p_max)
+                            _update_field(base_comps[comp.name], "power", p_max)
 
     # ------------------------------------------------------------------
     # Step 10: Component-specific behaviours (Phase 15)
@@ -748,7 +796,7 @@ class SimulationEngineCore:
         t_min_t = _v(t_obj, "min", -20.0)
         
         # Ensure power has a value even if 0
-        _set_v(p_obj if isinstance(p_obj, dict) else c.value.setdefault("power", {}), "value", p_curr)
+        _update_field(c, "power", p_curr)
 
         # Required flowrate proportional to power
         fr_max_rated = _v(fr_obj, "max", 100.0)
@@ -756,7 +804,7 @@ class SimulationEngineCore:
             fr_required = fr_max_rated * (p_curr / p_max)
         else:
             fr_required = 0.0
-        _set_v(fr_obj if isinstance(fr_obj, dict) else c.value.setdefault("flowrate", {}), "value", fr_required)
+        _update_field(c, "flowrate", fr_required)
 
         # Startup deadlock prevention: generator inactive + pump inactive → start at p_min
         if p_curr <= 0:
@@ -766,10 +814,10 @@ class SimulationEngineCore:
             ]
             if pump_sources and all(base_comps[p].status == "inactive" for p in pump_sources):
                 p_curr = p_min
-                _set_v(p_obj, "value", p_curr)
+                _update_field(c, "power", p_curr)
 
         new_t = behaviors.generator_temperature(t_prev, t_surr, p_curr, p_max, p_min, t_max, t_min_t)
-        _set_v(t_obj if isinstance(t_obj, dict) else c.value.setdefault("temperature", {}), "value", new_t)
+        _update_field(c, "temperature", new_t)
 
     # ── Pump ───────────────────────────────────────────────────────────
 
@@ -809,11 +857,11 @@ class SimulationEngineCore:
             fr_curr = min(fr_max, total_fr_demand)
         # else no demand: keep fr_curr as-is
 
-        _set_v(fr_obj if isinstance(fr_obj, dict) else c.value.setdefault("flowrate", {}), "value", fr_curr)
+        _update_field(c, "flowrate", fr_curr)
 
         # Temperature uses generator model with fr term
         new_t = behaviors.pump_temperature(t_prev, t_surr, fr_curr, fr_max, fr_min, t_max, t_min_t)
-        _set_v(t_obj if isinstance(t_obj, dict) else c.value.setdefault("temperature", {}), "value", new_t)
+        _update_field(c, "temperature", new_t)
 
         # Power proportional to flowrate
         p_max_val = _v(p_obj, "max", 1000.0)
@@ -821,7 +869,7 @@ class SimulationEngineCore:
             new_p = p_max_val * (fr_curr / fr_max)
         else:
             new_p = 0.0
-        _set_v(p_obj if isinstance(p_obj, dict) else c.value.setdefault("power", {}), "value", new_p)
+        _update_field(c, "power", new_p)
 
     # ── Solar panel ────────────────────────────────────────────────────
 
@@ -832,7 +880,7 @@ class SimulationEngineCore:
         i_curr = getattr(external.weather, "irradiance", 0.0)
         i_max = _v(c.value.get("irradiance", {}), "max", 1000.0)
         new_p = behaviors.solar_panel_power(p_max, i_curr, i_max)
-        _set_v(p_obj if isinstance(p_obj, dict) else c.value.setdefault("power", {}), "value", new_p)
+        _update_field(c, "power", new_p)
 
     # ── Tank ───────────────────────────────────────────────────────────
 
@@ -849,7 +897,7 @@ class SimulationEngineCore:
         )
 
         new_v = behaviors.tank_volume(v_prev, total_fr, dt)
-        _set_v(v_obj if isinstance(v_obj, dict) else c.value.setdefault("volume", {}), "value", new_v)
+        _update_field(c, "volume", new_v)
 
     # ── Antenna ────────────────────────────────────────────────────────
 
@@ -861,8 +909,7 @@ class SimulationEngineCore:
         f_min = _v(fr_obj, "min", 100.0)
         f_max = _v(fr_obj, "max", 900.0)
         if f_max > f_min:
-            _set_v(fr_obj if isinstance(fr_obj, dict) else c.value.setdefault("frequency", {}),
-                   "value", random.uniform(f_min, f_max))
+            _update_field(c, "frequency", random.uniform(f_min, f_max))
 
         # Current based on active connections
         active_count = self._conn_graph.active_connection_count(c.name)
@@ -873,7 +920,7 @@ class SimulationEngineCore:
         v_obj = c.value.get("voltage", {})
         voltage = _v(v_obj, "value", 220.0)
         new_p = voltage * new_i
-        _set_v(p_obj if isinstance(p_obj, dict) else c.value.setdefault("power", {}), "value", new_p)
+        _update_field(c, "power", new_p)
 
     # ── Server ────────────────────────────────────────────────────────
 
@@ -889,7 +936,7 @@ class SimulationEngineCore:
         t_min_t = _v(t_obj, "min", 0.0)
 
         new_t = behaviors.server_temperature(t_prev, t_surr, p_req, p_max, p_min, t_max, t_min_t)
-        _set_v(t_obj if isinstance(t_obj, dict) else c.value.setdefault("temperature", {}), "value", new_t)
+        _update_field(c, "temperature", new_t)
 
     # ── Alarm ─────────────────────────────────────────────────────────
 
@@ -899,7 +946,7 @@ class SimulationEngineCore:
         voltage = _v(v_obj, "value", 220.0)
         new_i = behaviors.alarm_current(c.status)
         new_p = voltage * new_i
-        _set_v(p_obj if isinstance(p_obj, dict) else c.value.setdefault("power", {}), "value", new_p)
+        _update_field(c, "power", new_p)
 
     # ── Air conditioner ───────────────────────────────────────────────
 
@@ -920,7 +967,7 @@ class SimulationEngineCore:
 
         # Output temperature update
         new_t_out = behaviors.ac_output_temperature(t_out_prev, t_target)
-        _set_v(t_obj if isinstance(t_obj, dict) else c.value.setdefault("temperature", {}), "value", new_t_out)
+        _update_field(c, "temperature", new_t_out)
 
         # Airflow requirement from connected vents
         vent_names = self._conn_graph.active_resource_targets(c.name)
@@ -932,7 +979,7 @@ class SimulationEngineCore:
         fr_obj = c.value.get("airflow", {})
         fr_max_ac = _v(fr_obj, "max", 1000.0)
         fr_curr = min(fr_max_ac, max(fr_required, _v(fr_obj, "value", 0.0)))
-        _set_v(fr_obj if isinstance(fr_obj, dict) else c.value.setdefault("airflow", {}), "value", fr_curr)
+        _update_field(c, "airflow", fr_curr)
         fr_max_for_i = fr_max_ac if fr_max_ac > 0 else 1.0
 
         # Current and power
@@ -940,7 +987,7 @@ class SimulationEngineCore:
         voltage = _v(v_obj, "value", 220.0)
         new_i = behaviors.ac_current_requirement(i_max, fr_curr, fr_max_for_i, new_t_out, t_surr, t_max, t_min_t)
         new_p = voltage * new_i
-        _set_v(p_obj if isinstance(p_obj, dict) else c.value.setdefault("power", {}), "value", new_p)
+        _update_field(c, "power", new_p)
 
     # ── Vent ──────────────────────────────────────────────────────────
 
@@ -956,7 +1003,7 @@ class SimulationEngineCore:
 
         new_i = behaviors.vent_current(a_curr, a_max, i_max)
         new_p = voltage * new_i
-        _set_v(p_obj if isinstance(p_obj, dict) else c.value.setdefault("power", {}), "value", new_p)
+        _update_field(c, "power", new_p)
 
     # ------------------------------------------------------------------
     # Step 11: Failure countdown (Phase 13)
@@ -995,7 +1042,7 @@ class SimulationEngineCore:
                     continue
 
                 val = _v(field_val, "value", 0.0)
-                max_rating = _v(field_val, "max", float("inf"))
+                max_rating = _v(field_val, "max", 0.0)
 
                 ft_key = f"failure_time_{field_name}"
 
@@ -1143,7 +1190,7 @@ class SimulationEngineCore:
                             ac_vent_data.append({"t_out": t_ac_out, "a_curr": a_curr, "a_max": a_max})
 
             new_t = behaviors.container_temperature(t_prev, t_surr, child_temps, ac_vent_data)
-            _set_v(t_obj if isinstance(t_obj, dict) else c.value.setdefault("temperature", {}), "value", new_t)
+            _update_field(c, "temperature", new_t)
 
             # Thermal corrective action when overheating (Phase 15.10)
             if new_t > t_max:
@@ -1177,7 +1224,7 @@ class SimulationEngineCore:
                 a_curr = _v(a_obj, "value", 0.0)
                 a_max = _v(a_obj, "max", 100.0)
                 if a_curr < a_max:
-                    _set_v(a_obj if isinstance(a_obj, dict) else desc.value.setdefault("airflow", {}), "value", a_max)
+                    _update_field(desc, "airflow", a_max)
                     vents_maxed = False
 
         if vents_maxed:
@@ -1190,11 +1237,7 @@ class SimulationEngineCore:
                     tt_obj = desc.value.get("target_temperature", {})
                     curr_target = _v(tt_obj, "value", 20.0)
                     new_target = curr_target - 2.0
-                    _set_v(
-                        tt_obj if isinstance(tt_obj, dict) else desc.value.setdefault("target_temperature", {}),
-                        "value",
-                        new_target
-                    )
+                    _update_field(desc, "target_temperature", new_target)
 
     def _bottom_up_order(
         self,

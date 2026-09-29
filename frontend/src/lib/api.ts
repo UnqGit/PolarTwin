@@ -75,6 +75,12 @@ export const api = {
     return res.json();
   },
 
+  getConnectionHistory: async (runId: string, connectionId: string) => {
+    const res = await fetch(`${API_BASE}/telemetry/runs/${runId}/connections/${connectionId}/history`);
+    if (!res.ok) throw new Error("Failed to fetch connection history");
+    return res.json();
+  },
+
   getExternalHistory: async (runId: string) => {
     const res = await fetch(`${API_BASE}/telemetry/runs/${runId}/external/history`);
     if (!res.ok) throw new Error("Failed to fetch external history");

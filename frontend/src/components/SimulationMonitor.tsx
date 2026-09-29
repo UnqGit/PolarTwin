@@ -1,4 +1,5 @@
 import React from 'react';
+import { formatTime } from '../utils';
 
 interface SimulationMonitorProps {
   simState: any;
@@ -33,7 +34,7 @@ export function SimulationMonitor({ simState }: SimulationMonitorProps) {
         <div style={{ display: 'flex', gap: '16px', backgroundColor: 'var(--bg-input)', padding: '12px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
           <div>
             <div style={{ color: 'var(--text-secondary)', fontSize: '11px', textTransform: 'uppercase' }}>Time</div>
-            <div style={{ fontSize: '18px', fontWeight: 'bold', fontFamily: 'monospace' }}>{simState.simulation_time?.toFixed(1)} h</div>
+            <div style={{ fontSize: '18px', fontWeight: 'bold', fontFamily: 'monospace' }}>{formatTime(simState.simulation_time)}</div>
           </div>
           <div>
             <div style={{ color: 'var(--text-secondary)', fontSize: '11px', textTransform: 'uppercase' }}>Status</div>

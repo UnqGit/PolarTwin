@@ -48,8 +48,8 @@ export const PropertyInspector: React.FC<InspectorProps> = ({ node, connections,
   }
   const allKeys = Array.from(new Set([...Object.keys(specObj), ...Object.keys(liveState), ...ratingKeys]));
 
-  const ignoreKeys = ['dummy', 'length', 'width', 'breadth', 'height', 'unit', 'inputs', 'status', 'rating', 'id', 'name', 'type', 'position', 'rotation', 'scale', 'measures', 'failure_time', 'tolerance'];
-  const propKeys = allKeys.filter(k => !ignoreKeys.includes(k.toLowerCase()));
+  const ignoreKeys = ['dummy', 'length', 'width', 'breadth', 'height', 'unit', 'inputs', 'status', 'rating', 'id', 'name', 'type', 'position', 'rotation', 'scale', 'measures', 'tolerance'];
+  const propKeys = allKeys.filter(k => !ignoreKeys.includes(k.toLowerCase()) && !k.toLowerCase().startsWith('failure_time'));
 
   // Categorize properties
   const inputs: string[] = [];
@@ -173,10 +173,17 @@ export const PropertyInspector: React.FC<InspectorProps> = ({ node, connections,
     }
 
     if (displayVal !== undefined && displayVal !== null) {
+      if (typeof displayVal === 'object') {
+         if ('value' in displayVal) displayVal = displayVal.value;
+         else if ('current' in displayVal) displayVal = displayVal.current;
+      }
+      
       if (typeof displayVal === 'number') {
          valStr = `${displayVal.toFixed(2)}`;
       } else if (typeof displayVal === 'boolean') {
          valStr = displayVal ? 'Yes' : 'No';
+      } else if (typeof displayVal === 'object') {
+         valStr = JSON.stringify(displayVal);
       } else {
          valStr = String(displayVal);
       }
@@ -262,10 +269,20 @@ export const PropertyInspector: React.FC<InspectorProps> = ({ node, connections,
         <Row label="Z" value={`${node.position?.[2]?.toFixed(2) ?? '0.00'} m`} />
 
         {/* Dimensions */}
-        <SectionHeader>Dimensions</SectionHeader>
-        <Row label="Width"  value={`${node.dims?.width?.toFixed(2) ?? '0.00'} m`} />
-        <Row label="Height" value={`${node.dims?.height?.toFixed(2) ?? '0.00'} m`} />
-        <Row label="Depth"  value={`${node.dims?.depth?.toFixed(2) ?? '0.00'} m`} />
+        {(() => {
+          const w = (liveStateRef?.current?.[node.name] as any)?.width?.value ?? (node.spec?.dimensions as any)?.width?.value ?? node.dims?.width ?? 0;
+          const h = (liveStateRef?.current?.[node.name] as any)?.height?.value ?? (node.spec?.dimensions as any)?.height?.value ?? node.dims?.height ?? 0;
+          const d = (liveStateRef?.current?.[node.name] as any)?.length?.value ?? (node.spec?.dimensions as any)?.length?.value ?? node.dims?.depth ?? 0;
+          if (!w && !h && !d) return null;
+          return (
+            <>
+              <SectionHeader>Dimensions</SectionHeader>
+              {w > 0 && <Row label="Width"  value={`${w.toFixed(2)} m`} />}
+              {h > 0 && <Row label="Height" value={`${h.toFixed(2)} m`} />}
+              {d > 0 && <Row label="Length/Depth"  value={`${d.toFixed(2)} m`} />}
+            </>
+          );
+        })()}
 
         {/* Status */}
         <SectionHeader>Status</SectionHeader>

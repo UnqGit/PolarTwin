@@ -234,7 +234,7 @@ class TestSimulationManagerLifecycle(unittest.TestCase):
     def test_create_run_returns_run_id(self):
         run_id = self.manager.create_run("TestStation")
         self.assertIsNotNone(run_id)
-        self.assertTrue(run_id.startswith("run-"))
+        self.assertTrue(run_id.startswith("TestStationmanual"))
 
     def test_create_run_unknown_station_raises(self):
         with self.assertRaises(ValueError):

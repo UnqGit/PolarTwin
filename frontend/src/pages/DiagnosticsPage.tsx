@@ -1,19 +1,20 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useStation } from '../components/StationContext';
 import { api } from '../lib/api';
 import {
-  ChevronDown, ChevronRight, Activity, Cloud, Signal, Droplets, History, Box, Network, Link2, Globe
+  ChevronDown, ChevronRight, Activity, Cloud, Signal, Droplets, History, Box, Globe
 } from 'lucide-react';
-import { buildSceneLayout } from '../lib/layout';
+import { buildSceneLayout, type NodeLayout } from '../lib/layout';
 import { SelectionProvider } from '../components/SelectionContext';
 import { HierarchyPanel } from '../components/HierarchyPanel';
 
 export function DiagnosticsPage() {
-  const { selectedStation, hierarchy, connections, spec } = useStation();
+  const { hierarchy, connections, spec } = useStation();
   const [runs, setRuns] = useState<any[]>([]);
   const [selectedRunId, setSelectedRunId] = useState<string>('');
   const [runMeta, setRunMeta] = useState<any>(null);
   const [runEvents, setRunEvents] = useState<any[]>([]);
+  const [runLogs, setRunLogs] = useState<any[]>([]);
 
   const [selectedCategory, setSelectedCategory] = useState<'connections' | 'components' | 'environment' | null>(null);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
@@ -24,6 +25,7 @@ export function DiagnosticsPage() {
   const sceneLayout = useMemo(() => {
     if (!hierarchy || !spec) return null;
     const layout = buildSceneLayout(hierarchy, connections || [], spec);
+    // @ts-ignore
     const gen = layout.connectionRouterGenerator();
     while (!gen.next().done) { }
     return layout;
@@ -44,7 +46,7 @@ export function DiagnosticsPage() {
   // Load runs
   useEffect(() => {
     api.getTelemetryRuns().then(r => {
-      setRuns(r.filter((run: any) => run.status !== 'RUNNING' && run.record_count > 0));
+      setRuns(r.filter((run: any) => run.status !== 'RUNNING'));
     }).catch(console.error);
   }, []);
 
@@ -58,6 +60,7 @@ export function DiagnosticsPage() {
     }
     api.getRunMetadata(selectedRunId).then(setRunMeta).catch(console.error);
     api.getRunEvents(selectedRunId).then(setRunEvents).catch(console.error);
+    api.getSimulationLog(selectedRunId).then(setRunLogs).catch(console.error);
 
     // Refresh history data if category/item is already selected
     if (selectedCategory && selectedItemId) {
@@ -79,7 +82,10 @@ export function DiagnosticsPage() {
       if (category === 'environment') {
         const data = await api.getExternalHistory(selectedRunId);
         setHistoryData(data);
-      } else if (category === 'components' || category === 'connections') {
+      } else if (category === 'connections') {
+        const data = await api.getConnectionHistory(selectedRunId, itemId);
+        setHistoryData(data);
+      } else if (category === 'components') {
         const data = await api.getComponentHistory(selectedRunId, itemId);
         setHistoryData(data);
       }
@@ -218,21 +224,39 @@ export function DiagnosticsPage() {
               <h2 style={{ marginTop: 0 }}>Simulation Report</h2>
               <div style={{ background: 'var(--bg-panel)', padding: 16, borderRadius: 8, border: '1px solid var(--border-color)', marginBottom: 24 }}>
                 <h3 style={{ margin: '0 0 16px 0', fontSize: 14 }}>Run Overview</h3>
-                <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>
-                  Total Events: {runEvents.length} <br />
-                  Total Records: {runMeta?.record_count}
-                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 13, color: 'var(--text-secondary)' }}>
+                  <div><strong>Run ID:</strong> {runMeta?.id}</div>
+                  <div><strong>Station:</strong> {runMeta?.station_model_id}</div>
+                  <div><strong>Scenario:</strong> {runMeta?.scenario_id || 'Manual'}</div>
+                  <div><strong>Status:</strong> {runMeta?.status}</div>
+                  <div><strong>Start Time:</strong> {runMeta?.start_time ? new Date(runMeta.start_time * 1000).toLocaleString() : 'N/A'}</div>
+                  <div><strong>End Time:</strong> {runMeta?.end_time ? new Date(runMeta.end_time * 1000).toLocaleString() : 'Ongoing'}</div>
+                  <div><strong>Duration:</strong> {runMeta?.start_time && runMeta?.end_time ? `${(runMeta.end_time - runMeta.start_time).toFixed(1)}s` : 'N/A'}</div>
+                  <div><strong>Total Events:</strong> {runEvents.length}</div>
+                  <div><strong>Total Records:</strong> {runMeta?.record_count}</div>
+                </div>
               </div>
 
               <h3 style={{ fontSize: 14 }}>Event Timeline</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 24 }}>
                 {runEvents.map(ev => (
                   <div key={ev.id} style={{ display: 'flex', gap: 16, fontSize: 13, padding: 12, background: 'var(--bg-input)', borderRadius: 6 }}>
-                    <div style={{ width: 60, color: 'var(--text-tertiary)' }}>{(ev.simulation_time).toFixed(2)}h</div>
+                    <div style={{ width: 80, color: 'var(--text-tertiary)' }}>{formatTime(ev.simulation_time)}</div>
                     <div style={{ color: 'var(--text-secondary)' }}>{ev.source}</div>
                   </div>
                 ))}
                 {runEvents.length === 0 && <div style={{ fontSize: 13, color: 'var(--text-tertiary)' }}>No events recorded for this run.</div>}
+              </div>
+
+              <h3 style={{ fontSize: 14 }}>Logs</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontFamily: 'monospace', fontSize: 13, background: 'var(--bg-input)', padding: 12, borderRadius: 6, maxHeight: 400, overflowY: 'auto' }}>
+                {runLogs.map((log, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 16, color: log.level === 'ERROR' ? '#ef4444' : log.level === 'WARN' ? '#f59e0b' : 'var(--text-primary)' }}>
+                    <div style={{ width: 80, color: 'var(--text-tertiary)' }}>{formatTime(log.time || 0)}</div>
+                    <div>[{log.level}] {log.message}</div>
+                  </div>
+                ))}
+                {runLogs.length === 0 && <div style={{ color: 'var(--text-tertiary)' }}>No logs recorded for this run.</div>}
               </div>
             </div>
           ) : (
@@ -247,7 +271,10 @@ export function DiagnosticsPage() {
                   No historical telemetry is available for this selection.
                 </div>
               ) : (
-                <MultiMetricCharts data={historyData} category={selectedCategory} itemId={selectedItemId!} />
+                <>
+                  <ComponentReportOverview data={historyData} category={selectedCategory} itemId={selectedItemId!} />
+                  <MultiMetricCharts data={historyData} category={selectedCategory} itemId={selectedItemId!} />
+                </>
               )}
             </div>
           )}
@@ -257,9 +284,32 @@ export function DiagnosticsPage() {
   );
 }
 
+function ComponentReportOverview({ data, category, itemId }: { data: any[]; category: string; itemId: string }) {
+  const lastState = data[data.length - 1];
+  const failures = data.filter((r, i) => {
+    const prev = data[i - 1];
+    return (r.status === 'failure' || r.status === 'FAILURE') && (!prev || prev.status !== r.status);
+  });
+
+  return (
+    <div style={{ background: 'var(--bg-panel)', padding: 16, borderRadius: 8, border: '1px solid var(--border-color)', marginBottom: 24 }}>
+      <h3 style={{ margin: '0 0 16px 0', fontSize: 14 }}>{category === 'connections' ? 'Connection Summary' : 'Component Summary'}</h3>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, fontSize: 13, color: 'var(--text-secondary)' }}>
+        <div><strong>Name:</strong> {itemId}</div>
+        <div><strong>Type:</strong> {category}</div>
+        <div><strong>Final Status:</strong> <span style={{ color: lastState?.status === 'failure' ? '#ef4444' : lastState?.status === 'active' ? '#4ade80' : 'inherit' }}>{lastState?.status || 'unknown'}</span></div>
+        <div><strong>Total Failure Events:</strong> {failures.length}</div>
+        <div><strong>Records (Telemetry points):</strong> {data.length}</div>
+      </div>
+    </div>
+  );
+}
+
 function MultiMetricCharts({ data, category, itemId }: { data: any[]; category: string; itemId: string }) {
   const metrics = useMemo(() => {
     const keys = new Set<string>();
+    const ignoreKeys = ['dummy', 'length', 'width', 'breadth', 'height', 'unit', 'inputs', 'status', 'rating', 'id', 'name', 'type', 'position', 'rotation', 'scale', 'measures', 'tolerance', 'efficiency'];
+    
     data.forEach(row => {
       let values: any = {};
       if (category === 'environment') {
@@ -271,6 +321,7 @@ function MultiMetricCharts({ data, category, itemId }: { data: any[]; category: 
       }
 
       Object.keys(values).forEach(k => {
+        if (ignoreKeys.includes(k.toLowerCase()) || k.toLowerCase().startsWith('failure_time')) return;
         if (typeof values[k] === 'number') keys.add(k);
         if (typeof values[k] === 'object' && values[k]?.value !== undefined) keys.add(k);
       });
@@ -279,17 +330,22 @@ function MultiMetricCharts({ data, category, itemId }: { data: any[]; category: 
   }, [data, category, itemId]);
 
   if (metrics.length === 0) {
-    return <div style={{ color: 'var(--text-tertiary)' }}>No plottable numeric metrics found.</div>;
+    return <div style={{ color: 'var(--text-tertiary)' }}>No plottable numeric metrics found in rating fields.</div>;
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 32 }}>
-      {metrics.map(metric => (
-        <MetricChart key={metric} metric={metric} data={data} category={category} itemId={itemId} />
-      ))}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+      <div style={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap', gap: 32 }}>
+        {metrics.map(metric => (
+          <MetricChart key={metric} metric={metric} data={data} category={category} itemId={itemId} />
+        ))}
+      </div>
     </div>
   );
 }
+
+import { formatTime } from '../utils';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 function MetricChart({ metric, data, category, itemId }: { metric: string; data: any[]; category: string; itemId: string }) {
   const points = useMemo(() => {
@@ -316,120 +372,78 @@ function MetricChart({ metric, data, category, itemId }: { metric: string; data:
   if (points.length === 0) return null;
 
   const unit = points[0]?.unit || '';
-  const times = points.map(p => p.time);
-  const values = points.map(p => p.value);
-  const minTime = Math.min(...times);
-  const maxTime = Math.max(...times);
-  const rangeTime = Math.max(0.1, maxTime - minTime);
-  const minVal = Math.min(...values);
-  const maxVal = Math.max(...values);
-  const rangeVal = Math.max(0.1, maxVal - minVal);
-
-  const W = 450;
-  const H = 180;
-  const padLeft = 60;
-  const padBottom = 60;
-  const padTop = 20;
-  const padRight = 20;
 
   return (
-    <div style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: 8, padding: 16 }}>
+    <div style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: 8, padding: 16, width: 550 }}>
       <h3 style={{ margin: '0 0 16px 0', fontSize: 14, textTransform: 'capitalize' }}>
         {metric.replace(/_/g, ' ')} {unit ? `(${unit})` : ''}
       </h3>
 
-      <div style={{ position: 'relative', width: W + padLeft + padRight, height: H + padBottom + padTop }}>
-        <svg width={W + padLeft + padRight} height={H + padBottom + padTop}>
-          {/* Axes */}
-          <line x1={padLeft} y1={padTop} x2={padLeft} y2={H + padTop} stroke="var(--border-color)" strokeWidth={2} />
-          <line x1={padLeft} y1={H + padTop} x2={W + padLeft} y2={H + padTop} stroke="var(--border-color)" strokeWidth={2} />
-
-          {/* Axis Labels */}
-          <text x={padLeft / 2} y={padTop + H / 2} fill="var(--text-tertiary)" fontSize={11} transform={`rotate(-90 ${padLeft / 2} ${padTop + H / 2})`} textAnchor="middle">
-            Value {unit ? `(${unit})` : ''}
-          </text>
-          <text x={padLeft + W / 2} y={H + padTop + padBottom - 10} fill="var(--text-tertiary)" fontSize={11} textAnchor="middle">
-            Time (h)
-          </text>
-
-          {/* Y Axis Grid Lines & Labels */}
-          {[0, 0.25, 0.5, 0.75, 1].map(frac => {
-            const val = minVal + frac * rangeVal;
-            const y = padTop + H - frac * H;
-            return (
-              <g key={`y-${frac}`}>
-                <line x1={padLeft} y1={y} x2={padLeft + W} y2={y} stroke="var(--border-color)" strokeWidth={1} strokeDasharray="4 4" opacity={0.5} />
-                <text x={padLeft - 8} y={y + 3} fill="var(--text-secondary)" fontSize={10} textAnchor="end">
-                  {val.toFixed(1)}{unit}
-                </text>
-              </g>
-            );
-          })}
-
-          {/* X Axis Labels */}
-          {[0, 0.25, 0.5, 0.75, 1].map(frac => {
-            const val = minTime + frac * rangeTime;
-            const x = padLeft + frac * W;
-            return (
-              <text key={`x-${frac}`} x={x} y={H + padTop + 20} fill="var(--text-secondary)" fontSize={10} textAnchor="middle">
-                {val.toFixed(1)}h
-              </text>
-            );
-          })}
-
-          {/* Line Chart */}
-          <path
-            fill="none"
-            stroke="var(--accent-blue)"
-            strokeWidth={2}
-            d={points.map((p, i) => {
-              const x = padLeft + ((p.time - minTime) / rangeTime) * W;
-              const y = padTop + H - ((p.value - minVal) / rangeVal) * H;
-              return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
-            }).join(' ')}
-          />
-
-          {/* Points */}
-          {points.map((p, i) => {
-            const x = padLeft + ((p.time - minTime) / rangeTime) * W;
-            const y = padTop + H - ((p.value - minVal) / rangeVal) * H;
-            return (
-              <circle key={i} cx={x} cy={y} r={3} fill="var(--accent-blue)">
-                <title>{`Time: ${p.time.toFixed(2)}h, Value: ${p.value.toFixed(2)}${unit}`}</title>
-              </circle>
-            );
-          })}
-
-          {/* Status Indicator Bar */}
-          {points.some(p => p.status) && (
-            <g transform={`translate(${padLeft}, ${H + padTop + 25})`}>
-              {points.map((p, i) => {
-                if (i === points.length - 1) return null;
-                const nextP = points[i + 1];
-                const x1 = ((p.time - minTime) / rangeTime) * W;
-                const x2 = ((nextP.time - minTime) / rangeTime) * W;
-                let color = 'var(--bg-input)';
-                if (p.status === 'active') color = '#4ade80';
-                else if (p.status === 'failure') color = '#ef4444';
-                else if (p.status === 'inactive') color = '#94a3b8';
-
-                return (
-                  <rect key={i} x={x1} y={0} width={x2 - x1} height={6} fill={color}>
-                    <title>{`Status: ${p.status}`}</title>
-                  </rect>
-                );
-              })}
-            </g>
-          )}
-        </svg>
+      <div style={{ width: '100%', height: 260 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={points} margin={{ top: 10, right: 20, left: -20, bottom: 20 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
+            <XAxis 
+              dataKey="time" 
+              type="number"
+              domain={['dataMin', 'dataMax']}
+              tickFormatter={(v) => formatTime(v)}
+              stroke="var(--text-tertiary)"
+              tick={{ fontSize: 11 }}
+              dy={10}
+            />
+            <YAxis 
+              stroke="var(--text-tertiary)"
+              tick={{ fontSize: 11 }}
+              tickFormatter={(v) => v.toFixed(1)}
+              domain={['auto', 'auto']}
+              dx={-10}
+            />
+            <Tooltip 
+              contentStyle={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: 4, fontSize: 12, color: 'var(--text-primary)' }}
+              itemStyle={{ color: 'var(--accent-blue)' }}
+              labelFormatter={(label) => `Time: ${formatTime(Number(label))}`}
+              formatter={(value: any) => [`${Number(value).toFixed(2)}${unit}`, metric.replace(/_/g, ' ')]}
+            />
+            <Line 
+              type="monotone" 
+              dataKey="value" 
+              stroke="var(--accent-blue)" 
+              strokeWidth={2}
+              dot={{ r: 3, fill: 'var(--accent-blue)' }}
+              activeDot={{ r: 5 }}
+              isAnimationActive={false}
+            />
+          </LineChart>
+        </ResponsiveContainer>
       </div>
 
       {points.some(p => p.status) && (
-        <div style={{ display: 'flex', gap: 12, marginTop: 8, fontSize: 11, color: 'var(--text-secondary)', paddingLeft: padLeft }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 8, height: 8, background: '#4ade80', borderRadius: '50%' }}></div> Active</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 8, height: 8, background: '#94a3b8', borderRadius: '50%' }}></div> Inactive</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 8, height: 8, background: '#ef4444', borderRadius: '50%' }}></div> Failure</div>
-        </div>
+        <>
+          <div style={{ position: 'relative', height: 6, margin: '0 20px 16px 20px', display: 'flex', borderRadius: 3, overflow: 'hidden', border: '1px solid var(--border-color)' }}>
+            {points.map((p, i) => {
+              const nextP = points[i + 1];
+              const duration = nextP ? nextP.time - p.time : (points.length > 1 ? p.time - points[i - 1].time : 1);
+              const totalDuration = points[points.length - 1].time - points[0].time || 1;
+              const widthPct = (duration / totalDuration) * 100;
+              let bg = '#94a3b8'; // inactive
+              if (p.status === 'active' || p.status === 'ACTIVE') bg = '#4ade80';
+              if (p.status === 'failure' || p.status === 'FAILURE') bg = '#ef4444';
+              return (
+                <div 
+                  key={i} 
+                  style={{ width: `${widthPct}%`, height: '100%', backgroundColor: bg }} 
+                  title={`Time: ${p.time.toFixed(2)}h - Status: ${p.status}`} 
+                />
+              );
+            })}
+          </div>
+          <div style={{ display: 'flex', gap: 12, fontSize: 11, color: 'var(--text-secondary)', paddingLeft: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 8, height: 8, background: '#4ade80', borderRadius: '50%' }}></div> Active</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 8, height: 8, background: '#94a3b8', borderRadius: '50%' }}></div> Inactive</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 8, height: 8, background: '#ef4444', borderRadius: '50%' }}></div> Failure</div>
+          </div>
+        </>
       )}
     </div>
   );

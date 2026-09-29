@@ -95,11 +95,24 @@ export const HoverCard: React.FC<HoverCardProps> = ({ root, connections, liveSta
                     {Object.keys(catObj).map(k => {
                       const valObj = catObj[k];
                       const val = liveStateRef?.current?.[node.name] ? (liveStateRef.current[node.name] as any)[k] : undefined;
-                      const displayVal = val !== undefined ? val : valObj.max;
+                      let displayVal = val !== undefined ? val : valObj.max;
+                      if (displayVal && typeof displayVal === 'object' && 'value' in displayVal) displayVal = displayVal.value;
                       return <Row key={k} label={k} value={`${displayVal !== undefined ? (typeof displayVal === 'number' ? displayVal.toFixed(2) : displayVal) : '--'}${valObj.unit ? ' ' + valObj.unit : ''}`} />;
                     })}
                   </div>
                 );
+              })}
+            </div>
+          )}
+          {node.spec?.dimensions && typeof node.spec.dimensions === 'object' && (
+            <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--border-color)' }}>
+              <div style={{ fontSize: 10, color: 'var(--text-tertiary)', textTransform: 'uppercase', marginBottom: 4 }}>Dimensions</div>
+              {Object.keys(node.spec.dimensions).map(k => {
+                const valObj = (node.spec.dimensions as any)[k];
+                const val = liveStateRef?.current?.[node.name] ? (liveStateRef.current[node.name] as any)[k] : undefined;
+                let displayVal = val !== undefined ? val : valObj.value;
+                if (displayVal && typeof displayVal === 'object' && 'value' in displayVal) displayVal = displayVal.value;
+                return <Row key={k} label={k} value={`${displayVal !== undefined ? (typeof displayVal === 'number' ? displayVal.toFixed(2) : displayVal) : '--'}${valObj.unit ? ' ' + valObj.unit : ''}`} />;
               })}
             </div>
           )}
