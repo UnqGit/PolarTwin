@@ -945,7 +945,7 @@ export function ScenariosPage() {
               }}
               onClick={() => setTimelineOpen(!timelineOpen)}
             >
-              <span>TIMELINE</span>
+              <span>TIMELINE {selectedComponentName ? `(Filtered: ${selectedComponentName})` : ''}</span>
               <div style={{ marginLeft: '12px' }}>
                 {timelineOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
               </div>
