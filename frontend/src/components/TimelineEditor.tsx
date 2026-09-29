@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Trash2 } from 'lucide-react';
 import { formatTime } from '../utils';
+import { formatTime } from '../utils';
 
 export interface SceneEventData {
   event_ref: string;
