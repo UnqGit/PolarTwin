@@ -1,18 +1,74 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStation } from '../components/StationContext';
-import { Activity, Thermometer, Zap, Box, AlertTriangle, CheckCircle, Package, Radar } from 'lucide-react';
+import {
+  Activity, Thermometer, Zap, Box, AlertTriangle, Package, Radar,
+  Cpu, Server, Radio, Wind, Droplets, BatteryCharging, ShieldCheck,
+  Globe, Sun, Fan, Layers, Database, HardDrive, Wifi, Workflow, Compass, Gauge, Building2,
+  Flame, Snowflake, Eye, Waves
+} from 'lucide-react';
 import { IMAGE_MAP } from '../lib/constants';
 import { Footer } from '../components/Footer';
 
 export interface BlockData {
   id: string;
   name: string;
+  type?: string;
   status: 'active' | 'inactive' | 'failure';
   img: string;
   innerTotal: number;
   innerActive: number;
   path: string[];
+}
+
+function getComponentIcon(type?: string, name?: string) {
+  const t = (type || '').toLowerCase();
+  const n = (name || '').toLowerCase();
+
+  const isSensor = t.includes('sensor') || n.includes('sensor');
+  const isTelemetry = t.includes('telemetry') || n.includes('telemetry') || n.includes('signal');
+  const isThermal = t.includes('thermal') || n.includes('thermal') || t.includes('temp') || n.includes('temp') || n.includes('heat') || n.includes('cold');
+
+  // Sensor / Telemetry / Thermal specialized SVG matching
+  if (isSensor || isTelemetry || isThermal) {
+    if (n.includes('temp') || n.includes('heat') || n.includes('thermal')) {
+      if (n.includes('cold') || n.includes('cryo') || n.includes('freeze') || n.includes('subzero') || n.includes('polar')) return Snowflake;
+      if (n.includes('fire') || n.includes('hot') || n.includes('combust')) return Flame;
+      return Thermometer;
+    }
+    if (n.includes('press') || n.includes('gauge') || n.includes('baro') || n.includes('psi')) return Gauge;
+    if (n.includes('vibr') || n.includes('seismic') || n.includes('wave') || n.includes('accel') || n.includes('sound')) return Waves;
+    if (n.includes('opt') || n.includes('laser') || n.includes('vision') || n.includes('cam') || n.includes('light')) return Eye;
+    if (n.includes('humid') || n.includes('moist') || n.includes('dew')) return Droplets;
+    if (n.includes('wind') || n.includes('anemo') || n.includes('flow')) return Wind;
+    if (n.includes('radar') || n.includes('sonar') || n.includes('prox')) return Radar;
+    if (n.includes('gyro') || n.includes('compass') || n.includes('orient') || n.includes('tilt')) return Compass;
+    if (n.includes('pulse') || n.includes('freq') || n.includes('stat')) return Activity;
+
+    // Rich diverse set of sensor/telemetry/thermal SVG icons
+    const sensorIcons = [Thermometer, Gauge, Activity, Radar, Waves, Flame, Snowflake, Eye, Compass, Droplets];
+    const sHash = Math.abs(n.split('').reduce((acc, char) => ((acc << 5) - acc) + char.charCodeAt(0), 0));
+    return sensorIcons[sHash % sensorIcons.length];
+  }
+
+  // Power / Generator / Energy
+  if (t.includes('power') || t.includes('generator') || n.includes('power') || n.includes('gen') || n.includes('watt')) return Zap;
+  if (t.includes('solar') || n.includes('solar') || n.includes('panel')) return Sun;
+  if (t.includes('battery') || n.includes('battery') || n.includes('cell')) return BatteryCharging;
+  if (t.includes('antenna') || t.includes('comm') || n.includes('antenna') || n.includes('radio')) return Radio;
+  if (t.includes('wifi') || n.includes('wifi') || n.includes('network')) return Wifi;
+  if (t.includes('server') || n.includes('server') || n.includes('host')) return Server;
+  if (t.includes('controller') || t.includes('cpu') || n.includes('cpu') || n.includes('processor') || n.includes('control')) return Cpu;
+  if (t.includes('db') || t.includes('database') || n.includes('data') || n.includes('db')) return Database;
+  if (t.includes('pump') || t.includes('fluid') || n.includes('pump') || n.includes('water') || n.includes('fluid') || n.includes('cool')) return Droplets;
+  if (t.includes('vent') || t.includes('hvac') || t.includes('air') || n.includes('vent') || n.includes('fan') || n.includes('hvac')) return Wind;
+  if (t.includes('storage') || t.includes('warehouse') || n.includes('storage') || n.includes('stock')) return Package;
+  if (t.includes('alarm') || t.includes('security') || n.includes('alarm') || n.includes('sec')) return ShieldCheck;
+  if (t.includes('building') || t.includes('campus') || t.includes('block') || n.includes('block') || n.includes('zone')) return Building2;
+
+  const fallbackIcons = [Cpu, Layers, Workflow, Compass, Gauge, Globe, HardDrive, Fan];
+  const hash = Math.abs(n.split('').reduce((acc, char) => ((acc << 5) - acc) + char.charCodeAt(0), 0));
+  return fallbackIcons[hash % fallbackIcons.length];
 }
 
 const STYLE_INJECTION = `
@@ -37,11 +93,13 @@ const STYLE_INJECTION = `
     box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 230, 118, 0.1);
     border-color: rgba(255, 255, 255, 0.15);
   }
-  .grid-card-inner {
-    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), filter 0.8s ease;
+  .grid-card {
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  .grid-card:hover .grid-card-inner {
-    transform: scale(1.08);
+  .grid-card:hover {
+    transform: translateY(-6px) scale(1.02);
+    box-shadow: 0 14px 32px -5px rgba(0, 0, 0, 0.6), 0 0 20px var(--card-glow, rgba(0, 230, 118, 0.25));
+    border-color: var(--card-border-hover, rgba(255, 255, 255, 0.3));
   }
   .fade-enter {
     animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
@@ -58,63 +116,165 @@ const STYLE_INJECTION = `
 function GridCard({ block, fading, onClick }: { block: BlockData; fading: boolean; onClick: () => void }) {
   if (!block) return null;
 
+  const isFailure = block.status === 'failure';
+  const isInactive = block.status === 'inactive';
+
+  const statusColor = isFailure
+    ? '#ef4444'
+    : isInactive
+    ? 'var(--text-tertiary)'
+    : 'var(--accent-blue)';
+
+  const cardGlow = isFailure
+    ? 'rgba(239, 68, 68, 0.25)'
+    : isInactive
+    ? 'rgba(255, 255, 255, 0.08)'
+    : 'rgba(59, 130, 246, 0.25)';
+
+  const cardBorderHover = isFailure
+    ? 'rgba(239, 68, 68, 0.5)'
+    : isInactive
+    ? 'rgba(255, 255, 255, 0.25)'
+    : 'rgba(59, 130, 246, 0.5)';
+
+  const iconBg = isFailure
+    ? 'rgba(239, 68, 68, 0.12)'
+    : isInactive
+    ? 'rgba(255, 255, 255, 0.05)'
+    : 'rgba(59, 130, 246, 0.12)';
+
+  const ComponentIcon = getComponentIcon(block.type, block.name);
+
   return (
-    <div className="grid-card glass-panel" onClick={onClick} style={{
-      borderRadius: '16px',
-      overflow: 'hidden',
-      position: 'relative',
-      aspectRatio: '1',
-      cursor: 'pointer',
-      boxShadow: 'var(--shadow-md)',
-      padding: 0,
-      border: '1px solid var(--border-color)',
-      transition: 'opacity 0.6s ease',
-      opacity: fading ? 0 : 1
-    }}>
+    <div
+      className="grid-card glass-panel"
+      onClick={onClick}
+      style={{
+        borderRadius: '16px',
+        overflow: 'hidden',
+        position: 'relative',
+        aspectRatio: '1',
+        cursor: 'pointer',
+        boxShadow: 'var(--shadow-md)',
+        padding: '28px 20px',
+        border: '1px solid var(--border-color)',
+        transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+        opacity: fading ? 0 : 1,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        textAlign: 'center',
+        background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.03) 0%, rgba(255, 255, 255, 0.005) 100%)',
+        ['--card-glow' as any]: cardGlow,
+        ['--card-border-hover' as any]: cardBorderHover,
+      }}
+    >
+      {/* Background radial accent glow */}
       <div
-        className="grid-card-inner"
         style={{
-          width: '100%',
-          height: '100%',
-          backgroundImage: `url(${block.img[Math.abs(block.name.split('').reduce((a: number, b: string) => { a = ((a << 5) - a) + b.charCodeAt(0); return a }, 0)) % block.img.length]})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          opacity: 0.85,
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          width: '130px',
+          height: '130px',
+          borderRadius: '50%',
+          background: `radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%)`,
+          pointerEvents: 'none',
+          opacity: 0.65,
         }}
       />
-      <div style={{
-        padding: '24px',
-        position: 'absolute',
-        bottom: 0, left: 0, right: 0,
-        background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 60%, transparent 100%)',
-        pointerEvents: 'none'
-      }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
-          <span style={{ fontWeight: 700, fontSize: '18px', color: '#ffffff', textShadow: '0 2px 8px rgba(0,0,0,0.8)', lineHeight: 1.2, flex: 1, paddingRight: '8px' }}>
-            {block.name}
-          </span>
+
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '12px',
+          zIndex: 2,
+          width: '100%',
+        }}
+      >
+        {/* Minimalist Component Symbol Logo - Vibrant Blue */}
+        <div
+          style={{
+            width: '54px',
+            height: '54px',
+            borderRadius: '16px',
+            background: 'rgba(59, 130, 246, 0.12)',
+            border: '1px solid rgba(59, 130, 246, 0.35)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 0 18px rgba(59, 130, 246, 0.25)',
+            transition: 'transform 0.3s ease',
+          }}
+        >
+          <ComponentIcon size={26} color="#3b82f6" />
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0, fontSize: '13px', fontWeight: 600 }}>
-            {block.status === 'active' && (
-              <><CheckCircle size={14} color="var(--accent-blue)" style={{ filter: 'drop-shadow(0 0 6px rgba(0,230,118,0.4))' }} /> <span style={{ color: 'var(--accent-blue)' }}>ACTIVE</span></>
-            )}
-            {block.status === 'inactive' && (
-              <><Box size={14} color="var(--text-tertiary)" /> <span style={{ color: 'var(--text-secondary)' }}>INACTIVE</span></>
-            )}
-            {block.status === 'failure' && (
-              <><AlertTriangle size={14} color="#ef4444" style={{ filter: 'drop-shadow(0 0 6px rgba(239,68,68,0.4))' }} /> <span style={{ color: '#ef4444' }}>FAILURE</span></>
-            )}
+        {/* Block Title */}
+        <span
+          style={{
+            fontWeight: 700,
+            fontSize: '17px',
+            color: 'var(--text-primary)',
+            lineHeight: 1.25,
+            wordBreak: 'break-word',
+            maxWidth: '100%',
+          }}
+        >
+          {block.name}
+        </span>
+
+        {/* Status Pill Tag */}
+        <div
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            fontSize: '11px',
+            fontWeight: 700,
+            letterSpacing: '0.8px',
+            padding: '4px 10px',
+            borderRadius: '20px',
+            background: iconBg,
+            border: `1px solid ${statusColor}30`,
+            color: statusColor,
+            textTransform: 'uppercase',
+          }}
+        >
+          <div
+            style={{
+              width: '6px',
+              height: '6px',
+              borderRadius: '50%',
+              background: statusColor,
+              boxShadow: `0 0 6px ${statusColor}`,
+            }}
+          />
+          {block.status}
+        </div>
+
+        {/* Nested Active Nodes Count */}
+        {block.innerTotal > 0 && (
+          <div
+            style={{
+              fontSize: '12px',
+              color: 'var(--text-secondary)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              marginTop: '2px',
+            }}
+          >
+            <span>
+              {block.innerActive} / {block.innerTotal} Active nodes
+            </span>
           </div>
-
-          {block.innerTotal > 0 && (
-            <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.7)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <div style={{ width: '5px', height: '5px', borderRadius: '50%', background: 'var(--text-tertiary)' }} />
-              <span>{block.innerActive} / {block.innerTotal} Active nested nodes</span>
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
@@ -185,6 +345,7 @@ export function Overview() {
       return {
         id: b.name,
         name: b.name,
+        type: b.type,
         status,
         img: IMAGE_MAP[b.type] || IMAGE_MAP.default,
         innerTotal: allDescendants.size,
@@ -350,9 +511,16 @@ export function Overview() {
           </div>
 
           {blocks.length > 0 && activeIndices.length === numGrids ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, 240px)', justifyContent: 'center', gap: '24px', paddingBottom: '32px' }}>
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '24px',
+              paddingBottom: '32px'
+            }}>
               {activeIndices.map((blockIdx, i) => (
-                <div className="fade-enter" style={{ animationDelay: `${i * 0.08}s` }} key={i}>
+                <div className="fade-enter" style={{ width: '240px', flex: '0 0 240px', animationDelay: `${i * 0.08}s` }} key={i}>
                   <GridCard
                     block={blocks[blockIdx]}
                     fading={isFading}
