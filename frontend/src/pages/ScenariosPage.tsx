@@ -7,7 +7,7 @@ import { DSLEditor } from '../components/DSLEditor';
 import type { SceneEventData } from '../components/TimelineEditor';
 import { EventInspector } from '../components/EventInspector';
 import { SimulationMonitor } from '../components/SimulationMonitor';
-import { Play, Pause, RefreshCw, StepForward, Code, List, Activity, Library, ChevronUp, ChevronDown, MousePointer2, LayoutDashboard, Plus, Trash2, GitCompare, FileText, FilePlus } from 'lucide-react';
+import { Play, Pause, RefreshCw, StepForward, Code, List, Activity, Library, ChevronUp, ChevronDown, MousePointer2, LayoutDashboard, Plus, Trash2, GitCompare, FileText, FilePlus, Edit2 } from 'lucide-react';
 import { ScenarioComparison } from '../components/ScenarioComparison';
 const STYLE_INJECTION = `
   .glass-btn-sm {
@@ -573,11 +573,12 @@ export function ScenariosPage() {
               style={{
                 fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', border: '1px solid var(--border-color)',
                 backgroundColor: isEditingInitials ? 'var(--accent-blue)' : 'var(--bg-input)', 
-                color: isEditingInitials ? '#fff' : 'var(--text-secondary)'
+                color: isEditingInitials ? '#fff' : 'var(--text-secondary)',
+                display: 'flex', alignItems: 'center'
               }}
               title="Toggle Edit Initials mode on components"
             >
-              Edit Initials
+              <Edit2 size={14} />
             </button>
             <button 
               onClick={() => {

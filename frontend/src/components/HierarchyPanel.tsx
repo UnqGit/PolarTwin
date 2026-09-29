@@ -168,6 +168,58 @@ export interface HierarchyPanelProps {
   runtime?: any[] | null;
 }
 
+const UNIT_MULTIPLIERS: Record<string, number> = {
+  "V": 1.0, "mV": 1e-3, "kV": 1e3,
+  "A": 1.0, "mA": 1e-3,
+  "W": 1.0, "kW": 1e3,
+  "J": 1.0, "kJ": 1e3, "Wh": 3600.0, "kWh": 3.6e6,
+  "W/m2": 1.0,
+  "Hz": 1.0, "kHz": 1e3, "MHz": 1e6, "mHz": 1e-3,
+  "L/s": 1.0, "cc/s": 1e-3, "m3/hr": 1000.0 / 3600.0, "CFM": 28.316846592 / 60.0, "L/hr": 1.0 / 3600.0, "ltr/hr": 1.0 / 3600.0,
+  "ppm": 1.0, "bpm": 1.0,
+  "%": 0.01,
+  "L": 1.0, "m3": 1000.0, "cm3": 1e-3, "ml": 1e-3,
+  "kg": 1.0, "g": 1e-3, "mg": 1e-6,
+};
+
+const AVAILABLE_UNITS: Record<string, string[]> = {
+  voltage: ['V', 'mV', 'kV'],
+  current: ['A', 'mA'],
+  power: ['W', 'kW'],
+  energy: ['J', 'kJ', 'Wh', 'kWh'],
+  light_irradiance: ['W/m2'],
+  frequency: ['Hz', 'kHz', 'MHz', 'mHz'],
+  temperature: ['C', 'K', 'F'],
+  flowrate: ['L/s', 'cc/s', 'm3/hr', 'CFM', 'L/hr'],
+  air_particulates: ['ppm', 'bpm'],
+  o2_level: ['0-1', '%'],
+  co2_level: ['0-1', '%'],
+  volume: ['L', 'm3', 'cm3', 'ml'],
+  weight: ['kg', 'g', 'mg']
+};
+
+const toCanonical = (value: number, unit: string) => {
+  if (unit === 'C') return value;
+  if (unit === 'K') return value - 273.15;
+  if (unit === 'F') return (value - 32) * 5.0 / 9.0;
+  if (unit === '0-1') return value;
+  
+  const mult = UNIT_MULTIPLIERS[unit];
+  if (mult !== undefined) return value * mult;
+  return value;
+};
+
+const fromCanonical = (value: number, unit: string) => {
+  if (unit === 'C') return value;
+  if (unit === 'K') return value + 273.15;
+  if (unit === 'F') return (value * 9.0 / 5.0) + 32;
+  if (unit === '0-1') return value;
+  
+  const mult = UNIT_MULTIPLIERS[unit];
+  if (mult !== undefined) return value / mult;
+  return value;
+};
+
 export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
   root, connections, componentsInteractable, connectionsInteractable,
   onComponentsInteractableChange, onConnectionsInteractableChange,
@@ -192,15 +244,22 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
   const isEditingInitials = externalIsEditingInitials !== undefined ? externalIsEditingInitials : internalIsEditingInitials;
   const setIsEditingInitials = externalSetIsEditingInitials || setInternalIsEditingInitials;
   const [editingTarget, setEditingTarget] = useState<{name: string, type: 'component' | 'connection'} | null>(null);
+  const [unitSelections, setUnitSelections] = useState<Record<string, string>>({});
   
   const { selectedName } = useSelection();
   const { runId } = useStation();
   const isOpen = activeView !== null;
 
-  // Clear editing state when view changes
+  // Clear editing state when view changes or another component is selected
   useEffect(() => {
     setEditingTarget(null);
   }, [activeView, isEditingInitials]);
+
+  useEffect(() => {
+    if (editingTarget && selectedName && selectedName !== editingTarget.name) {
+      setEditingTarget(null);
+    }
+  }, [selectedName, editingTarget]);
 
   const [panelWidth, setPanelWidth] = useState(300);
   const isResizing = React.useRef(false);
@@ -360,7 +419,12 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                    if (detail?.min === undefined || detail?.max === undefined) return null;
                    
                    const originalUnit = detail?.unit || '';
-                   const unit = CANONICAL_UNITS[key] || originalUnit;
+                   const availableUnits = AVAILABLE_UNITS[key];
+                   const canonicalUnit = availableUnits ? availableUnits[0] : originalUnit;
+                   
+                   const unitSelectionKey = `${editingTarget.name}-${key}`;
+                   const selectedUnit = unitSelections[unitSelectionKey] || canonicalUnit;
+                   
                    const runtimeComponent = runtime?.find(c => c.name === editingTarget.name);
                    const canonicalVal = runtimeComponent?.value?.[key] ?? detail?.value ?? '';
                    
@@ -369,12 +433,30 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                    const liveState = liveStateWrapper.value ?? {};
                    
                    const rawVal = liveState[key] ?? valueOverrides?.[editingTarget.name]?.[key] ?? '';
-                   const val = rawVal !== '' ? (typeof rawVal === 'object' ? JSON.stringify(rawVal) : String(rawVal)) : '';
-                   const placeholder = typeof canonicalVal === 'object' ? JSON.stringify(canonicalVal) : String(canonicalVal);
+                   
+                   // Convert values to selected unit for display
+                   const displayRawVal = rawVal !== '' ? fromCanonical(rawVal as number, selectedUnit) : '';
+                   const val = displayRawVal !== '' ? (typeof displayRawVal === 'object' ? JSON.stringify(displayRawVal) : String(Math.round(Number(displayRawVal) * 10000) / 10000)) : '';
+                   
+                   const displayCanonicalVal = canonicalVal !== '' ? fromCanonical(canonicalVal as number, selectedUnit) : '';
+                   const placeholder = displayCanonicalVal !== '' ? (typeof displayCanonicalVal === 'object' ? JSON.stringify(displayCanonicalVal) : String(Math.round(Number(displayCanonicalVal) * 10000) / 10000)) : '';
 
                    return (
-                     <div key={`${editingTarget.name}-${key}-${val}`} style={{ marginBottom: 12 }}>
-                       <label style={{ display: 'block', marginBottom: 4, color: 'var(--text-secondary)', fontSize: 11 }}>{key} {unit ? `(${unit})` : ''}</label>
+                     <div key={`${editingTarget.name}-${key}-${val}-${selectedUnit}`} style={{ marginBottom: 12 }}>
+                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                         <label style={{ color: 'var(--text-secondary)', fontSize: 11 }}>{key}</label>
+                         {availableUnits ? (
+                           <select
+                             value={selectedUnit}
+                             onChange={(e) => setUnitSelections(prev => ({ ...prev, [unitSelectionKey]: e.target.value }))}
+                             style={{ background: 'var(--bg-input)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', fontSize: 10, borderRadius: 2, padding: '2px 4px' }}
+                           >
+                             {availableUnits.map(u => <option key={u} value={u}>{u}</option>)}
+                           </select>
+                         ) : (
+                           <span style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>{selectedUnit}</span>
+                         )}
+                       </div>
                        <input 
                          type="text" 
                          defaultValue={val} 
@@ -382,10 +464,11 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                          onBlur={(e) => {
                            const numVal = parseFloat(e.target.value);
                            if (!isNaN(numVal)) {
+                             const canonicalNumVal = toCanonical(numVal, selectedUnit);
                              if (onSetInitials) {
-                               onSetInitials(editingTarget.name, key, numVal);
+                               onSetInitials(editingTarget.name, key, canonicalNumVal);
                              } else if (runId && editingTarget) {
-                               api.setComponentState(runId, editingTarget.name, { [key]: numVal });
+                               api.setComponentState(runId, editingTarget.name, { [key]: canonicalNumVal });
                              }
                            }
                          }}
@@ -475,9 +558,10 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                   {!hideEditInitials && (
                     <button 
                       onClick={() => setIsEditingInitials(!isEditingInitials)} 
-                      style={{ background: isEditingInitials ? 'var(--accent-blue)' : 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: isEditingInitials ? '#fff' : 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}
+                      style={{ background: isEditingInitials ? 'var(--accent-blue)' : 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: isEditingInitials ? '#fff' : 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                      title="Edit Initials"
                     >
-                      Edit Initials
+                      <Edit2 size={12} />
                     </button>
                   )}
                   {allHierarchyExpanded ? (
@@ -491,9 +575,10 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                <div style={{ display: 'flex', gap: 4, textTransform: 'none', letterSpacing: 'normal', fontWeight: 500 }}>
                   <button 
                     onClick={() => setIsEditingInitials(!isEditingInitials)} 
-                    style={{ background: isEditingInitials ? 'var(--accent-blue)' : 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: isEditingInitials ? '#fff' : 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}
+                    style={{ background: isEditingInitials ? 'var(--accent-blue)' : 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: isEditingInitials ? '#fff' : 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                    title="Edit Initials"
                   >
-                    Edit Initials
+                    <Edit2 size={12} />
                   </button>
                </div>
              )}
