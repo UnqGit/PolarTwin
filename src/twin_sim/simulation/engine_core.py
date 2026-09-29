@@ -348,7 +348,7 @@ class SimulationEngineCore:
                         field_path = "status"
 
                     if is_inf:
-                        self.state.apply_infinite_event(target, field_path, value)
+                        self.state.apply_infinite_event(scene.event_ref, 0, scene.at, target, field_path, value)
                     else:
                         self.state.add_finite_event(
                             scene.event_ref, 0,
@@ -741,6 +741,9 @@ class SimulationEngineCore:
         p_min = _v(p_obj, "min", 0.0)
         t_max = _v(t_obj, "max", 120.0)
         t_min_t = _v(t_obj, "min", -20.0)
+        
+        # Ensure power has a value even if 0
+        _set_v(p_obj if isinstance(p_obj, dict) else c.value.setdefault("power", {}), "value", p_curr)
 
         # Required flowrate proportional to power
         fr_max_rated = _v(fr_obj, "max", 100.0)

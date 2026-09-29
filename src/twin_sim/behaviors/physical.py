@@ -7,8 +7,23 @@ from typing import Any
 from .base import Behavior, BehaviorContext, SpecializedBehavior
 
 
+def _get_nested(spec: dict[str, Any], key: str) -> dict[str, Any] | None:
+    if key in spec:
+        return spec[key]
+    rating = spec.get("rating", {})
+    if isinstance(rating, dict):
+        for category in ["input", "state", "output"]:
+            if category in rating and key in rating[category]:
+                return rating[category][key]
+        if key == "rating":
+            return rating
+    return None
+
+
 def _value(spec: dict[str, Any], key: str, default: float) -> float:
-    item = spec.get(key, default)
+    item = _get_nested(spec, key)
+    if item is None:
+        return default
     if isinstance(item, dict):
         if isinstance(item.get("value"), (int, float)):
             return float(item["value"])
@@ -18,7 +33,7 @@ def _value(spec: dict[str, Any], key: str, default: float) -> float:
 
 
 def _range(spec: dict[str, Any], key: str) -> tuple[float | None, float | None]:
-    item = spec.get(key)
+    item = _get_nested(spec, key)
     if not isinstance(item, dict):
         return None, None
     minimum = item.get("min") if isinstance(item.get("min"), (int, float)) else None
@@ -44,14 +59,14 @@ class GeneratorPhysicalBehavior(SpecializedBehavior):
     name = "generator"
 
     def initialize(self, component, context):
-        capacity = _value(component.specification, "fuel_capacity", 0.0)
+        capacity = _value(component.specification, "fuel_capacity", 1000.0)
         component.runtime_state.values.setdefault("fuel_level", capacity)
-        component.runtime_state.values.setdefault("power_output", 0.0)
+        component.runtime_state.values.setdefault("power", 0.0)
         component.runtime_state.values.setdefault("running", True)
 
     def evaluate(self, component, context, dt):
         spec = component.specification
-        rating = _value(spec, "rating", _value(spec, "continuous_power", 0.0))
+        rating = _value(spec, "power", _value(spec, "continuous_power", 500.0))
         current = component.runtime_state.values
         inputs = _inputs(context)
         command = inputs.get("power_command", inputs.get("command", current.get("power_command")))
@@ -62,14 +77,14 @@ class GeneratorPhysicalBehavior(SpecializedBehavior):
         multiplier = context.values.get("environment", {}).get("heating_demand_multiplier") or 1.0
         command *= float(multiplier)
         command = max(0.0, min(float(command), rating))
-        fuel = max(0.0, float(current.get("fuel_level", _value(spec, "fuel_capacity", 0.0))))
+        fuel = max(0.0, float(current.get("fuel_level", _value(spec, "fuel_capacity", 1000.0))))
         running = bool(current.get("running", True)) and component.runtime_state.available and fuel > 0
         output = command if running else 0.0
         consumption_l_per_hour = output * _value(spec, "fuel_rate", 0.25)
         fuel_next = max(0.0, fuel - consumption_l_per_hour * dt / 3600.0)
         return {
-            "power_output": output,
-            "fuel_consumption": consumption_l_per_hour,
+            "power": output,
+            "flowrate": consumption_l_per_hour,
             "fuel_level": fuel_next,
             "running": running and fuel_next > 0,
         }
@@ -156,31 +171,31 @@ class BoundedActuatorBehavior(SpecializedBehavior):
 
 class HeaterPhysicalBehavior(BoundedActuatorBehavior):
     name = "heater"
-    output_key = "thermal_output"
+    output_key = "temperature"
 
 
 class FanPhysicalBehavior(BoundedActuatorBehavior):
     name = "fan"
-    output_key = "airflow"
+    output_key = "flowrate"
 
 
 class PumpPhysicalBehavior(BoundedActuatorBehavior):
     name = "pump"
-    output_key = "flow"
+    output_key = "flowrate"
 
 
 class TankPhysicalBehavior(SpecializedBehavior):
     name = "tank"
 
     def initialize(self, component, context):
-        component.runtime_state.values.setdefault("level", _value(component.specification, "capacity", 0.0))
+        component.runtime_state.values.setdefault("volume", _value(component.specification, "volume", 1000.0))
 
     def evaluate(self, component, context, dt):
-        capacity = _value(component.specification, "capacity", float("inf"))
+        capacity = _value(component.specification, "volume", float("inf"))
         inputs = _inputs(context)
-        level = float(component.runtime_state.values.get("level", capacity))
+        level = float(component.runtime_state.values.get("volume", capacity))
         level += (float(inputs.get("inflow", 0.0)) - float(inputs.get("outflow", 0.0))) * dt
-        return {"level": max(0.0, min(level, capacity))}
+        return {"volume": max(0.0, min(level, capacity))}
 
 
 class StoragePhysicalBehavior(TankPhysicalBehavior):

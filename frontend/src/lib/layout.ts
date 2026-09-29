@@ -839,7 +839,8 @@ export function buildLayout(node: any, spec: any, rawConnections: any[] = []): N
   const type: string = node.type ?? '';
   const tags: string[] = node.tags ?? [];
   const level: number | undefined = typeof node.floor === 'number' ? node.floor : (typeof node.level === 'number' ? node.level : undefined);
-  const rawSpec: Record<string, unknown> = (spec?.components?.[name]?.spec) ?? {};
+  const specItem = Array.isArray(spec) ? spec.find((s: any) => s.name === name) : null;
+  const rawSpec: Record<string, unknown> = specItem || {};
   const rawChildren: any[] = node.children ?? [];
 
   // Build children first so their dims are known.

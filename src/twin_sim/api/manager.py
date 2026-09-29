@@ -53,6 +53,7 @@ class RunRecord:
         self.station_id = station_id
         self.scenario_id = scenario_id
         self.status: RunStatus = RunStatus.IDLE
+        self._db_created = False
 
         self._thread: Optional[threading.Thread] = None
         self._stop_event = threading.Event()
@@ -153,7 +154,7 @@ class RunRecord:
             "components": [c.model_dump() for c in eff["components"]],
             "connections": [c.model_dump() for c in eff["connections"]],
             "external": eff["external"].model_dump() if hasattr(eff["external"], "model_dump") else {},
-            "active_events": [layer.model_dump() for layer in self.engine.state.active_layers],
+            "active_events": [layer.model_dump() for layer in self.engine.state.active_layers + self.engine.state.permanent_layers],
             "upcoming_events": [scene.model_dump() for scene in self.engine.scenes],
         }
 
@@ -206,6 +207,7 @@ class SimulationManager:
         scenes: Optional[List[SceneEvent]] = None,
         scenario_id: Optional[str] = None,
         global_tolerance: float = 10.0,
+        value_overrides: Optional[Dict[str, Dict[str, Any]]] = None,
     ) -> str:
         """
         Create a new simulation run for a registered station.
@@ -217,17 +219,36 @@ class SimulationManager:
         if station is None:
             raise ValueError(f"Station '{station_id}' is not registered.")
 
-        run_id = f"run-{uuid.uuid4().hex[:12]}"
-        engine = station.build_engine(scenes=scenes, global_tolerance=global_tolerance)
+        scenario_name = "manual"
+        if scenario_id:
+            scenario_name = scenario_id.split(":")[-1] if ":" in scenario_id else scenario_id
 
-        record = RunRecord(
-            run_id=run_id,
-            engine=engine,
-            station_id=station_id,
-            scenario_id=scenario_id,
+        runno = 1
+        if self._telemetry_db:
+            runno = self._telemetry_db.get_next_run_number(station_id, scenario_id)
+
+        engine = station.build_engine(
+            scenes=scenes, 
+            global_tolerance=global_tolerance, 
+            value_overrides=value_overrides
         )
 
         with self._lock:
+            local_count = len([r for r in self._runs.values() if r.station_id == station_id and r.scenario_id == scenario_id])
+            runno = max(runno, local_count + 1)
+            
+            while True:
+                run_id = f"{station_id}:{scenario_name}:{runno}"
+                if run_id not in self._runs:
+                    break
+                runno += 1
+
+            record = RunRecord(
+                run_id=run_id,
+                engine=engine,
+                station_id=station_id,
+                scenario_id=scenario_id,
+            )
             self._runs[run_id] = record
 
         return run_id
@@ -244,9 +265,22 @@ class SimulationManager:
         with self._lock:
             return [r.summary() for r in self._runs.values()]
 
+    def delete_run(self, run_id: str) -> bool:
+        with self._lock:
+            if run_id in self._runs:
+                rec = self._runs[run_id]
+                rec.stop_thread()
+                del self._runs[run_id]
+                return True
+            return False
+
     def play(self, run_id: str, tick_interval: float = 1.0) -> bool:
         rec = self.get_run(run_id)
         if rec:
+            if not rec._db_created:
+                if self._telemetry_db:
+                    self._telemetry_db.create_simulation_run(rec.run_id, rec.station_id, rec.scenario_id)
+                rec._db_created = True
             rec.play(tick_interval=tick_interval)
             return True
         return False

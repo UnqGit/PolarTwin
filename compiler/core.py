@@ -50,6 +50,40 @@ def compile_station(input_dir: Path, output_dir: Path):
     hierarchy_out = output_dir / "hierarchy.json"
     connection_out = output_dir / "connection.json"
     spec_out = output_dir / "spec.json"
+    initial_out = output_dir / "initial.json"
+    
+    import sys
+    sys.path.append("src")
+    from twin_sim.ingestion.models import canonicalize_measurement
+
+    initial_values = {}
+    for s in specs:
+        spec_dict = s.to_dict()
+        comp_name = spec_dict["name"]
+        comp_initial = {}
+        
+        rating_block = spec_dict.get("rating", {})
+        for scope in ["input", "state", "output"]:
+            fields = rating_block.get(scope, {})
+            for k, v in fields.items():
+                if "min" in v and "max" in v:
+                    mean_val = (v["min"] + v["max"]) / 2.0
+                elif "value" in v:
+                    mean_val = float(v["value"])
+                else:
+                    mean_val = 0.0
+                unit = v.get("unit")
+                
+                if unit:
+                    from twin_sim.ingestion.models import to_canonical
+                    converted = to_canonical(mean_val, unit)
+                else:
+                    converted = mean_val
+                
+                comp_initial[k] = converted
+                
+        if comp_initial:
+            initial_values[comp_name] = comp_initial
     
     with open(hierarchy_out, "w", encoding="utf-8") as f:
         json.dump([c.to_dict() for c in hierarchy_components], f, indent=2)
@@ -59,6 +93,9 @@ def compile_station(input_dir: Path, output_dir: Path):
         
     with open(spec_out, "w", encoding="utf-8") as f:
         json.dump([s.to_dict() for s in specs], f, indent=2)
+        
+    with open(initial_out, "w", encoding="utf-8") as f:
+        json.dump(initial_values, f, indent=2)
         
     print(f"Successfully generated compiler outputs in {output_dir}")
 

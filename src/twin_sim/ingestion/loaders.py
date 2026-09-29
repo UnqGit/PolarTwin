@@ -21,7 +21,7 @@ def load_external(path: str | Path) -> ExternalModel:
     data = load_json(path)
     return ExternalModel.model_validate(data)
 
-def generate_runtime_components(hierarchy: List[Dict[str, Any]], specs: List[Dict[str, Any]]) -> List[RuntimeComponent]:
+def generate_runtime_components(hierarchy: List[Dict[str, Any]], specs: List[Dict[str, Any]], value_overrides: Optional[Dict[str, Any]] = None) -> List[RuntimeComponent]:
     """
     Generate component.json structure from hierarchy and spec artifacts.
     Merges input, output, and state ratings into the 'value' dict, applying canonical unit conversions.
@@ -76,7 +76,11 @@ def generate_runtime_components(hierarchy: List[Dict[str, Any]], specs: List[Dic
         # Apply measures for sensors
         if "measures" in c_spec:
             value_dict["measures"] = c_spec["measures"]
-            
+        # Apply value overrides if any
+        if value_overrides and name in value_overrides:
+            for k, v in value_overrides[name].items():
+                value_dict[k] = v
+
         runtime_components.append(
             RuntimeComponent(
                 name=name,
@@ -110,7 +114,12 @@ def initialize_simulation_state(hierarchy_path: Path, connections_path: Path, sp
     connections = load_json(connections_path)
     specs = load_json(specs_path)
     
-    runtime_components = generate_runtime_components(hierarchy, specs)
+    value_overrides = {}
+    source_val_path = hierarchy_path.parent.parent.parent / "source" / hierarchy_path.parent.name / "value.json"
+    if source_val_path.exists():
+        value_overrides = load_json(source_val_path)
+        
+    runtime_components = generate_runtime_components(hierarchy, specs, value_overrides)
     runtime_connections = generate_runtime_connections(connections)
     
     external_state = load_external(external_path) if external_path and external_path.exists() else None

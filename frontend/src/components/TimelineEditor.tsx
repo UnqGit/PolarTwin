@@ -19,11 +19,12 @@ interface TimelineEditorProps {
   onAppendEvent?: (eventRef: string, at: number) => void;
   onUpdateEventLocation?: (event: SceneEventData, newAt: number, newDuration: number | null) => void;
   onDeleteEvent?: (event: SceneEventData) => void;
+  onSeek?: (time: number) => void;
 }
 
 const AURORA_COLORS = ['#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#d946ef'];
 
-export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime, onSelectEvent, selectedEvent, onAppendEvent, onUpdateEventLocation, onDeleteEvent }) => {
+export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime, onSelectEvent, selectedEvent, onAppendEvent, onUpdateEventLocation, onDeleteEvent, onSeek }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const PIXELS_PER_UNIT = 40; // 40px per simulation hour
   const SIDEBAR_WIDTH = 150;
@@ -122,9 +123,18 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
       >
         <div style={{ position: 'relative', width: width, minHeight: Math.max(120, events.length * ROW_HEIGHT + 30) }}>
           {/* Header Axis */}
-          <div style={{ position: 'sticky', top: 0, height: 30, backgroundColor: 'var(--bg-panel-secondary)', borderBottom: '1px solid var(--border-color)', zIndex: 10 }}>
+          <div 
+            style={{ position: 'sticky', top: 0, height: 30, backgroundColor: 'var(--bg-panel-secondary)', borderBottom: '1px solid var(--border-color)', zIndex: 10, cursor: 'crosshair' }}
+            onClick={(e) => {
+              if (onSeek) {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                onSeek(Math.max(0, x / PIXELS_PER_UNIT));
+              }
+            }}
+          >
             {Array.from({ length: Math.ceil(width / PIXELS_PER_UNIT) }).map((_, i) => (
-              <div key={i} style={{ position: 'absolute', left: i * PIXELS_PER_UNIT, top: 8, fontSize: 10, color: 'var(--text-tertiary)', transform: 'translateX(-50%)' }}>
+              <div key={i} style={{ position: 'absolute', left: i * PIXELS_PER_UNIT, top: 8, fontSize: 10, color: 'var(--text-tertiary)', transform: 'translateX(-50%)', pointerEvents: 'none' }}>
                 {i}h
               </div>
             ))}

@@ -31,6 +31,12 @@ export const api = {
     return res.json();
   },
 
+  getRuntime: async (stationId: string) => {
+    const res = await fetch(`${API_BASE}/stations/${stationId}/runtime`);
+    if (!res.ok) throw new Error("Failed to fetch runtime state");
+    return res.json();
+  },
+
   getTelemetryRuns: async () => {
     const res = await fetch(`${API_BASE}/telemetry/runs`);
     if (!res.ok) throw new Error("Failed to fetch telemetry runs");
@@ -55,6 +61,30 @@ export const api = {
     const res = await fetch(`${API_BASE}/telemetry/records/${recordId}`, { method: 'DELETE' });
     if (!res.ok) throw new Error("Failed to delete telemetry record");
     return;
+  },
+
+  getRunMetadata: async (runId: string) => {
+    const res = await fetch(`${API_BASE}/telemetry/runs/${runId}/metadata`);
+    if (!res.ok) throw new Error("Failed to fetch run metadata");
+    return res.json();
+  },
+
+  getComponentHistory: async (runId: string, componentId: string) => {
+    const res = await fetch(`${API_BASE}/telemetry/runs/${runId}/components/${componentId}/history`);
+    if (!res.ok) throw new Error("Failed to fetch component history");
+    return res.json();
+  },
+
+  getExternalHistory: async (runId: string) => {
+    const res = await fetch(`${API_BASE}/telemetry/runs/${runId}/external/history`);
+    if (!res.ok) throw new Error("Failed to fetch external history");
+    return res.json();
+  },
+
+  getRunEvents: async (runId: string) => {
+    const res = await fetch(`${API_BASE}/telemetry/runs/${runId}/events`);
+    if (!res.ok) throw new Error("Failed to fetch run events");
+    return res.json();
   },
 
   // Scenario API
@@ -162,11 +192,11 @@ export const api = {
     if (!res.ok) throw new Error("Failed to list simulations");
     return res.json();
   },
-  createSimulation: async (stationId: string, scenarioId?: string, globalTolerance: number = 10.0) => {
+  createSimulation: async (stationId: string, scenarioId?: string, globalTolerance: number = 10.0, valueOverrides?: Record<string, Record<string, any>>) => {
     const res = await fetch(`${API_BASE}/simulations`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ station_id: stationId, scenario_id: scenarioId, global_tolerance: globalTolerance })
+      body: JSON.stringify({ station_id: stationId, scenario_id: scenarioId, global_tolerance: globalTolerance, value_overrides: valueOverrides })
     });
     if (!res.ok) throw new Error("Failed to create simulation");
     return res.json();
@@ -199,6 +229,10 @@ export const api = {
     const res = await fetch(`${API_BASE}/simulations/${runId}/reset`, { method: 'POST' });
     if (!res.ok) throw new Error("Failed to reset simulation");
     return res.json();
+  },
+  deleteSimulation: async (runId: string) => {
+    const res = await fetch(`${API_BASE}/simulations/${runId}`, { method: 'DELETE' });
+    if (!res.ok) throw new Error("Failed to delete simulation");
   },
   setComponentState: async (runId: string, componentId: string, stateUpdate: Record<string, unknown>) => {
     const res = await fetch(`${API_BASE}/simulations/${runId}/component/${componentId}/state`, {

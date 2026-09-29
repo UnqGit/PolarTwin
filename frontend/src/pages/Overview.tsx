@@ -121,7 +121,7 @@ function GridCard({ block, fading, onClick }: { block: BlockData; fading: boolea
 }
 
 export function Overview() {
-  const { selectedStation, hierarchy, liveStateRef } = useStation();
+  const { selectedStation, hierarchy, liveStateRef, simTime } = useStation();
   const navigate = useNavigate();
 
   const [telemetry] = useState({
@@ -192,7 +192,7 @@ export function Overview() {
         path: getPath(b.name)
       };
     });
-  }, [hierarchyData, liveStateRef]);
+  }, [hierarchyData, liveStateRef, simTime]);
 
   const numGrids = useMemo(() => {
     return Math.max(1, Math.floor(Math.log2(blocks.length || 1)));

@@ -99,6 +99,7 @@ class LoadedStation:
         self,
         scenes: Optional[List[SceneEvent]] = None,
         global_tolerance: float = 10.0,
+        value_overrides: Optional[Dict[str, Dict[str, Any]]] = None,
     ) -> SimulationEngineCore:
         """
         Construct a fresh ``SimulationEngineCore`` from this station data.
@@ -108,6 +109,12 @@ class LoadedStation:
 
         # Deep-copy runtime state so multiple engines don't share mutable objects
         comps = copy.deepcopy(self.runtime_components)
+        
+        if value_overrides:
+            for c in comps:
+                if c.name in value_overrides:
+                    c.value.update(value_overrides[c.name])
+                    
         conns = copy.deepcopy(self.runtime_connections)
         ext = copy.deepcopy(self.external)
 
@@ -174,8 +181,14 @@ class StationLoader:
         compiled_connections: List[Dict[str, Any]] = _load_json(connection_path)
         specs: List[Dict[str, Any]] = _load_json(spec_path)
 
+        # Read optional initial.json from compiled dir
+        value_overrides = {}
+        initial_path = compiled_dir / "initial.json"
+        if initial_path.exists():
+            value_overrides = _load_json(initial_path)
+
         # Generate runtime models
-        runtime_components = generate_runtime_components(hierarchy_list, specs)
+        runtime_components = generate_runtime_components(hierarchy_list, specs, value_overrides)
         runtime_connections = generate_runtime_connections(compiled_connections)
 
         # External model: explicit path → compiled_dir/external.json → built-in default

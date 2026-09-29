@@ -10,6 +10,7 @@ interface StationContextType {
   hierarchy: any | null;
   connections: any | null;
   spec: any | null;
+  runtime: any[] | null;
   isLoadingData: boolean;
 
   // Simulation and Scenario state
@@ -37,6 +38,7 @@ export const StationContext = createContext<StationContextType>({
   hierarchy: null,
   connections: null,
   spec: null,
+  runtime: null,
   isLoadingData: false,
   
   // Dummy defaults for simulation state
@@ -68,6 +70,7 @@ export const StationProvider: React.FC<{ children: ReactNode, stationId?: string
   const [hierarchy, setHierarchy] = useState<any | null>(null);
   const [connections, setConnections] = useState<any | null>(null);
   const [spec, setSpec] = useState<any | null>(null);
+  const [runtime, setRuntime] = useState<any[] | null>(null);
   const [isLoadingData, setIsLoadingData] = useState<boolean>(false);
 
   // Simulation and Scenario state
@@ -96,6 +99,7 @@ export const StationProvider: React.FC<{ children: ReactNode, stationId?: string
       setHierarchy(null);
       setConnections(null);
       setSpec(null);
+      setRuntime(null);
       return;
     }
 
@@ -104,12 +108,14 @@ export const StationProvider: React.FC<{ children: ReactNode, stationId?: string
     Promise.all([
       api.getHierarchy(selectedStation).catch(e => { console.error(e); return null; }),
       api.getConnections(selectedStation).catch(e => { console.error(e); return null; }),
-      api.getSpec(selectedStation).catch(e => { console.error(e); return null; })
+      api.getSpec(selectedStation).catch(e => { console.error(e); return null; }),
+      api.getRuntime(selectedStation).catch(e => { console.error(e); return null; })
     ])
-    .then(([hData, cData, sData]) => {
+    .then(([hData, cData, sData, rData]) => {
       setHierarchy(hData);
       setConnections(cData);
       setSpec(sData);
+      setRuntime(rData);
       setIsLoadingData(false);
     })
     .catch(err => {
@@ -149,6 +155,7 @@ export const StationProvider: React.FC<{ children: ReactNode, stationId?: string
       hierarchy,
       connections,
       spec,
+      runtime,
       isLoadingData,
       liveStateRef,
       selectedScenarioId,

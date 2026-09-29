@@ -27,6 +27,7 @@ from twin_sim.api.manager import SimulationManager, RunStatus
 from twin_sim.api.scenario_manager import ScenarioManager
 from twin_sim.simulation.station_loader import StationLoader
 from twin_sim.telemetry.database import TelemetryDatabase
+import json
 
 
 # ---------------------------------------------------------------------------
@@ -94,6 +95,7 @@ class CreateSimulationRequest(BaseModel):
     station_id: str
     scenario_id: Optional[str] = None
     global_tolerance: float = 10.0
+    value_overrides: Optional[Dict[str, Dict[str, Any]]] = None
 
 
 class PlayRequest(BaseModel):
@@ -351,6 +353,7 @@ def create_simulation(req: CreateSimulationRequest):
             scenario_id=req.scenario_id,
             scenes=scenes,
             global_tolerance=req.global_tolerance,
+            value_overrides=req.value_overrides,
         )
     except ValueError as e:
         raise HTTPException(404, str(e))
@@ -411,6 +414,13 @@ def reset_simulation(run_id: str):
     if not _manager.reset(run_id):
         raise HTTPException(404, "Simulation not found")
     return {"status": "reset"}
+
+@app.delete("/simulations/{run_id}", status_code=204)
+def delete_simulation(run_id: str):
+    """Delete a simulation run."""
+    if not _manager.delete_run(run_id):
+        raise HTTPException(404, "Simulation not found")
+    return None
 
 
 @app.post("/simulations/{run_id}/telemetry/start")
@@ -494,7 +504,7 @@ def get_telemetry(run_id: Optional[str] = None):
 @app.get("/telemetry/runs")
 def get_telemetry_runs():
     """List all runs that have persisted telemetry records."""
-    return _manager.list_runs()
+    return _db.get_all_runs()
 
 
 @app.get("/telemetry/records/{run_id}/latest")
@@ -528,6 +538,26 @@ def delete_telemetry_record(record_id: int):
     _db.delete_record(record_id)
     return None
 
+@app.get("/telemetry/runs/{run_id}/metadata")
+def get_run_metadata(run_id: str):
+    meta = _db.get_run_metadata(run_id)
+    if not meta:
+        raise HTTPException(404, "Run metadata not found in database")
+    return meta
+
+@app.get("/telemetry/runs/{run_id}/components/{component_id}/history")
+def get_component_history(run_id: str, component_id: str):
+    return _db.get_component_history(run_id, component_id)
+
+@app.get("/telemetry/runs/{run_id}/external/history")
+def get_external_history(run_id: str):
+    return _db.get_external_history(run_id)
+
+@app.get("/telemetry/runs/{run_id}/events")
+def get_run_events(run_id: str):
+    return _db.get_run_events(run_id)
+
+
 class GlobalToleranceRequest(BaseModel):
     value: float
 
@@ -556,9 +586,8 @@ def set_component_tolerance(run_id: str, component_id: str, req: ComponentTolera
     comp = rec.engine.state.base_components[component_id]
     
     # Update specification's tolerance
-    if "tolerance" not in comp.value or not isinstance(comp.value["tolerance"], dict):
-        comp.value["tolerance"] = {}
-    comp.value["tolerance"]["value"] = req.value
+    comp.value["tolerance"] = req.value
+    save_station_values(rec.station_id, component_id, {"tolerance": req.value})
     return {"status": "ok", "component": component_id, "tolerance": req.value}
 
 @app.post("/simulations/{run_id}/component/{component_id}/state")

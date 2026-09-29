@@ -37,10 +37,12 @@ interface TreeNodeProps {
   toggleExpanded: (name: string) => void;
   isEditingInitials?: boolean;
   onEditInitials?: (name: string, type: 'component' | 'connection') => void;
+  hideSensors?: boolean;
 }
 
-const TreeNode: React.FC<TreeNodeProps> = ({ node, depth, expandedSet, toggleExpanded, isEditingInitials, onEditInitials }) => {
+const TreeNode: React.FC<TreeNodeProps> = ({ node, depth, expandedSet, toggleExpanded, isEditingInitials, onEditInitials, hideSensors }) => {
   const { selectedName, setSelectedName, hiddenSet, toggleVisibility } = useSelection();
+  
   const isSelected = selectedName === node.name;
   const isExpanded = expandedSet.has(node.name);
   const hasChildren = node.children.length > 0;
@@ -54,6 +56,10 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, depth, expandedSet, toggleExp
     e.stopPropagation();
     if (hasChildren) toggleExpanded(node.name);
   }, [hasChildren, node.name, toggleExpanded]);
+
+  if (hideSensors && (node.type === 'sensor' || node.type === 'sensor array')) {
+    return null;
+  }
 
   return (
     <div>
@@ -119,7 +125,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, depth, expandedSet, toggleExp
       {hasChildren && isExpanded && (
         <div>
           {node.children.map(child => (
-            <TreeNode key={child.name} node={child} depth={depth + 1} expandedSet={expandedSet} toggleExpanded={toggleExpanded} isEditingInitials={isEditingInitials} onEditInitials={onEditInitials} />
+            <TreeNode key={child.name} node={child} depth={depth + 1} expandedSet={expandedSet} toggleExpanded={toggleExpanded} isEditingInitials={isEditingInitials} onEditInitials={onEditInitials} hideSensors={hideSensors} />
           ))}
         </div>
       )}
@@ -152,6 +158,14 @@ export interface HierarchyPanelProps {
   onContainerOcclusionChange?: (mode: 'off' | 'off_on_hover') => void;
   bottomOffset?: number;
   hideEditInitials?: boolean;
+  hideSettings?: boolean;
+  hideSensors?: boolean;
+  isEditingInitials?: boolean;
+  setIsEditingInitials?: (val: boolean) => void;
+  onSetInitials?: (component: string, key: string, value: number) => void;
+  onResetInitials?: (component: string) => void;
+  valueOverrides?: Record<string, Record<string, number>>;
+  runtime?: any[] | null;
 }
 
 export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
@@ -164,10 +178,19 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
   lightingMode, onLightingModeChange,
   containerOcclusion, onContainerOcclusionChange,
   bottomOffset = 0, hideEditInitials = false,
-  liveStateRef
+  hideSettings = false, hideSensors = false,
+  liveStateRef,
+  isEditingInitials: externalIsEditingInitials,
+  setIsEditingInitials: externalSetIsEditingInitials,
+  onSetInitials,
+  onResetInitials,
+  valueOverrides = {},
+  runtime = null
 }) => {
   const [activeView, setActiveView] = useState<string | null>('hierarchy');
-  const [isEditingInitials, setIsEditingInitials] = useState(false);
+  const [internalIsEditingInitials, setInternalIsEditingInitials] = useState(false);
+  const isEditingInitials = externalIsEditingInitials !== undefined ? externalIsEditingInitials : internalIsEditingInitials;
+  const setIsEditingInitials = externalSetIsEditingInitials || setInternalIsEditingInitials;
   const [editingTarget, setEditingTarget] = useState<{name: string, type: 'component' | 'connection'} | null>(null);
   
   const { selectedName } = useSelection();
@@ -314,12 +337,18 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
              {(() => {
                 const node = root ? findNode(root, editingTarget.name) : null;
                 const specObj = node?.spec || {};
-                const liveState = (liveStateRef?.current?.[editingTarget.name] ?? {}) as Record<string, unknown>;
                 
                 const inputs: string[] = [];
                 const states: string[] = [];
                 const outputs: string[] = [];
                 
+                const CANONICAL_UNITS: Record<string, string> = {
+                  voltage: 'V', current: 'A', power: 'W', energy: 'J', 
+                  light_irradiance: 'W/m2', frequency: 'Hz', temperature: 'C', 
+                  flowrate: 'L/s', air_particulates: 'ppm', o2_level: '0-1', 
+                  co2_level: '0-1', volume: 'L', weight: 'kg'
+                };
+
                 if (specObj.rating) {
                    for (const k of Object.keys((specObj.rating as any).input || {})) inputs.push(k);
                    for (const k of Object.keys((specObj.rating as any).state || {})) states.push(k);
@@ -328,20 +357,34 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                 
                 const renderInput = (key: string, category: string) => {
                    const detail = (specObj.rating as any)?.[category]?.[key];
-                   const unit = detail?.unit || '';
-                   const rawVal = liveState[key] ?? detail?.value ?? '';
-                   const val = typeof rawVal === 'object' ? JSON.stringify(rawVal) : String(rawVal);
+                   if (detail?.min === undefined || detail?.max === undefined) return null;
+                   
+                   const originalUnit = detail?.unit || '';
+                   const unit = CANONICAL_UNITS[key] || originalUnit;
+                   const runtimeComponent = runtime?.find(c => c.name === editingTarget.name);
+                   const canonicalVal = runtimeComponent?.value?.[key] ?? detail?.value ?? '';
+                   
+                   // Properly extract live state value
+                   const liveStateWrapper = (liveStateRef?.current?.components?.[editingTarget.name] ?? {}) as any;
+                   const liveState = liveStateWrapper.value ?? {};
+                   
+                   const rawVal = liveState[key] ?? valueOverrides?.[editingTarget.name]?.[key] ?? '';
+                   const val = rawVal !== '' ? (typeof rawVal === 'object' ? JSON.stringify(rawVal) : String(rawVal)) : '';
+                   const placeholder = typeof canonicalVal === 'object' ? JSON.stringify(canonicalVal) : String(canonicalVal);
+
                    return (
-                     <div key={key} style={{ marginBottom: 12 }}>
+                     <div key={`${editingTarget.name}-${key}-${val}`} style={{ marginBottom: 12 }}>
                        <label style={{ display: 'block', marginBottom: 4, color: 'var(--text-secondary)', fontSize: 11 }}>{key} {unit ? `(${unit})` : ''}</label>
                        <input 
                          type="text" 
                          defaultValue={val} 
+                         placeholder={placeholder}
                          onBlur={(e) => {
-                           if(runId && editingTarget) {
-                             const numVal = parseFloat(e.target.value);
-                             if (!isNaN(numVal)) {
-                               // Assuming we have api.setComponentState or similar
+                           const numVal = parseFloat(e.target.value);
+                           if (!isNaN(numVal)) {
+                             if (onSetInitials) {
+                               onSetInitials(editingTarget.name, key, numVal);
+                             } else if (runId && editingTarget) {
                                api.setComponentState(runId, editingTarget.name, { [key]: numVal });
                              }
                            }
@@ -354,13 +397,20 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
 
                 return (
                   <>
-                    <div style={{ marginBottom: 12 }}>
+                    <div key={`${editingTarget.name}-tolerance-${valueOverrides?.[editingTarget.name]?.tolerance ?? (specObj.tolerance as number) || 10}`} style={{ marginBottom: 12 }}>
                       <label style={{ display: 'block', marginBottom: 4, color: 'var(--text-secondary)', fontSize: 11 }}>Individual Tolerance</label>
                       <input 
                         type="number" 
-                        defaultValue={(specObj.tolerance as number) || 10} 
+                        defaultValue={valueOverrides?.[editingTarget.name]?.tolerance ?? (specObj.tolerance as number) || 10} 
                         onBlur={(e) => {
-                           if(runId && editingTarget) api.setComponentTolerance(runId, editingTarget.name, parseFloat(e.target.value));
+                          const numVal = parseFloat(e.target.value);
+                          if (!isNaN(numVal)) {
+                            if (onSetInitials) {
+                              onSetInitials(editingTarget.name, 'tolerance', numVal);
+                            } else if (runId && editingTarget) {
+                              api.setComponentTolerance(runId, editingTarget.name, numVal);
+                            }
+                          }
                         }}
                         style={{ width: '100%', background: 'var(--bg-input)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4 }} 
                       />
@@ -379,8 +429,14 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
              })()}
 
              <div style={{ display: 'flex', gap: 8, marginBottom: 16, marginTop: 16 }}>
-               <button style={{ flex: 1, background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4, cursor: 'pointer' }} onClick={() => { if(runId && editingTarget) api.setComponentTolerance(runId, editingTarget.name, 10); }}>Reset Tolerance</button>
-               <button style={{ flex: 1, background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4, cursor: 'pointer' }} onClick={() => console.log('Reset fields to earlier state')}>Reset Fields</button>
+               <button style={{ flex: 1, background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4, cursor: 'pointer' }} onClick={() => { 
+                 if (onResetInitials && editingTarget) {
+                   onResetInitials(editingTarget.name);
+                 } else if (runId && editingTarget) {
+                   // When running, just reset to some default
+                   api.setComponentTolerance(runId, editingTarget.name, 10); 
+                 }
+               }}>Reset All Component Fields</button>
              </div>
              <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic' }}>
                Changes are synced with backend automatically.
@@ -443,7 +499,7 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
              )}
           </div>
           <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
-             {activeView === 'hierarchy' && <TreeNode node={root} depth={0} expandedSet={expandedSet} toggleExpanded={toggleExpanded} isEditingInitials={isEditingInitials} onEditInitials={(name, type) => setEditingTarget({ name, type })} />}
+             {activeView === 'hierarchy' && <TreeNode node={root} depth={0} expandedSet={expandedSet} toggleExpanded={toggleExpanded} isEditingInitials={isEditingInitials} onEditInitials={(name, type) => setEditingTarget({ name, type })} hideSensors={hideSensors} />}
              {activeView === 'connections' && <ConnectionsList connections={connections} isEditingInitials={isEditingInitials} onEditInitials={(name, type) => setEditingTarget({ name, type })} />}
              {activeView === 'interactivity' && (
                <div style={{ padding: '16px 14px', fontSize: 13, color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -546,7 +602,7 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
       }}>
         <IconBtn icon={<Network size={20} />} active={activeView === 'hierarchy'} onClick={() => toggleView('hierarchy')} title="Hierarchy" />
         <IconBtn icon={<Link2 size={20} />} active={activeView === 'connections'} onClick={() => toggleView('connections')} title="Connections" />
-        <IconBtn icon={<Sliders size={20} />} active={activeView === 'interactivity'} onClick={() => toggleView('interactivity')} title="Settings" />
+        {!hideSettings && <IconBtn icon={<Sliders size={20} />} active={activeView === 'interactivity'} onClick={() => toggleView('interactivity')} title="Settings" />}
         
         {customSidebarTabs?.map(tab => (
           <IconBtn key={tab.id} icon={tab.icon} active={activeView === tab.id} onClick={() => toggleView(tab.id)} title={tab.title} />

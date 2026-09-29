@@ -145,9 +145,6 @@ interface TwinNodeRendererProps {
 export const TwinNodeRenderer: React.FC<TwinNodeRendererProps> = React.memo(({
   layout, liveStateRef, depth = 0, containerOcclusion = 'off', hasNonCampusAncestor = false, effectiveLayer = null, buildLimit = Infinity,
 }) => {
-  if (layout.buildIndex !== undefined && layout.buildIndex > buildLimit) {
-    return null;
-  }
   // ── Read hover state from the centralized HoverContext ───────────────────
   const { hoveredName, hoveredAssociated, selectedAssociated, hoveredAncestors, selectedAncestors, activeLayer, componentsInteractable } = useContext(HoverContext);
   const hovered = hoveredName === layout.name;
@@ -164,7 +161,7 @@ export const TwinNodeRenderer: React.FC<TwinNodeRendererProps> = React.memo(({
 
   useFrame(() => {
     const state = liveStateRef.current?.[layout.name] as any;
-    const isFailed = state?.running === false;
+    const isFailed = state?.status === 'failure';
     if (isFailed !== failed) {
       setFailed(isFailed);
     }
@@ -225,6 +222,10 @@ export const TwinNodeRenderer: React.FC<TwinNodeRendererProps> = React.memo(({
   }
 
   const yOffset = layout.yOffset ?? 0;
+
+  if (layout.buildIndex !== undefined && layout.buildIndex > buildLimit) {
+    return null;
+  }
 
   return (
     <group

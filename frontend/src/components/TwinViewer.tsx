@@ -260,6 +260,12 @@ interface TwinViewerProps {
   rightOffset?: number;
   bottomOffset?: number;
   hideEditInitials?: boolean;
+  isEditingInitials?: boolean;
+  setIsEditingInitials?: (val: boolean) => void;
+  onSetInitials?: (component: string, key: string, value: number) => void;
+  onResetInitials?: (component: string) => void;
+  valueOverrides?: Record<string, Record<string, number>>;
+  runtime?: any[] | null;
 }
 
 export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
@@ -277,7 +283,13 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
   customSidebarTabs,
   rightOffset = 20,
   bottomOffset = 20,
-  hideEditInitials = false
+  hideEditInitials = false,
+  isEditingInitials,
+  setIsEditingInitials,
+  onSetInitials,
+  onResetInitials,
+  valueOverrides = {},
+  runtime = null
 }) => {
   const { theme } = useTheme();
   const bgMain = theme === 'light' ? '#f0f4f8' : '#06060c';
@@ -562,10 +574,15 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
             customSidebarTabs={customSidebarTabs}
             lightingMode={internalLightingMode}
             onLightingModeChange={setInternalLightingMode}
-            containerOcclusion={internalOcclusion}
             onContainerOcclusionChange={setInternalOcclusion}
             bottomOffset={bottomOffset}
             hideEditInitials={hideEditInitials}
+            isEditingInitials={isEditingInitials}
+            setIsEditingInitials={setIsEditingInitials}
+            onSetInitials={onSetInitials}
+            onResetInitials={onResetInitials}
+            valueOverrides={valueOverrides}
+            runtime={runtime}
           />
 
           {isGraphOpen && (

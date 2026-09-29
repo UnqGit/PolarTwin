@@ -27,6 +27,9 @@ class TimelineStateManager:
         # Active layers affecting fields
         self.active_layers: List[EventLayer] = []
         
+        # Permanent layers (infinite events applied to base state)
+        self.permanent_layers: List[EventLayer] = []
+        
         # Current effective state (recalculated whenever layers change)
         self.effective_components = {k: copy.deepcopy(v) for k, v in self.base_components.items()}
         self.effective_connections = {k: copy.deepcopy(v) for k, v in self.base_connections.items()}
@@ -55,7 +58,7 @@ class TimelineStateManager:
         if kind == "external": return self.effective_external
         raise ValueError(f"Unknown node kind {kind}")
 
-    def apply_infinite_event(self, node: Any, field_path: str, value: Any):
+    def apply_infinite_event(self, event_id: str, source_order: int, start: float, node: Any, field_path: str, value: Any):
         """
         Applies a for=inf event.
         - Removes active layers for this specific field.
@@ -73,6 +76,17 @@ class TimelineStateManager:
         # Write to base state
         base_node = self._get_base_node(node_key)
         _set_nested_field(base_node, field_path, value)
+        
+        # Track for observability
+        self.permanent_layers.append(EventLayer(
+            event_id=event_id,
+            source_order=source_order,
+            start_time=start,
+            end_time=float("inf"),
+            node_key=node_key,
+            field_path=field_path,
+            value=value
+        ))
         
         self.recalculate_effective_state()
 

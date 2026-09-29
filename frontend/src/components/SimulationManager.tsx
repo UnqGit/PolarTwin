@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Server, X, Square } from 'lucide-react';
+import { Server, X, Square, Trash2 } from 'lucide-react';
 import { api } from '../lib/api';
 
 export function SimulationManager() {
@@ -30,6 +30,15 @@ export function SimulationManager() {
       fetchSimulations();
     } catch (e) {
       console.error("Failed to stop simulation", e);
+    }
+  };
+
+  const handleDelete = async (runId: string) => {
+    try {
+      await api.deleteSimulation(runId);
+      fetchSimulations();
+    } catch (e) {
+      console.error("Failed to delete simulation", e);
     }
   };
 
@@ -140,13 +149,36 @@ export function SimulationManager() {
                     <div style={{ fontSize: '11px', color: 'var(--text-tertiary)' }}>
                       Time: {sim.simulation_time?.toFixed(1)} h
                     </div>
-                    {(sim.status === 'running' || sim.status === 'paused') && (
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      {(sim.status === 'running' || sim.status === 'paused') && (
+                        <button 
+                          onClick={() => handleStop(sim.run_id)}
+                          style={{
+                            background: 'rgba(239, 68, 68, 0.1)',
+                            border: '1px solid rgba(239, 68, 68, 0.3)',
+                            color: '#ef4444',
+                            borderRadius: '4px',
+                            padding: '2px 6px',
+                            fontSize: '11px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          <Square size={10} /> Stop
+                        </button>
+                      )}
                       <button 
-                        onClick={() => handleStop(sim.run_id)}
+                        onClick={() => {
+                          if (confirm('Delete simulation run?')) {
+                            handleDelete(sim.run_id);
+                          }
+                        }}
                         style={{
-                          background: 'rgba(239, 68, 68, 0.1)',
-                          border: '1px solid rgba(239, 68, 68, 0.3)',
-                          color: '#ef4444',
+                          background: 'transparent',
+                          border: '1px solid var(--border-color)',
+                          color: 'var(--text-secondary)',
                           borderRadius: '4px',
                           padding: '2px 6px',
                           fontSize: '11px',
@@ -156,9 +188,9 @@ export function SimulationManager() {
                           gap: '4px'
                         }}
                       >
-                        <Square size={10} /> Stop
+                        <Trash2 size={10} /> Delete
                       </button>
-                    )}
+                    </div>
                   </div>
                 </div>
               ))

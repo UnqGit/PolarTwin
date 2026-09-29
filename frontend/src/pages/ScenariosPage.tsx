@@ -36,7 +36,7 @@ const STYLE_INJECTION = `
 
 export function ScenariosPage() {
   const { 
-    selectedStation, hierarchy, spec, connections,
+    selectedStation, hierarchy, spec, connections, runtime,
     liveStateRef,
     selectedScenarioId, setSelectedScenarioId,
     scenarioSource, setScenarioSource,
@@ -61,11 +61,14 @@ export function ScenariosPage() {
   const [eventDefs, setEventDefs] = useState<any[]>([]);
   const [selectedEventDefId, setSelectedEventDefId] = useState<string | null>(null);
   const [editingType, setEditingType] = useState<'scenario' | 'event'>('scenario');
+  const [isEditingInitials, setIsEditingInitials] = useState<boolean>(false);
+  const [valueOverrides, setValueOverrides] = useState<Record<string, Record<string, number>>>({});
   const [newFileModal, setNewFileModal] = useState<{type: 'scenario' | 'event', name: string} | null>(null);
 
   // Simulation UI state
   const [telemetryEnabled, setTelemetryEnabled] = useState<boolean>(false);
-  const [playbackSpeed] = useState<number>(1.0);
+  const [playbackSpeed, setPlaybackSpeed] = useState<number>(1.0);
+  const [simulationDuration, setSimulationDuration] = useState<number>(0);
 
   // UI state
   const [timelineOpen, setTimelineOpen] = useState(true);
@@ -118,7 +121,7 @@ export function ScenariosPage() {
         setSavedScenarioSource(src);
       }).catch(console.error);
       if (selectedStation) {
-        api.createSimulation(selectedStation, selectedScenarioId).then(res => {
+        api.createSimulation(selectedStation, selectedScenarioId, 10.0, Object.keys(valueOverrides).length > 0 ? valueOverrides : undefined).then(res => {
           setRunId(res.runId);
           setSimStatus(res.status);
         }).catch(console.error);
@@ -183,36 +186,52 @@ export function ScenariosPage() {
       interval = setInterval(() => {
         api.getSimulationState(runId).then(state => {
           if (state) {
-            setSimTime(state.time);
+            setSimTime(state.simulation_time);
             setSimState(state);
             setSimStatus(state.status);
+            if (simulationDuration > 0 && state.simulation_time >= simulationDuration) {
+              api.resetSimulation(runId).then(() => {
+                setRunId(null);
+                setSimStatus('Ready');
+                setSimTime(0);
+                setSimState(null);
+              });
+            }
           }
         }).catch(console.error);
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [runId, simStatus]);
+  }, [runId, simStatus, simulationDuration]);
 
-  const handlePlayPause = async () => {
+  const handleStartStop = async () => {
     if (!runId) {
       if (!selectedStation || !selectedScenarioId) return;
       try {
-        await saveSource(); // Save source first
-        const res = await api.createSimulation(selectedStation, selectedScenarioId, 20.0);
-        setRunId(res.run_id);
-        const playRes = await api.playSimulation(res.run_id, playbackSpeed);
-        setSimStatus(playRes.status);
+        await saveSource();
+        const res = await api.createSimulation(selectedStation, selectedScenarioId, 20.0, Object.keys(valueOverrides).length > 0 ? valueOverrides : undefined);
+        setRunId(res.runId);
+        setSimStatus(res.status);
       } catch (err: any) {
         alert("Failed to start simulation: " + (err.message || err.toString()));
       }
-      return;
+    } else {
+      await api.resetSimulation(runId);
+      setRunId(null);
+      setSimStatus('Ready');
+      setSimTime(0);
+      setSimState(null);
     }
+  };
+
+  const handlePlayPause = async () => {
+    if (!runId) return;
     
     if (simStatus === 'RUNNING' || simStatus === 'running') {
       const res = await api.pauseSimulation(runId);
       setSimStatus(res.status);
     } else {
-      const res = await api.playSimulation(runId, playbackSpeed);
+      const res = await api.playSimulation(runId, 1.0 / playbackSpeed);
       setSimStatus(res.status);
     }
   };
@@ -222,12 +241,63 @@ export function ScenariosPage() {
     try {
       await api.stepSimulation(runId);
       const state = await api.getSimulationState(runId);
-      setSimTime(state.time);
+      setSimTime(state.simulation_time);
       setSimState(state);
       setSimStatus(state.status);
     } catch (e) {
       console.error(e);
     }
+  };
+
+  const handleSeek = async (time: number) => {
+    if (!runId || (simStatus !== 'paused' && simStatus !== 'PAUSED')) return;
+    try {
+      const history = await api.getTelemetryHistory(selectedStation!, runId);
+      const records = history.sort((a: any, b: any) => a.simulation_time - b.simulation_time);
+      if (records.length === 0) return;
+      
+      let targetRecord = records[0];
+      for (const r of records) {
+        if (r.simulation_time <= time) {
+          targetRecord = r;
+        } else {
+          break;
+        }
+      }
+      
+      const fullState = await api.getTelemetryRecord(targetRecord.id);
+      const mappedState: any = { components: {}, connections: {}, external: fullState.external?.[0]?.external_json || {} };
+      
+      fullState.components.forEach((c: any) => {
+        mappedState.components[c.component_name] = { status: c.status, value: c.value_json };
+      });
+      fullState.connections.forEach((c: any) => {
+        mappedState.connections[`${c.source_name}-${c.target_name}-${c.type}`] = { status: c.status };
+      });
+      
+      liveStateRef.current = mappedState;
+      setSimTime(time);
+    } catch (e) {
+      console.error("Seek failed:", e);
+    }
+  };
+
+  const handleSetInitial = (componentName: string, key: string, val: number) => {
+    setValueOverrides(prev => ({
+      ...prev,
+      [componentName]: {
+        ...(prev[componentName] || {}),
+        [key]: val
+      }
+    }));
+  };
+
+  const handleResetInitials = (componentName: string) => {
+    setValueOverrides(prev => {
+      const newOverrides = { ...prev };
+      delete newOverrides[componentName];
+      return newOverrides;
+    });
   };
 
   const handleReset = async () => {
@@ -244,7 +314,7 @@ export function ScenariosPage() {
       await api.updateScenarioSource(selectedScenarioId, cleanSource);
       setScenarioSource(cleanSource); setSavedScenarioSource(cleanSource);
       if (selectedStation) {
-        const res = await api.createSimulation(selectedStation, selectedScenarioId);
+        const res = await api.createSimulation(selectedStation, selectedScenarioId, 10.0, Object.keys(valueOverrides).length > 0 ? valueOverrides : undefined);
         setRunId(res.runId);
         setSimStatus(res.status);
         setSimTime(0);
@@ -467,6 +537,7 @@ export function ScenariosPage() {
             ))}
           </select>
           <button className="glass-btn-sm" onClick={() => { setSelectedScenarioId(null); setScenarioEvents([]); setRunId(null); setSimStatus('Ready'); if (editingType === 'scenario') setScenarioSource(''); }} style={{ fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-input)', color: 'var(--text-secondary)' }}>Deselect</button>
+
           <span style={{ fontSize: '12px', padding: '4px 8px', backgroundColor: 'var(--bg-input)', borderRadius: '4px', fontFamily: 'monospace', border: '1px solid var(--border-color)' }}>
             {simStatus} | T={(simTime || 0).toFixed(1)}s
           </span>
@@ -498,7 +569,19 @@ export function ScenariosPage() {
               Set Default
             </button>
             <button 
+              onClick={() => setIsEditingInitials(!isEditingInitials)}
+              style={{
+                fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', border: '1px solid var(--border-color)',
+                backgroundColor: isEditingInitials ? 'var(--accent-blue)' : 'var(--bg-input)', 
+                color: isEditingInitials ? '#fff' : 'var(--text-secondary)'
+              }}
+              title="Toggle Edit Initials mode on components"
+            >
+              Edit Initials
+            </button>
+            <button 
               onClick={() => {
+                setValueOverrides({});
                 if (runId) {
                   api.resetSimulation(runId);
                   setSimStatus('Ready');
@@ -559,7 +642,61 @@ export function ScenariosPage() {
           <button onClick={handleStep} style={{ padding: '6px', background: 'transparent', border: 'none', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-secondary)' }} title="Step Forward">
             <StepForward size={20} />
           </button>
-          <button onClick={handlePlayPause} style={{ padding: '8px', backgroundColor: 'var(--accent-blue)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', boxShadow: 'var(--shadow-sm)' }} title="Play/Pause">
+          
+          {/* Duration Limit Input */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: 8 }}>
+            <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>Stop at:</span>
+            <input 
+              type="number" 
+              value={simulationDuration || ''} 
+              onChange={e => setSimulationDuration(Math.max(0, parseInt(e.target.value) || 0))}
+              placeholder="∞"
+              style={{ width: 45, background: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: 4, padding: '2px 4px', fontSize: 11 }}
+            />
+          </div>
+
+          {/* Playback Speed Dropdown */}
+          <select 
+            value={playbackSpeed}
+            onChange={async (e) => {
+              const speed = parseFloat(e.target.value);
+              setPlaybackSpeed(speed);
+              if (runId && (simStatus === 'RUNNING' || simStatus === 'running')) {
+                await api.playSimulation(runId, 1.0 / speed);
+              }
+            }}
+            style={{ 
+              background: 'var(--bg-input)', border: '1px solid var(--border-color)', 
+              color: 'var(--text-primary)', borderRadius: 4, padding: '4px', fontSize: 12, marginLeft: 8
+            }}
+          >
+            <option value="1">1x Speed</option>
+            <option value="2">2x Speed</option>
+            <option value="5">5x Speed</option>
+            <option value="10">10x Speed</option>
+            <option value="60">60x Speed</option>
+            <option value="240">MAX (240x)</option>
+          </select>
+          
+          {/* Start/Stop Button */}
+          <button 
+            onClick={handleStartStop} 
+            style={{ padding: '8px', backgroundColor: runId ? '#ef4444' : 'var(--accent-blue)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', boxShadow: 'var(--shadow-sm)', marginLeft: 8 }} 
+            title={runId ? "Stop Simulation" : "Start Simulation"}
+          >
+            {runId ? <Pause size={20} style={{ transform: 'rotate(90deg)' }} /> : <Play size={20} />}
+          </button>
+          
+          <button 
+            onClick={handlePlayPause} 
+            disabled={!runId}
+            style={{ 
+              padding: '8px', backgroundColor: 'var(--accent-blue)', color: '#fff', border: 'none', borderRadius: '4px', 
+              cursor: runId ? 'pointer' : 'not-allowed', boxShadow: 'var(--shadow-sm)', marginLeft: 8,
+              opacity: runId ? 1.0 : 0.5
+            }} 
+            title="Play/Pause"
+          >
             {(simStatus === 'RUNNING' || simStatus === 'running') ? <Pause size={20} /> : <Play size={20} />}
           </button>
         </div>
@@ -580,6 +717,13 @@ export function ScenariosPage() {
               onSelectName={setSelectedComponentName}
               rightOffset={(bottomOpen ? rightPanelWidth : 0) + 48}
               bottomOffset={(timelineOpen ? bottomPanelHeight : 40)}
+              isEditingInitials={isEditingInitials}
+              setIsEditingInitials={setIsEditingInitials}
+              onSetInitials={handleSetInitial}
+              onResetInitials={handleResetInitials}
+              hideEditInitials={true}
+              valueOverrides={valueOverrides}
+              runtime={runtime}
             />
           ) : (
             <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>
@@ -808,6 +952,7 @@ export function ScenariosPage() {
               }) : undefined}
               onUpdateEventLocation={editingType === 'scenario' ? handleUpdateEventLocation : undefined}
               onDeleteEvent={editingType === 'scenario' ? handleDeleteEventFromTimeline : undefined}
+              onSeek={handleSeek}
             />
           )}
         </div>

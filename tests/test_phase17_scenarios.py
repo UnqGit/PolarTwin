@@ -19,10 +19,10 @@ class TestScenarioEndpoints(unittest.TestCase):
         cls.data_dir = Path(cls.tmp_dir.name)
         
         # Override the scenario manager's data_dir
-        _scenario_manager.data_dir = cls.data_dir
-        _scenario_manager.source_dir = cls.data_dir / "source"
-        _scenario_manager.events_dir = cls.data_dir / "events"
-        _scenario_manager.events_dir.mkdir(parents=True, exist_ok=True)
+        # Use an in-memory database for tests to prevent state leakage
+        from twin_sim.telemetry.database import TelemetryDatabase
+        cls.test_db = TelemetryDatabase(":memory:")
+        _scenario_manager.db = cls.test_db
         
         cls.client = TestClient(app)
 
@@ -31,11 +31,9 @@ class TestScenarioEndpoints(unittest.TestCase):
         cls.tmp_dir.cleanup()
 
     def setUp(self):
-        # Clear out source dir before each test
-        if _scenario_manager.source_dir.exists():
-            import shutil
-            shutil.rmtree(_scenario_manager.source_dir)
-        _scenario_manager.source_dir.mkdir(parents=True, exist_ok=True)
+        # Clear out scenario_files table before each test
+        _scenario_manager.db.conn.execute("DELETE FROM scenario_files")
+        _scenario_manager.db.conn.commit()
 
     def test_create_and_list_scenarios(self):
         # List should be empty
@@ -141,13 +139,16 @@ class TestEventDefinitionsEndpoints(unittest.TestCase):
     def setUpClass(cls):
         cls.tmp_dir = tempfile.TemporaryDirectory()
         cls.data_dir = Path(cls.tmp_dir.name)
-        _scenario_manager.data_dir = cls.data_dir
-        _scenario_manager.source_dir = cls.data_dir / "source"
-        _scenario_manager.events_dir = cls.data_dir / "events"
-        _scenario_manager.events_dir.mkdir(parents=True, exist_ok=True)
+        from twin_sim.telemetry.database import TelemetryDatabase
+        cls.test_db = TelemetryDatabase(":memory:")
+        _scenario_manager.db = cls.test_db
         
         # Create some event files manually (API is read-only for event definitions)
-        (cls.data_dir / "events" / "failure.event").write_text("set status=failure", encoding="utf-8")
+        cls.test_db.conn.execute(
+            "INSERT INTO event_files (id, station_id, name, source) VALUES (?, ?, ?, ?)",
+            ("Maitri:failure", "Maitri", "failure", "set status=failure")
+        )
+        cls.test_db.conn.commit()
         
         cls.client = TestClient(app)
 
@@ -156,13 +157,13 @@ class TestEventDefinitionsEndpoints(unittest.TestCase):
         cls.tmp_dir.cleanup()
 
     def test_list_and_get_events(self):
-        r = self.client.get("/event-definitions")
+        r = self.client.get("/stations/Maitri/event-definitions")
         self.assertEqual(r.status_code, 200)
         events = r.json()
         self.assertEqual(len(events), 1)
         self.assertEqual(events[0]["name"], "failure")
         
-        r = self.client.get("/event-definitions/failure")
+        r = self.client.get("/event-definitions/Maitri:failure")
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.json()["source"], "set status=failure")
         

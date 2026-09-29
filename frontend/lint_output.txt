@@ -1,0 +1,2637 @@
+
+> frontend@0.0.0 lint
+> oxlint
+
+
+  ! eslint(no-unused-vars): Variable 'node' is declared but never used. Unused variables should start with a '_'.
+    ,-[src/pages/ConnectionsPage/elkWorker.ts:51:11]
+ 50 |   includedNodes.forEach((name) => {
+ 51 |     const node = allNodes.get(name);
+    :           ^^|^
+    :             `-- 'node' is declared here
+ 52 |     
+    `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Identifier 'useEffect' is imported but never used.
+   ,-[src/pages/ConnectionsPage/GraphSpike.tsx:1:17]
+ 1 | import React, { useEffect, useRef } from 'react';
+   :                 ^^^^|^^^^
+   :                     `-- 'useEffect' is imported here
+ 2 | import cytoscape from 'cytoscape';
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Identifier 'useGraphData' is imported but never used.
+   ,-[src/pages/ConnectionsPage/GraphSpike.tsx:4:10]
+ 3 | import { useStation } from '../../components/StationContext';
+ 4 | import { useGraphData } from './useGraphData';
+   :          ^^^^^^|^^^^^
+   :                `-- 'useGraphData' is imported here
+ 5 | import { useElkLayout } from './useElkLayout';
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Identifier 'useElkLayout' is imported but never used.
+   ,-[src/pages/ConnectionsPage/GraphSpike.tsx:5:10]
+ 4 | import { useGraphData } from './useGraphData';
+ 5 | import { useElkLayout } from './useElkLayout';
+   :          ^^^^^^|^^^^^
+   :                `-- 'useElkLayout' is imported here
+ 6 | 
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Variable 'rawHierarchy' is declared but never used. Unused variables should start with a '_'.
+   ,-[src/pages/ConnectionsPage/GraphSpike.tsx:8:22]
+ 7 | export const GraphSpike: React.FC = () => {
+ 8 |   const { hierarchy: rawHierarchy, connections: rawConnections, isLoadingData } = useStation();
+   :                      ^^^^^^|^^^^^
+   :                            `-- 'rawHierarchy' is declared here
+ 9 |   const containerRef = useRef<HTMLDivElement>(null);
+   `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Variable 'rawConnections' is declared but never used. Unused variables should start with a '_'.
+   ,-[src/pages/ConnectionsPage/GraphSpike.tsx:8:49]
+ 7 | export const GraphSpike: React.FC = () => {
+ 8 |   const { hierarchy: rawHierarchy, connections: rawConnections, isLoadingData } = useStation();
+   :                                                 ^^^^^^^|^^^^^^
+   :                                                        `-- 'rawConnections' is declared here
+ 9 |   const containerRef = useRef<HTMLDivElement>(null);
+   `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Variable 'isLoadingData' is declared but never used. Unused variables should start with a '_'.
+   ,-[src/pages/ConnectionsPage/GraphSpike.tsx:8:65]
+ 7 | export const GraphSpike: React.FC = () => {
+ 8 |   const { hierarchy: rawHierarchy, connections: rawConnections, isLoadingData } = useStation();
+   :                                                                 ^^^^^^|^^^^^^
+   :                                                                       `-- 'isLoadingData' is declared here
+ 9 |   const containerRef = useRef<HTMLDivElement>(null);
+   `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Variable 'cyRef' is declared but never used. Unused variables should start with a '_'.
+    ,-[src/pages/ConnectionsPage/GraphSpike.tsx:10:9]
+  9 |   const containerRef = useRef<HTMLDivElement>(null);
+ 10 |   const cyRef = useRef<cytoscape.Core | null>(null);
+    :         ^^|^^
+    :           `-- 'cyRef' is declared here
+ 11 | 
+    `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Identifier 'useRef' is imported but never used.
+   ,-[src/pages/ConnectionsPage/useElkLayout.ts:1:31]
+ 1 | import { useState, useEffect, useRef } from 'react';
+   :                               ^^^|^^
+   :                                  `-- 'useRef' is imported here
+ 2 | import ELK from 'elkjs/lib/elk.bundled.js';
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Variable 'node' is declared but never used. Unused variables should start with a '_'.
+    ,-[src/pages/ConnectionsPage/useElkLayout.ts:59:15]
+ 58 |       includedNodes.forEach((name) => {
+ 59 |         const node = allNodes.get(name);
+    :               ^^|^
+    :                 `-- 'node' is declared here
+ 60 |         const elkNode = {
+    `----
+  help: Consider removing this declaration.
+
+  ! react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders
+    ,-[src/pages/ConnectionsPage/useElkLayout.ts:17:5]
+ 14 | 
+ 15 |   useEffect(() => {
+    :   ^^^^|^^^^
+    :       `-- This is the containing effect
+ 16 |     let active = true;
+ 17 |     setIsLayouting(true);
+    :     ^^^^^^^|^^^^^^
+    :            `-- Avoid calling setState() directly within an effect
+ 18 | 
+    `----
+  help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/set-state-in-effect
+
+  ! eslint(no-unused-vars): Variable 'edges' is declared but never used. Unused variables should start with a '_'.
+    ,-[src/pages/ConnectionsPage/useGraphData.ts:76:11]
+ 75 |   const graphEdges = useMemo(() => {
+ 76 |     const edges: GraphEdge[] = [];
+    :           ^^|^^
+    :             `-- 'edges' is declared here
+ 77 |     const busMap = new Map<string, GraphEdge>();
+    `----
+  help: Consider removing this declaration.
+
+  ! react-hooks(exhaustive-deps): React Hook useMemo has missing dependencies: 'isAncestor', and 'getVisibleAncestor'
+     ,-[src/pages/ConnectionsPage/useGraphData.ts:115:6]
+  79 |     rawConnections.forEach(conn => {
+  80 |       const srcVisible = getVisibleAncestor(conn.source);
+     :                          ^^^^^^^^^^^^^^^^^^
+  81 |       const tgtVisible = getVisibleAncestor(conn.target);
+  82 | 
+  83 |       // Cull internal edges and ancestor loops
+  84 |       if (srcVisible === tgtVisible) return;
+  85 |       if (isAncestor(srcVisible, tgtVisible) || isAncestor(tgtVisible, srcVisible)) return;
+     :           ^^^^^^^^^^
+  86 | 
+  87 |       const isSensorLink = 
+  88 |         allNodes.get(conn.source)?.type.toLowerCase() === 'sensor' || 
+  89 |         allNodes.get(conn.target)?.type.toLowerCase() === 'sensor';
+  90 | 
+  91 |       const type = conn.connectionType || 'unknown';
+  92 |       const key = `${srcVisible}->${tgtVisible}::${type}`;
+  93 | 
+  94 |       if (!busMap.has(key)) {
+  95 |         busMap.set(key, {
+  96 |           id: key,
+  97 |           source: srcVisible,
+  98 |           target: tgtVisible,
+  99 |           type: type,
+ 100 |           isBus: false,
+ 101 |           count: 0,
+ 102 |           originalEdges: [],
+ 103 |           isSensorLink: true, // will be ANDed
+ 104 |         });
+ 105 |       }
+ 106 | 
+ 107 |       const bus = busMap.get(key)!;
+ 108 |       bus.count++;
+ 109 |       bus.originalEdges.push(conn);
+ 110 |       bus.isBus = bus.count > 1;
+ 111 |       bus.isSensorLink = bus.isSensorLink && isSensorLink;
+ 112 |     });
+ 113 | 
+ 114 |     return Array.from(busMap.values());
+ 115 |   }, [rawConnections, collapsedNodes, allNodes]);
+     :      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 116 | 
+     `----
+  help: Either include it or remove the dependency array.
+
+  ! react-hooks(exhaustive-deps): React Hook useMemo has unnecessary dependency: collapsedNodes
+     ,-[src/pages/ConnectionsPage/useGraphData.ts:115:6]
+ 114 |     return Array.from(busMap.values());
+ 115 |   }, [rawConnections, collapsedNodes, allNodes]);
+     :      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 116 | 
+     `----
+  help: Either include it or remove the dependency array.
+
+  ! react(refs): Cannot access refs during render
+    ,-[src/components/HoverCard.tsx:59:9]
+ 58 |     let status = 'Unknown';
+ 59 |     if (liveStateRef && liveStateRef.current && liveStateRef.current[node.name]) {
+    :         ^^^^^^^^^^^^^^^^^^|^^^^^^^^^^^^^^^^^
+    :                           `-- Cannot access ref value during render
+ 60 |       const state = liveStateRef.current[node.name] as any;
+    `----
+  help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/refs
+
+  ! react(refs): Cannot access refs during render
+    ,-[src/components/HoverCard.tsx:59:9]
+ 58 |     let status = 'Unknown';
+ 59 |     if (liveStateRef && liveStateRef.current && liveStateRef.current[node.name]) {
+    :         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^|^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    :                                            `-- Cannot access ref value during render
+ 60 |       const state = liveStateRef.current[node.name] as any;
+    `----
+  help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/refs
+
+  ! react(refs): Cannot access refs during render
+    ,-[src/components/HoverCard.tsx:61:11]
+ 60 |       const state = liveStateRef.current[node.name] as any;
+ 61 |       if (state.running !== undefined) {
+    :           ^^^^^^|^^^^^^
+    :                 `-- Cannot access ref value during render
+ 62 |         status = state.running ? 'Active' : 'Inactive';
+    `----
+  help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/refs
+
+  ! react(refs): Cannot access refs during render
+    ,-[src/components/HoverCard.tsx:62:18]
+ 61 |       if (state.running !== undefined) {
+ 62 |         status = state.running ? 'Active' : 'Inactive';
+    :                  ^^^^^^|^^^^^^
+    :                        `-- Cannot access ref value during render
+ 63 |       }
+    `----
+  help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/refs
+
+  ! react(refs): Cannot access refs during render
+    ,-[src/components/HoverCard.tsx:67:54]
+ 66 |         if (node.type === 'sensor array' && node.groupedSensors) {
+ 67 | ,->       const activeCount = node.groupedSensors.filter((s: any) => {
+ 68 | |           const state = liveStateRef?.current?.[s.name] as any;
+ 69 | |           return state && state.running;
+ 70 | |->       }).length;
+    : `---- Passing a ref to a function may read its value during render
+ 71 |           status = `${activeCount}/${node.groupedSensors.length} Active`;
+    `----
+  help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/refs
+
+  ! react(refs): Cannot access refs during render
+     ,-[src/components/HoverCard.tsx:89:49]
+  88 |                 <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid var(--border-color)' }}>
+  89 | ,->               {['input', 'state', 'output'].map(category => {
+  90 | |                   const catObj = (node.spec?.rating as any)?.[category];
+  91 | |                   if (!catObj) return null;
+  92 | |                   return (
+  93 | |                     <div key={category} style={{ marginBottom: 6 }}>
+  94 | |                       <div style={{ fontSize: 10, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>{category}</div>
+  95 | |                       {Object.keys(catObj).map(k => {
+  96 | |                         const valObj = catObj[k];
+  97 | |                         const val = liveStateRef?.current?.[node.name] ? (liveStateRef.current[node.name] as any)[k] : undefined;
+  98 | |                         const displayVal = val !== undefined ? val : valObj.max;
+  99 | |                         return <Row key={k} label={k} value={`${displayVal !== undefined ? (typeof displayVal === 'number' ? displayVal.toFixed(2) : displayVal) : '--'}${valObj.unit ? ' ' + valObj.unit : ''}`} />;
+ 100 | |                       })}
+ 101 | |                     </div>
+ 102 | |                   );
+ 103 | |->               })}
+     : `---- Cannot access ref value during render
+ 104 |                 </div>
+     `----
+  help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/refs
+
+  ! eslint(no-unused-vars): Parameter 'onHover' is declared but never used. Unused parameters should start with a '_'.
+    ,-[src/pages/ConnectionsPage/SvgRenderer.tsx:11:73]
+ 10 | 
+ 11 | export const SvgRenderer: React.FC<SvgRendererProps> = ({ laidOutGraph, onHover, onSelect }) => {
+    :                                                                         ^^^|^^^
+    :                                                                            `-- 'onHover' is declared here
+ 12 |   const { posMap, edgeRoutes } = useMemo(() => {
+    `----
+  help: Consider removing this parameter.
+
+  ! eslint(no-unused-vars): Parameter 'onSelect' is declared but never used. Unused parameters should start with a '_'.
+    ,-[src/pages/ConnectionsPage/SvgRenderer.tsx:11:82]
+ 10 | 
+ 11 | export const SvgRenderer: React.FC<SvgRendererProps> = ({ laidOutGraph, onHover, onSelect }) => {
+    :                                                                                  ^^^^|^^^
+    :                                                                                      `-- 'onSelect' is declared here
+ 12 |   const { posMap, edgeRoutes } = useMemo(() => {
+    `----
+  help: Consider removing this parameter.
+
+  ! eslint(no-unused-vars): Variable 'selectedStation' is declared but never used. Unused variables should start with a '_'.
+    ,-[src/pages/DiagnosticsPage.tsx:10:11]
+  9 | export function DiagnosticsPage() {
+ 10 |   const { selectedStation, hierarchy } = useStation();
+    :           ^^^^^^^|^^^^^^^
+    :                  `-- 'selectedStation' is declared here
+ 11 |   const [runs, setRuns] = useState<any[]>([]);
+    `----
+  help: Consider removing this declaration.
+
+  ! react-hooks(exhaustive-deps): React Hook useEffect has missing dependencies: 'fetchHistory', 'selectedCategory', and 'selectedItemId'
+    ,-[src/pages/DiagnosticsPage.tsx:42:6]
+ 36 |     // Refresh history data if category/item is already selected
+ 37 |     if (selectedCategory && selectedItemId) {
+    :         ^^^^^^^^^^^^^^^^    ^^^^^^^^^^^^^^
+ 38 |       fetchHistory(selectedCategory, selectedItemId);
+    :       ^^^^^^^^^^^^
+ 39 |     } else {
+ 40 |       setHistoryData([]);
+ 41 |     }
+ 42 |   }, [selectedRunId]);
+    :      ^^^^^^^^^^^^^^^
+ 43 | 
+    `----
+  help: Either include it or remove the dependency array.
+
+  ! react-hooks(exhaustive-deps): React Hook useEffect has missing dependencies: 'fetchHistory', and 'selectedRunId'
+    ,-[src/pages/DiagnosticsPage.tsx:49:6]
+ 45 |   useEffect(() => {
+ 46 |     if (selectedRunId && selectedCategory && selectedItemId) {
+    :         ^^^^^^^^^^^^^
+ 47 |       fetchHistory(selectedCategory, selectedItemId);
+    :       ^^^^^^^^^^^^
+ 48 |     }
+ 49 |   }, [selectedCategory, selectedItemId]);
+    :      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 50 | 
+    `----
+  help: Either include it or remove the dependency array.
+
+  ! react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders
+    ,-[src/components/SimulationManager.tsx:20:7]
+ 17 | 
+ 18 |   useEffect(() => {
+    :   ^^^^|^^^^
+    :       `-- This is the containing effect
+ 19 |     if (isOpen) {
+ 20 |       fetchSimulations();
+    :       ^^^^^^^^|^^^^^^^
+    :               `-- Avoid calling setState() directly within an effect
+ 21 |       const interval = setInterval(fetchSimulations, 2000);
+    `----
+  help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/set-state-in-effect
+
+  ! eslint(no-unused-vars): Identifier 'beforeEach' is imported but never used.
+   ,-[src/App.test.tsx:1:36]
+ 1 | import { describe, it, expect, vi, beforeEach } from 'vitest';
+   :                                    ^^^^^|^^^^
+   :                                         `-- 'beforeEach' is imported here
+ 2 | import '@testing-library/jest-dom/vitest';
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Identifier 'useStation' is imported but never used.
+   ,-[src/App.test.tsx:8:27]
+ 7 | import { BrowserRouter } from 'react-router-dom';
+ 8 | import { StationProvider, useStation } from './components/StationContext';
+   :                           ^^^^^|^^^^
+   :                                `-- 'useStation' is imported here
+ 9 | import { ThemeProvider } from './components/ThemeContext';
+   `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Identifier 'Zap' is imported but never used.
+   ,-[src/pages/ComponentsPage.tsx:4:24]
+ 3 | import { useStation } from '../components/StationContext';
+ 4 | import { ChevronRight, Zap, Info, Box, Layers, Activity } from 'lucide-react';
+   :                        ^|^
+   :                         `-- 'Zap' is imported here
+ 5 | import { PropertyInspector } from '../components/PropertyInspector';
+   `----
+  help: Consider removing this import.
+
+  ! react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders
+    ,-[src/pages/ComponentsPage.tsx:64:7]
+ 61 |   // When location.state changes (e.g. user clicks a card in Overview again)
+ 62 |   useEffect(() => {
+    :   ^^^^|^^^^
+    :       `-- This is the containing effect
+ 63 |     if (location.state?.drillStack) {
+ 64 |       setDrillStack(location.state.drillStack);
+    :       ^^^^^^|^^^^^^
+    :             `-- Avoid calling setState() directly within an effect
+ 65 |     }
+    `----
+  help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/set-state-in-effect
+
+  ! react(preserve-manual-memoization): Existing memoization could not be preserved
+    ,-[src/components/ConnectionRenderer.tsx:61:13]
+ 60 |     };
+ 61 |   }, [path, beamWidth]);
+    :             ^^^^|^^^^
+    :                 `-- This dependency may be modified later
+ 62 | 
+    `----
+  help: React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. This dependency may be mutated later, which could cause the value to change unexpectedly
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/preserve-manual-memoization
+
+  ! eslint(no-unused-vars): Parameter 'metalness' is declared but never used. Unused parameters should start with a '_'.
+    ,-[src/components/meshes/AlarmMesh.tsx:11:16]
+ 10 | export const AlarmMesh: React.FC<MeshProps> = ({
+ 11 |   dims, color, metalness, roughness, opacity, transparent
+    :                ^^^^|^^^^
+    :                    `-- 'metalness' is declared here
+ 12 | }) => {
+    `----
+  help: Consider removing this parameter.
+
+  ! eslint(no-unused-vars): Parameter 'roughness' is declared but never used. Unused parameters should start with a '_'.
+    ,-[src/components/meshes/AlarmMesh.tsx:11:27]
+ 10 | export const AlarmMesh: React.FC<MeshProps> = ({
+ 11 |   dims, color, metalness, roughness, opacity, transparent
+    :                           ^^^^|^^^^
+    :                               `-- 'roughness' is declared here
+ 12 | }) => {
+    `----
+  help: Consider removing this parameter.
+
+  ! react(only-export-components): Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+    ,-[src/components/ThemeContext.tsx:17:14]
+ 16 | 
+ 17 | export const useTheme = () => useContext(ThemeContext);
+    :              ^^^^^^^^
+ 18 | 
+    `----
+
+  ! react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders
+    ,-[src/components/ThemeContext.tsx:25:7]
+ 21 | 
+ 22 |   useEffect(() => {
+    :   ^^^^|^^^^
+    :       `-- This is the containing effect
+ 23 |     // Check system preference on mount
+ 24 |     if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+ 25 |       setThemeState('light');
+    :       ^^^^^^|^^^^^^
+    :             `-- Avoid calling setState() directly within an effect
+ 26 |     }
+    `----
+  help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/set-state-in-effect
+
+  ! react(refs): Cannot access refs during render
+    ,-[src/components/ConnectionInspector.tsx:33:72]
+ 32 |       if ((connection as any).isBus && (connection as any).groupedConnections) {
+ 33 | ,->      const activeCount = (connection as any).groupedConnections.filter((c: any) => {
+ 34 | |          const st = liveStateRef?.current?.[c.id] as any;
+ 35 | |          return st && (String(st.status).toLowerCase() === 'active' || String(st.status).toLowerCase() === 'ok');
+ 36 | |->      }).length;
+    : `---- Passing a ref to a function may read its value during render
+ 37 |          statusStr = `${activeCount}/${(connection as any).groupedConnections.length} ACTIVE`;
+    `----
+  help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/refs
+
+  ! react(only-export-components): Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+    ,-[src/components/SelectionContext.tsx:26:14]
+ 25 | 
+ 26 | export const useSelection = () => useContext(SelectionContext);
+    :              ^^^^^^^^^^^^
+ 27 | 
+    `----
+
+  ! react(only-export-components): Fast refresh only works when a file only exports components. Move your React context(s) to a separate file.
+    ,-[src/components/SelectionContext.tsx:19:14]
+ 18 | 
+ 19 | export const SelectionContext = createContext<SelectionContextValue>({
+    :              ^^^^^^^^^^^^^^^^
+ 20 |   selectedName: null,
+    `----
+
+  ! eslint(no-unused-vars): Identifier 'useMemo' is imported but never used.
+   ,-[src/components/TimelineEditor.tsx:1:46]
+ 1 | import React, { useRef, useState, useEffect, useMemo } from 'react';
+   :                                              ^^^|^^^
+   :                                                 `-- 'useMemo' is imported here
+ 2 | import { Trash2 } from 'lucide-react';
+   `----
+  help: Consider removing this import.
+
+  ! react(refs): Cannot access refs during render
+     ,-[src/components/TimelineEditor.tsx:101:38]
+ 100 |           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
+ 101 |             <div style={{ marginTop: containerRef.current ? -containerRef.current.scrollTop : 0 }}>
+     :                                      ^^^^^^^^^^|^^^^^^^^^
+     :                                                `-- Cannot access ref value during render
+ 102 |               {events.map((ev, i) => (
+     `----
+  help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/refs
+
+  ! react(refs): Cannot access refs during render
+     ,-[src/components/TimelineEditor.tsx:101:62]
+ 100 |           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
+ 101 |             <div style={{ marginTop: containerRef.current ? -containerRef.current.scrollTop : 0 }}>
+     :                                                              ^^^^^^^^^^^^^^^|^^^^^^^^^^^^^^
+     :                                                                             `-- Cannot access ref value during render
+ 102 |               {events.map((ev, i) => (
+     `----
+  help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/refs
+
+  ! eslint(no-unused-vars): Parameter 'i' is declared but never used. Unused parameters should start with a '_'.
+     ,-[src/pages/Overview.tsx:165:36]
+ 164 |     const blockNodes = hierarchyData.filter((n: any) => n.type !== 'station');
+ 165 |     return blockNodes.map((b: any, i: number) => {
+     :                                    |
+     :                                    `-- 'i' is declared here
+ 166 |       const allDescendants = new Set<string>();
+     `----
+  help: Consider removing this parameter.
+
+  ! react(refs): Cannot access refs during render
+     ,-[src/pages/Overview.tsx:165:27]
+ 164 |         const blockNodes = hierarchyData.filter((n: any) => n.type !== 'station');
+ 165 | ,->     return blockNodes.map((b: any, i: number) => {
+ 166 | |         const allDescendants = new Set<string>();
+ 167 | |         const queue = [...(b.children || [])];
+ 168 | |         while (queue.length > 0) {
+ 169 | |           const curr = queue.shift();
+ 170 | |           if (curr && !allDescendants.has(curr)) {
+ 171 | |             allDescendants.add(curr);
+ 172 | |             const node = hierarchyData.find((n: any) => n.name === curr);
+ 173 | |             if (node && node.children) queue.push(...node.children);
+ 174 | |           }
+ 175 | |         }
+ 176 | |   
+ 177 | |         // Extract real status if available
+ 178 | |         let status: 'active' | 'inactive' | 'failure' = 'active';
+ 179 | |         if (liveStateRef?.current?.[b.name]) {
+ 180 | |           const compState: any = liveStateRef.current[b.name];
+ 181 | |           if (compState.status === 'failure') status = 'failure';
+ 182 | |           else if (compState.status === 'inactive') status = 'inactive';
+ 183 | |         }
+ 184 | |   
+ 185 | |         return {
+ 186 | |           id: b.name,
+ 187 | |           name: b.name,
+ 188 | |           status,
+ 189 | |           img: IMAGE_MAP[b.type] || IMAGE_MAP.default,
+ 190 | |           innerTotal: allDescendants.size,
+ 191 | |           innerActive: allDescendants.size,
+ 192 | |           path: getPath(b.name)
+ 193 | |         };
+ 194 | |->     });
+     : `---- Passing a ref to a function may read its value during render
+ 195 |       }, [hierarchyData, liveStateRef]);
+     `----
+  help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/refs
+
+  ! react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders
+     ,-[src/pages/Overview.tsx:211:5]
+ 204 |   // Initialize random indices
+ 205 |   useEffect(() => {
+     :   ^^^^|^^^^
+     :       `-- This is the containing effect
+ 206 |     if (blocks.length === 0) return;
+ 207 |     const initial: number[] = [];
+ 208 |     for (let i = 0; i < numGrids; i++) {
+ 209 |       initial.push(Math.floor(Math.random() * blocks.length));
+ 210 |     }
+ 211 |     setActiveIndices(initial);
+     :     ^^^^^^^^|^^^^^^^
+     :             `-- Avoid calling setState() directly within an effect
+ 212 |   }, [blocks.length, numGrids]);
+     `----
+  help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/set-state-in-effect
+
+  ! react-hooks(exhaustive-deps): React hook useMemo depends on `hierarchyData`, which changes every render
+     ,-[src/pages/Overview.tsx:143:7]
+ 132 | 
+ 133 |   const hierarchyData = hierarchy || [];
+     :         ^^^^^^|^^^^^^
+     :               `-- `hierarchyData` is declared here
+ 134 | 
+ 135 |   const stats = useMemo(() => {
+ 136 |     const totalComponents = hierarchyData.length;
+ 137 |     const activeComponents = totalComponents;
+ 138 |     return {
+ 139 |       activeComponents,
+ 140 |       totalComponents,
+ 141 |       ...telemetry
+ 142 |     };
+ 143 |   }, [hierarchyData, telemetry]);
+     :       ^^^^^^|^^^^^^
+     :             `-- it will always cause this hook to re-evaluate
+ 144 | 
+     `----
+  help: Try memoizing this variable with `useRef` or `useCallback`.
+
+  ! react-hooks(exhaustive-deps): React hook useMemo depends on `hierarchyData`, which changes every render
+     ,-[src/pages/Overview.tsx:195:7]
+ 132 | 
+ 133 |   const hierarchyData = hierarchy || [];
+     :         ^^^^^^|^^^^^^
+     :               `-- `hierarchyData` is declared here
+ 134 | 
+ 135 |   const stats = useMemo(() => {
+ 136 |     const totalComponents = hierarchyData.length;
+ 137 |     const activeComponents = totalComponents;
+ 138 |     return {
+ 139 |       activeComponents,
+ 140 |       totalComponents,
+ 141 |       ...telemetry
+ 142 |     };
+ 143 |   }, [hierarchyData, telemetry]);
+ 144 | 
+ 145 |   const blocks = useMemo(() => {
+ 146 |     // Build parent map to quickly get paths
+ 147 |     const parentMap = new Map<string, string>();
+ 148 |     hierarchyData.forEach((n: any) => {
+ 149 |       if (n.children) {
+ 150 |         n.children.forEach((c: string) => parentMap.set(c, n.name));
+ 151 |       }
+ 152 |     });
+ 153 | 
+ 154 |     const getPath = (name: string) => {
+ 155 |       const path = [];
+ 156 |       let curr: string | undefined = parentMap.get(name);
+ 157 |       while (curr) {
+ 158 |         path.unshift(curr);
+ 159 |         curr = parentMap.get(curr);
+ 160 |       }
+ 161 |       return path;
+ 162 |     };
+ 163 | 
+ 164 |     const blockNodes = hierarchyData.filter((n: any) => n.type !== 'station');
+ 165 |     return blockNodes.map((b: any, i: number) => {
+ 166 |       const allDescendants = new Set<string>();
+ 167 |       const queue = [...(b.children || [])];
+ 168 |       while (queue.length > 0) {
+ 169 |         const curr = queue.shift();
+ 170 |         if (curr && !allDescendants.has(curr)) {
+ 171 |           allDescendants.add(curr);
+ 172 |           const node = hierarchyData.find((n: any) => n.name === curr);
+ 173 |           if (node && node.children) queue.push(...node.children);
+ 174 |         }
+ 175 |       }
+ 176 | 
+ 177 |       // Extract real status if available
+ 178 |       let status: 'active' | 'inactive' | 'failure' = 'active';
+ 179 |       if (liveStateRef?.current?.[b.name]) {
+ 180 |         const compState: any = liveStateRef.current[b.name];
+ 181 |         if (compState.status === 'failure') status = 'failure';
+ 182 |         else if (compState.status === 'inactive') status = 'inactive';
+ 183 |       }
+ 184 | 
+ 185 |       return {
+ 186 |         id: b.name,
+ 187 |         name: b.name,
+ 188 |         status,
+ 189 |         img: IMAGE_MAP[b.type] || IMAGE_MAP.default,
+ 190 |         innerTotal: allDescendants.size,
+ 191 |         innerActive: allDescendants.size,
+ 192 |         path: getPath(b.name)
+ 193 |       };
+ 194 |     });
+ 195 |   }, [hierarchyData, liveStateRef]);
+     :       ^^^^^^|^^^^^^
+     :             `-- it will always cause this hook to re-evaluate
+ 196 | 
+     `----
+  help: Try memoizing this variable with `useRef` or `useCallback`.
+
+  ! eslint(no-unused-vars): Identifier 'Target' is imported but never used.
+     ,-[src/components/TwinViewer.tsx:239:10]
+ 238 | 
+ 239 | import { Target } from 'lucide-react';
+     :          ^^^|^^
+     :             `-- 'Target' is imported here
+ 240 | import { SelectionProvider } from './SelectionContext';
+     `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Identifier 'HoverCard' is imported but never used.
+     ,-[src/components/TwinViewer.tsx:242:10]
+ 241 | import { RightUIStack } from './RightUIStack';
+ 242 | import { HoverCard } from './HoverCard';
+     :          ^^^^|^^^^
+     :              `-- 'HoverCard' is imported here
+ 243 | 
+     `----
+  help: Consider removing this import.
+
+  ! react(immutability): This value cannot be modified
+    ,-[src/components/TwinViewer.tsx:49:5]
+ 46 | const RaycasterConfig: React.FC = () => {
+ 47 |   const { raycaster } = useThree();
+    :           ^^^^|^^^^
+    :               `-- `raycaster` originates here
+ 48 |   useEffect(() => {
+ 49 |     raycaster.params.Line = raycaster.params.Line || { threshold: 0.35 };
+    :     ^^^^^^^^|^^^^^^^
+    :             `-- `raycaster` cannot be modified
+ 50 |     raycaster.params.Points = raycaster.params.Points || { threshold: 0.1 };
+    `----
+  help: Modifying a value returned from a hook is not allowed. Consider moving the modification into the hook where the value is constructed
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/immutability
+
+  ! react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders
+     ,-[src/components/TwinViewer.tsx:304:5]
+ 300 |   // Progressive node build animation
+ 301 |   useEffect(() => {
+     :   ^^^^|^^^^
+     :       `-- This is the containing effect
+ 302 |     if (!sceneLayout.root) return;
+ 303 |     const totalNodes = sceneLayout.allNodes.size;
+ 304 |     setBuildLimit(0);
+     :     ^^^^^^|^^^^^^
+     :           `-- Avoid calling setState() directly within an effect
+ 305 |     setRenderedConnections([]);
+     `----
+  help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/set-state-in-effect
+
+  ! eslint(no-unused-vars): Type 'StationManifest' is imported but never used.
+   ,-[src/components/StationContext.tsx:2:20]
+ 1 | import React, { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+ 2 | import { api, type StationManifest } from '../lib/api';
+   :                    ^^^^^^^|^^^^^^^
+   :                           `-- 'StationManifest' is imported here
+ 3 | 
+   `----
+  help: Consider removing this import.
+
+  ! react(only-export-components): Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+    ,-[src/components/StationContext.tsx:60:14]
+ 59 | 
+ 60 | export const useStation = () => useContext(StationContext);
+    :              ^^^^^^^^^^
+ 61 | 
+    `----
+
+  ! react(only-export-components): Fast refresh only works when a file only exports components. Move your React context(s) to a separate file.
+    ,-[src/components/StationContext.tsx:33:14]
+ 32 | 
+ 33 | export const StationContext = createContext<StationContextType>({
+    :              ^^^^^^^^^^^^^^
+ 34 |   availableStations: [],
+    `----
+
+  ! react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders
+    ,-[src/components/StationContext.tsx:96:7]
+ 93 |   // Fetch data when selectedStation changes
+ 94 |   useEffect(() => {
+    :   ^^^^|^^^^
+    :       `-- This is the containing effect
+ 95 |     if (!selectedStation) {
+ 96 |       setHierarchy(null);
+    :       ^^^^^^|^^^^^
+    :             `-- Avoid calling setState() directly within an effect
+ 97 |       setConnections(null);
+    `----
+  help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/set-state-in-effect
+
+  ! react(immutability): This value cannot be modified
+     ,-[src/components/GraphModal.tsx:341:21]
+ 339 |   // Use a ref for affectsRender so it doesn't trigger effect re-run (avoid layout rebuilds)
+ 340 |   const affectsRenderRef = useRef(affectsRender);
+     :         ^^^^^^^^|^^^^^^^
+     :                 `-- `affectsRenderRef` originates here
+ 341 |   useEffect(() => { affectsRenderRef.current = affectsRender; }, [affectsRender]);
+     :                     ^^^^^^^^|^^^^^^^
+     :                             `-- `affectsRenderRef` cannot be modified
+ 342 | 
+     `----
+  help: Modifying a value used previously in an effect function or as an effect dependency is not allowed. Consider moving the modification before calling useEffect()
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/immutability
+
+  ! react-hooks(exhaustive-deps): React Hook useEffect has a missing dependency: 'theme'
+     ,-[src/components/GraphModal.tsx:153:35]
+ 152 |             'font-family': 'Inter, sans-serif',
+ 153 |             'text-outline-color': theme === 'light' ? '#f8fafc' : '#0f172a',
+     :                                   ^^|^^
+     :                                     `-- useEffect uses `theme` here
+ 154 |             'text-outline-width': theme === 'light' ? 0 : 2,
+     `----
+     ,-[src/components/GraphModal.tsx:337:6]
+ 336 |     };
+ 337 |   }, [elements, setHoveredName, setSelectedName]);
+     :      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 338 | 
+     `----
+  help: Either include it or remove the dependency array.
+
+  ! react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders
+    ,-[src/components/EventInspector.tsx:19:7]
+ 16 | 
+ 17 |   useEffect(() => {
+    :   ^^^^|^^^^
+    :       `-- This is the containing effect
+ 18 |     if (event) {
+ 19 |       setEditSelector(event.selector ? (event.selector.startsWith('@') ? event.selector.slice(1) : event.selector) : '');
+    :       ^^^^^^^|^^^^^^^
+    :              `-- Avoid calling setState() directly within an effect
+ 20 |       setEditAt(event.at.toString());
+    `----
+  help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/set-state-in-effect
+
+  ! react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders
+    ,-[src/components/ScenarioComparison.tsx:27:7]
+ 16 | 
+ 17 |   useEffect(() => {
+    :   ^^^^|^^^^
+    :       `-- This is the containing effect
+ 18 |     if (runA) {
+ 19 |       api.getTelemetryHistory(stationId, runA).then(hist => {
+ 20 |         if (hist.length > 0) {
+ 21 |           api.getTelemetryRecord(hist[hist.length - 1].id).then(setDataA);
+ 22 |         } else {
+ 23 |           setDataA(null);
+ 24 |         }
+ 25 |       });
+ 26 |     } else {
+ 27 |       setDataA(null);
+    :       ^^^^|^^^
+    :           `-- Avoid calling setState() directly within an effect
+ 28 |     }
+    `----
+  help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/set-state-in-effect
+
+  ! react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders
+    ,-[src/components/ScenarioComparison.tsx:41:7]
+ 30 | 
+ 31 |   useEffect(() => {
+    :   ^^^^|^^^^
+    :       `-- This is the containing effect
+ 32 |     if (runB) {
+ 33 |       api.getTelemetryHistory(stationId, runB).then(hist => {
+ 34 |         if (hist.length > 0) {
+ 35 |           api.getTelemetryRecord(hist[hist.length - 1].id).then(setDataB);
+ 36 |         } else {
+ 37 |           setDataB(null);
+ 38 |         }
+ 39 |       });
+ 40 |     } else {
+ 41 |       setDataB(null);
+    :       ^^^^|^^^
+    :           `-- Avoid calling setState() directly within an effect
+ 42 |     }
+    `----
+  help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/set-state-in-effect
+
+  ! eslint(no-unused-vars): Function 'edgeColor' is declared but never used.
+    ,-[src/pages/ConnectionsPage.tsx:35:10]
+ 34 | 
+ 35 | function edgeColor(connType: string, theme: string): string {
+    :          ^^^^|^^^^
+    :              `-- 'edgeColor' is declared here
+ 36 |   const entry = CONN_TYPE_COLORS[connType?.toLowerCase()];
+    `----
+  help: Consider removing this declaration.
+
+  ! eslint(no-unused-vars): Parameter 'bEdge' is declared but never used. Unused parameters should start with a '_'.
+     ,-[src/pages/ConnectionsPage.tsx:183:39]
+ 182 | 
+ 183 |     cy.edges('.bundle-edge').forEach((bEdge: any) => {
+     :                                       ^^|^^
+     :                                         `-- 'bEdge' is declared here
+ 184 |       // Keep bundle edges logic if needed, but they are visually hidden now
+     `----
+  help: Consider removing this parameter.
+
+  ! react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders
+     ,-[src/pages/ConnectionsPage.tsx:650:7]
+ 647 | 
+ 648 |   useEffect(() => {
+     :   ^^^^|^^^^
+     :       `-- This is the containing effect
+ 649 |     if (!sceneLayout) {
+ 650 |       setRenderedConnections([]);
+     :       ^^^^^^^^^^^|^^^^^^^^^^
+     :                  `-- Avoid calling setState() directly within an effect
+ 651 |       return;
+     `----
+  help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/set-state-in-effect
+
+  ! react-hooks(exhaustive-deps): React Hook useEffect has a missing dependency: 'theme'
+     ,-[src/pages/ConnectionsPage.tsx:540:6]
+ 296 |             'font-family': 'Inter, sans-serif',
+ 297 |             'text-outline-color': theme === 'light' ? '#f0f4f8' : '#06060c',
+     :                                   ^^|^^
+     :                                     `-- useEffect uses `theme` here
+ 298 |             'text-outline-width': theme === 'light' ? 0 : 2,
+ 299 |             'text-margin-y': -5,
+ 300 |             'shape': 'round-rectangle',
+ 301 |             'padding': '15px'
+ 302 |           }
+ 303 |         },
+ 304 |         {
+ 305 |           selector: 'node[depth = 0]',
+ 306 |           style: { 'color': theme === 'light' ? '#020617' : '#ffffff' }
+ 307 |         },
+ 308 |         {
+ 309 |           selector: 'node[depth = 1]',
+ 310 |           style: { 'color': theme === 'light' ? '#1e293b' : '#f1f5f9' }
+ 311 |         },
+ 312 |         {
+ 313 |           selector: 'node[depth = 2]',
+ 314 |           style: { 'color': theme === 'light' ? '#475569' : '#94a3b8' }
+ 315 |         },
+ 316 |         {
+ 317 |           selector: 'node[depth >= 3]',
+ 318 |           style: { 'color': theme === 'light' ? '#334155' : '#64748b' }
+ 319 |         },
+ 320 |         {
+ 321 |           selector: ':parent',
+ 322 |           style: {
+ 323 |             'background-opacity': 0.04,
+ 324 |             'background-color': theme === 'light' ? '#cbd5e1' : '#334155',
+ 325 |             'border-width': 2,
+ 326 |             'border-color': theme === 'light' ? '#94a3b8' : '#475569',
+ 327 |             'border-style': 'solid',
+ 328 |             'padding': '30px',
+ 329 |             'text-valign': 'top',
+ 330 |             'text-halign': 'center',
+ 331 |             'font-weight': 'bold',
+ 332 |             'font-size': '16px',
+ 333 |             'text-transform': 'uppercase',
+ 334 |             'text-outline-width': 0,
+ 335 |             'text-margin-y': -8
+ 336 |           }
+ 337 |         },
+ 338 |         {
+ 339 |           selector: '.selected-parent',
+ 340 |           style: {
+ 341 |             'border-color': theme === 'light' ? '#86efac' : '#4ade80',
+ 342 |             'border-width': 2,
+ 343 |           }
+ 344 |         },
+ 345 |         {
+ 346 |           selector: '.parent-selected',
+ 347 |           style: {
+ 348 |             'border-color': theme === 'light' ? '#16a34a' : '#22c55e',
+ 349 |             'border-width': 3,
+ 350 |             'z-index': 20
+ 351 |           }
+ 352 |         },
+ 353 |         {
+ 354 |           selector: 'edge.internal-edge, edge.real-edge',
+ 355 |           style: {
+ 356 |             'width': 2,
+ 357 |             'curve-style': 'taxi',
+ 358 |             'taxi-direction': 'auto',
+ 359 |             'opacity': 0.7,
+ 360 |             'target-arrow-shape': 'triangle',
+ 361 |             'arrow-scale': 0.8,
+ 362 |           } as any
+ 363 |         },
+ 364 |         {
+ 365 |           selector: '.bundle-edge',
+ 366 |           style: {
+ 367 |             'display': 'none'
+ 368 |           } as any
+ 369 |         },
+ 370 |         {
+ 371 |           selector: '.hub-node',
+ 372 |           style: {
+ 373 |             'display': 'none'
+ 374 |           } as any
+ 375 |         },
+ 376 |         {
+ 377 |           selector: '.hidden',
+ 378 |           style: { 'display': 'none' }
+ 379 |         },
+ 380 |         {
+ 381 |           selector: '.dimmed',
+ 382 |           style: { 'opacity': 0.35 }
+ 383 |         },
+ 384 |         {
+ 385 |           selector: '.highlighted',
+ 386 |           style: {
+ 387 |             'opacity': 1,
+ 388 |             'width': 3,
+ 389 |             'z-index': 15,
+ 390 |           }
+ 391 |         },
+ 392 |         {
+ 393 |           selector: 'edge.connection-selected',
+ 394 |           style: { 
+ 395 |              'width': 5, 
+ 396 |              'z-index': 25, 
+ 397 |              'line-color': theme === 'light' ? '#16a34a' : '#22c55e', 
+ 398 |              'target-arrow-color': theme === 'light' ? '#16a34a' : '#22c55e',
+ 399 |              'opacity': 1
+ 400 |           } as any
+ 401 |         },
+ 402 |         {
+ 403 |           selector: 'node.selected',
+ 404 |           style: {
+ 405 |              'border-width': 4,
+ 406 |              'border-color': theme === 'light' ? '#16a34a' : '#22c55e',
+ 407 |              'z-index': 20
+ 408 |           }
+ 409 |         },
+ 410 |         {
+ 411 |           selector: 'node.neighbor',
+ 412 |           style: {
+ 413 |             'border-width': 3,
+ 414 |             'border-color': theme === 'light' ? '#60a5fa' : '#38bdf8',
+ 415 |             'opacity': 1,
+ 416 |             'z-index': 10,
+ 417 |           }
+ 418 |         }
+ 419 |       ]
+ 420 |     });
+ 421 | 
+ 422 |     cyRef.current = cy;
+ 423 | 
+ 424 |     cy.elements().not('.real-edge').layout({
+ 425 |       name: 'elk',
+ 426 |       nodeDimensionsIncludeLabels: true,
+ 427 |       fit: true,
+ 428 |       padding: 60,
+ 429 |       animate: false,
+ 430 |       elk: {
+ 431 |         algorithm: 'layered',
+ 432 |         'elk.direction': 'DOWN',
+ 433 |         'elk.edgeRouting': 'ORTHOGONAL',
+ 434 |         'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
+ 435 |         'elk.layered.crossingMinimization.greedySwitch.type': 'TWO_SIDED',
+ 436 |         'elk.layered.thoroughness': '100',
+ 437 |         'elk.layered.spacing.nodeNodeBetweenLayers': '60',
+ 438 |         'elk.spacing.nodeNode': '40',
+ 439 |         'elk.spacing.edgeNode': '30',
+ 440 |         'elk.spacing.edgeEdge': '20',
+ 441 |         'elk.layered.spacing.edgeNodeBetweenLayers': '30',
+ 442 |         'elk.layered.spacing.edgeEdgeBetweenLayers': '25',
+ 443 |         'elk.hierarchyHandling': 'INCLUDE_CHILDREN',
+ 444 |         'elk.padding': '[top=30,left=20,bottom=20,right=20]',
+ 445 |         'elk.randomSeed': '1',
+ 446 |       },
+ 447 |     } as any).run();
+ 448 | 
+ 449 |     cy.on('layoutstop', () => {
+ 450 |       cy.fit(undefined, 60);
+ 451 |       const initialZoom = cy.zoom();
+ 452 |       cy.minZoom(initialZoom / 3.5);
+ 453 | 
+ 454 |       cy.edges('.internal-edge').forEach((e: any) => {
+ 455 |         const pIdx = e.data('parallelIndex') || 0;
+ 456 |         const pTotal = e.data('parallelTotal') || 1;
+ 457 |         if (pTotal > 1) {
+ 458 |           const offset = 40 + (pIdx - (pTotal - 1) / 2) * 20;
+ 459 |           e.style('taxi-turn', `${offset}px`);
+ 460 |         }
+ 461 |       });
+ 462 |     });
+ 463 | 
+ 464 |     const handleMouseOver = (e: cytoscape.EventObject) => {
+ 465 |       if (e.target.isEdge()) {
+ 466 |         if (e.target.hasClass('bundle-edge')) return;
+ 467 |         const id = e.target.hasClass('visual-edge') ? e.target.data('represents') : e.target.id();
+ 468 |         setHoveredName(id);
+ 469 |       } else {
+ 470 |         if (e.target.hasClass('hub-node')) return;
+ 471 |         setHoveredName(e.target.id());
+ 472 |       }
+ 473 |     };
+ 474 | 
+ 475 |     const handleMouseOut = () => {
+ 476 |       setHoveredName(null);
+ 477 |     };
+ 478 | 
+ 479 |     const handleEdgeTap = (e: cytoscape.EventObject) => {
+ 480 |       e.stopPropagation();
+ 481 |       if (e.target.hasClass('bundle-edge')) return;
+ 482 |       const id = e.target.hasClass('visual-edge') ? e.target.data('represents') : e.target.id();
+ 483 |       setSelectedName(id);
+ 484 |     };
+ 485 | 
+ 486 |     const handleNodeTap = (e: cytoscape.EventObject) => {
+ 487 |       e.stopPropagation();
+ 488 |       const node = e.target;
+ 489 |       if (node.hasClass('hub-node')) return;
+ 490 |       setSelectedName(node.id());
+ 491 |     };
+ 492 | 
+ 493 |     const handleBgTap = (e: cytoscape.EventObject) => {
+ 494 |       if (e.target === cy) {
+ 495 |         setSelectedName(null);
+ 496 |       }
+ 497 |     };
+ 498 | 
+ 499 |     cy.on('mouseover', 'node, edge', handleMouseOver);
+ 500 |     cy.on('mouseout', 'node, edge', handleMouseOut);
+ 501 |     cy.on('tap', 'edge', handleEdgeTap);
+ 502 |     cy.on('tap', 'node', handleNodeTap);
+ 503 |     cy.on('tap', handleBgTap);
+ 504 | 
+ 505 |     cy.on('zoom', () => {
+ 506 |       const z = cy.zoom();
+ 507 |       const calcFSize = (base: number, sMin: number, sMax: number, zHide: number) => {
+ 508 |         if (z < zHide) return 0.001; 
+ 509 |         const screen = base * z;
+ 510 |         return (Math.min(Math.max(screen, sMin), sMax)) / z;
+ 511 |       };
+ 512 | 
+ 513 |       cy.style()
+ 514 |         .selector('node[depth = 0]')
+ 515 |         .style({ 'font-size': `${calcFSize(120, 14, 24, 0.05)}px` })
+ 516 |         .selector('node[depth = 1]')
+ 517 |         .style({ 'font-size': `${calcFSize(80, 12, 18, 0.15)}px` })
+ 518 |         .selector('node[depth >= 2]')
+ 519 |         .style({ 'font-size': `${calcFSize(40, 10, 14, 0.25)}px` })
+ 520 |         .update();
+ 521 | 
+ 522 |       const edgeOpacity = z < 0.25 ? 0 : (z < 0.6 ? (z - 0.25)/0.35 * 0.3 : 0.3);
+ 523 |       cy.style().selector('.visual-edge:not(.highlighted):not(.selected)').style({ 'opacity': edgeOpacity }).update();
+ 524 |     });
+ 525 | 
+ 526 |     const observer = new ResizeObserver(() => {
+ 527 |       if (cy) {
+ 528 |         cy.resize();
+ 529 |         cy.fit();
+ 530 |         cy.minZoom(cy.zoom() / 3.5);
+ 531 |       }
+ 532 |     });
+ 533 |     observer.observe(containerRef.current);
+ 534 | 
+ 535 |     return () => {
+ 536 |       observer.disconnect();
+ 537 |       cy.destroy();
+ 538 |       cyRef.current = null;
+ 539 |     };
+ 540 |   }, [elements, setHoveredName, setSelectedName]);
+     :      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 541 | 
+     `----
+  help: Either include it or remove the dependency array.
+
+  ! react(refs): Cannot access refs during render
+    ,-[src/components/PropertyInspector.tsx:75:53]
+ 74 |       if (node.type === 'sensor array' && node.groupedSensors) {
+ 75 | ,->      const activeCount = node.groupedSensors.filter((s: any) => {
+ 76 | |          const st = liveStateRef?.current?.[s.name] as any;
+ 77 | |          return st && st.running;
+ 78 | |->      }).length;
+    : `---- Passing a ref to a function may read its value during render
+ 79 |          statusStr = `${activeCount}/${node.groupedSensors.length} ACTIVE`;
+    `----
+  help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/refs
+
+  ! react(refs): Cannot access refs during render
+     ,-[src/components/PropertyInspector.tsx:298:40]
+ 297 |                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingLeft: 8, marginBottom: 8 }}>
+ 298 | ,->               {node.groupedSensors.map((s: any) => {
+ 299 | |                   const sLive = liveStateRef?.current?.[s.name] as any || {};
+ 300 | |                   const active = sLive.running;
+ 301 | |                   return (
+ 302 | |                     <div key={s.name} style={{
+ 303 | |                       padding: '8px', 
+ 304 | |                       borderRadius: 4, 
+ 305 | |                       background: 'rgba(255,255,255,0.03)',
+ 306 | |                       border: '1px solid var(--hover-overlay)'
+ 307 | |                     }}>
+ 308 | |                       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+ 309 | |                         <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{s.name}</span>
+ 310 | |                         <span style={{ color: active ? '#4ade80' : '#94a3b8', fontSize: 11, fontWeight: 600 }}>{active ? 'ACTIVE' : 'INACTIVE'}</span>
+ 311 | |                       </div>
+ 312 | |                       {/* Render individual sensor data - basic values from live state */}
+ 313 | |                       {Object.keys(sLive).filter(k => !['running', 'status', 'id'].includes(k)).map(k => (
+ 314 | |                          <div key={k} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11 }}>
+ 315 | |                            <span style={{ color: 'var(--text-tertiary)' }}>{k}</span>
+ 316 | |                            <span style={{ color: 'var(--text-secondary)' }}>{typeof sLive[k] === 'number' ? sLive[k].toFixed(2) : String(sLive[k])}</span>
+ 317 | |                          </div>
+ 318 | |                       ))}
+ 319 | |                       {s.tags && s.tags.length > 0 && (
+ 320 | |                         <div style={{ marginTop: 6, display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+ 321 | |                           {s.tags.map((t: string) => (
+ 322 | |                             <span key={t} style={{ background: 'var(--bg-input)', padding: '2px 6px', borderRadius: 8, fontSize: 9, color: 'var(--text-secondary)' }}>{t}</span>
+ 323 | |                           ))}
+ 324 | |                         </div>
+ 325 | |                       )}
+ 326 | |                     </div>
+ 327 | |                   );
+ 328 | |->               })}
+     : `---- Cannot access ref value during render
+ 329 |                 </div>
+     `----
+  help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/refs
+
+  x react-hooks(rules-of-hooks): React Hook "useContext" is called conditionally. React Hooks must be called in the exact same order in every component render.
+     ,-[src/components/TwinNodeRenderer.tsx:152:140]
+ 151 |   // ── Read hover state from the centralized HoverContext ───────────────────
+ 152 |   const { hoveredName, hoveredAssociated, selectedAssociated, hoveredAncestors, selectedAncestors, activeLayer, componentsInteractable } = useContext(HoverContext);
+     :                                                                                                                                            ^^^^^^^^^^^^|^^^^^^^^^^^
+     :                                                                                                                                                        `-- This Hook call is not reachable on every render path.
+ 153 |   const hovered = hoveredName === layout.name;
+     `----
+  help: Move the Hook call before the condition, or call it unconditionally and branch inside the Hook/effect instead.
+
+  x react-hooks(rules-of-hooks): React Hook "useSelection" is called conditionally. React Hooks must be called in the exact same order in every component render.
+     ,-[src/components/TwinNodeRenderer.tsx:160:39]
+ 159 |   // ── Read / write selection state ────────────────────────────────────────
+ 160 |   const { selectedName, hiddenSet } = useSelection();
+     :                                       ^^^^^^^|^^^^^^
+     :                                              `-- This Hook call is not reachable on every render path.
+ 161 |   const selected = selectedName === layout.name;
+     `----
+  help: Move the Hook call before the condition, or call it unconditionally and branch inside the Hook/effect instead.
+
+  x react-hooks(rules-of-hooks): React Hook "useState" is called conditionally. React Hooks must be called in the exact same order in every component render.
+     ,-[src/components/TwinNodeRenderer.tsx:163:31]
+ 162 | 
+ 163 |   const [failed, setFailed] = useState(false);
+     :                               ^^^^^^^|^^^^^^^
+     :                                      `-- This Hook call is not reachable on every render path.
+ 164 | 
+     `----
+  help: Move the Hook call before the condition, or call it unconditionally and branch inside the Hook/effect instead.
+
+  x react-hooks(rules-of-hooks): React Hook "useFrame" is called conditionally. React Hooks must be called in the exact same order in every component render.
+     ,-[src/components/TwinNodeRenderer.tsx:165:3]
+ 164 |     
+ 165 | ,->   useFrame(() => {
+ 166 | |       const state = liveStateRef.current?.[layout.name] as any;
+ 167 | |       const isFailed = state?.running === false;
+ 168 | |       if (isFailed !== failed) {
+ 169 | |         setFailed(isFailed);
+ 170 | |       }
+ 171 | |->   });
+     : `---- This Hook call is not reachable on every render path.
+ 172 |     
+     `----
+  help: Move the Hook call before the condition, or call it unconditionally and branch inside the Hook/effect instead.
+
+  x react-hooks(rules-of-hooks): React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.
+     ,-[src/components/TwinNodeRenderer.tsx:173:15]
+ 172 |     
+ 173 | ,->   const mat = useMemo(
+ 174 | |       () => resolveMaterial(layout.type, { 
+ 175 | |         hovered, 
+ 176 | |         hoveredAssociated: isHoveredAssociated,
+ 177 | |         selected, 
+ 178 | |         selectedAssociated: isSelectedAssociated,
+ 179 | |         failed 
+ 180 | |       }),
+ 181 | |       [layout.type, hovered, isHoveredAssociated, selected, isSelectedAssociated, failed]
+ 182 | |->   );
+     : `---- This Hook call is not reachable on every render path.
+ 183 |     
+     `----
+  help: Move the Hook call before the condition, or call it unconditionally and branch inside the Hook/effect instead.
+
+  x react-hooks(rules-of-hooks): React Hook "useMemo" is called conditionally. React Hooks must be called in the exact same order in every component render.
+     ,-[src/components/TwinNodeRenderer.tsx:192:24]
+ 191 |       // HoverManager reads this to identify which component was hit.
+ 192 | ,->   const meshUserData = useMemo(
+ 193 | |       () => ({ componentName: layout.name, depth, yOffset: layout.yOffset }),
+ 194 | |       [layout.name, depth, layout.yOffset]
+ 195 | |->   );
+     : `---- This Hook call is not reachable on every render path.
+ 196 |     
+     `----
+  help: Move the Hook call before the condition, or call it unconditionally and branch inside the Hook/effect instead.
+
+  ! eslint(no-unused-vars): Variable 'filtered' is declared but never used. Unused variables should start with a '_'.
+    ,-[src/components/ConnectionsList.tsx:21:11]
+ 20 | 
+ 21 |   const { filtered, grouped, sortedKeys } = React.useMemo(() => {
+    :           ^^^^|^^^
+    :               `-- 'filtered' is declared here
+ 22 |     // Filter
+    `----
+  help: Consider removing this declaration.
+
+  ! react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders
+    ,-[src/components/ConnectionsList.tsx:60:9]
+ 47 |   // Scroll to selected and auto-expand groups
+ 48 |   useEffect(() => {
+    :   ^^^^|^^^^
+    :       `-- This is the containing effect
+ 49 |     if (selectedName) {
+ 50 |       // Auto-expand groups containing the selection
+ 51 |       let groupToExpand = null;
+ 52 |       for (const [groupKey, items] of grouped.entries()) {
+ 53 |         if (items.some(c => c.id === selectedName || c.source === selectedName || c.target === selectedName)) {
+ 54 |           groupToExpand = groupKey;
+ 55 |           break;
+ 56 |         }
+ 57 |       }
+ 58 |       
+ 59 |       if (groupToExpand) {
+ 60 |         setExpandedGroups(prev => {
+    :         ^^^^^^^^|^^^^^^^^
+    :                 `-- Avoid calling setState() directly within an effect
+ 61 |           const next = new Set(prev);
+    `----
+  help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/set-state-in-effect
+
+  ! eslint(no-unused-vars): Identifier 'useTheme' is imported but never used.
+    ,-[src/components/HierarchyPanel.tsx:9:10]
+  8 | import { Network, Link2, Sliders, ChevronRight, Eye, EyeOff, Focus, Edit2 } from 'lucide-react';
+  9 | import { useTheme } from './ThemeContext';
+    :          ^^^^|^^^
+    :              `-- 'useTheme' is imported here
+ 10 | 
+    `----
+  help: Consider removing this import.
+
+  ! eslint(no-unused-vars): Parameter 'onShowGraph' is declared but never used. Unused parameters should start with a '_'.
+     ,-[src/components/HierarchyPanel.tsx:163:3]
+ 162 |   onResetCamera, activeLayer = null, setActiveLayer,
+ 163 |   onShowGraph, customSidebarTabs,
+     :   ^^^^^|^^^^^
+     :        `-- 'onShowGraph' is declared here
+ 164 |   lightingMode, onLightingModeChange,
+     `----
+  help: Consider removing this parameter.
+
+  ! react(refs): Cannot access refs during render
+     ,-[src/components/HierarchyPanel.tsx:314:16]
+ 313 |                  {/* Dynamic fields from spec */}
+ 314 | ,->              {(() => {
+ 315 | |                   const node = root ? findNode(root, editingTarget.name) : null;
+ 316 | |                   const specObj = node?.spec || {};
+ 317 | |                   const liveState = (liveStateRef?.current?.[editingTarget.name] ?? {}) as Record<string, unknown>;
+     : |                                      ^^^^^^^^^^|^^^^^^^^^^
+     : |                                                `-- The ref is accessed here
+ 318 | |                   
+ 319 | |                   const inputs: string[] = [];
+ 320 | |                   const states: string[] = [];
+ 321 | |                   const outputs: string[] = [];
+ 322 | |                   
+ 323 | |                   if (specObj.rating) {
+ 324 | |                      for (const k of Object.keys((specObj.rating as any).input || {})) inputs.push(k);
+ 325 | |                      for (const k of Object.keys((specObj.rating as any).state || {})) states.push(k);
+ 326 | |                      for (const k of Object.keys((specObj.rating as any).output || {})) outputs.push(k);
+ 327 | |                   }
+ 328 | |                   
+ 329 | |                   const renderInput = (key: string, category: string) => {
+ 330 | |                      const detail = (specObj.rating as any)?.[category]?.[key];
+ 331 | |                      const unit = detail?.unit || '';
+ 332 | |                      const rawVal = liveState[key] ?? detail?.value ?? '';
+ 333 | |                      const val = typeof rawVal === 'object' ? JSON.stringify(rawVal) : String(rawVal);
+ 334 | |                      return (
+ 335 | |                        <div key={key} style={{ marginBottom: 12 }}>
+ 336 | |                          <label style={{ display: 'block', marginBottom: 4, color: 'var(--text-secondary)', fontSize: 11 }}>{key} {unit ? `(${unit})` : ''}</label>
+ 337 | |                          <input 
+ 338 | |                            type="text" 
+ 339 | |                            defaultValue={val} 
+ 340 | |                            onBlur={(e) => {
+ 341 | |                              if(runId && editingTarget) {
+ 342 | |                                const numVal = parseFloat(e.target.value);
+ 343 | |                                if (!isNaN(numVal)) {
+ 344 | |                                  // Assuming we have api.setComponentState or similar
+ 345 | |                                  api.setComponentState(runId, editingTarget.name, { [key]: numVal });
+ 346 | |                                }
+ 347 | |                              }
+ 348 | |                            }}
+ 349 | |                            style={{ width: '100%', background: 'var(--bg-input)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4 }} 
+ 350 | |                          />
+ 351 | |                        </div>
+ 352 | |                      );
+ 353 | |                   };
+ 354 | |   
+ 355 | |                   return (
+ 356 | |                     <>
+ 357 | |                       <div style={{ marginBottom: 12 }}>
+ 358 | |                         <label style={{ display: 'block', marginBottom: 4, color: 'var(--text-secondary)', fontSize: 11 }}>Individual Tolerance</label>
+ 359 | |                         <input 
+ 360 | |                           type="number" 
+ 361 | |                           defaultValue={(specObj.tolerance as number) || 10} 
+ 362 | |                           onBlur={(e) => {
+ 363 | |                              if(runId && editingTarget) api.setComponentTolerance(runId, editingTarget.name, parseFloat(e.target.value));
+ 364 | |                           }}
+ 365 | |                           style={{ width: '100%', background: 'var(--bg-input)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4 }} 
+ 366 | |                         />
+ 367 | |                       </div>
+ 368 | |   
+ 369 | |                       {inputs.length > 0 && <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic', marginBottom: 8, marginTop: 16 }}>input:</div>}
+ 370 | |                       {inputs.map(k => renderInput(k, 'input'))}
+ 371 | |                       
+ 372 | |                       {states.length > 0 && <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic', marginBottom: 8, marginTop: 16 }}>state:</div>}
+ 373 | |                       {states.map(k => renderInput(k, 'state'))}
+ 374 | |                       
+ 375 | |                       {outputs.length > 0 && <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic', marginBottom: 8, marginTop: 16 }}>output:</div>}
+ 376 | |                       {outputs.map(k => renderInput(k, 'output'))}
+ 377 | |                     </>
+ 378 | |                   );
+ 379 | |->              })()}
+     : `---- This function accesses a ref value
+ 380 |     
+     `----
+  help: React refs are values that are not needed for rendering. Refs should only be accessed outside of render, such as in event handlers or effects. Accessing a ref value (the `current` property) during render can cause your component not to update as expected
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/refs
+
+  ! react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders
+     ,-[src/components/HierarchyPanel.tsx:179:5]
+ 177 |   // Clear editing state when view changes
+ 178 |   useEffect(() => {
+     :   ^^^^|^^^^
+     :       `-- This is the containing effect
+ 179 |     setEditingTarget(null);
+     :     ^^^^^^^^|^^^^^^^
+     :             `-- Avoid calling setState() directly within an effect
+ 180 |   }, [activeView, isEditingInitials]);
+     `----
+  help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/set-state-in-effect
+
+  ! react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders
+     ,-[src/components/HierarchyPanel.tsx:257:9]
+ 252 |   // Context-aware auto-expand
+ 253 |   useEffect(() => {
+     :   ^^^^|^^^^
+     :       `-- This is the containing effect
+ 254 |     if (selectedName && activeView === 'hierarchy' && isOpen) {
+ 255 |       const path = findPath(root, selectedName);
+ 256 |       if (path) {
+ 257 |         setExpandedSet(prev => {
+     :         ^^^^^^^|^^^^^^
+     :                `-- Avoid calling setState() directly within an effect
+ 258 |           const next = new Set(prev);
+     `----
+  help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/set-state-in-effect
+
+  ! react(static-components): Cannot create components during render
+     ,-[src/components/HierarchyPanel.tsx:547:10]
+ 276 | 
+ 277 |   const IconBtn = ({ icon, active, onClick, title }: any) => (
+     :                   ^|
+     :                    `-- The component is created during render here
+ 278 |     <div 
+ 279 |       onClick={onClick}
+ 280 |       title={title}
+ 281 |       style={{
+ 282 |         width: '100%', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center',
+ 283 |         cursor: 'pointer', color: active ? 'var(--text-primary)' : 'var(--text-tertiary)',
+ 284 |         borderLeft: active ? '2px solid var(--accent-blue)' : '2px solid transparent',
+ 285 |         background: active ? 'var(--hover-overlay)' : 'transparent',
+ 286 |       }}
+ 287 |     >
+ 288 |       {icon}
+ 289 |     </div>
+ 290 |   );
+ 291 | 
+ 292 |   return (
+ 293 |     <div style={{
+ 294 |       position: 'absolute', left: 0, top: 0, bottom: bottomOffset,
+ 295 |       display: 'flex', flexDirection: 'row-reverse', zIndex: 20,
+ 296 |       pointerEvents: 'none',
+ 297 |       transition: 'bottom 0.3s ease',
+ 298 |     }}>
+ 299 |       {editingTarget && (
+ 300 |         <div style={{
+ 301 |           position: 'relative', width: 320, background: 'var(--bg-panel)', backdropFilter: 'blur(8px)',
+ 302 |           borderRight: PANEL_BORDER, display: 'flex', flexDirection: 'column',
+ 303 |           pointerEvents: 'auto', boxShadow: '4px 0 15px rgba(0,0,0,0.3)',
+ 304 |           overflowY: 'auto', zIndex: 15
+ 305 |         }}>
+ 306 |            <div style={{ padding: '16px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+ 307 |              <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>
+ 308 |                Edit Initials ({editingTarget.type === 'connection' ? editingTarget.name.replace('-to-', ' → ').replace(/-/g, ' ') : editingTarget.name})
+ 309 |              </h3>
+ 310 |              <button onClick={() => setEditingTarget(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 20 }}>&times;</button>
+ 311 |            </div>
+ 312 |            <div style={{ padding: '16px', fontSize: 13, flex: 1, overflowY: 'auto' }}>
+ 313 |              {/* Dynamic fields from spec */}
+ 314 |              {(() => {
+ 315 |                 const node = root ? findNode(root, editingTarget.name) : null;
+ 316 |                 const specObj = node?.spec || {};
+ 317 |                 const liveState = (liveStateRef?.current?.[editingTarget.name] ?? {}) as Record<string, unknown>;
+ 318 |                 
+ 319 |                 const inputs: string[] = [];
+ 320 |                 const states: string[] = [];
+ 321 |                 const outputs: string[] = [];
+ 322 |                 
+ 323 |                 if (specObj.rating) {
+ 324 |                    for (const k of Object.keys((specObj.rating as any).input || {})) inputs.push(k);
+ 325 |                    for (const k of Object.keys((specObj.rating as any).state || {})) states.push(k);
+ 326 |                    for (const k of Object.keys((specObj.rating as any).output || {})) outputs.push(k);
+ 327 |                 }
+ 328 |                 
+ 329 |                 const renderInput = (key: string, category: string) => {
+ 330 |                    const detail = (specObj.rating as any)?.[category]?.[key];
+ 331 |                    const unit = detail?.unit || '';
+ 332 |                    const rawVal = liveState[key] ?? detail?.value ?? '';
+ 333 |                    const val = typeof rawVal === 'object' ? JSON.stringify(rawVal) : String(rawVal);
+ 334 |                    return (
+ 335 |                      <div key={key} style={{ marginBottom: 12 }}>
+ 336 |                        <label style={{ display: 'block', marginBottom: 4, color: 'var(--text-secondary)', fontSize: 11 }}>{key} {unit ? `(${unit})` : ''}</label>
+ 337 |                        <input 
+ 338 |                          type="text" 
+ 339 |                          defaultValue={val} 
+ 340 |                          onBlur={(e) => {
+ 341 |                            if(runId && editingTarget) {
+ 342 |                              const numVal = parseFloat(e.target.value);
+ 343 |                              if (!isNaN(numVal)) {
+ 344 |                                // Assuming we have api.setComponentState or similar
+ 345 |                                api.setComponentState(runId, editingTarget.name, { [key]: numVal });
+ 346 |                              }
+ 347 |                            }
+ 348 |                          }}
+ 349 |                          style={{ width: '100%', background: 'var(--bg-input)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4 }} 
+ 350 |                        />
+ 351 |                      </div>
+ 352 |                    );
+ 353 |                 };
+ 354 | 
+ 355 |                 return (
+ 356 |                   <>
+ 357 |                     <div style={{ marginBottom: 12 }}>
+ 358 |                       <label style={{ display: 'block', marginBottom: 4, color: 'var(--text-secondary)', fontSize: 11 }}>Individual Tolerance</label>
+ 359 |                       <input 
+ 360 |                         type="number" 
+ 361 |                         defaultValue={(specObj.tolerance as number) || 10} 
+ 362 |                         onBlur={(e) => {
+ 363 |                            if(runId && editingTarget) api.setComponentTolerance(runId, editingTarget.name, parseFloat(e.target.value));
+ 364 |                         }}
+ 365 |                         style={{ width: '100%', background: 'var(--bg-input)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4 }} 
+ 366 |                       />
+ 367 |                     </div>
+ 368 | 
+ 369 |                     {inputs.length > 0 && <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic', marginBottom: 8, marginTop: 16 }}>input:</div>}
+ 370 |                     {inputs.map(k => renderInput(k, 'input'))}
+ 371 |                     
+ 372 |                     {states.length > 0 && <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic', marginBottom: 8, marginTop: 16 }}>state:</div>}
+ 373 |                     {states.map(k => renderInput(k, 'state'))}
+ 374 |                     
+ 375 |                     {outputs.length > 0 && <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic', marginBottom: 8, marginTop: 16 }}>output:</div>}
+ 376 |                     {outputs.map(k => renderInput(k, 'output'))}
+ 377 |                   </>
+ 378 |                 );
+ 379 |              })()}
+ 380 | 
+ 381 |              <div style={{ display: 'flex', gap: 8, marginBottom: 16, marginTop: 16 }}>
+ 382 |                <button style={{ flex: 1, background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4, cursor: 'pointer' }} onClick={() => { if(runId && editingTarget) api.setComponentTolerance(runId, editingTarget.name, 10); }}>Reset Tolerance</button>
+ 383 |                <button style={{ flex: 1, background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4, cursor: 'pointer' }} onClick={() => console.log('Reset fields to earlier state')}>Reset Fields</button>
+ 384 |              </div>
+ 385 |              <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic' }}>
+ 386 |                Changes are synced with backend automatically.
+ 387 |              </div>
+ 388 |            </div>
+ 389 |         </div>
+ 390 |       )}
+ 391 | 
+ 392 |       {/* Panel Area */}
+ 393 |       {isOpen && (
+ 394 |         <div style={{
+ 395 |           position: 'relative', width: panelWidth, background: 'var(--bg-panel)', backdropFilter: 'blur(8px)',
+ 396 |           borderRight: PANEL_BORDER, display: 'flex', flexDirection: 'column',
+ 397 |           pointerEvents: 'auto', boxShadow: '4px 0 15px rgba(0,0,0,0.3)',
+ 398 |         }}>
+ 399 |           {/* Resizer Handle */}
+ 400 |           <div
+ 401 |             onPointerDown={startResizing}
+ 402 |             onMouseEnter={(e) => { (e.target as HTMLDivElement).style.background = 'rgba(56, 189, 248, 0.4)'; }}
+ 403 |             onMouseLeave={(e) => { (e.target as HTMLDivElement).style.background = 'transparent'; }}
+ 404 |             style={{
+ 405 |               position: 'absolute', right: 0, top: 0, bottom: 0, width: 5,
+ 406 |               cursor: 'col-resize', zIndex: 30, background: 'transparent',
+ 407 |               transition: 'background 0.2s',
+ 408 |             }}
+ 409 |           />
+ 410 |           <div style={{ padding: '10px 14px', borderBottom: PANEL_BORDER, fontWeight: 600, fontSize: 11, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+ 411 |              <span>
+ 412 |                {activeView === 'hierarchy' ? 'Hierarchy Tree' : 
+ 413 |                 activeView === 'connections' ? 'Connections List' : 
+ 414 |                 activeView === 'interactivity' ? 'Settings' :
+ 415 |                 customSidebarTabs?.find(t => t.id === activeView)?.title || 'Settings'}
+ 416 |              </span>
+ 417 |              {activeView === 'hierarchy' && (
+ 418 |                <div style={{ display: 'flex', gap: 4, textTransform: 'none', letterSpacing: 'normal', fontWeight: 500 }}>
+ 419 |                   {!hideEditInitials && (
+ 420 |                     <button 
+ 421 |                       onClick={() => setIsEditingInitials(!isEditingInitials)} 
+ 422 |                       style={{ background: isEditingInitials ? 'var(--accent-blue)' : 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: isEditingInitials ? '#fff' : 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}
+ 423 |                     >
+ 424 |                       Edit Initials
+ 425 |                     </button>
+ 426 |                   )}
+ 427 |                   {allHierarchyExpanded ? (
+ 428 |                     <button onClick={collapseAllHierarchy} style={{ background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}>Collapse All</button>
+ 429 |                   ) : (
+ 430 |                     <button onClick={expandAllHierarchy} style={{ background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}>Expand All</button>
+ 431 |                   )}
+ 432 |                </div>
+ 433 |              )}
+ 434 |              {activeView === 'connections' && !hideEditInitials && (
+ 435 |                <div style={{ display: 'flex', gap: 4, textTransform: 'none', letterSpacing: 'normal', fontWeight: 500 }}>
+ 436 |                   <button 
+ 437 |                     onClick={() => setIsEditingInitials(!isEditingInitials)} 
+ 438 |                     style={{ background: isEditingInitials ? 'var(--accent-blue)' : 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: isEditingInitials ? '#fff' : 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}
+ 439 |                   >
+ 440 |                     Edit Initials
+ 441 |                   </button>
+ 442 |                </div>
+ 443 |              )}
+ 444 |           </div>
+ 445 |           <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
+ 446 |              {activeView === 'hierarchy' && <TreeNode node={root} depth={0} expandedSet={expandedSet} toggleExpanded={toggleExpanded} isEditingInitials={isEditingInitials} onEditInitials={(name, type) => setEditingTarget({ name, type })} />}
+ 447 |              {activeView === 'connections' && <ConnectionsList connections={connections} isEditingInitials={isEditingInitials} onEditInitials={(name, type) => setEditingTarget({ name, type })} />}
+ 448 |              {activeView === 'interactivity' && (
+ 449 |                <div style={{ padding: '16px 14px', fontSize: 13, color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+ 450 |                  <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: 11, textTransform: 'uppercase', marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+ 451 |                    <span>Interactivity</span>
+ 452 |                    <input 
+ 453 |                      type="checkbox" 
+ 454 |                      checked={componentsInteractable && connectionsInteractable} 
+ 455 |                      onChange={(e) => {
+ 456 |                        const checked = e.target.checked;
+ 457 |                        onComponentsInteractableChange?.(checked);
+ 458 |                        onConnectionsInteractableChange?.(checked);
+ 459 |                      }}
+ 460 |                      style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }}
+ 461 |                    />
+ 462 |                  </div>
+ 463 |                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+ 464 |                    <span>Components Interactable</span>
+ 465 |                    <input type="checkbox" checked={componentsInteractable} onChange={(e) => onComponentsInteractableChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
+ 466 |                  </label>
+ 467 |                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+ 468 |                    <span>Connections Interactable</span>
+ 469 |                    <input type="checkbox" checked={connectionsInteractable} onChange={(e) => onConnectionsInteractableChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
+ 470 |                  </label>
+ 471 |                  
+ 472 |                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', marginTop: 8 }}>
+ 473 |                      <span>Interactable Floor Level</span>
+ 474 |                       <input 
+ 475 |                         type="number"
+ 476 |                         value={activeLayer === null ? '' : activeLayer} 
+ 477 |                         onChange={(e) => setActiveLayer?.(e.target.value === '' ? null : Number(e.target.value))}
+ 478 |                         style={{ background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-solid)', borderRadius: 4, padding: '2px 4px', outline: 'none', cursor: 'text', width: 60, textAlign: 'center' }}
+ 479 |                         placeholder="0"
+ 480 |                       />
+ 481 |                    </label>
+ 482 |                  
+ 483 |                  <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: 11, textTransform: 'uppercase', marginTop: 12, marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+ 484 |                    <span>View</span>
+ 485 |                    <input 
+ 486 |                      type="checkbox" 
+ 487 |                      checked={!!hideAllComponents && !!hideAllConnections} 
+ 488 |                      onChange={(e) => {
+ 489 |                        const checked = e.target.checked;
+ 490 |                        onHideAllComponentsChange?.(checked);
+ 491 |                        onHideAllConnectionsChange?.(checked);
+ 492 |                      }}
+ 493 |                      style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }}
+ 494 |                    />
+ 495 |                  </div>
+ 496 |                  {onLightingModeChange && (
+ 497 |                    <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+ 498 |                      <span>Lighting</span>
+ 499 |                      <select 
+ 500 |                        value={lightingMode} 
+ 501 |                        onChange={e => onLightingModeChange(e.target.value as any)}
+ 502 |                        style={{ background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-solid)', borderRadius: 4, padding: '2px 4px', outline: 'none', cursor: 'pointer' }}
+ 503 |                      >
+ 504 |                        <option value="dynamic">Dynamic</option>
+ 505 |                        <option value="static">Static</option>
+ 506 |                        <option value="off">Off</option>
+ 507 |                      </select>
+ 508 |                    </label>
+ 509 |                  )}
+ 510 |                  {onContainerOcclusionChange && (
+ 511 |                    <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+ 512 |                      <span>Occlusion</span>
+ 513 |                      <select 
+ 514 |                        value={containerOcclusion} 
+ 515 |                        onChange={e => onContainerOcclusionChange(e.target.value as any)}
+ 516 |                        style={{ background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-solid)', borderRadius: 4, padding: '2px 4px', outline: 'none', cursor: 'pointer' }}
+ 517 |                      >
+ 518 |                        <option value="off">Translucent</option>
+ 519 |                        <option value="off_on_hover">Opaque (Off on hover)</option>
+ 520 |                      </select>
+ 521 |                    </label>
+ 522 |                  )}
+ 523 |                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+ 524 |                    <span>Hide All Components</span>
+ 525 |                    <input type="checkbox" checked={!!hideAllComponents} onChange={(e) => onHideAllComponentsChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
+ 526 |                  </label>
+ 527 |                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+ 528 |                    <span>Hide All Connections</span>
+ 529 |                    <input type="checkbox" checked={!!hideAllConnections} onChange={(e) => onHideAllConnectionsChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
+ 530 |                  </label>
+ 531 |                </div>
+ 532 |              )}
+ 533 |              
+ 534 |              {customSidebarTabs?.map(tab => (
+ 535 |                activeView === tab.id && <React.Fragment key={tab.id}>{tab.content}</React.Fragment>
+ 536 |              ))}
+ 537 |           </div>
+ 538 |         </div>
+ 539 |       )}
+ 540 | 
+ 541 |       {/* Activity Bar */}
+ 542 |       <div style={{
+ 543 |         width: 48, background: 'var(--bg-panel-solid)', borderRight: PANEL_BORDER,
+ 544 |         display: 'flex', flexDirection: 'column', alignItems: 'center',
+ 545 |         paddingTop: 8, paddingBottom: 8, boxSizing: 'border-box', pointerEvents: 'auto',
+ 546 |       }}>
+ 547 |         <IconBtn icon={<Network size={20} />} active={activeView === 'hierarchy'} onClick={() => toggleView('hierarchy')} title="Hierarchy" />
+     :          ^^^|^^^
+     :             `-- This component is created during render
+ 548 |         <IconBtn icon={<Link2 size={20} />} active={activeView === 'connections'} onClick={() => toggleView('connections')} title="Connections" />
+     `----
+  help: Components created during render will reset their state each time they are created. Declare components outside of render
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/static-components
+
+  ! react(static-components): Cannot create components during render
+     ,-[src/components/HierarchyPanel.tsx:548:10]
+ 276 | 
+ 277 |   const IconBtn = ({ icon, active, onClick, title }: any) => (
+     :                   ^|
+     :                    `-- The component is created during render here
+ 278 |     <div 
+ 279 |       onClick={onClick}
+ 280 |       title={title}
+ 281 |       style={{
+ 282 |         width: '100%', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center',
+ 283 |         cursor: 'pointer', color: active ? 'var(--text-primary)' : 'var(--text-tertiary)',
+ 284 |         borderLeft: active ? '2px solid var(--accent-blue)' : '2px solid transparent',
+ 285 |         background: active ? 'var(--hover-overlay)' : 'transparent',
+ 286 |       }}
+ 287 |     >
+ 288 |       {icon}
+ 289 |     </div>
+ 290 |   );
+ 291 | 
+ 292 |   return (
+ 293 |     <div style={{
+ 294 |       position: 'absolute', left: 0, top: 0, bottom: bottomOffset,
+ 295 |       display: 'flex', flexDirection: 'row-reverse', zIndex: 20,
+ 296 |       pointerEvents: 'none',
+ 297 |       transition: 'bottom 0.3s ease',
+ 298 |     }}>
+ 299 |       {editingTarget && (
+ 300 |         <div style={{
+ 301 |           position: 'relative', width: 320, background: 'var(--bg-panel)', backdropFilter: 'blur(8px)',
+ 302 |           borderRight: PANEL_BORDER, display: 'flex', flexDirection: 'column',
+ 303 |           pointerEvents: 'auto', boxShadow: '4px 0 15px rgba(0,0,0,0.3)',
+ 304 |           overflowY: 'auto', zIndex: 15
+ 305 |         }}>
+ 306 |            <div style={{ padding: '16px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+ 307 |              <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>
+ 308 |                Edit Initials ({editingTarget.type === 'connection' ? editingTarget.name.replace('-to-', ' → ').replace(/-/g, ' ') : editingTarget.name})
+ 309 |              </h3>
+ 310 |              <button onClick={() => setEditingTarget(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 20 }}>&times;</button>
+ 311 |            </div>
+ 312 |            <div style={{ padding: '16px', fontSize: 13, flex: 1, overflowY: 'auto' }}>
+ 313 |              {/* Dynamic fields from spec */}
+ 314 |              {(() => {
+ 315 |                 const node = root ? findNode(root, editingTarget.name) : null;
+ 316 |                 const specObj = node?.spec || {};
+ 317 |                 const liveState = (liveStateRef?.current?.[editingTarget.name] ?? {}) as Record<string, unknown>;
+ 318 |                 
+ 319 |                 const inputs: string[] = [];
+ 320 |                 const states: string[] = [];
+ 321 |                 const outputs: string[] = [];
+ 322 |                 
+ 323 |                 if (specObj.rating) {
+ 324 |                    for (const k of Object.keys((specObj.rating as any).input || {})) inputs.push(k);
+ 325 |                    for (const k of Object.keys((specObj.rating as any).state || {})) states.push(k);
+ 326 |                    for (const k of Object.keys((specObj.rating as any).output || {})) outputs.push(k);
+ 327 |                 }
+ 328 |                 
+ 329 |                 const renderInput = (key: string, category: string) => {
+ 330 |                    const detail = (specObj.rating as any)?.[category]?.[key];
+ 331 |                    const unit = detail?.unit || '';
+ 332 |                    const rawVal = liveState[key] ?? detail?.value ?? '';
+ 333 |                    const val = typeof rawVal === 'object' ? JSON.stringify(rawVal) : String(rawVal);
+ 334 |                    return (
+ 335 |                      <div key={key} style={{ marginBottom: 12 }}>
+ 336 |                        <label style={{ display: 'block', marginBottom: 4, color: 'var(--text-secondary)', fontSize: 11 }}>{key} {unit ? `(${unit})` : ''}</label>
+ 337 |                        <input 
+ 338 |                          type="text" 
+ 339 |                          defaultValue={val} 
+ 340 |                          onBlur={(e) => {
+ 341 |                            if(runId && editingTarget) {
+ 342 |                              const numVal = parseFloat(e.target.value);
+ 343 |                              if (!isNaN(numVal)) {
+ 344 |                                // Assuming we have api.setComponentState or similar
+ 345 |                                api.setComponentState(runId, editingTarget.name, { [key]: numVal });
+ 346 |                              }
+ 347 |                            }
+ 348 |                          }}
+ 349 |                          style={{ width: '100%', background: 'var(--bg-input)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4 }} 
+ 350 |                        />
+ 351 |                      </div>
+ 352 |                    );
+ 353 |                 };
+ 354 | 
+ 355 |                 return (
+ 356 |                   <>
+ 357 |                     <div style={{ marginBottom: 12 }}>
+ 358 |                       <label style={{ display: 'block', marginBottom: 4, color: 'var(--text-secondary)', fontSize: 11 }}>Individual Tolerance</label>
+ 359 |                       <input 
+ 360 |                         type="number" 
+ 361 |                         defaultValue={(specObj.tolerance as number) || 10} 
+ 362 |                         onBlur={(e) => {
+ 363 |                            if(runId && editingTarget) api.setComponentTolerance(runId, editingTarget.name, parseFloat(e.target.value));
+ 364 |                         }}
+ 365 |                         style={{ width: '100%', background: 'var(--bg-input)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4 }} 
+ 366 |                       />
+ 367 |                     </div>
+ 368 | 
+ 369 |                     {inputs.length > 0 && <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic', marginBottom: 8, marginTop: 16 }}>input:</div>}
+ 370 |                     {inputs.map(k => renderInput(k, 'input'))}
+ 371 |                     
+ 372 |                     {states.length > 0 && <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic', marginBottom: 8, marginTop: 16 }}>state:</div>}
+ 373 |                     {states.map(k => renderInput(k, 'state'))}
+ 374 |                     
+ 375 |                     {outputs.length > 0 && <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic', marginBottom: 8, marginTop: 16 }}>output:</div>}
+ 376 |                     {outputs.map(k => renderInput(k, 'output'))}
+ 377 |                   </>
+ 378 |                 );
+ 379 |              })()}
+ 380 | 
+ 381 |              <div style={{ display: 'flex', gap: 8, marginBottom: 16, marginTop: 16 }}>
+ 382 |                <button style={{ flex: 1, background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4, cursor: 'pointer' }} onClick={() => { if(runId && editingTarget) api.setComponentTolerance(runId, editingTarget.name, 10); }}>Reset Tolerance</button>
+ 383 |                <button style={{ flex: 1, background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4, cursor: 'pointer' }} onClick={() => console.log('Reset fields to earlier state')}>Reset Fields</button>
+ 384 |              </div>
+ 385 |              <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic' }}>
+ 386 |                Changes are synced with backend automatically.
+ 387 |              </div>
+ 388 |            </div>
+ 389 |         </div>
+ 390 |       )}
+ 391 | 
+ 392 |       {/* Panel Area */}
+ 393 |       {isOpen && (
+ 394 |         <div style={{
+ 395 |           position: 'relative', width: panelWidth, background: 'var(--bg-panel)', backdropFilter: 'blur(8px)',
+ 396 |           borderRight: PANEL_BORDER, display: 'flex', flexDirection: 'column',
+ 397 |           pointerEvents: 'auto', boxShadow: '4px 0 15px rgba(0,0,0,0.3)',
+ 398 |         }}>
+ 399 |           {/* Resizer Handle */}
+ 400 |           <div
+ 401 |             onPointerDown={startResizing}
+ 402 |             onMouseEnter={(e) => { (e.target as HTMLDivElement).style.background = 'rgba(56, 189, 248, 0.4)'; }}
+ 403 |             onMouseLeave={(e) => { (e.target as HTMLDivElement).style.background = 'transparent'; }}
+ 404 |             style={{
+ 405 |               position: 'absolute', right: 0, top: 0, bottom: 0, width: 5,
+ 406 |               cursor: 'col-resize', zIndex: 30, background: 'transparent',
+ 407 |               transition: 'background 0.2s',
+ 408 |             }}
+ 409 |           />
+ 410 |           <div style={{ padding: '10px 14px', borderBottom: PANEL_BORDER, fontWeight: 600, fontSize: 11, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+ 411 |              <span>
+ 412 |                {activeView === 'hierarchy' ? 'Hierarchy Tree' : 
+ 413 |                 activeView === 'connections' ? 'Connections List' : 
+ 414 |                 activeView === 'interactivity' ? 'Settings' :
+ 415 |                 customSidebarTabs?.find(t => t.id === activeView)?.title || 'Settings'}
+ 416 |              </span>
+ 417 |              {activeView === 'hierarchy' && (
+ 418 |                <div style={{ display: 'flex', gap: 4, textTransform: 'none', letterSpacing: 'normal', fontWeight: 500 }}>
+ 419 |                   {!hideEditInitials && (
+ 420 |                     <button 
+ 421 |                       onClick={() => setIsEditingInitials(!isEditingInitials)} 
+ 422 |                       style={{ background: isEditingInitials ? 'var(--accent-blue)' : 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: isEditingInitials ? '#fff' : 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}
+ 423 |                     >
+ 424 |                       Edit Initials
+ 425 |                     </button>
+ 426 |                   )}
+ 427 |                   {allHierarchyExpanded ? (
+ 428 |                     <button onClick={collapseAllHierarchy} style={{ background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}>Collapse All</button>
+ 429 |                   ) : (
+ 430 |                     <button onClick={expandAllHierarchy} style={{ background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}>Expand All</button>
+ 431 |                   )}
+ 432 |                </div>
+ 433 |              )}
+ 434 |              {activeView === 'connections' && !hideEditInitials && (
+ 435 |                <div style={{ display: 'flex', gap: 4, textTransform: 'none', letterSpacing: 'normal', fontWeight: 500 }}>
+ 436 |                   <button 
+ 437 |                     onClick={() => setIsEditingInitials(!isEditingInitials)} 
+ 438 |                     style={{ background: isEditingInitials ? 'var(--accent-blue)' : 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: isEditingInitials ? '#fff' : 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}
+ 439 |                   >
+ 440 |                     Edit Initials
+ 441 |                   </button>
+ 442 |                </div>
+ 443 |              )}
+ 444 |           </div>
+ 445 |           <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
+ 446 |              {activeView === 'hierarchy' && <TreeNode node={root} depth={0} expandedSet={expandedSet} toggleExpanded={toggleExpanded} isEditingInitials={isEditingInitials} onEditInitials={(name, type) => setEditingTarget({ name, type })} />}
+ 447 |              {activeView === 'connections' && <ConnectionsList connections={connections} isEditingInitials={isEditingInitials} onEditInitials={(name, type) => setEditingTarget({ name, type })} />}
+ 448 |              {activeView === 'interactivity' && (
+ 449 |                <div style={{ padding: '16px 14px', fontSize: 13, color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+ 450 |                  <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: 11, textTransform: 'uppercase', marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+ 451 |                    <span>Interactivity</span>
+ 452 |                    <input 
+ 453 |                      type="checkbox" 
+ 454 |                      checked={componentsInteractable && connectionsInteractable} 
+ 455 |                      onChange={(e) => {
+ 456 |                        const checked = e.target.checked;
+ 457 |                        onComponentsInteractableChange?.(checked);
+ 458 |                        onConnectionsInteractableChange?.(checked);
+ 459 |                      }}
+ 460 |                      style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }}
+ 461 |                    />
+ 462 |                  </div>
+ 463 |                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+ 464 |                    <span>Components Interactable</span>
+ 465 |                    <input type="checkbox" checked={componentsInteractable} onChange={(e) => onComponentsInteractableChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
+ 466 |                  </label>
+ 467 |                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+ 468 |                    <span>Connections Interactable</span>
+ 469 |                    <input type="checkbox" checked={connectionsInteractable} onChange={(e) => onConnectionsInteractableChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
+ 470 |                  </label>
+ 471 |                  
+ 472 |                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', marginTop: 8 }}>
+ 473 |                      <span>Interactable Floor Level</span>
+ 474 |                       <input 
+ 475 |                         type="number"
+ 476 |                         value={activeLayer === null ? '' : activeLayer} 
+ 477 |                         onChange={(e) => setActiveLayer?.(e.target.value === '' ? null : Number(e.target.value))}
+ 478 |                         style={{ background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-solid)', borderRadius: 4, padding: '2px 4px', outline: 'none', cursor: 'text', width: 60, textAlign: 'center' }}
+ 479 |                         placeholder="0"
+ 480 |                       />
+ 481 |                    </label>
+ 482 |                  
+ 483 |                  <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: 11, textTransform: 'uppercase', marginTop: 12, marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+ 484 |                    <span>View</span>
+ 485 |                    <input 
+ 486 |                      type="checkbox" 
+ 487 |                      checked={!!hideAllComponents && !!hideAllConnections} 
+ 488 |                      onChange={(e) => {
+ 489 |                        const checked = e.target.checked;
+ 490 |                        onHideAllComponentsChange?.(checked);
+ 491 |                        onHideAllConnectionsChange?.(checked);
+ 492 |                      }}
+ 493 |                      style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }}
+ 494 |                    />
+ 495 |                  </div>
+ 496 |                  {onLightingModeChange && (
+ 497 |                    <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+ 498 |                      <span>Lighting</span>
+ 499 |                      <select 
+ 500 |                        value={lightingMode} 
+ 501 |                        onChange={e => onLightingModeChange(e.target.value as any)}
+ 502 |                        style={{ background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-solid)', borderRadius: 4, padding: '2px 4px', outline: 'none', cursor: 'pointer' }}
+ 503 |                      >
+ 504 |                        <option value="dynamic">Dynamic</option>
+ 505 |                        <option value="static">Static</option>
+ 506 |                        <option value="off">Off</option>
+ 507 |                      </select>
+ 508 |                    </label>
+ 509 |                  )}
+ 510 |                  {onContainerOcclusionChange && (
+ 511 |                    <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+ 512 |                      <span>Occlusion</span>
+ 513 |                      <select 
+ 514 |                        value={containerOcclusion} 
+ 515 |                        onChange={e => onContainerOcclusionChange(e.target.value as any)}
+ 516 |                        style={{ background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-solid)', borderRadius: 4, padding: '2px 4px', outline: 'none', cursor: 'pointer' }}
+ 517 |                      >
+ 518 |                        <option value="off">Translucent</option>
+ 519 |                        <option value="off_on_hover">Opaque (Off on hover)</option>
+ 520 |                      </select>
+ 521 |                    </label>
+ 522 |                  )}
+ 523 |                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+ 524 |                    <span>Hide All Components</span>
+ 525 |                    <input type="checkbox" checked={!!hideAllComponents} onChange={(e) => onHideAllComponentsChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
+ 526 |                  </label>
+ 527 |                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+ 528 |                    <span>Hide All Connections</span>
+ 529 |                    <input type="checkbox" checked={!!hideAllConnections} onChange={(e) => onHideAllConnectionsChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
+ 530 |                  </label>
+ 531 |                </div>
+ 532 |              )}
+ 533 |              
+ 534 |              {customSidebarTabs?.map(tab => (
+ 535 |                activeView === tab.id && <React.Fragment key={tab.id}>{tab.content}</React.Fragment>
+ 536 |              ))}
+ 537 |           </div>
+ 538 |         </div>
+ 539 |       )}
+ 540 | 
+ 541 |       {/* Activity Bar */}
+ 542 |       <div style={{
+ 543 |         width: 48, background: 'var(--bg-panel-solid)', borderRight: PANEL_BORDER,
+ 544 |         display: 'flex', flexDirection: 'column', alignItems: 'center',
+ 545 |         paddingTop: 8, paddingBottom: 8, boxSizing: 'border-box', pointerEvents: 'auto',
+ 546 |       }}>
+ 547 |         <IconBtn icon={<Network size={20} />} active={activeView === 'hierarchy'} onClick={() => toggleView('hierarchy')} title="Hierarchy" />
+ 548 |         <IconBtn icon={<Link2 size={20} />} active={activeView === 'connections'} onClick={() => toggleView('connections')} title="Connections" />
+     :          ^^^|^^^
+     :             `-- This component is created during render
+ 549 |         <IconBtn icon={<Sliders size={20} />} active={activeView === 'interactivity'} onClick={() => toggleView('interactivity')} title="Settings" />
+     `----
+  help: Components created during render will reset their state each time they are created. Declare components outside of render
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/static-components
+
+  ! react(static-components): Cannot create components during render
+     ,-[src/components/HierarchyPanel.tsx:549:10]
+ 276 | 
+ 277 |   const IconBtn = ({ icon, active, onClick, title }: any) => (
+     :                   ^|
+     :                    `-- The component is created during render here
+ 278 |     <div 
+ 279 |       onClick={onClick}
+ 280 |       title={title}
+ 281 |       style={{
+ 282 |         width: '100%', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center',
+ 283 |         cursor: 'pointer', color: active ? 'var(--text-primary)' : 'var(--text-tertiary)',
+ 284 |         borderLeft: active ? '2px solid var(--accent-blue)' : '2px solid transparent',
+ 285 |         background: active ? 'var(--hover-overlay)' : 'transparent',
+ 286 |       }}
+ 287 |     >
+ 288 |       {icon}
+ 289 |     </div>
+ 290 |   );
+ 291 | 
+ 292 |   return (
+ 293 |     <div style={{
+ 294 |       position: 'absolute', left: 0, top: 0, bottom: bottomOffset,
+ 295 |       display: 'flex', flexDirection: 'row-reverse', zIndex: 20,
+ 296 |       pointerEvents: 'none',
+ 297 |       transition: 'bottom 0.3s ease',
+ 298 |     }}>
+ 299 |       {editingTarget && (
+ 300 |         <div style={{
+ 301 |           position: 'relative', width: 320, background: 'var(--bg-panel)', backdropFilter: 'blur(8px)',
+ 302 |           borderRight: PANEL_BORDER, display: 'flex', flexDirection: 'column',
+ 303 |           pointerEvents: 'auto', boxShadow: '4px 0 15px rgba(0,0,0,0.3)',
+ 304 |           overflowY: 'auto', zIndex: 15
+ 305 |         }}>
+ 306 |            <div style={{ padding: '16px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+ 307 |              <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>
+ 308 |                Edit Initials ({editingTarget.type === 'connection' ? editingTarget.name.replace('-to-', ' → ').replace(/-/g, ' ') : editingTarget.name})
+ 309 |              </h3>
+ 310 |              <button onClick={() => setEditingTarget(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 20 }}>&times;</button>
+ 311 |            </div>
+ 312 |            <div style={{ padding: '16px', fontSize: 13, flex: 1, overflowY: 'auto' }}>
+ 313 |              {/* Dynamic fields from spec */}
+ 314 |              {(() => {
+ 315 |                 const node = root ? findNode(root, editingTarget.name) : null;
+ 316 |                 const specObj = node?.spec || {};
+ 317 |                 const liveState = (liveStateRef?.current?.[editingTarget.name] ?? {}) as Record<string, unknown>;
+ 318 |                 
+ 319 |                 const inputs: string[] = [];
+ 320 |                 const states: string[] = [];
+ 321 |                 const outputs: string[] = [];
+ 322 |                 
+ 323 |                 if (specObj.rating) {
+ 324 |                    for (const k of Object.keys((specObj.rating as any).input || {})) inputs.push(k);
+ 325 |                    for (const k of Object.keys((specObj.rating as any).state || {})) states.push(k);
+ 326 |                    for (const k of Object.keys((specObj.rating as any).output || {})) outputs.push(k);
+ 327 |                 }
+ 328 |                 
+ 329 |                 const renderInput = (key: string, category: string) => {
+ 330 |                    const detail = (specObj.rating as any)?.[category]?.[key];
+ 331 |                    const unit = detail?.unit || '';
+ 332 |                    const rawVal = liveState[key] ?? detail?.value ?? '';
+ 333 |                    const val = typeof rawVal === 'object' ? JSON.stringify(rawVal) : String(rawVal);
+ 334 |                    return (
+ 335 |                      <div key={key} style={{ marginBottom: 12 }}>
+ 336 |                        <label style={{ display: 'block', marginBottom: 4, color: 'var(--text-secondary)', fontSize: 11 }}>{key} {unit ? `(${unit})` : ''}</label>
+ 337 |                        <input 
+ 338 |                          type="text" 
+ 339 |                          defaultValue={val} 
+ 340 |                          onBlur={(e) => {
+ 341 |                            if(runId && editingTarget) {
+ 342 |                              const numVal = parseFloat(e.target.value);
+ 343 |                              if (!isNaN(numVal)) {
+ 344 |                                // Assuming we have api.setComponentState or similar
+ 345 |                                api.setComponentState(runId, editingTarget.name, { [key]: numVal });
+ 346 |                              }
+ 347 |                            }
+ 348 |                          }}
+ 349 |                          style={{ width: '100%', background: 'var(--bg-input)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4 }} 
+ 350 |                        />
+ 351 |                      </div>
+ 352 |                    );
+ 353 |                 };
+ 354 | 
+ 355 |                 return (
+ 356 |                   <>
+ 357 |                     <div style={{ marginBottom: 12 }}>
+ 358 |                       <label style={{ display: 'block', marginBottom: 4, color: 'var(--text-secondary)', fontSize: 11 }}>Individual Tolerance</label>
+ 359 |                       <input 
+ 360 |                         type="number" 
+ 361 |                         defaultValue={(specObj.tolerance as number) || 10} 
+ 362 |                         onBlur={(e) => {
+ 363 |                            if(runId && editingTarget) api.setComponentTolerance(runId, editingTarget.name, parseFloat(e.target.value));
+ 364 |                         }}
+ 365 |                         style={{ width: '100%', background: 'var(--bg-input)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4 }} 
+ 366 |                       />
+ 367 |                     </div>
+ 368 | 
+ 369 |                     {inputs.length > 0 && <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic', marginBottom: 8, marginTop: 16 }}>input:</div>}
+ 370 |                     {inputs.map(k => renderInput(k, 'input'))}
+ 371 |                     
+ 372 |                     {states.length > 0 && <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic', marginBottom: 8, marginTop: 16 }}>state:</div>}
+ 373 |                     {states.map(k => renderInput(k, 'state'))}
+ 374 |                     
+ 375 |                     {outputs.length > 0 && <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic', marginBottom: 8, marginTop: 16 }}>output:</div>}
+ 376 |                     {outputs.map(k => renderInput(k, 'output'))}
+ 377 |                   </>
+ 378 |                 );
+ 379 |              })()}
+ 380 | 
+ 381 |              <div style={{ display: 'flex', gap: 8, marginBottom: 16, marginTop: 16 }}>
+ 382 |                <button style={{ flex: 1, background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4, cursor: 'pointer' }} onClick={() => { if(runId && editingTarget) api.setComponentTolerance(runId, editingTarget.name, 10); }}>Reset Tolerance</button>
+ 383 |                <button style={{ flex: 1, background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4, cursor: 'pointer' }} onClick={() => console.log('Reset fields to earlier state')}>Reset Fields</button>
+ 384 |              </div>
+ 385 |              <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic' }}>
+ 386 |                Changes are synced with backend automatically.
+ 387 |              </div>
+ 388 |            </div>
+ 389 |         </div>
+ 390 |       )}
+ 391 | 
+ 392 |       {/* Panel Area */}
+ 393 |       {isOpen && (
+ 394 |         <div style={{
+ 395 |           position: 'relative', width: panelWidth, background: 'var(--bg-panel)', backdropFilter: 'blur(8px)',
+ 396 |           borderRight: PANEL_BORDER, display: 'flex', flexDirection: 'column',
+ 397 |           pointerEvents: 'auto', boxShadow: '4px 0 15px rgba(0,0,0,0.3)',
+ 398 |         }}>
+ 399 |           {/* Resizer Handle */}
+ 400 |           <div
+ 401 |             onPointerDown={startResizing}
+ 402 |             onMouseEnter={(e) => { (e.target as HTMLDivElement).style.background = 'rgba(56, 189, 248, 0.4)'; }}
+ 403 |             onMouseLeave={(e) => { (e.target as HTMLDivElement).style.background = 'transparent'; }}
+ 404 |             style={{
+ 405 |               position: 'absolute', right: 0, top: 0, bottom: 0, width: 5,
+ 406 |               cursor: 'col-resize', zIndex: 30, background: 'transparent',
+ 407 |               transition: 'background 0.2s',
+ 408 |             }}
+ 409 |           />
+ 410 |           <div style={{ padding: '10px 14px', borderBottom: PANEL_BORDER, fontWeight: 600, fontSize: 11, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+ 411 |              <span>
+ 412 |                {activeView === 'hierarchy' ? 'Hierarchy Tree' : 
+ 413 |                 activeView === 'connections' ? 'Connections List' : 
+ 414 |                 activeView === 'interactivity' ? 'Settings' :
+ 415 |                 customSidebarTabs?.find(t => t.id === activeView)?.title || 'Settings'}
+ 416 |              </span>
+ 417 |              {activeView === 'hierarchy' && (
+ 418 |                <div style={{ display: 'flex', gap: 4, textTransform: 'none', letterSpacing: 'normal', fontWeight: 500 }}>
+ 419 |                   {!hideEditInitials && (
+ 420 |                     <button 
+ 421 |                       onClick={() => setIsEditingInitials(!isEditingInitials)} 
+ 422 |                       style={{ background: isEditingInitials ? 'var(--accent-blue)' : 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: isEditingInitials ? '#fff' : 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}
+ 423 |                     >
+ 424 |                       Edit Initials
+ 425 |                     </button>
+ 426 |                   )}
+ 427 |                   {allHierarchyExpanded ? (
+ 428 |                     <button onClick={collapseAllHierarchy} style={{ background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}>Collapse All</button>
+ 429 |                   ) : (
+ 430 |                     <button onClick={expandAllHierarchy} style={{ background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}>Expand All</button>
+ 431 |                   )}
+ 432 |                </div>
+ 433 |              )}
+ 434 |              {activeView === 'connections' && !hideEditInitials && (
+ 435 |                <div style={{ display: 'flex', gap: 4, textTransform: 'none', letterSpacing: 'normal', fontWeight: 500 }}>
+ 436 |                   <button 
+ 437 |                     onClick={() => setIsEditingInitials(!isEditingInitials)} 
+ 438 |                     style={{ background: isEditingInitials ? 'var(--accent-blue)' : 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: isEditingInitials ? '#fff' : 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}
+ 439 |                   >
+ 440 |                     Edit Initials
+ 441 |                   </button>
+ 442 |                </div>
+ 443 |              )}
+ 444 |           </div>
+ 445 |           <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
+ 446 |              {activeView === 'hierarchy' && <TreeNode node={root} depth={0} expandedSet={expandedSet} toggleExpanded={toggleExpanded} isEditingInitials={isEditingInitials} onEditInitials={(name, type) => setEditingTarget({ name, type })} />}
+ 447 |              {activeView === 'connections' && <ConnectionsList connections={connections} isEditingInitials={isEditingInitials} onEditInitials={(name, type) => setEditingTarget({ name, type })} />}
+ 448 |              {activeView === 'interactivity' && (
+ 449 |                <div style={{ padding: '16px 14px', fontSize: 13, color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+ 450 |                  <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: 11, textTransform: 'uppercase', marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+ 451 |                    <span>Interactivity</span>
+ 452 |                    <input 
+ 453 |                      type="checkbox" 
+ 454 |                      checked={componentsInteractable && connectionsInteractable} 
+ 455 |                      onChange={(e) => {
+ 456 |                        const checked = e.target.checked;
+ 457 |                        onComponentsInteractableChange?.(checked);
+ 458 |                        onConnectionsInteractableChange?.(checked);
+ 459 |                      }}
+ 460 |                      style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }}
+ 461 |                    />
+ 462 |                  </div>
+ 463 |                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+ 464 |                    <span>Components Interactable</span>
+ 465 |                    <input type="checkbox" checked={componentsInteractable} onChange={(e) => onComponentsInteractableChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
+ 466 |                  </label>
+ 467 |                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+ 468 |                    <span>Connections Interactable</span>
+ 469 |                    <input type="checkbox" checked={connectionsInteractable} onChange={(e) => onConnectionsInteractableChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
+ 470 |                  </label>
+ 471 |                  
+ 472 |                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', marginTop: 8 }}>
+ 473 |                      <span>Interactable Floor Level</span>
+ 474 |                       <input 
+ 475 |                         type="number"
+ 476 |                         value={activeLayer === null ? '' : activeLayer} 
+ 477 |                         onChange={(e) => setActiveLayer?.(e.target.value === '' ? null : Number(e.target.value))}
+ 478 |                         style={{ background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-solid)', borderRadius: 4, padding: '2px 4px', outline: 'none', cursor: 'text', width: 60, textAlign: 'center' }}
+ 479 |                         placeholder="0"
+ 480 |                       />
+ 481 |                    </label>
+ 482 |                  
+ 483 |                  <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: 11, textTransform: 'uppercase', marginTop: 12, marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+ 484 |                    <span>View</span>
+ 485 |                    <input 
+ 486 |                      type="checkbox" 
+ 487 |                      checked={!!hideAllComponents && !!hideAllConnections} 
+ 488 |                      onChange={(e) => {
+ 489 |                        const checked = e.target.checked;
+ 490 |                        onHideAllComponentsChange?.(checked);
+ 491 |                        onHideAllConnectionsChange?.(checked);
+ 492 |                      }}
+ 493 |                      style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }}
+ 494 |                    />
+ 495 |                  </div>
+ 496 |                  {onLightingModeChange && (
+ 497 |                    <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+ 498 |                      <span>Lighting</span>
+ 499 |                      <select 
+ 500 |                        value={lightingMode} 
+ 501 |                        onChange={e => onLightingModeChange(e.target.value as any)}
+ 502 |                        style={{ background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-solid)', borderRadius: 4, padding: '2px 4px', outline: 'none', cursor: 'pointer' }}
+ 503 |                      >
+ 504 |                        <option value="dynamic">Dynamic</option>
+ 505 |                        <option value="static">Static</option>
+ 506 |                        <option value="off">Off</option>
+ 507 |                      </select>
+ 508 |                    </label>
+ 509 |                  )}
+ 510 |                  {onContainerOcclusionChange && (
+ 511 |                    <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+ 512 |                      <span>Occlusion</span>
+ 513 |                      <select 
+ 514 |                        value={containerOcclusion} 
+ 515 |                        onChange={e => onContainerOcclusionChange(e.target.value as any)}
+ 516 |                        style={{ background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-solid)', borderRadius: 4, padding: '2px 4px', outline: 'none', cursor: 'pointer' }}
+ 517 |                      >
+ 518 |                        <option value="off">Translucent</option>
+ 519 |                        <option value="off_on_hover">Opaque (Off on hover)</option>
+ 520 |                      </select>
+ 521 |                    </label>
+ 522 |                  )}
+ 523 |                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+ 524 |                    <span>Hide All Components</span>
+ 525 |                    <input type="checkbox" checked={!!hideAllComponents} onChange={(e) => onHideAllComponentsChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
+ 526 |                  </label>
+ 527 |                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+ 528 |                    <span>Hide All Connections</span>
+ 529 |                    <input type="checkbox" checked={!!hideAllConnections} onChange={(e) => onHideAllConnectionsChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
+ 530 |                  </label>
+ 531 |                </div>
+ 532 |              )}
+ 533 |              
+ 534 |              {customSidebarTabs?.map(tab => (
+ 535 |                activeView === tab.id && <React.Fragment key={tab.id}>{tab.content}</React.Fragment>
+ 536 |              ))}
+ 537 |           </div>
+ 538 |         </div>
+ 539 |       )}
+ 540 | 
+ 541 |       {/* Activity Bar */}
+ 542 |       <div style={{
+ 543 |         width: 48, background: 'var(--bg-panel-solid)', borderRight: PANEL_BORDER,
+ 544 |         display: 'flex', flexDirection: 'column', alignItems: 'center',
+ 545 |         paddingTop: 8, paddingBottom: 8, boxSizing: 'border-box', pointerEvents: 'auto',
+ 546 |       }}>
+ 547 |         <IconBtn icon={<Network size={20} />} active={activeView === 'hierarchy'} onClick={() => toggleView('hierarchy')} title="Hierarchy" />
+ 548 |         <IconBtn icon={<Link2 size={20} />} active={activeView === 'connections'} onClick={() => toggleView('connections')} title="Connections" />
+ 549 |         <IconBtn icon={<Sliders size={20} />} active={activeView === 'interactivity'} onClick={() => toggleView('interactivity')} title="Settings" />
+     :          ^^^|^^^
+     :             `-- This component is created during render
+ 550 |         
+     `----
+  help: Components created during render will reset their state each time they are created. Declare components outside of render
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/static-components
+
+  ! react(static-components): Cannot create components during render
+     ,-[src/components/HierarchyPanel.tsx:277:19]
+ 276 | 
+ 277 |   const IconBtn = ({ icon, active, onClick, title }: any) => (
+     :                   ^|
+     :                    `-- The component is created during render here
+ 278 |     <div 
+     `----
+     ,-[src/components/HierarchyPanel.tsx:559:14]
+ 558 |           {onResetCamera && (
+ 559 |             <IconBtn icon={<Focus size={20} />} onClick={onResetCamera} title="Reset View" />
+     :              ^^^|^^^
+     :                 `-- This component is created during render
+ 560 |           )}
+     `----
+  help: Components created during render will reset their state each time they are created. Declare components outside of render
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/static-components
+
+  ! react-hooks(exhaustive-deps): React Hook useMemo has a missing dependency: 'getAllNodesWithChildren'
+     ,-[src/components/HierarchyPanel.tsx:247:6]
+ 244 |     const set = new Set<string>();
+ 245 |     getAllNodesWithChildren(root, set);
+     :     ^^^^^^^^^^^|^^^^^^^^^^^
+     :                `-- useMemo uses `getAllNodesWithChildren` here
+ 246 |     return set;
+ 247 |   }, [root]);
+     :      ^^^^^^
+ 248 | 
+     `----
+  help: Either include it or remove the dependency array.
+
+  ! eslint(no-unused-vars): Identifier 'Plus' is imported but never used.
+    ,-[src/pages/ScenariosPage.tsx:10:134]
+  9 | import { SimulationMonitor } from '../components/SimulationMonitor';
+ 10 | import { Play, Pause, RefreshCw, StepForward, Code, List, Activity, Library, ChevronUp, ChevronDown, MousePointer2, LayoutDashboard, Plus, Trash2, GitCompare, FileText, FilePlus } from 'lucide-react';
+    :                                                                                                                                      ^^|^
+    :                                                                                                                                        `-- 'Plus' is imported here
+ 11 | import { ScenarioComparison } from '../components/ScenarioComparison';
+    `----
+  help: Consider removing this import.
+
+  ! react(immutability): Cannot access variable while it is being initialized
+     ,-[src/pages/ScenariosPage.tsx:145:9]
+ 144 |         e.preventDefault();
+ 145 |         saveSource();
+     :         ^^^^^|^^^^
+     :              `-- `saveSource` is read during its own initialization
+ 146 |       }
+     `----
+  help: `saveSource` is read while its declaration is still being initialized. Move the access after initialization. For a recursive callback, use a named function expression or restructure the callback so it does not capture itself during initialization
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/immutability
+
+  ! react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders
+     ,-[src/pages/ScenariosPage.tsx:135:7]
+ 110 | 
+ 111 |   useEffect(() => {
+     :   ^^^^|^^^^
+     :       `-- This is the containing effect
+ 112 |     console.log('EFFECT RUNNING:', { editingType, selectedScenarioId, selectedStation });
+ 113 |     if (editingType === 'scenario' && selectedScenarioId) {
+ 114 |       console.log('CALLING API getScenarioSource');
+ 115 |       api.getScenarioSource(selectedScenarioId).then(res => {
+ 116 |         const src = res.source.replace(/\r\n/g, '\n');
+ 117 |         setScenarioSource(src);
+ 118 |         setSavedScenarioSource(src);
+ 119 |       }).catch(console.error);
+ 120 |       if (selectedStation) {
+ 121 |         api.createSimulation(selectedStation, selectedScenarioId).then(res => {
+ 122 |           setRunId(res.runId);
+ 123 |           setSimStatus(res.status);
+ 124 |         }).catch(console.error);
+ 125 |       }
+ 126 |     } else if (editingType === 'event' && selectedEventDefId) {
+ 127 |       api.getEventDefinitionSource(selectedEventDefId).then(res => {
+ 128 |         const src = res.source.replace(/\r\n/g, '\n');
+ 129 |         setScenarioSource(src);
+ 130 |         setSavedScenarioSource(src);
+ 131 |       }).catch(console.error);
+ 132 |       // keep scenario running
+ 133 |     } else {
+ 134 |       setScenarioSource('');
+ 135 |       setSavedScenarioSource('');
+     :       ^^^^^^^^^^^|^^^^^^^^^^
+     :                  `-- Avoid calling setState() directly within an effect
+ 136 |       // keep scenario running
+     `----
+  help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/set-state-in-effect
+
+  ! react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders
+     ,-[src/pages/ScenariosPage.tsx:174:7]
+ 151 | 
+ 152 |   useEffect(() => {
+     :   ^^^^|^^^^
+     :       `-- This is the containing effect
+ 153 |     if (editingType === 'scenario' && scenarioSource) {
+ 154 |       const timer = setTimeout(() => {
+ 155 |         api.parseScenarioRaw(scenarioSource)
+ 156 |           .then(events => {
+ 157 |             setScenarioEvents(events);
+ 158 |             setErrorLine(undefined);
+ 159 |             setValidationErrors([]);
+ 160 |           })
+ 161 |           .catch(err => {
+ 162 |             console.error(err);
+ 163 |             if (err.line_number !== undefined) {
+ 164 |               setErrorLine(err.line_number);
+ 165 |               setValidationErrors([{ message: err.message, line_number: err.line_number }]);
+ 166 |             } else {
+ 167 |               setErrorLine(undefined);
+ 168 |               setValidationErrors([{ message: err.message || err.toString() }]);
+ 169 |             }
+ 170 |           });
+ 171 |       }, 500);
+ 172 |       return () => clearTimeout(timer);
+ 173 |     } else if (editingType === 'scenario' && !scenarioSource) {
+ 174 |       setScenarioEvents([]);
+     :       ^^^^^^^^|^^^^^^^^
+     :               `-- Avoid calling setState() directly within an effect
+ 175 |       setErrorLine(undefined);
+     `----
+  help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/set-state-in-effect
+
+  ! react-hooks(exhaustive-deps): React Hook useEffect has missing dependencies: 'setRunId', 'setSimStatus', and 'setScenarioSource'
+     ,-[src/pages/ScenariosPage.tsx:138:6]
+ 116 |         const src = res.source.replace(/\r\n/g, '\n');
+ 117 |         setScenarioSource(src);
+     :         ^^^^^^^^^^^^^^^^^
+ 118 |         setSavedScenarioSource(src);
+ 119 |       }).catch(console.error);
+ 120 |       if (selectedStation) {
+ 121 |         api.createSimulation(selectedStation, selectedScenarioId).then(res => {
+ 122 |           setRunId(res.runId);
+     :           ^^^^^^^^
+ 123 |           setSimStatus(res.status);
+     :           ^^^^^^^^^^^^
+ 124 |         }).catch(console.error);
+ 125 |       }
+ 126 |     } else if (editingType === 'event' && selectedEventDefId) {
+ 127 |       api.getEventDefinitionSource(selectedEventDefId).then(res => {
+ 128 |         const src = res.source.replace(/\r\n/g, '\n');
+ 129 |         setScenarioSource(src);
+ 130 |         setSavedScenarioSource(src);
+ 131 |       }).catch(console.error);
+ 132 |       // keep scenario running
+ 133 |     } else {
+ 134 |       setScenarioSource('');
+ 135 |       setSavedScenarioSource('');
+ 136 |       // keep scenario running
+ 137 |     }
+ 138 |   }, [selectedScenarioId, selectedEventDefId, editingType, selectedStation]);
+     :      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 139 | 
+     `----
+  help: Either include it or remove the dependency array.
+
+  ! react-hooks(exhaustive-deps): React Hook useEffect has a missing dependency: 'saveSource'
+     ,-[src/pages/ScenariosPage.tsx:150:6]
+ 144 |         e.preventDefault();
+ 145 |         saveSource();
+     :         ^^^^^|^^^^
+     :              `-- useEffect uses `saveSource` here
+ 146 |       }
+ 147 |     };
+ 148 |     window.addEventListener('keydown', handleKeyDown);
+ 149 |     return () => window.removeEventListener('keydown', handleKeyDown);
+ 150 |   }, [editingType, selectedScenarioId, selectedEventDefId, scenarioSource, selectedStation]);
+     :      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ 151 | 
+     `----
+  help: Either include it or remove the dependency array.
+
+  ! react-hooks(exhaustive-deps): React Hook useEffect has missing dependencies: 'setSimTime', 'setSimStatus', and 'setSimState'
+     ,-[src/pages/ScenariosPage.tsx:194:6]
+ 185 |           if (state) {
+ 186 |             setSimTime(state.simulation_time);
+     :             ^^^^^^^^^^
+ 187 |             setSimState(state);
+     :             ^^^^^^^^^^^
+ 188 |             setSimStatus(state.status);
+     :             ^^^^^^^^^^^^
+ 189 |           }
+ 190 |         }).catch(console.error);
+ 191 |       }, 1000);
+ 192 |     }
+ 193 |     return () => clearInterval(interval);
+ 194 |   }, [runId, simStatus]);
+     :      ^^^^^^^^^^^^^^^^^^
+ 195 | 
+     `----
+  help: Either include it or remove the dependency array.
+
+  ! eslint(no-useless-escape): Unnecessary escape character '.'
+     ,-[src/pages/ScenariosPage.tsx:306:34]
+ 305 |       let line = lines[idx];
+ 306 |       line = line.replace(/at=[\d\.]+/, `at=${newAt}`);
+     :                                  ^^
+ 307 |       if (newDuration === null) {
+     `----
+  help: Replace `\.` with `.`.
+
+  ! eslint(no-useless-escape): Unnecessary escape character '.'
+     ,-[src/pages/ScenariosPage.tsx:308:38]
+ 307 |       if (newDuration === null) {
+ 308 |         line = line.replace(/for=([\d\.]+|inf)/, `for=inf`);
+     :                                      ^^
+ 309 |       } else {
+     `----
+  help: Replace `\.` with `.`.
+
+  ! eslint(no-useless-escape): Unnecessary escape character '.'
+     ,-[src/pages/ScenariosPage.tsx:310:38]
+ 309 |       } else {
+ 310 |         line = line.replace(/for=([\d\.]+|inf)/, `for=${newDuration}`);
+     :                                      ^^
+ 311 |       }
+     `----
+  help: Replace `\.` with `.`.
+
+  ! react-hooks(exhaustive-deps): React hook useMemo depends on `libraryTabContent`, which changes every render
+     ,-[src/pages/ScenariosPage.tsx:450:7]
+ 337 | 
+ 338 |   const libraryTabContent = (
+     :         ^^^^^^^^|^^^^^^^^
+     :                 `-- `libraryTabContent` is declared here
+ 339 |     <div style={{ padding: '8px' }}>
+ 340 |       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', marginTop: '8px' }}>
+ 341 |         <h3 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-tertiary)', textTransform: 'uppercase', margin: 0, letterSpacing: '0.05em' }}>Scenarios</h3>
+ 342 |         <button 
+ 343 |           onClick={() => {
+ 344 |             setNewFileModal({ type: 'scenario', name: 'New Scenario' });
+ 345 |           }}
+ 346 |           style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '2px' }}
+ 347 |           title="New File..."
+ 348 |         >
+ 349 |           <FilePlus size={14} />
+ 350 |         </button>
+ 351 |       </div>
+ 352 |       {scenarios.map(s => (
+ 353 |         <div 
+ 354 |           key={s.id} 
+ 355 |           style={{
+ 356 |             display: 'flex', justifyContent: 'space-between', alignItems: 'center', userSelect: 'none',
+ 357 |             fontSize: '13px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', marginBottom: '2px',
+ 358 |             backgroundColor: selectedScenarioId === s.id ? 'var(--bg-input)' : 'transparent',
+ 359 |             color: selectedScenarioId === s.id ? 'var(--text-primary)' : 'var(--text-secondary)',
+ 360 |           }}
+ 361 |           onClick={() => {
+ 362 |             setEditingType('scenario');
+ 363 |             setSelectedScenarioId(s.id);
+ 364 |             setSelectedEventDefId(null);
+ 365 |             setBottomTab('source');
+ 366 |             setBottomOpen(true);
+ 367 |           }}
+ 368 |         >
+ 369 |           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexGrow: 1 }}>
+ 370 |             <FileText size={14} style={{ color: 'var(--accent-blue)' }} />
+ 371 |             <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.name}.scene</span>
+ 372 |           </div>
+ 373 |           <button
+ 374 |             onClick={async (e) => {
+ 375 |               e.stopPropagation();
+ 376 |               if (confirm('Delete scenario?')) {
+ 377 |                 await api.deleteScenario(s.id);
+ 378 |                 if (selectedScenarioId === s.id) setSelectedScenarioId(null);
+ 379 |                 if (selectedStation) {
+ 380 |                   api.getScenarios(selectedStation).then(setScenarios);
+ 381 |                 }
+ 382 |               }
+ 383 |             }}
+ 384 |             style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+ 385 |             title="Delete Scenario"
+ 386 |           >
+ 387 |             <Trash2 size={12} />
+ 388 |           </button>
+ 389 |         </div>
+ 390 |       ))}
+ 391 |       
+ 392 |       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', marginTop: '24px' }}>
+ 393 |         <h3 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-tertiary)', textTransform: 'uppercase', margin: 0, letterSpacing: '0.05em' }}>Event Definitions</h3>
+ 394 |         <button
+ 395 |           onClick={() => {
+ 396 |             setNewFileModal({ type: 'event', name: 'New Event' });
+ 397 |           }}
+ 398 |           style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '2px' }}
+ 399 |           title="New File..."
+ 400 |         >
+ 401 |           <FilePlus size={14} />
+ 402 |         </button>
+ 403 |       </div>
+ 404 |       {eventDefs.map((e, i) => (
+ 405 |         <div 
+ 406 |           key={i} 
+ 407 |           draggable
+ 408 |           onDragStart={(evt) => {
+ 409 |             evt.dataTransfer.setData('text/plain', e.name);
+ 410 |             evt.dataTransfer.setData('application/x-event-def', 'true');
+ 411 |           }}
+ 412 |           onClick={() => {
+ 413 |             setEditingType('event');
+ 414 |             setSelectedEventDefId(e.id);
+ 415 |             setBottomTab('source');
+ 416 |             setBottomOpen(true);
+ 417 |           }}
+ 418 |           style={{
+ 419 |             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+ 420 |             fontSize: '13px', padding: '4px 8px', borderRadius: '4px', cursor: 'grab', marginBottom: '2px',
+ 421 |             backgroundColor: selectedEventDefId === e.id ? 'var(--bg-input)' : 'transparent',
+ 422 |             color: selectedEventDefId === e.id ? 'var(--text-primary)' : 'var(--text-secondary)',
+ 423 |           }}
+ 424 |         >
+ 425 |           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexGrow: 1 }}>
+ 426 |             <FileText size={14} style={{ color: 'var(--accent-cyan)' }} />
+ 427 |             <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.name}.event</span>
+ 428 |           </div>
+ 429 |           <button
+ 430 |             onClick={async (evt) => {
+ 431 |               evt.stopPropagation();
+ 432 |               if (confirm('Delete event definition?')) {
+ 433 |                 await api.deleteEventDefinition(e.id);
+ 434 |                 if (selectedEventDefId === e.id) setSelectedEventDefId(null);
+ 435 |                 if (selectedStation) api.getEventDefinitions(selectedStation).then(setEventDefs);
+ 436 |               }
+ 437 |             }}
+ 438 |             style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+ 439 |             title="Delete Event Definition"
+ 440 |           >
+ 441 |             <Trash2 size={12} />
+ 442 |           </button>
+ 443 |         </div>
+ 444 |       ))}
+ 445 |     </div>
+ 446 |   );
+ 447 | 
+ 448 |   const customTabs = useMemo(() => [
+ 449 |     { id: 'library', icon: <Library size={20} />, title: 'Scenario Library', content: libraryTabContent }
+ 450 |   ], [libraryTabContent]);
+     :       ^^^^^^^^|^^^^^^^^
+     :               `-- it will always cause this hook to re-evaluate
+ 451 | 
+     `----
+  help: Try memoizing this variable with `useRef` or `useCallback`.
+
+  ! react(set-state-in-effect): Calling setState synchronously within an effect can trigger cascading renders
+    ,-[src/pages/DigitalTwin.tsx:17:5]
+ 15 | 
+ 16 |   useEffect(() => {
+    :   ^^^^|^^^^
+    :       `-- This is the containing effect
+ 17 |     setSelectedComponentName(null);
+    :     ^^^^^^^^^^^^|^^^^^^^^^^^
+    :                 `-- Avoid calling setState() directly within an effect
+ 18 |   }, [selectedTwin]);
+    `----
+  help: Effects should synchronize React with external systems. Calling setState synchronously inside an effect starts another render and is usually unnecessary. Derive the value during render, initialize state directly, or update it from the event that caused the change. Use an effect only when synchronizing with an external system.
+  note: React Compiler skipped optimizing this component or hook. Additional guidance: https://react.dev/reference/eslint-plugin-react-hooks/lints/set-state-in-effect
+
+Found 89 warnings and 6 errors.
+Finished in 36ms on 83 files with 116 rules using 10 threads.
