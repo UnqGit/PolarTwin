@@ -42,7 +42,7 @@ interface TreeNodeProps {
 
 const TreeNode: React.FC<TreeNodeProps> = ({ node, depth, expandedSet, toggleExpanded, isEditingInitials, onEditInitials, hideSensors }) => {
   const { selectedName, setSelectedName, hiddenSet, toggleVisibility } = useSelection();
-  
+
   const isSelected = selectedName === node.name;
   const isExpanded = expandedSet.has(node.name);
   const hasChildren = node.children.length > 0;
@@ -102,7 +102,7 @@ const TreeNode: React.FC<TreeNodeProps> = ({ node, depth, expandedSet, toggleExp
           {node.type}
         </span>
         {isEditingInitials && (
-          <span 
+          <span
             onClick={(e) => { e.stopPropagation(); onEditInitials?.(node.name, 'component'); }}
             style={{ cursor: 'pointer', paddingRight: 6, display: 'flex', alignItems: 'center' }}
             title="Edit Initials"
@@ -168,7 +168,7 @@ export interface HierarchyPanelProps {
   runtime?: any[] | null;
 }
 
-export const UNIT_MULTIPLIERS: Record<string, number> = {
+const UNIT_MULTIPLIERS: Record<string, number> = {
   "V": 1.0, "mV": 1e-3, "kV": 1e3,
   "A": 1.0, "mA": 1e-3,
   "W": 1.0, "kW": 1e3,
@@ -203,18 +203,18 @@ const toCanonical = (value: number, unit: string) => {
   if (unit === 'K') return value - 273.15;
   if (unit === 'F') return (value - 32) * 5.0 / 9.0;
   if (unit === '0-1') return value;
-  
+
   const mult = UNIT_MULTIPLIERS[unit];
   if (mult !== undefined) return value * mult;
   return value;
 };
 
-export const fromCanonical = (value: number, unit: string) => {
+const fromCanonical = (value: number, unit: string) => {
   if (unit === 'C') return value;
   if (unit === 'K') return value + 273.15;
   if (unit === 'F') return (value * 9.0 / 5.0) + 32;
   if (unit === '0-1') return value;
-  
+
   const mult = UNIT_MULTIPLIERS[unit];
   if (mult !== undefined) return value / mult;
   return value;
@@ -243,9 +243,9 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
   const [internalIsEditingInitials, setInternalIsEditingInitials] = useState(false);
   const isEditingInitials = externalIsEditingInitials !== undefined ? externalIsEditingInitials : internalIsEditingInitials;
   const setIsEditingInitials = externalSetIsEditingInitials || setInternalIsEditingInitials;
-  const [editingTarget, setEditingTarget] = useState<{name: string, type: 'component' | 'connection'} | null>(null);
+  const [editingTarget, setEditingTarget] = useState<{ name: string, type: 'component' | 'connection' } | null>(null);
   const [unitSelections, setUnitSelections] = useState<Record<string, string>>({});
-  
+
   const { selectedName } = useSelection();
   const { runId } = useStation();
   const isOpen = activeView !== null;
@@ -328,7 +328,7 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
     return set;
   }, [root]);
 
-  const allHierarchyExpanded = allExpandableNodes.size > 0 && 
+  const allHierarchyExpanded = allExpandableNodes.size > 0 &&
     Array.from<string>(allExpandableNodes).every(name => expandedSet.has(name));
 
   // Context-aware auto-expand
@@ -357,7 +357,7 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
   };
 
   const IconBtn = ({ icon, active, onClick, title }: any) => (
-    <div 
+    <div
       onClick={onClick}
       title={title}
       style={{
@@ -385,143 +385,152 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
           pointerEvents: 'auto', boxShadow: '4px 0 15px rgba(0,0,0,0.3)',
           overflowY: 'auto', zIndex: 15
         }}>
-           <div style={{ padding: '16px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-             <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>
-               Edit Initials ({editingTarget.type === 'connection' ? editingTarget.name.replace('-to-', ' → ').replace(/-/g, ' ') : editingTarget.name})
-             </h3>
-             <button onClick={() => setEditingTarget(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 20 }}>&times;</button>
-           </div>
-           <div style={{ padding: '16px', fontSize: 13, flex: 1, overflowY: 'auto' }}>
-             {/* Dynamic fields from spec */}
-             {(() => {
-                const node = root ? findNode(root, editingTarget.name) : null;
-                const specObj = node?.spec || {};
-                
-                const inputs: string[] = [];
-                const states: string[] = [];
-                const outputs: string[] = [];
-                
-                const CANONICAL_UNITS: Record<string, string> = {
-                  voltage: 'V', current: 'A', power: 'W', energy: 'J', 
-                  light_irradiance: 'W/m2', frequency: 'Hz', temperature: 'C', 
-                  flowrate: 'L/s', air_particulates: 'ppm', o2_level: '0-1', 
-                  co2_level: '0-1', volume: 'L', weight: 'kg'
-                };
+          <div style={{ padding: '16px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+            <h3 style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>
+              Edit Initials ({editingTarget.type === 'connection' ? editingTarget.name.replace('-to-', ' → ').replace(/-/g, ' ') : editingTarget.name})
+            </h3>
+            <button onClick={() => setEditingTarget(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 20 }}>&times;</button>
+          </div>
+          <div style={{ padding: '16px', fontSize: 13, flex: 1, overflowY: 'auto' }}>
+            {/* Dynamic fields from spec */}
+            {(() => {
+              const node = root ? findNode(root, editingTarget.name) : null;
+              const specObj = node?.spec || {};
 
-                if (specObj.rating) {
-                   for (const k of Object.keys((specObj.rating as any).input || {})) inputs.push(k);
-                   for (const k of Object.keys((specObj.rating as any).state || {})) states.push(k);
-                   for (const k of Object.keys((specObj.rating as any).output || {})) outputs.push(k);
-                }
-                
-                const renderInput = (key: string, category: string) => {
-                   const detail = (specObj.rating as any)?.[category]?.[key];
-                   if (detail?.min === undefined || detail?.max === undefined) return null;
-                   
-                   const originalUnit = detail?.unit || '';
-                   const availableUnits = AVAILABLE_UNITS[key];
-                   const canonicalUnit = availableUnits ? availableUnits[0] : originalUnit;
-                   
-                   const unitSelectionKey = `${editingTarget.name}-${key}`;
-                   const selectedUnit = unitSelections[unitSelectionKey] || canonicalUnit;
-                   
-                   const runtimeComponent = runtime?.find(c => c.name === editingTarget.name);
-                   const canonicalVal = runtimeComponent?.value?.[key] ?? detail?.value ?? '';
-                   
-                   // Only use valueOverrides for the controlled input value so placeholder shows the default
-                   const rawVal = valueOverrides?.[editingTarget.name]?.[key] ?? '';
-                   
-                   // Convert values to selected unit for display
-                   const displayRawVal = rawVal !== '' ? fromCanonical(rawVal as number, selectedUnit) : '';
-                   const val = displayRawVal !== '' ? (typeof displayRawVal === 'object' ? JSON.stringify(displayRawVal) : String(Math.round(Number(displayRawVal) * 10000) / 10000)) : '';
-                   
-                   const displayCanonicalVal = canonicalVal !== '' ? fromCanonical(canonicalVal as number, selectedUnit) : '';
-                   const placeholder = displayCanonicalVal !== '' ? (typeof displayCanonicalVal === 'object' ? JSON.stringify(displayCanonicalVal) : String(Math.round(Number(displayCanonicalVal) * 10000) / 10000)) : '';
+              const inputs: string[] = [];
+              const states: string[] = [];
+              const outputs: string[] = [];
 
-                   return (
-                     <div key={`${editingTarget.name}-${key}-${val}-${selectedUnit}`} style={{ marginBottom: 12 }}>
-                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-                         <label style={{ color: 'var(--text-secondary)', fontSize: 11 }}>{key}</label>
-                         {availableUnits ? (
-                           <select
-                             value={selectedUnit}
-                             onChange={(e) => setUnitSelections(prev => ({ ...prev, [unitSelectionKey]: e.target.value }))}
-                             style={{ background: 'var(--bg-input)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', fontSize: 10, borderRadius: 2, padding: '2px 4px' }}
-                           >
-                             {availableUnits.map(u => <option key={u} value={u}>{u}</option>)}
-                           </select>
-                         ) : (
-                           <span style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>{selectedUnit}</span>
-                         )}
-                       </div>
-                       <input 
-                         type="text" 
-                         defaultValue={val} 
-                         placeholder={placeholder}
-                         onBlur={(e) => {
-                           const numVal = parseFloat(e.target.value);
-                           if (!isNaN(numVal)) {
-                             const canonicalNumVal = toCanonical(numVal, selectedUnit);
-                             if (onSetInitials) {
-                               onSetInitials(editingTarget.name, key, canonicalNumVal);
-                             } else if (runId && editingTarget) {
-                               api.setComponentState(runId, editingTarget.name, { [key]: canonicalNumVal });
-                             }
-                           }
-                         }}
-                         style={{ width: '100%', background: 'var(--bg-input)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4 }} 
-                       />
-                     </div>
-                   );
-                };
+              const CANONICAL_UNITS: Record<string, string> = {
+                voltage: 'V', current: 'A', power: 'W', energy: 'J',
+                light_irradiance: 'W/m2', frequency: 'Hz', temperature: 'C',
+                flowrate: 'L/s', air_particulates: 'ppm', o2_level: '0-1',
+                co2_level: '0-1', volume: 'L', weight: 'kg'
+              };
+
+              if (specObj.rating) {
+                for (const k of Object.keys((specObj.rating as any).input || {})) inputs.push(k);
+                for (const k of Object.keys((specObj.rating as any).state || {})) states.push(k);
+                for (const k of Object.keys((specObj.rating as any).output || {})) outputs.push(k);
+              }
+
+              const renderInput = (key: string, category: string) => {
+                const detail = (specObj.rating as any)?.[category]?.[key];
+                if (detail?.min === undefined || detail?.max === undefined) return null;
+
+                const originalUnit = detail?.unit || '';
+                const availableUnits = AVAILABLE_UNITS[key];
+                const canonicalUnit = availableUnits ? availableUnits[0] : originalUnit;
+
+                const unitSelectionKey = `${editingTarget.name}-${key}`;
+                const selectedUnit = unitSelections[unitSelectionKey] || canonicalUnit;
+
+                const availableUnits = AVAILABLE_UNITS[key];
+                const canonicalUnit = availableUnits ? availableUnits[0] : originalUnit;
+
+                const unitSelectionKey = `${editingTarget.name}-${key}`;
+                const selectedUnit = unitSelections[unitSelectionKey] || canonicalUnit;
+
+                const runtimeComponent = runtime?.find(c => c.name === editingTarget.name);
+                const canonicalVal = runtimeComponent?.value?.[key] ?? detail?.value ?? '';
+
+                // Properly extract live state value
+                const liveStateWrapper = (liveStateRef?.current?.components?.[editingTarget.name] ?? {}) as any;
+                const liveState = liveStateWrapper.value ?? {};
+
+                const rawVal = liveState[key] ?? valueOverrides?.[editingTarget.name]?.[key] ?? '';
+
+                // Convert values to selected unit for display
+                const displayRawVal = rawVal !== '' ? fromCanonical(rawVal as number, selectedUnit) : '';
+                const val = displayRawVal !== '' ? (typeof displayRawVal === 'object' ? JSON.stringify(displayRawVal) : String(Math.round(Number(displayRawVal) * 10000) / 10000)) : '';
+
+                const displayCanonicalVal = canonicalVal !== '' ? fromCanonical(canonicalVal as number, selectedUnit) : '';
+                const placeholder = displayCanonicalVal !== '' ? (typeof displayCanonicalVal === 'object' ? JSON.stringify(displayCanonicalVal) : String(Math.round(Number(displayCanonicalVal) * 10000) / 10000)) : '';
 
                 return (
-                  <>
-                    <div key={`${editingTarget.name}-tolerance-${valueOverrides?.[editingTarget.name]?.tolerance ?? (specObj.tolerance as number) || 10}`} style={{ marginBottom: 12 }}>
-                      <label style={{ display: 'block', marginBottom: 4, color: 'var(--text-secondary)', fontSize: 11 }}>Individual Tolerance</label>
-                      <input 
-                        type="number" 
-                        defaultValue={valueOverrides?.[editingTarget.name]?.tolerance ?? (specObj.tolerance as number) || 10} 
-                        onBlur={(e) => {
-                          const numVal = parseFloat(e.target.value);
-                          if (!isNaN(numVal)) {
-                            if (onSetInitials) {
-                              onSetInitials(editingTarget.name, 'tolerance', numVal);
-                            } else if (runId && editingTarget) {
-                              api.setComponentTolerance(runId, editingTarget.name, numVal);
-                            }
-                          }
-                        }}
-                        style={{ width: '100%', background: 'var(--bg-input)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4 }} 
-                      />
+                  <div key={`${editingTarget.name}-${key}-${val}-${selectedUnit}`} style={{ marginBottom: 12 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                      <label style={{ color: 'var(--text-secondary)', fontSize: 11 }}>{key}</label>
+                      {availableUnits ? (
+                        <select
+                          value={selectedUnit}
+                          onChange={(e) => setUnitSelections(prev => ({ ...prev, [unitSelectionKey]: e.target.value }))}
+                          style={{ background: 'var(--bg-input)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', fontSize: 10, borderRadius: 2, padding: '2px 4px' }}
+                        >
+                          {availableUnits.map(u => <option key={u} value={u}>{u}</option>)}
+                        </select>
+                      ) : (
+                        <span style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>{selectedUnit}</span>
+                      )}
                     </div>
-
-                    {inputs.length > 0 && <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic', marginBottom: 8, marginTop: 16 }}>input:</div>}
-                    {inputs.map(k => renderInput(k, 'input'))}
-                    
-                    {states.length > 0 && <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic', marginBottom: 8, marginTop: 16 }}>state:</div>}
-                    {states.map(k => renderInput(k, 'state'))}
-                    
-                    {outputs.length > 0 && <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic', marginBottom: 8, marginTop: 16 }}>output:</div>}
-                    {outputs.map(k => renderInput(k, 'output'))}
-                  </>
+                    <input
+                      type="text"
+                      defaultValue={val}
+                      placeholder={placeholder}
+                      onBlur={(e) => {
+                        const numVal = parseFloat(e.target.value);
+                        if (!isNaN(numVal)) {
+                          const canonicalNumVal = toCanonical(numVal, selectedUnit);
+                          if (onSetInitials) {
+                            onSetInitials(editingTarget.name, key, canonicalNumVal);
+                          } else if (runId && editingTarget) {
+                            api.setComponentState(runId, editingTarget.name, { [key]: canonicalNumVal });
+                          }
+                        }
+                      }}
+                      style={{ width: '100%', background: 'var(--bg-input)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4 }}
+                    />
+                  </div>
                 );
-             })()}
+              };
 
-             <div style={{ display: 'flex', gap: 8, marginBottom: 16, marginTop: 16 }}>
-               <button style={{ flex: 1, background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4, cursor: 'pointer' }} onClick={() => { 
-                 if (onResetInitials && editingTarget) {
-                   onResetInitials(editingTarget.name);
-                 } else if (runId && editingTarget) {
-                   // When running, just reset to some default
-                   api.setComponentTolerance(runId, editingTarget.name, 10); 
-                 }
-               }}>Reset All Component Fields</button>
-             </div>
-             <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic' }}>
-               Changes are synced with backend automatically.
-             </div>
-           </div>
+              return (
+                <>
+                  <div key={`${editingTarget.name}-tolerance-${valueOverrides?.[editingTarget.name]?.tolerance ?? (specObj.tolerance as number) || 10}`} style={{ marginBottom: 12 }}>
+                    <label style={{ display: 'block', marginBottom: 4, color: 'var(--text-secondary)', fontSize: 11 }}>Individual Tolerance</label>
+                    <input
+                      type="number"
+                      defaultValue={valueOverrides?.[editingTarget.name]?.tolerance ?? (specObj.tolerance as number) || 10}
+                      onBlur={(e) => {
+                        const numVal = parseFloat(e.target.value);
+                        if (!isNaN(numVal)) {
+                          if (onSetInitials) {
+                            onSetInitials(editingTarget.name, 'tolerance', numVal);
+                          } else if (runId && editingTarget) {
+                            api.setComponentTolerance(runId, editingTarget.name, numVal);
+                          }
+                        }
+                      }}
+                      style={{ width: '100%', background: 'var(--bg-input)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4 }}
+                    />
+                  </div>
+
+                  {inputs.length > 0 && <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic', marginBottom: 8, marginTop: 16 }}>input:</div>}
+                  {inputs.map(k => renderInput(k, 'input'))}
+
+                  {states.length > 0 && <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic', marginBottom: 8, marginTop: 16 }}>state:</div>}
+                  {states.map(k => renderInput(k, 'state'))}
+
+                  {outputs.length > 0 && <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic', marginBottom: 8, marginTop: 16 }}>output:</div>}
+                  {outputs.map(k => renderInput(k, 'output'))}
+                </>
+              );
+            })()}
+
+            <div style={{ display: 'flex', gap: 8, marginBottom: 16, marginTop: 16 }}>
+              <button style={{ flex: 1, background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4, cursor: 'pointer' }} onClick={() => {
+                if (onResetInitials && editingTarget) {
+                  onResetInitials(editingTarget.name);
+                } else if (runId && editingTarget) {
+                  // When running, just reset to some default
+                  api.setComponentTolerance(runId, editingTarget.name, 10);
+                }
+              }}>Reset All Component Fields</button>
+            </div>
+            <div style={{ color: 'var(--text-tertiary)', fontSize: 11, fontStyle: 'italic' }}>
+              Changes are synced with backend automatically.
+            </div>
+          </div>
         </div>
       )}
 
@@ -544,140 +553,134 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
             }}
           />
           <div style={{ padding: '10px 14px', borderBottom: PANEL_BORDER, fontWeight: 600, fontSize: 11, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-             <span>
-               {activeView === 'hierarchy' ? 'Hierarchy Tree' : 
-                activeView === 'connections' ? 'Connections List' : 
-                activeView === 'interactivity' ? 'Settings' :
-                customSidebarTabs?.find(t => t.id === activeView)?.title || 'Settings'}
-             </span>
-             {activeView === 'hierarchy' && (
-               <div style={{ display: 'flex', gap: 4, textTransform: 'none', letterSpacing: 'normal', fontWeight: 500 }}>
-                  {!hideEditInitials && (
-                    <button 
-                      onClick={() => setIsEditingInitials(!isEditingInitials)} 
-                      style={{ background: isEditingInitials ? 'var(--accent-blue)' : 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: isEditingInitials ? '#fff' : 'var(--text-secondary)', borderRadius: 4, padding: '4px 6px', fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                      title="Edit Initials"
-                    >
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M12 20h9"></path>
-                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                      </svg>
-                    </button>
-                  )}
-                  {allHierarchyExpanded ? (
-                    <button onClick={collapseAllHierarchy} style={{ background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}>Collapse All</button>
-                  ) : (
-                    <button onClick={expandAllHierarchy} style={{ background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}>Expand All</button>
-                  )}
-               </div>
-             )}
-             {activeView === 'connections' && !hideEditInitials && (
-               <div style={{ display: 'flex', gap: 4, textTransform: 'none', letterSpacing: 'normal', fontWeight: 500 }}>
-                  <button 
-                    onClick={() => setIsEditingInitials(!isEditingInitials)} 
-                    style={{ background: isEditingInitials ? 'var(--accent-blue)' : 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: isEditingInitials ? '#fff' : 'var(--text-secondary)', borderRadius: 4, padding: '4px 6px', fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+            <span>
+              {activeView === 'hierarchy' ? 'Hierarchy Tree' :
+                activeView === 'connections' ? 'Connections List' :
+                  activeView === 'interactivity' ? 'Settings' :
+                    customSidebarTabs?.find(t => t.id === activeView)?.title || 'Settings'}
+            </span>
+            {activeView === 'hierarchy' && (
+              <div style={{ display: 'flex', gap: 4, textTransform: 'none', letterSpacing: 'normal', fontWeight: 500 }}>
+                {!hideEditInitials && (
+                  <button
+                    onClick={() => setIsEditingInitials(!isEditingInitials)}
+                    style={{ background: isEditingInitials ? 'var(--accent-blue)' : 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: isEditingInitials ? '#fff' : 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                     title="Edit Initials"
                   >
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M12 20h9"></path>
-                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                    </svg>
+                    <Edit2 size={12} />
                   </button>
-               </div>
-             )}
+                )}
+                {allHierarchyExpanded ? (
+                  <button onClick={collapseAllHierarchy} style={{ background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}>Collapse All</button>
+                ) : (
+                  <button onClick={expandAllHierarchy} style={{ background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}>Expand All</button>
+                )}
+              </div>
+            )}
+            {activeView === 'connections' && !hideEditInitials && (
+              <div style={{ display: 'flex', gap: 4, textTransform: 'none', letterSpacing: 'normal', fontWeight: 500 }}>
+                <button
+                  onClick={() => setIsEditingInitials(!isEditingInitials)}
+                  style={{ background: isEditingInitials ? 'var(--accent-blue)' : 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: isEditingInitials ? '#fff' : 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                  title="Edit Initials"
+                >
+                  <Edit2 size={12} />
+                </button>
+              </div>
+            )}
           </div>
           <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
-             {activeView === 'hierarchy' && <TreeNode node={root} depth={0} expandedSet={expandedSet} toggleExpanded={toggleExpanded} isEditingInitials={isEditingInitials} onEditInitials={(name, type) => setEditingTarget({ name, type })} hideSensors={hideSensors} />}
-             {activeView === 'connections' && <ConnectionsList connections={connections} isEditingInitials={isEditingInitials} onEditInitials={(name, type) => setEditingTarget({ name, type })} />}
-             {activeView === 'interactivity' && (
-               <div style={{ padding: '16px 14px', fontSize: 13, color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: 12 }}>
-                 <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: 11, textTransform: 'uppercase', marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                   <span>Interactivity</span>
-                   <input 
-                     type="checkbox" 
-                     checked={componentsInteractable && connectionsInteractable} 
-                     onChange={(e) => {
-                       const checked = e.target.checked;
-                       onComponentsInteractableChange?.(checked);
-                       onConnectionsInteractableChange?.(checked);
-                     }}
-                     style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }}
-                   />
-                 </div>
-                 <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
-                   <span>Components Interactable</span>
-                   <input type="checkbox" checked={componentsInteractable} onChange={(e) => onComponentsInteractableChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
-                 </label>
-                 <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
-                   <span>Connections Interactable</span>
-                   <input type="checkbox" checked={connectionsInteractable} onChange={(e) => onConnectionsInteractableChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
-                 </label>
-                 
-                 <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', marginTop: 8 }}>
-                     <span>Interactable Floor Level</span>
-                      <input 
-                        type="number"
-                        value={activeLayer === null ? '' : activeLayer} 
-                        onChange={(e) => setActiveLayer?.(e.target.value === '' ? null : Number(e.target.value))}
-                        style={{ background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-solid)', borderRadius: 4, padding: '2px 4px', outline: 'none', cursor: 'text', width: 60, textAlign: 'center' }}
-                        placeholder="0"
-                      />
-                   </label>
-                 
-                 <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: 11, textTransform: 'uppercase', marginTop: 12, marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                   <span>View</span>
-                   <input 
-                     type="checkbox" 
-                     checked={!!hideAllComponents && !!hideAllConnections} 
-                     onChange={(e) => {
-                       const checked = e.target.checked;
-                       onHideAllComponentsChange?.(checked);
-                       onHideAllConnectionsChange?.(checked);
-                     }}
-                     style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }}
-                   />
-                 </div>
-                 {onLightingModeChange && (
-                   <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
-                     <span>Lighting</span>
-                     <select 
-                       value={lightingMode} 
-                       onChange={e => onLightingModeChange(e.target.value as any)}
-                       style={{ background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-solid)', borderRadius: 4, padding: '2px 4px', outline: 'none', cursor: 'pointer' }}
-                     >
-                       <option value="dynamic">Dynamic</option>
-                       <option value="static">Static</option>
-                       <option value="off">Off</option>
-                     </select>
-                   </label>
-                 )}
-                 {onContainerOcclusionChange && (
-                   <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
-                     <span>Occlusion</span>
-                     <select 
-                       value={containerOcclusion} 
-                       onChange={e => onContainerOcclusionChange(e.target.value as any)}
-                       style={{ background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-solid)', borderRadius: 4, padding: '2px 4px', outline: 'none', cursor: 'pointer' }}
-                     >
-                       <option value="off">Translucent</option>
-                       <option value="off_on_hover">Opaque (Off on hover)</option>
-                     </select>
-                   </label>
-                 )}
-                 <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
-                   <span>Hide All Components</span>
-                   <input type="checkbox" checked={!!hideAllComponents} onChange={(e) => onHideAllComponentsChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
-                 </label>
-                 <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
-                   <span>Hide All Connections</span>
-                   <input type="checkbox" checked={!!hideAllConnections} onChange={(e) => onHideAllConnectionsChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
-                 </label>
-               </div>
-             )}
-             
-             {customSidebarTabs?.map(tab => (
-               activeView === tab.id && <React.Fragment key={tab.id}>{tab.content}</React.Fragment>
-             ))}
+            {activeView === 'hierarchy' && <TreeNode node={root} depth={0} expandedSet={expandedSet} toggleExpanded={toggleExpanded} isEditingInitials={isEditingInitials} onEditInitials={(name, type) => setEditingTarget({ name, type })} hideSensors={hideSensors} />}
+            {activeView === 'connections' && <ConnectionsList connections={connections} isEditingInitials={isEditingInitials} onEditInitials={(name, type) => setEditingTarget({ name, type })} />}
+            {activeView === 'interactivity' && (
+              <div style={{ padding: '16px 14px', fontSize: 13, color: 'var(--text-primary)', display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: 11, textTransform: 'uppercase', marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span>Interactivity</span>
+                  <input
+                    type="checkbox"
+                    checked={componentsInteractable && connectionsInteractable}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      onComponentsInteractableChange?.(checked);
+                      onConnectionsInteractableChange?.(checked);
+                    }}
+                    style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }}
+                  />
+                </div>
+                <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                  <span>Components Interactable</span>
+                  <input type="checkbox" checked={componentsInteractable} onChange={(e) => onComponentsInteractableChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
+                </label>
+                <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                  <span>Connections Interactable</span>
+                  <input type="checkbox" checked={connectionsInteractable} onChange={(e) => onConnectionsInteractableChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
+                </label>
+
+                <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', marginTop: 8 }}>
+                  <span>Interactable Floor Level</span>
+                  <input
+                    type="number"
+                    value={activeLayer === null ? '' : activeLayer}
+                    onChange={(e) => setActiveLayer?.(e.target.value === '' ? null : Number(e.target.value))}
+                    style={{ background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-solid)', borderRadius: 4, padding: '2px 4px', outline: 'none', cursor: 'text', width: 60, textAlign: 'center' }}
+                    placeholder="0"
+                  />
+                </label>
+
+                <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: 11, textTransform: 'uppercase', marginTop: 12, marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span>View</span>
+                  <input
+                    type="checkbox"
+                    checked={!!hideAllComponents && !!hideAllConnections}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      onHideAllComponentsChange?.(checked);
+                      onHideAllConnectionsChange?.(checked);
+                    }}
+                    style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }}
+                  />
+                </div>
+                {onLightingModeChange && (
+                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                    <span>Lighting</span>
+                    <select
+                      value={lightingMode}
+                      onChange={e => onLightingModeChange(e.target.value as any)}
+                      style={{ background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-solid)', borderRadius: 4, padding: '2px 4px', outline: 'none', cursor: 'pointer' }}
+                    >
+                      <option value="dynamic">Dynamic</option>
+                      <option value="static">Static</option>
+                      <option value="off">Off</option>
+                    </select>
+                  </label>
+                )}
+                {onContainerOcclusionChange && (
+                  <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                    <span>Occlusion</span>
+                    <select
+                      value={containerOcclusion}
+                      onChange={e => onContainerOcclusionChange(e.target.value as any)}
+                      style={{ background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-solid)', borderRadius: 4, padding: '2px 4px', outline: 'none', cursor: 'pointer' }}
+                    >
+                      <option value="off">Translucent</option>
+                      <option value="off_on_hover">Opaque (Off on hover)</option>
+                    </select>
+                  </label>
+                )}
+                <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                  <span>Hide All Components</span>
+                  <input type="checkbox" checked={!!hideAllComponents} onChange={(e) => onHideAllComponentsChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
+                </label>
+                <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                  <span>Hide All Connections</span>
+                  <input type="checkbox" checked={!!hideAllConnections} onChange={(e) => onHideAllConnectionsChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
+                </label>
+              </div>
+            )}
+
+            {customSidebarTabs?.map(tab => (
+              activeView === tab.id && <React.Fragment key={tab.id}>{tab.content}</React.Fragment>
+            ))}
           </div>
         </div>
       )}
@@ -691,13 +694,13 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
         <IconBtn icon={<Network size={20} />} active={activeView === 'hierarchy'} onClick={() => toggleView('hierarchy')} title="Hierarchy" />
         <IconBtn icon={<Link2 size={20} />} active={activeView === 'connections'} onClick={() => toggleView('connections')} title="Connections" />
         {!hideSettings && <IconBtn icon={<Sliders size={20} />} active={activeView === 'interactivity'} onClick={() => toggleView('interactivity')} title="Settings" />}
-        
+
         {customSidebarTabs?.map(tab => (
           <IconBtn key={tab.id} icon={tab.icon} active={activeView === tab.id} onClick={() => toggleView(tab.id)} title={tab.title} />
         ))}
 
         <div style={{ flex: 1 }} /> {/* spacer */}
-        
+
         <div style={{ marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 12 }}>
           {onResetCamera && (
             <IconBtn icon={<Focus size={20} />} onClick={onResetCamera} title="Reset View" />

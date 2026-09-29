@@ -7,7 +7,7 @@ import { DSLEditor } from '../components/DSLEditor';
 import type { SceneEventData } from '../components/TimelineEditor';
 import { EventInspector } from '../components/EventInspector';
 import { SimulationMonitor } from '../components/SimulationMonitor';
-import { Play, Pause, RefreshCw, StepForward, Code, List, Activity, Library, ChevronUp, ChevronDown, MousePointer2, LayoutDashboard, Trash2, FileText, FilePlus, PanelLeft, PanelRight, PanelBottom } from 'lucide-react';
+import { Play, Pause, RefreshCw, StepForward, Code, List, Activity, Library, ChevronUp, ChevronDown, MousePointer2, LayoutDashboard, Trash2, FileText, FilePlus, PanelLeft, PanelRight, PanelBottom, Edit2 } from 'lucide-react';
 import { formatTime } from '../utils';
 const STYLE_INJECTION = `
   .glass-btn-sm {
@@ -56,7 +56,7 @@ export function ScenariosPage() {
   const [selectedComponentName, setSelectedComponentName] = useState<string | null>(null);
   const [errorLine, setErrorLine] = useState<number | undefined>(undefined);
   const [validationErrors, setValidationErrors] = useState<{ message: string; line_number?: number }[]>([]);
-  const [compileLogs, setCompileLogs] = useState<{message: string, isError: boolean}[]>([]);
+  const [compileLogs, setCompileLogs] = useState<{ message: string, isError: boolean }[]>([]);
 
   // Events library
   const [eventDefs, setEventDefs] = useState<any[]>([]);
@@ -560,7 +560,7 @@ export function ScenariosPage() {
             ))}
           </select>
           <button className="glass-btn-sm" onClick={() => { setSelectedScenarioId(null); setScenarioEvents([]); setRunId(null); setSimStatus('Ready'); if (editingType === 'scenario') setScenarioSource(''); }} style={{ fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-input)', color: 'var(--text-secondary)' }}>Deselect</button>
-          
+
           <button className="glass-btn-sm" onClick={saveSource} style={{ fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-input)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
             <FileText size={14} />
             Save
@@ -612,10 +612,7 @@ export function ScenariosPage() {
               }}
               title="Toggle Edit Initials mode on components"
             >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 20h9"></path>
-                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-              </svg>
+              <Edit2 size={14} />
             </button>
             <button
               onClick={() => {
@@ -834,9 +831,9 @@ export function ScenariosPage() {
                       [Parse Error] {err.line_number !== undefined ? `Line ${err.line_number + 1}: ` : ''}{err.message}
                     </div>
                   ))}
-                  
+
                   {runId && <div style={{ borderTop: '1px solid var(--border-color)', margin: '12px 0' }} />}
-                  
+
                   {runId && simLog.map((log, i) => (
                     <div key={`sim-${i}`} style={{ marginBottom: '4px', color: log.level === 'ERROR' ? '#ef4444' : log.level === 'WARN' ? '#f59e0b' : 'var(--text-primary)' }}>
                       <span style={{ color: 'var(--text-tertiary)' }}>[{formatTime(log.time || 0)}]</span> {log.message || JSON.stringify(log)}
