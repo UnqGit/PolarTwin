@@ -12,7 +12,7 @@ export const api = {
     if (!res.ok) throw new Error("Failed to fetch stations");
     return res.json();
   },
-  
+
   getHierarchy: async (stationId: string) => {
     const res = await fetch(`${API_BASE}/stations/${stationId}/hierarchy`);
     if (!res.ok) throw new Error("Failed to fetch hierarchy");
@@ -228,6 +228,11 @@ export const api = {
   resetSimulation: async (runId: string) => {
     const res = await fetch(`${API_BASE}/simulations/${runId}/reset`, { method: 'POST' });
     if (!res.ok) throw new Error("Failed to reset simulation");
+    return res.json();
+  },
+  stopSimulation: async (runId: string) => {
+    const res = await fetch(`${API_BASE}/simulations/${runId}/stop`, { method: 'POST' });
+    if (!res.ok) throw new Error("Failed to stop simulation");
     return res.json();
   },
   deleteSimulation: async (runId: string) => {

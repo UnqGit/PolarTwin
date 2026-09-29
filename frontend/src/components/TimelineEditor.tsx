@@ -110,7 +110,7 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
       {/* Sidebar for layers */}
       <div style={{ width: SIDEBAR_WIDTH, flexShrink: 0, borderRight: '1px solid var(--border-color)', backgroundColor: 'var(--bg-panel-secondary)', zIndex: 20, display: 'flex', flexDirection: 'column' }}>
         <div style={{ height: 30, borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', padding: '0 8px', fontSize: 11, color: 'var(--text-tertiary)', fontWeight: 'bold' }}>
-          EVENTS
+          TIMELINE
         </div>
         <div style={{ flex: 1, overflowY: 'hidden', position: 'relative' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
@@ -135,9 +135,9 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
               containerRef.current.scrollLeft = e.currentTarget.scrollLeft;
             }
           }}
-          style={{ overflowX: 'auto', overflowY: 'hidden', height: 16, flexShrink: 0, backgroundColor: 'var(--bg-panel-secondary)', borderBottom: '1px solid var(--border-color)' }}
+          style={{ overflowX: 'auto', overflowY: 'hidden', height: 16, flexShrink: 0, backgroundColor: 'var(--bg-panel-secondary)', borderBottom: '1px solid var(--border-color)', display: maxTime * PIXELS_PER_UNIT > containerWidth ? 'block' : 'none' }}
         >
-          <div style={{ width: width, height: 1 }}></div>
+          <div style={{ width: Math.max(containerWidth, maxTime * PIXELS_PER_UNIT), height: 1 }}></div>
         </div>
         
         {/* Actual timeline container */}
@@ -153,10 +153,10 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
           }}
           style={{ flex: 1, position: 'relative', overflowX: 'auto', overflowY: 'auto' }}
         >
-          <div style={{ position: 'relative', width: width, minHeight: Math.max(120, events.length * ROW_HEIGHT + 30) }}>
+          <div style={{ position: 'relative', width: '100%', minWidth: Math.max(containerWidth, maxTime * PIXELS_PER_UNIT), minHeight: Math.max(120, events.length * ROW_HEIGHT + 30) }}>
           {/* Header Axis */}
           <div 
-            style={{ position: 'sticky', top: 0, height: 30, backgroundColor: 'var(--bg-panel-secondary)', borderBottom: '1px solid var(--border-color)', zIndex: 10, cursor: 'crosshair' }}
+            style={{ position: 'sticky', top: 0, height: 30, backgroundColor: 'var(--bg-panel-secondary)', borderBottom: '1px solid var(--border-color)', zIndex: 10, cursor: 'crosshair', width: '100%' }}
             onClick={(e) => {
               if (onSeek) {
                 const rect = e.currentTarget.getBoundingClientRect();
@@ -165,7 +165,7 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
               }
             }}
           >
-            {Array.from({ length: Math.ceil(width / PIXELS_PER_UNIT) }).map((_, i) => (
+            {Array.from({ length: Math.ceil(Math.max(containerWidth, maxTime * PIXELS_PER_UNIT) / PIXELS_PER_UNIT) }).map((_, i) => (
               <div key={i} style={{ position: 'absolute', left: i * PIXELS_PER_UNIT, top: 8, fontSize: 10, color: 'var(--text-tertiary)', transform: 'translateX(-50%)', pointerEvents: 'none' }}>
                 {i}h
               </div>
@@ -173,7 +173,7 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
           </div>
 
           {/* Grid lines */}
-          <div style={{ position: 'absolute', top: 30, bottom: 0, left: 0, right: 0, backgroundImage: 'linear-gradient(to right, var(--border-color) 1px, transparent 1px)', backgroundSize: `${PIXELS_PER_UNIT}px 100%`, zIndex: 0 }} />
+          <div style={{ position: 'absolute', top: 30, bottom: 0, left: 0, right: 0, width: '100%', backgroundImage: 'linear-gradient(to right, var(--border-color) 1px, transparent 1px)', backgroundSize: `${PIXELS_PER_UNIT}px 100%`, zIndex: 0 }} />
           
           {/* Playhead */}
           <div style={{ position: 'absolute', top: 30, bottom: 0, width: '2px', backgroundColor: '#ef4444', zIndex: 10, boxShadow: '0 0 8px rgba(239,68,68,0.8)', left: `${simTime * PIXELS_PER_UNIT}px`, transition: 'left 0.1s linear' }}>

@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Server, X, Square, Trash2 } from 'lucide-react';
 import { api } from '../lib/api';
 
 export function SimulationManager() {
   const [isOpen, setIsOpen] = useState(false);
   const [simulations, setSimulations] = useState<any[]>([]);
-  
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
   const fetchSimulations = async () => {
     try {
       const sims = await api.listSimulations();
@@ -25,8 +26,7 @@ export function SimulationManager() {
 
   const handleStop = async (runId: string) => {
     try {
-      await api.pauseSimulation(runId);
-      await api.resetSimulation(runId);
+      await api.stopSimulation(runId);
       fetchSimulations();
     } catch (e) {
       console.error("Failed to stop simulation", e);
@@ -44,9 +44,23 @@ export function SimulationManager() {
 
   const activeSims = simulations.filter(s => s.status === 'running' || s.status === 'paused');
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isOpen]);
+
   return (
-    <div style={{ position: 'relative' }}>
-      <button 
+    <div style={{ position: 'relative' }} ref={dropdownRef}>
+      <button
         onClick={() => setIsOpen(!isOpen)}
         style={{
           background: 'transparent',
@@ -104,14 +118,14 @@ export function SimulationManager() {
             alignItems: 'center'
           }}>
             <h3 style={{ margin: 0, fontSize: '14px', color: 'var(--text-primary)' }}>Background Simulations</h3>
-            <button 
+            <button
               onClick={() => setIsOpen(false)}
               style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer' }}
             >
               <X size={16} />
             </button>
           </div>
-          
+
           <div style={{ padding: '12px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {simulations.length === 0 ? (
               <div style={{ color: 'var(--text-tertiary)', fontSize: '13px', textAlign: 'center', padding: '16px 0' }}>
@@ -132,9 +146,9 @@ export function SimulationManager() {
                     <div style={{ fontSize: '12px', fontWeight: 'bold', color: 'var(--accent-blue)' }}>
                       {sim.run_id.substring(0, 12)}
                     </div>
-                    <div style={{ 
-                      fontSize: '10px', 
-                      padding: '2px 6px', 
+                    <div style={{
+                      fontSize: '10px',
+                      padding: '2px 6px',
                       borderRadius: '4px',
                       backgroundColor: sim.status === 'running' ? 'rgba(34, 197, 94, 0.2)' : 'var(--bg-main)',
                       color: sim.status === 'running' ? '#22c55e' : 'var(--text-secondary)'
@@ -151,7 +165,7 @@ export function SimulationManager() {
                     </div>
                     <div style={{ display: 'flex', gap: '4px' }}>
                       {(sim.status === 'running' || sim.status === 'paused') && (
-                        <button 
+                        <button
                           onClick={() => handleStop(sim.run_id)}
                           style={{
                             background: 'rgba(239, 68, 68, 0.1)',
@@ -169,7 +183,7 @@ export function SimulationManager() {
                           <Square size={10} /> Stop
                         </button>
                       )}
-                      <button 
+                      <button
                         onClick={() => {
                           if (confirm('Delete simulation run?')) {
                             handleDelete(sim.run_id);

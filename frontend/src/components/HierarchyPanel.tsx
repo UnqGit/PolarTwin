@@ -168,7 +168,7 @@ export interface HierarchyPanelProps {
   runtime?: any[] | null;
 }
 
-const UNIT_MULTIPLIERS: Record<string, number> = {
+export const UNIT_MULTIPLIERS: Record<string, number> = {
   "V": 1.0, "mV": 1e-3, "kV": 1e3,
   "A": 1.0, "mA": 1e-3,
   "W": 1.0, "kW": 1e3,
@@ -209,7 +209,7 @@ const toCanonical = (value: number, unit: string) => {
   return value;
 };
 
-const fromCanonical = (value: number, unit: string) => {
+export const fromCanonical = (value: number, unit: string) => {
   if (unit === 'C') return value;
   if (unit === 'K') return value + 273.15;
   if (unit === 'F') return (value * 9.0 / 5.0) + 32;
@@ -428,11 +428,8 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                    const runtimeComponent = runtime?.find(c => c.name === editingTarget.name);
                    const canonicalVal = runtimeComponent?.value?.[key] ?? detail?.value ?? '';
                    
-                   // Properly extract live state value
-                   const liveStateWrapper = (liveStateRef?.current?.components?.[editingTarget.name] ?? {}) as any;
-                   const liveState = liveStateWrapper.value ?? {};
-                   
-                   const rawVal = liveState[key] ?? valueOverrides?.[editingTarget.name]?.[key] ?? '';
+                   // Only use valueOverrides for the controlled input value so placeholder shows the default
+                   const rawVal = valueOverrides?.[editingTarget.name]?.[key] ?? '';
                    
                    // Convert values to selected unit for display
                    const displayRawVal = rawVal !== '' ? fromCanonical(rawVal as number, selectedUnit) : '';
@@ -558,10 +555,13 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                   {!hideEditInitials && (
                     <button 
                       onClick={() => setIsEditingInitials(!isEditingInitials)} 
-                      style={{ background: isEditingInitials ? 'var(--accent-blue)' : 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: isEditingInitials ? '#fff' : 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                      style={{ background: isEditingInitials ? 'var(--accent-blue)' : 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: isEditingInitials ? '#fff' : 'var(--text-secondary)', borderRadius: 4, padding: '4px 6px', fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                       title="Edit Initials"
                     >
-                      <Edit2 size={12} />
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M12 20h9"></path>
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                      </svg>
                     </button>
                   )}
                   {allHierarchyExpanded ? (
@@ -575,10 +575,13 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                <div style={{ display: 'flex', gap: 4, textTransform: 'none', letterSpacing: 'normal', fontWeight: 500 }}>
                   <button 
                     onClick={() => setIsEditingInitials(!isEditingInitials)} 
-                    style={{ background: isEditingInitials ? 'var(--accent-blue)' : 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: isEditingInitials ? '#fff' : 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                    style={{ background: isEditingInitials ? 'var(--accent-blue)' : 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: isEditingInitials ? '#fff' : 'var(--text-secondary)', borderRadius: 4, padding: '4px 6px', fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                     title="Edit Initials"
                   >
-                    <Edit2 size={12} />
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 20h9"></path>
+                      <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                    </svg>
                   </button>
                </div>
              )}

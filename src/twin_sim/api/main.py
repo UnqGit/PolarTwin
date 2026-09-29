@@ -396,6 +396,14 @@ def pause_simulation(run_id: str):
     return {"status": rec.status}
 
 
+@app.post("/simulations/{run_id}/stop")
+def stop_simulation(run_id: str):
+    """Stop the simulation (sets to FINISHED without resetting time)."""
+    if not _manager.stop_run(run_id):
+        raise HTTPException(404, "Simulation not found")
+    return {"status": "stopped"}
+
+
 @app.post("/simulations/{run_id}/step")
 def step_simulation(run_id: str):
     """Execute exactly one simulation tick (useful for manual stepping)."""

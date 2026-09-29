@@ -81,7 +81,10 @@ class RunRecord:
                     self.engine.run_tick()
                     time.sleep(tick_interval)
                 self.status = RunStatus.FINISHED
-            except Exception:
+            except Exception as e:
+                import traceback
+                print(f"Run {self.run_id} crashed:", e)
+                traceback.print_exc()
                 self.status = RunStatus.FAILED
 
         self._thread = threading.Thread(target=_loop, daemon=True, name=f"sim-{self.run_id}")
@@ -238,7 +241,7 @@ class SimulationManager:
             runno = max(runno, local_count + 1)
             
             while True:
-                run_id = f"{station_id}:{scenario_name}:{runno}"
+                run_id = f"{station_id}{scenario_name}{runno}"
                 if run_id not in self._runs:
                     break
                 runno += 1
@@ -269,7 +272,7 @@ class SimulationManager:
         with self._lock:
             if run_id in self._runs:
                 rec = self._runs[run_id]
-                rec.stop_thread()
+                rec.stop()
                 del self._runs[run_id]
                 return True
             return False
@@ -289,6 +292,15 @@ class SimulationManager:
         rec = self.get_run(run_id)
         if rec:
             rec.pause()
+            return True
+        return False
+
+    def stop_run(self, run_id: str) -> bool:
+        rec = self.get_run(run_id)
+        if rec:
+            rec.stop()
+            if self._telemetry_db:
+                self._telemetry_db.update_run_status(run_id, "FINISHED")
             return True
         return False
 

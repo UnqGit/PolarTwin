@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { TypeIcon } from './TypeIcon';
 import type { NodeLayout, ConnectionLayout } from '../lib/layout';
+import { fromCanonical } from './HierarchyPanel';
 
 interface InspectorProps {
   node: NodeLayout;
@@ -151,6 +152,26 @@ export const PropertyInspector: React.FC<InspectorProps> = ({ node, connections,
     const unit = getUnit(k);
     let valStr = '';
     
+    if (unit && typeof displayVal === 'number') {
+      displayVal = fromCanonical(displayVal, unit);
+    }
+    // Also convert bounds
+    if (limitStr && unit) {
+       const parts = limitStr.split(':').map(s => s.trim());
+       if (parts.length === 2) {
+          const min = parseFloat(parts[0]);
+          const max = parseFloat(parts[1]);
+          if (!isNaN(min) && !isNaN(max)) {
+             limitStr = `${Number(fromCanonical(min, unit).toFixed(4))} : ${Number(fromCanonical(max, unit).toFixed(4))}`;
+          }
+       } else if (limitStr.startsWith('≤')) {
+          const max = parseFloat(limitStr.replace('≤', '').trim());
+          if (!isNaN(max)) {
+             limitStr = `≤ ${Number(fromCanonical(max, unit).toFixed(4))}`;
+          }
+       }
+    }
+
     if (displayVal !== undefined && displayVal !== null) {
       if (typeof displayVal === 'number') {
          valStr = `${displayVal.toFixed(2)}`;

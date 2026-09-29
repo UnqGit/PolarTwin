@@ -58,7 +58,7 @@ export function DSLEditor({ value, onChange, selectedLine, errorLine }: DSLEdito
         { token: 'comment', foreground: '94a3b8' },
         { token: 'annotation', foreground: '0ea5e9' }, // Icy blue
         { token: 'keyword', foreground: '38bdf8', fontStyle: 'bold' }, // Light icy blue
-        { token: 'delimiter', foreground: '475569' }, 
+        { token: 'delimiter', foreground: '475569' },
         { token: 'number', foreground: 'd97706' },
       ],
       colors: {

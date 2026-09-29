@@ -356,6 +356,11 @@ class SimulationEngineCore:
                             target, field_path, value
                         )
 
+            if self.telemetry_publishing:
+                snap = self._snapshot(eff_comps, self.state.effective_connections, ext)
+                snap["source"] = scene.event_ref
+                self.telemetry.append(snap)
+
     def _resolve_scene_targets(
         self,
         scene: SceneEvent,

@@ -142,6 +142,13 @@ class TelemetryDatabase:
                 (run_id, station_id, scenario_id, time.time(), "RUNNING")
             )
 
+    def update_run_status(self, run_id: str, status: str):
+        with self.conn:
+            self.conn.execute(
+                "UPDATE simulation_runs SET status = ?, end_time = ? WHERE id = ?",
+                (status, time.time(), run_id)
+            )
+
     def get_next_run_number(self, station_id: str, scenario_id: str | None) -> int:
         query = "SELECT COUNT(*) FROM simulation_runs WHERE station_model_id = ? AND scenario_id"
         if scenario_id is None:
@@ -340,12 +347,23 @@ class TelemetryDatabase:
 
     def get_all_runs(self) -> List[Dict[str, Any]]:
         query = """
-            SELECT id as run_id, scenario_id, station_model_id, start_time, end_time, status
-            FROM simulation_runs
-            ORDER BY start_time DESC
+            SELECT r.id as run_id, r.scenario_id, r.station_model_id, r.start_time, r.end_time, r.status,
+                   (SELECT COUNT(*) FROM telemetry_records WHERE run_id = r.id) as record_count
+            FROM simulation_runs r
+            ORDER BY r.start_time DESC
         """
         cur = self.conn.execute(query)
         runs = [dict(row) for row in cur.fetchall()]
         
         # Populate run metadata (counts) if necessary, or just return them
         return runs
+        with self.conn:
+            self.conn.executemany(
+                "INSERT INTO simulation_logs (run_id, simulation_time, level, message) VALUES (?, ?, ?, ?)",
+                [(run_id, log["time"], log["level"], log["message"]) for log in logs]
+            )
+
+    def get_simulation_logs(self, run_id: str) -> List[Dict[str, Any]]:
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT simulation_time, level, message FROM simulation_logs WHERE run_id = ? ORDER BY id ASC", (run_id,))
+        return [{"time": row[0], "level": row[1], "message": row[2]} for row in cursor.fetchall()]

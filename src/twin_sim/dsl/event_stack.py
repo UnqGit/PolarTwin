@@ -42,20 +42,36 @@ class TimelineStateManager:
             return f"connection:{node.source}_{node.type}_{node.target}"
         elif isinstance(node, ExternalModel):
             return "external:root"
-        raise ValueError("Unknown node type")
+        elif type(node).__name__ == "NetworkModel":
+            return "external:network"
+        elif type(node).__name__ == "WeatherModel":
+            return "external:weather"
+        elif type(node).__name__ == "SupplyModel":
+            return "external:supplies"
+        raise ValueError(f"Unknown node type: {type(node)}")
 
     def _get_base_node(self, node_key: str) -> Any:
         kind, ident = node_key.split(":", 1)
         if kind == "component": return self.base_components[ident]
         if kind == "connection": return self.base_connections[ident]
-        if kind == "external": return self.base_external
+        if kind == "external":
+            if ident == "root": return self.base_external
+            if ident == "network": return self.base_external.network
+            if ident == "weather": return self.base_external.weather
+            if ident == "supplies": return self.base_external.supplies
+            return self.base_external
         raise ValueError(f"Unknown node kind {kind}")
 
     def _get_effective_node(self, node_key: str) -> Any:
         kind, ident = node_key.split(":", 1)
         if kind == "component": return self.effective_components[ident]
         if kind == "connection": return self.effective_connections[ident]
-        if kind == "external": return self.effective_external
+        if kind == "external":
+            if ident == "root": return self.effective_external
+            if ident == "network": return self.effective_external.network
+            if ident == "weather": return self.effective_external.weather
+            if ident == "supplies": return self.effective_external.supplies
+            return self.effective_external
         raise ValueError(f"Unknown node kind {kind}")
 
     def apply_infinite_event(self, event_id: str, source_order: int, start: float, node: Any, field_path: str, value: Any):

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useStation } from '../components/StationContext';
 import { api } from '../lib/api';
-import { 
+import {
   ChevronDown, ChevronRight, Activity, Cloud, Signal, Droplets, History, Box, Network, Link2, Globe
 } from 'lucide-react';
 import { buildSceneLayout } from '../lib/layout';
@@ -25,7 +25,7 @@ export function DiagnosticsPage() {
     if (!hierarchy || !spec) return null;
     const layout = buildSceneLayout(hierarchy, connections || [], spec);
     const gen = layout.connectionRouterGenerator();
-    while (!gen.next().done) {}
+    while (!gen.next().done) { }
     return layout;
   }, [hierarchy, connections, spec]);
 
@@ -43,7 +43,9 @@ export function DiagnosticsPage() {
 
   // Load runs
   useEffect(() => {
-    api.getTelemetryRuns().then(r => setRuns(r)).catch(console.error);
+    api.getTelemetryRuns().then(r => {
+      setRuns(r.filter((run: any) => run.status !== 'RUNNING' && run.record_count > 0));
+    }).catch(console.error);
   }, []);
 
   // When run selected
@@ -56,7 +58,7 @@ export function DiagnosticsPage() {
     }
     api.getRunMetadata(selectedRunId).then(setRunMeta).catch(console.error);
     api.getRunEvents(selectedRunId).then(setRunEvents).catch(console.error);
-    
+
     // Refresh history data if category/item is already selected
     if (selectedCategory && selectedItemId) {
       fetchHistory(selectedCategory, selectedItemId);
@@ -95,9 +97,9 @@ export function DiagnosticsPage() {
 
     return (
       <div style={{ marginLeft: depth > 0 ? 12 : 0 }}>
-        <div 
-          style={{ 
-            display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', 
+        <div
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px',
             cursor: 'pointer', borderRadius: 4,
             background: isSelected ? 'var(--bg-input)' : 'transparent',
             color: isSelected ? 'var(--accent-blue)' : 'var(--text-secondary)'
@@ -109,9 +111,9 @@ export function DiagnosticsPage() {
           }}
         >
           {!isLeaf ? (
-            expanded ? <ChevronDown size={14}/> : <ChevronRight size={14}/>
+            expanded ? <ChevronDown size={14} /> : <ChevronRight size={14} />
           ) : (
-            <div style={{width: 14}}/>
+            <div style={{ width: 14 }} />
           )}
           <Box size={14} />
           <span style={{ fontSize: 13, userSelect: 'none' }}>{node.name}</span>
@@ -127,14 +129,14 @@ export function DiagnosticsPage() {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', backgroundColor: 'var(--bg-main)', color: 'var(--text-primary)' }}>
-      
+
       {/* RUN SELECTOR */}
       <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: 16 }}>
         <History size={20} style={{ color: 'var(--accent-blue)' }} />
         <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Simulation History</h2>
-        
-        <select 
-          value={selectedRunId} 
+
+        <select
+          value={selectedRunId}
           onChange={e => setSelectedRunId(e.target.value)}
           style={{
             background: 'var(--bg-input)', color: 'var(--text-primary)', border: '1px solid var(--border-color)',
@@ -144,7 +146,7 @@ export function DiagnosticsPage() {
           <option value="">-- Select a Simulation Run --</option>
           {runs.map(r => (
             <option key={r.run_id} value={r.run_id}>
-              {new Date(r.start_time * 1000).toLocaleString()} | {r.run_id.substring(0,8)} | {r.status}
+              {new Date(r.start_time * 1000).toLocaleString()} | {r.run_id.substring(0, 8)} | {r.status}
             </option>
           ))}
         </select>
@@ -159,10 +161,10 @@ export function DiagnosticsPage() {
       </div>
 
       <div style={{ display: 'flex', flex: 1, overflow: 'hidden', position: 'relative' }}>
-        
+
         {sceneLayout && (
           <SelectionProvider externalSelection={[selectedName, setSelectedName]}>
-            <HierarchyPanel 
+            <HierarchyPanel
               root={sceneLayout.root}
               connections={sceneLayout.connections}
               componentsInteractable={true}
@@ -205,7 +207,7 @@ export function DiagnosticsPage() {
 
         {/* RIGHT MAIN AREA */}
         <div style={{ flex: 1, padding: 24, paddingLeft: 400, overflowY: 'auto' }}>
-          
+
 
           {!selectedRunId ? (
             <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>
@@ -217,11 +219,11 @@ export function DiagnosticsPage() {
               <div style={{ background: 'var(--bg-panel)', padding: 16, borderRadius: 8, border: '1px solid var(--border-color)', marginBottom: 24 }}>
                 <h3 style={{ margin: '0 0 16px 0', fontSize: 14 }}>Run Overview</h3>
                 <p style={{ margin: 0, fontSize: 13, color: 'var(--text-secondary)' }}>
-                  Total Events: {runEvents.length} <br/>
+                  Total Events: {runEvents.length} <br />
                   Total Records: {runMeta?.record_count}
                 </p>
               </div>
-              
+
               <h3 style={{ fontSize: 14 }}>Event Timeline</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {runEvents.map(ev => (
@@ -267,7 +269,7 @@ function MultiMetricCharts({ data, category, itemId }: { data: any[]; category: 
       } else {
         values = row.value || {};
       }
-      
+
       Object.keys(values).forEach(k => {
         if (typeof values[k] === 'number') keys.add(k);
         if (typeof values[k] === 'object' && values[k]?.value !== undefined) keys.add(k);
@@ -335,15 +337,15 @@ function MetricChart({ metric, data, category, itemId }: { metric: string; data:
       <h3 style={{ margin: '0 0 16px 0', fontSize: 14, textTransform: 'capitalize' }}>
         {metric.replace(/_/g, ' ')} {unit ? `(${unit})` : ''}
       </h3>
-      
+
       <div style={{ position: 'relative', width: W + padLeft + padRight, height: H + padBottom + padTop }}>
         <svg width={W + padLeft + padRight} height={H + padBottom + padTop}>
           {/* Axes */}
           <line x1={padLeft} y1={padTop} x2={padLeft} y2={H + padTop} stroke="var(--border-color)" strokeWidth={2} />
           <line x1={padLeft} y1={H + padTop} x2={W + padLeft} y2={H + padTop} stroke="var(--border-color)" strokeWidth={2} />
-          
+
           {/* Axis Labels */}
-          <text x={padLeft / 2} y={padTop + H / 2} fill="var(--text-tertiary)" fontSize={11} transform={`rotate(-90 ${padLeft/2} ${padTop + H/2})`} textAnchor="middle">
+          <text x={padLeft / 2} y={padTop + H / 2} fill="var(--text-tertiary)" fontSize={11} transform={`rotate(-90 ${padLeft / 2} ${padTop + H / 2})`} textAnchor="middle">
             Value {unit ? `(${unit})` : ''}
           </text>
           <text x={padLeft + W / 2} y={H + padTop + padBottom - 10} fill="var(--text-tertiary)" fontSize={11} textAnchor="middle">
@@ -363,7 +365,7 @@ function MetricChart({ metric, data, category, itemId }: { metric: string; data:
               </g>
             );
           })}
-          
+
           {/* X Axis Labels */}
           {[0, 0.25, 0.5, 0.75, 1].map(frac => {
             const val = minTime + frac * rangeTime;
@@ -410,7 +412,7 @@ function MetricChart({ metric, data, category, itemId }: { metric: string; data:
                 if (p.status === 'active') color = '#4ade80';
                 else if (p.status === 'failure') color = '#ef4444';
                 else if (p.status === 'inactive') color = '#94a3b8';
-                
+
                 return (
                   <rect key={i} x={x1} y={0} width={x2 - x1} height={6} fill={color}>
                     <title>{`Status: ${p.status}`}</title>
@@ -421,7 +423,7 @@ function MetricChart({ metric, data, category, itemId }: { metric: string; data:
           )}
         </svg>
       </div>
-      
+
       {points.some(p => p.status) && (
         <div style={{ display: 'flex', gap: 12, marginTop: 8, fontSize: 11, color: 'var(--text-secondary)', paddingLeft: padLeft }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 8, height: 8, background: '#4ade80', borderRadius: '50%' }}></div> Active</div>
