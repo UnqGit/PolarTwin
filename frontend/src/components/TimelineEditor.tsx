@@ -26,9 +26,24 @@ const AURORA_COLORS = ['#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#d946ef'];
 
 export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime, onSelectEvent, selectedEvent, onAppendEvent, onUpdateEventLocation, onDeleteEvent, onSeek }) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const topScrollRef = useRef<HTMLDivElement>(null);
+  const isSyncingScroll = useRef(false);
+  const [containerWidth, setContainerWidth] = useState(800);
+  
   const PIXELS_PER_UNIT = 40; // 40px per simulation hour
   const SIDEBAR_WIDTH = 150;
   const ROW_HEIGHT = 32;
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const observer = new ResizeObserver(entries => {
+      for (let entry of entries) {
+        setContainerWidth(entry.contentRect.width);
+      }
+    });
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
 
   const maxTime = Math.max(
     simTime + 5,
@@ -39,7 +54,7 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
     }, 10)
   );
   
-  const width = Math.max(800, maxTime * PIXELS_PER_UNIT);
+  const width = Math.max(containerWidth, maxTime * PIXELS_PER_UNIT);
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
@@ -110,18 +125,35 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
         </div>
       </div>
 
-      {/* Timeline track */}
-      <div 
-        ref={containerRef}
-        onDragOver={handleDragOver}
-        onDrop={handleDrop}
-        onScroll={(e) => {
-          // force re-render for sidebar scroll sync (dirty but works)
-          e.currentTarget.style.transform = 'translateZ(0)';
-        }}
-        style={{ flex: 1, position: 'relative', overflowX: 'auto', overflowY: 'auto' }}
-      >
-        <div style={{ position: 'relative', width: width, minHeight: Math.max(120, events.length * ROW_HEIGHT + 30) }}>
+      {/* Timeline track container with top scrollbar */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        {/* Top dummy scrollbar */}
+        <div 
+          ref={topScrollRef}
+          onScroll={(e) => {
+            if (containerRef.current && Math.abs(containerRef.current.scrollLeft - e.currentTarget.scrollLeft) > 1) {
+              containerRef.current.scrollLeft = e.currentTarget.scrollLeft;
+            }
+          }}
+          style={{ overflowX: 'auto', overflowY: 'hidden', height: 16, flexShrink: 0, backgroundColor: 'var(--bg-panel-secondary)', borderBottom: '1px solid var(--border-color)' }}
+        >
+          <div style={{ width: width, height: 1 }}></div>
+        </div>
+        
+        {/* Actual timeline container */}
+        <div 
+          ref={containerRef}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+          onScroll={(e) => {
+            e.currentTarget.style.transform = 'translateZ(0)';
+            if (topScrollRef.current && Math.abs(topScrollRef.current.scrollLeft - e.currentTarget.scrollLeft) > 1) {
+              topScrollRef.current.scrollLeft = e.currentTarget.scrollLeft;
+            }
+          }}
+          style={{ flex: 1, position: 'relative', overflowX: 'auto', overflowY: 'auto' }}
+        >
+          <div style={{ position: 'relative', width: width, minHeight: Math.max(120, events.length * ROW_HEIGHT + 30) }}>
           {/* Header Axis */}
           <div 
             style={{ position: 'sticky', top: 0, height: 30, backgroundColor: 'var(--bg-panel-secondary)', borderBottom: '1px solid var(--border-color)', zIndex: 10, cursor: 'crosshair' }}
@@ -224,6 +256,7 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
                 </React.Fragment>
               );
             })}
+          </div>
           </div>
         </div>
       </div>
