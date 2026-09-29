@@ -111,7 +111,7 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
       {/* Sidebar for layers */}
       <div style={{ width: SIDEBAR_WIDTH, flexShrink: 0, borderRight: '1px solid var(--border-color)', backgroundColor: 'var(--bg-panel-secondary)', zIndex: 20, display: 'flex', flexDirection: 'column' }}>
         <div style={{ height: 30, borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', padding: '0 8px', fontSize: 11, color: 'var(--text-tertiary)', fontWeight: 'bold' }}>
-          TIMELINE
+          EVENTS
         </div>
         <div style={{ flex: 1, overflowY: 'hidden', position: 'relative' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
@@ -136,9 +136,9 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
               containerRef.current.scrollLeft = e.currentTarget.scrollLeft;
             }
           }}
-          style={{ overflowX: 'auto', overflowY: 'hidden', height: 16, flexShrink: 0, backgroundColor: 'var(--bg-panel-secondary)', borderBottom: '1px solid var(--border-color)' }}
+          style={{ overflowX: 'auto', overflowY: 'hidden', height: 16, flexShrink: 0, backgroundColor: 'var(--bg-panel-secondary)', borderBottom: '1px solid var(--border-color)', display: maxTime * PIXELS_PER_UNIT > containerWidth ? 'block' : 'none' }}
         >
-          <div style={{ width: width, height: 1 }}></div>
+          <div style={{ width: Math.max(containerWidth, maxTime * PIXELS_PER_UNIT), height: 1 }}></div>
         </div>
 
         {/* Actual timeline container */}

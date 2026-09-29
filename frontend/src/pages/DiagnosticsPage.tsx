@@ -309,7 +309,7 @@ function MultiMetricCharts({ data, category, itemId }: { data: any[]; category: 
   const metrics = useMemo(() => {
     const keys = new Set<string>();
     const ignoreKeys = ['dummy', 'length', 'width', 'breadth', 'height', 'unit', 'inputs', 'status', 'rating', 'id', 'name', 'type', 'position', 'rotation', 'scale', 'measures', 'tolerance', 'efficiency'];
-    
+
     data.forEach(row => {
       let values: any = {};
       if (category === 'environment') {
@@ -383,8 +383,8 @@ function MetricChart({ metric, data, category, itemId }: { metric: string; data:
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={points} margin={{ top: 10, right: 20, left: -20, bottom: 20 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
-            <XAxis 
-              dataKey="time" 
+            <XAxis
+              dataKey="time"
               type="number"
               domain={['dataMin', 'dataMax']}
               tickFormatter={(v) => formatTime(v)}
@@ -392,23 +392,23 @@ function MetricChart({ metric, data, category, itemId }: { metric: string; data:
               tick={{ fontSize: 11 }}
               dy={10}
             />
-            <YAxis 
+            <YAxis
               stroke="var(--text-tertiary)"
               tick={{ fontSize: 11 }}
               tickFormatter={(v) => v.toFixed(1)}
               domain={['auto', 'auto']}
               dx={-10}
             />
-            <Tooltip 
+            <Tooltip
               contentStyle={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: 4, fontSize: 12, color: 'var(--text-primary)' }}
               itemStyle={{ color: 'var(--accent-blue)' }}
               labelFormatter={(label) => `Time: ${formatTime(Number(label))}`}
               formatter={(value: any) => [`${Number(value).toFixed(2)}${unit}`, metric.replace(/_/g, ' ')]}
             />
-            <Line 
-              type="monotone" 
-              dataKey="value" 
-              stroke="var(--accent-blue)" 
+            <Line
+              type="monotone"
+              dataKey="value"
+              stroke="var(--accent-blue)"
               strokeWidth={2}
               dot={{ r: 3, fill: 'var(--accent-blue)' }}
               activeDot={{ r: 5 }}
@@ -430,10 +430,10 @@ function MetricChart({ metric, data, category, itemId }: { metric: string; data:
               if (p.status === 'active' || p.status === 'ACTIVE') bg = '#4ade80';
               if (p.status === 'failure' || p.status === 'FAILURE') bg = '#ef4444';
               return (
-                <div 
-                  key={i} 
-                  style={{ width: `${widthPct}%`, height: '100%', backgroundColor: bg }} 
-                  title={`Time: ${p.time.toFixed(2)}h - Status: ${p.status}`} 
+                <div
+                  key={i}
+                  style={{ width: `${widthPct}%`, height: '100%', backgroundColor: bg }}
+                  title={`Time: ${p.time.toFixed(2)}h - Status: ${p.status}`}
                 />
               );
             })}

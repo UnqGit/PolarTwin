@@ -168,7 +168,7 @@ export interface HierarchyPanelProps {
   runtime?: any[] | null;
 }
 
-const UNIT_MULTIPLIERS: Record<string, number> = {
+export const UNIT_MULTIPLIERS: Record<string, number> = {
   "V": 1.0, "mV": 1e-3, "kV": 1e3,
   "A": 1.0, "mA": 1e-3,
   "W": 1.0, "kW": 1e3,
@@ -209,7 +209,7 @@ const toCanonical = (value: number, unit: string) => {
   return value;
 };
 
-const fromCanonical = (value: number, unit: string) => {
+export const fromCanonical = (value: number, unit: string) => {
   if (unit === 'C') return value;
   if (unit === 'K') return value + 273.15;
   if (unit === 'F') return (value * 9.0 / 5.0) + 32;
