@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { DiagnosticsPage } from './DiagnosticsPage';
-import { StationContext } from '../components/StationContext';
-import { api } from '../lib/api';
+import { DiagnosticsPage } from '../../src/pages/DiagnosticsPage';
+import { StationContext } from '../../src/components/StationContext';
+import { api } from '../../src/lib/api';
 
-vi.mock('../lib/api', () => ({
+vi.mock('../../src/lib/api', () => ({
   api: {
     getTelemetryRuns: vi.fn(),
     getTelemetryHistory: vi.fn(),

@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { resolveMaterial, isContainer } from '../lib/materials';
+import { resolveMaterial, isContainer } from '../../src/lib/materials';
 
 describe('Material resolution', () => {
   it('generator resolves to a grey metallic material', () => {

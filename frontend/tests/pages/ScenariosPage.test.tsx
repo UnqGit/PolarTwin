@@ -1,11 +1,11 @@
 import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { ScenariosPage } from './ScenariosPage';
-import { StationContext } from '../components/StationContext';
-import { api } from '../lib/api';
+import { ScenariosPage } from '../../src/pages/ScenariosPage';
+import { StationContext } from '../../src/components/StationContext';
+import { api } from '../../src/lib/api';
 
-vi.mock('../lib/api', () => ({
+vi.mock('../../src/lib/api', () => ({
   api: {
     getScenarios: vi.fn(),
     getEventDefinitions: vi.fn(),
@@ -60,8 +60,8 @@ describe('ScenariosPage', () => {
     (api.getEventDefinitions as any).mockResolvedValue([
       { name: 'failure', description: 'Sets component to failure' }
     ]);
-    (api.getScenarioSource as any).mockResolvedValue({ source: 'Station:Maitri @0 {}\n' });
-    (api.updateScenarioSource as any).mockResolvedValue({ source: 'Station:Maitri @0 {}\n' });
+    (api.getScenarioSource as any).mockResolvedValue({ source: 'Station:Maitri @0 {}/n' });
+    (api.updateScenarioSource as any).mockResolvedValue({ source: 'Station:Maitri @0 {}/n' });
     (api.getScenarioEvents as any).mockResolvedValue([]);
     (api.createSimulation as any).mockResolvedValue({ runId: 'run-1', status: 'Ready' });
     (api.parseScenarioRaw as any).mockResolvedValue([]);
@@ -137,7 +137,7 @@ describe('ScenariosPage', () => {
     (api.getScenarioEvents as any).mockResolvedValue([
       { event_ref: 'failure', selector: '@Generator1', at: 1.0, duration: 2.0, payload: {}, source_location: 2 }
     ]);
-    (api.getScenarioSource as any).mockResolvedValue({ source: 'event:failure @Generator1 at=1.0 for=2.0\nevent:failure @Generator1 at=1.0 for=2.0\n' });
+    (api.getScenarioSource as any).mockResolvedValue({ source: 'event:failure @Generator1 at=1.0 for=2.0/nevent:failure @Generator1 at=1.0 for=2.0/n' });
 
     render(
       <StationContext.Provider value={{...mockStation, selectedScenarioId: 'scen-1'} as any}>
@@ -157,11 +157,11 @@ describe('ScenariosPage', () => {
     // but the inspector tab is what triggers the visual update when saved. 
     // Wait for timeline editor event to be rendered.
     await waitFor(() => {
-      expect(screen.getAllByText(/failure\s+@Generator1/)[0]).toBeInTheDocument();
+      expect(screen.getAllByText(/failure/s+@Generator1/)[0]).toBeInTheDocument();
     });
     
     // Simulate clicking the event on timeline
-    fireEvent.click(screen.getAllByText(/failure\s+@Generator1/)[0]);
+    fireEvent.click(screen.getAllByText(/failure/s+@Generator1/)[0]);
 
     // Ensure Inspector is visible and shows the event
     await waitFor(() => {

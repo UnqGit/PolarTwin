@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { ConnectionsPage } from './ConnectionsPage';
-import { StationContext } from '../components/StationContext';
+import { ConnectionsPage } from '../../src/pages/ConnectionsPage';
+import { StationContext } from '../../src/components/StationContext';
 
 // Mock cytoscape since it requires a real DOM layout to run fcose
 vi.mock('cytoscape', () => {

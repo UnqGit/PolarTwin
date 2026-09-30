@@ -22,7 +22,7 @@ import {
   buildLayout,
   buildSceneLayout as _buildSceneLayout,
   type NodeLayout,
-} from '../lib/layout';
+} from '../../src/lib/layout';
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
 

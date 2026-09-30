@@ -2,11 +2,11 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 import { render, waitFor, screen } from '@testing-library/react';
 import React from 'react';
-import App from './App';
-import { DigitalTwin } from './pages/DigitalTwin';
+import App from '../src/App';
+import { DigitalTwin } from '../src/pages/DigitalTwin';
 import { BrowserRouter } from 'react-router-dom';
-import { StationProvider, useStation } from './components/StationContext';
-import { ThemeProvider } from './components/ThemeContext';
+import { StationProvider, useStation } from '../src/components/StationContext';
+import { ThemeProvider } from '../src/components/ThemeContext';
 
 // Mock R3F Canvas and Drei components
 vi.mock('@react-three/fiber', () => ({

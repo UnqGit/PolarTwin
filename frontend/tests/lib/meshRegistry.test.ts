@@ -10,7 +10,7 @@
  */
 
 import { describe, it, expect } from 'vitest';
-import { lookupMesh, registerMesh } from '../lib/meshRegistry';
+import { lookupMesh, registerMesh } from '../../src/lib/meshRegistry';
 
 describe('meshRegistry — built-in types', () => {
   it('returns GeneratorMesh for "generator"', () => {

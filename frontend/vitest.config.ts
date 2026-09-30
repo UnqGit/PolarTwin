@@ -10,7 +10,7 @@ export default defineConfig({
     // Vitest can only set one environment per config, so use jsdom for all and
     // the pure TS tests still work fine under jsdom.
     environment: 'jsdom',
-    setupFiles: './src/setupTests.ts',
-    include: ['src/**/*.test.{ts,tsx}'],
+    setupFiles: './tests/setupTests.ts',
+    include: ['tests/**/*.test.{ts,tsx}'],
   },
 });
