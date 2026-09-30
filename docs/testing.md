@@ -1,13 +1,33 @@
 # Testing Guide
 
-PolarTwin implements a strict testing philosophy ensuring domain isolation.
+PolarTwin implements a strict testing philosophy ensuring domain isolation. 
 
-## Backend Tests (Pytest)
-Execute with `pytest tests/` (Ensure `PYTHONPATH=src`).
-- `test_compiler.py`: Verifies DSL topological checks.
-- `test_engine_core.py`: Checks cascading physics formulas and power logic.
-- `test_event_stack.py`: Enforces LIFO rollback invariants for scenarios.
+## Frontend Testing (Vitest & React Testing Library)
 
-## Frontend Tests (Jest / RTL)
-Execute with `npm test`.
-Heavily utilizes Mock Provider injections (`StationContext`) rather than deeply integrated E2E selenium bindings. Ensure component interactions strictly call `api.*` layer boundaries.
+The frontend uses Vitest for blazing-fast execution and React Testing Library for behavioral DOM assertions.
+
+**Execution:**
+```bash
+cd frontend
+npm run test
+```
+
+**Philosophy:**
+- Heavily utilizes Mock Provider injections (`StationContext`) to simulate application state.
+- Avoids deeply integrated E2E Selenium/Playwright tests for core logic, preferring isolated component integration tests.
+- Uses `setupTests.ts` to mock missing JSDOM APIs (like `ResizeObserver` and `Three.js` WebGL contexts).
+
+## Backend Testing (Pytest)
+
+The Python backend enforces strict unit boundaries.
+
+**Execution:**
+```bash
+export PYTHONPATH=src
+pytest tests/
+```
+
+**Key Test Suites:**
+- `test_compiler.py`: Verifies DSL topological checks and AST generation.
+- `test_engine_core.py`: Validates cascading physics formulas, math boundaries, and power logic.
+- `test_event_stack.py`: Enforces LIFO rollback invariants for scenario application.
