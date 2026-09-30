@@ -141,8 +141,8 @@ describe('ConnectionsPage', () => {
       </StationContext.Provider>
     );
 
-    // Should render ConnectionsList empty state (since mock data doesn't fully simulate parents)
-    expect(await screen.findByText('No connections match search.')).toBeInTheDocument();
+    // Should render ConnectionsList showing the connection
+    expect(await screen.findByText('A')).toBeInTheDocument();
     // Should render Cytoscape container
     expect(screen.getByTestId('cytoscape-container')).toBeInTheDocument();
   });

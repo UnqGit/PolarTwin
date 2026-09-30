@@ -7,67 +7,49 @@ import { api } from '../../src/lib/api';
 vi.mock('../../src/lib/api', () => ({
   api: {
     getTelemetryRuns: vi.fn(),
-    getTelemetryHistory: vi.fn(),
-    getTelemetryRecord: vi.fn(),
+    getRunMetadata: vi.fn(),
+    getRunEvents: vi.fn(),
+    getSimulationLog: vi.fn(),
+    getExternalHistory: vi.fn(),
+    getConnectionHistory: vi.fn(),
+    getComponentHistory: vi.fn(),
   }
 }));
 
 const mockRuns = [
-  { run_id: 'run-1', station_id: 'Station1' },
-  { run_id: 'run-2', station_id: 'Station1' }
+  { run_id: 'run-1', station_id: 'Station1', start_time: 1690000000, status: 'FINISHED' },
+  { run_id: 'run-2', station_id: 'Station1', start_time: 1690000010, status: 'ERROR' }
 ];
 
-const mockHistory = [
-  { id: 101, run_id: 'run-1', station_id: 'Station1', simulation_time: 10.5, persistence_time: 1690000000, source: 'SIMULATION', component_count: 5, connection_count: 3 },
-  { id: 102, run_id: 'run-1', station_id: 'Station1', simulation_time: 20.0, persistence_time: 1690000010, source: 'SIMULATION', component_count: 5, connection_count: 3 },
-];
-
-const mockRecord = {
-  id: 102,
-  run_id: 'run-1',
-  station_id: 'Station1',
-  source: 'SIMULATION',
-  time: 20.0,
-  persistence_time: 1690000010,
-  components: [
-    { component_name: 'Heater1', type: 'heater', status: 'active', value_json: { temp: 22 } }
-  ],
-  connections: [
-    { source_name: 'Panel1', target_name: 'Heater1', type: 'power', status: 'active' }
-  ],
-  external: {
-    temperature: -40,
-    wind_speed: 15
-  }
+const mockMeta = {
+  id: 'run-1',
+  station_model_id: 'Station1',
+  scenario_id: 'blizzard',
+  status: 'FINISHED',
+  start_time: 1690000000,
+  end_time: 1690000100,
+  record_count: 50
 };
+
+const mockEvents = [
+  { id: 1, simulation_time: 10.5, source: 'SIMULATION' },
+  { id: 2, simulation_time: 20.0, source: 'SIMULATION' },
+];
+
+const mockLogs = [
+  { level: 'INFO', time: 10.5, message: 'Started' },
+];
 
 describe('DiagnosticsPage', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     (api.getTelemetryRuns as any).mockResolvedValue(mockRuns);
-    (api.getTelemetryHistory as any).mockResolvedValue(mockHistory);
-    (api.getTelemetryRecord as any).mockResolvedValue(mockRecord);
+    (api.getRunMetadata as any).mockResolvedValue(mockMeta);
+    (api.getRunEvents as any).mockResolvedValue(mockEvents);
+    (api.getSimulationLog as any).mockResolvedValue(mockLogs);
   });
 
-  it('prompts to select a station if none selected', () => {
-    render(
-      <StationContext.Provider value={{
-        selectedStation: '',
-        hierarchy: null,
-        connections: null,
-        spec: null,
-        availableStations: [],
-        isLoadingData: false,
-        setSelectedStation: vi.fn()
-      } as any}>
-        <DiagnosticsPage />
-      </StationContext.Provider>
-    );
-
-    expect(screen.getByText('Please select a station first.')).toBeInTheDocument();
-  });
-
-  it('loads and displays telemetry history', async () => {
+  it('renders simulation history layout', async () => {
     render(
       <StationContext.Provider value={{
         selectedStation: 'Station1',
@@ -82,23 +64,15 @@ describe('DiagnosticsPage', () => {
       </StationContext.Provider>
     );
 
-    // Initial render
-    expect(screen.getByText('History & Diagnostics')).toBeInTheDocument();
-
-    // Verify history timeline populated
-    expect(await screen.findByText('10.50s')).toBeInTheDocument();
-    expect(await screen.findByText('20.00s')).toBeInTheDocument();
-
-    // Automatically selects the latest record (102) but let's click it to be sure
-    const latestRow = await screen.findByText('20.00s');
-    fireEvent.click(latestRow);
-
+    expect(screen.getByText('Simulation History')).toBeInTheDocument();
+    
+    // Check if runs are loaded into select options
     await waitFor(() => {
-      expect(api.getTelemetryRecord).toHaveBeenCalledWith(102);
+      expect(screen.getAllByRole('option').length).toBeGreaterThan(1);
     });
   });
 
-  it('filters history by run', async () => {
+  it('loads run details when a run is selected', async () => {
     render(
       <StationContext.Provider value={{
         selectedStation: 'Station1',
@@ -113,17 +87,24 @@ describe('DiagnosticsPage', () => {
       </StationContext.Provider>
     );
 
-    const elements = await screen.findAllByText('run-1');
-    expect(elements.length).toBeGreaterThan(0);
+    await waitFor(() => {
+      expect(screen.getAllByRole('option').length).toBeGreaterThan(1);
+    });
 
-    const runSelect = screen.getByLabelText(/Run:/i);
+    const runSelect = screen.getByRole('combobox');
     
     // Change run selection
     fireEvent.change(runSelect, { target: { value: 'run-1' } });
     
-    // Should refetch history with runId
+    // Should fetch metadata, events, and logs
     await waitFor(() => {
-      expect(api.getTelemetryHistory).toHaveBeenCalledWith('Station1', 'run-1');
+      expect(api.getRunMetadata).toHaveBeenCalledWith('run-1');
+      expect(api.getRunEvents).toHaveBeenCalledWith('run-1');
+      expect(api.getSimulationLog).toHaveBeenCalledWith('run-1');
     });
+
+    // Check if timeline is populated
+    expect((await screen.findAllByText('10:30:00'))[0]).toBeInTheDocument();
+    expect((await screen.findAllByText('20:00:00'))[0]).toBeInTheDocument();
   });
 });

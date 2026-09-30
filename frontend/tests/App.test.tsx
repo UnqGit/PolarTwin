@@ -1,21 +1,28 @@
-import { render, screen } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
 import App from '../src/App';
-import { HoverProvider } from '../src/components/HoverContext';
+import { ThemeProvider } from '../src/components/ThemeContext';
 
-describe('Phase 34: Navigation and Station Context', () => {
-  it('renders the navigation bar and layout container', () => {
+vi.mock('../src/lib/api', () => ({
+  api: {
+    getStations: vi.fn().mockResolvedValue([{ station_id: 'TestStation' }]),
+  }
+}));
+
+// We only need to check if LandingPage renders at the root route
+describe('App Routing', () => {
+  it('renders the LandingPage at the root path', async () => {
+    // App contains its own BrowserRouter
     render(
-      <HoverProvider>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
-      </HoverProvider>
+      <ThemeProvider>
+        <App />
+      </ThemeProvider>
     );
-    
-    // Test that the app layout is rendered
-    const nav = screen.getByRole('navigation');
-    expect(nav).toBeInTheDocument();
+
+    // LandingPage has a specific title
+    await waitFor(() => {
+      expect(screen.getByText('PolarTwin')).toBeInTheDocument();
+      expect(screen.getByText('Select a Station')).toBeInTheDocument();
+    });
   });
 });

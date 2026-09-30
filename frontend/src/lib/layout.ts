@@ -957,11 +957,16 @@ export function buildLayout(node: any, spec: any, rawConnections: any[] = []): N
  * @param spec     — raw specification JSON (spec.json).
  */
 export function buildSceneLayout(topology: any, connectionsData: any, spec: any): SceneLayout {
-  // Apply sensor array grouping transformation
-  const { finalTopology, finalConnections } = transformSensorArrays(
-    Array.isArray(topology) ? topology : [],
-    Array.isArray(connectionsData) ? connectionsData : []
-  );
+  const isFlat = Array.isArray(topology);
+  let finalTopology = topology;
+  let finalConnections = Array.isArray(connectionsData) ? connectionsData : [];
+
+  // Apply sensor array grouping transformation only for flat topologies
+  if (isFlat) {
+    const res = transformSensorArrays(finalTopology, finalConnections);
+    finalTopology = res.finalTopology;
+    finalConnections = res.finalConnections;
+  }
 
   let rootNode = finalTopology;
   

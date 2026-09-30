@@ -23,7 +23,7 @@ vi.mock('../../src/lib/api', () => ({
 }));
 
 // Mock TwinViewer to avoid Three.js rendering errors in tests
-vi.mock('../components/TwinViewer', () => ({
+vi.mock('../../src/components/TwinViewer', () => ({
   TwinViewer: (props: any) => (
     <div data-testid="mock-twin-viewer">
       TwinViewer Mock
@@ -85,7 +85,7 @@ describe('ScenariosPage', () => {
     expect(screen.getAllByText('failure.event').length).toBeGreaterThan(0);
     
     // Should render timeline
-    expect(screen.getByText('TIMELINE EDITOR')).toBeInTheDocument();
+    expect(screen.getByText('TIMELINE')).toBeInTheDocument();
   });
 
   it.skip('loads a scenario and initializes simulation', async () => {
@@ -157,11 +157,11 @@ describe('ScenariosPage', () => {
     // but the inspector tab is what triggers the visual update when saved. 
     // Wait for timeline editor event to be rendered.
     await waitFor(() => {
-      expect(screen.getAllByText(/failure/s+@Generator1/)[0]).toBeInTheDocument();
+      expect(screen.getAllByText(/failure.*Generator1/)[0]).toBeInTheDocument();
     });
     
     // Simulate clicking the event on timeline
-    fireEvent.click(screen.getAllByText(/failure/s+@Generator1/)[0]);
+    fireEvent.click(screen.getAllByText(/failure.*Generator1/)[0]);
 
     // Ensure Inspector is visible and shows the event
     await waitFor(() => {

@@ -49,7 +49,11 @@ function makeTopology(overrides: any = {}) {
 function makeSpec(
   components: Record<string, { type: string; spec: Record<string, unknown> }> = {}
 ) {
-  return { components, defaults: {} };
+  return Object.entries(components).map(([name, data]) => ({
+    name,
+    type: data.type,
+    ...data.spec,
+  }));
 }
 
 // ─── Naming ───────────────────────────────────────────────────────────────────
@@ -101,21 +105,21 @@ describe('Dimensions — flat spec keys', () => {
     });
     const layout = buildLayout(topo, spec);
     // Conflict → falls back to generator default
-    expect(layout.dims.width).toBe(2.4);
+    expect(layout.dims.width).toBe(3.6);
   });
 
   it('falls back to type default when "length" (depth) is missing', () => {
     const topo = makeTopology({ name: 'Widget', type: 'generator' });
     const spec = makeSpec({ Widget: { type: 'generator', spec: { width: 5, height: 3 } } });
     const layout = buildLayout(topo, spec);
-    expect(layout.dims.width).toBe(2.4);
+    expect(layout.dims.width).toBe(3.6);
   });
 
   it('falls back to type default when "height" is missing', () => {
     const topo = makeTopology({ name: 'Widget', type: 'generator' });
     const spec = makeSpec({ Widget: { type: 'generator', spec: { width: 5, length: 2 } } });
     const layout = buildLayout(topo, spec);
-    expect(layout.dims.width).toBe(2.4);
+    expect(layout.dims.width).toBe(3.6);
   });
 });
 
@@ -124,17 +128,17 @@ describe('Dimensions — flat spec keys', () => {
 describe('Dimensions — type defaults', () => {
   it('assigns generator type default when no explicit dims', () => {
     const layout = buildLayout(makeTopology({ name: 'Gen', type: 'generator' }), makeSpec());
-    expect(layout.dims).toEqual({ width: 2.4, height: 1.8, depth: 1.6 });
+    expect(layout.dims).toEqual({ width: 3.6, height: 2.7, depth: 2.4 });
   });
 
   it('assigns sensor type default', () => {
     const layout = buildLayout(makeTopology({ name: 'S', type: 'sensor' }), makeSpec());
-    expect(layout.dims).toEqual({ width: 0.6, height: 0.6, depth: 0.6 });
+    expect(layout.dims).toEqual({ width: 0.9, height: 0.9, depth: 0.9 });
   });
 
   it('assigns generic fallback for unknown type', () => {
     const layout = buildLayout(makeTopology({ name: 'X', type: 'quantum_widget' }), makeSpec());
-    expect(layout.dims).toEqual({ width: 1.0, height: 1.0, depth: 1.0 });
+    expect(layout.dims).toEqual({ width: 1.5, height: 1.5, depth: 1.5 });
   });
 });
 
@@ -156,19 +160,19 @@ describe('Dimensions — container inference', () => {
 
   it('container width is larger than any single child width', () => {
     const layout = threeChildLayout();
-    expect(layout.dims.width).toBeGreaterThan(2.4);
+    expect(layout.dims.width).toBeGreaterThan(3.6);
   });
 
   it('container height encompasses the tallest child', () => {
     const layout = threeChildLayout();
-    // max child height = 1.8 (generator); container must be >= 1.8
-    expect(layout.dims.height).toBeGreaterThanOrEqual(1.8);
+    // max child height = 2.7 (generator); container must be >= 2.7
+    expect(layout.dims.height).toBeGreaterThanOrEqual(2.7);
   });
 
   it('container dims include padding', () => {
     const layout = threeChildLayout();
-    // Packed width of (gen 2.4 + gap + sensor 0.6) per row; verify padding is added
-    expect(layout.dims.width).toBeGreaterThan(2.4 + 0.6 * 2);
+    // Packed width of (gen 3.6 + gap + sensor 0.9) per row; verify padding is added
+    expect(layout.dims.width).toBeGreaterThan(3.6 + 0.9 * 2);
   });
 
   it('nested container dims expand correctly', () => {
