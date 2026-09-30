@@ -103,6 +103,7 @@ export interface SceneLayout {
   root: NodeLayout;
   connections: ConnectionLayout[];
   allNodes: Map<string, NodeInfo>;
+  connectionRouterGenerator?: () => Generator<any, any, any>;
 }
 
 // ─── constants ────────────────────────────────────────────────────────────────

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useMemo } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Trash2 } from 'lucide-react';
 import { formatTime } from '../utils';
 
@@ -28,7 +28,6 @@ const AURORA_COLORS = ['#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#d946ef'];
 export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime, onSelectEvent, selectedEvent, onAppendEvent, onUpdateEventLocation, onDeleteEvent, onSeek }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const topScrollRef = useRef<HTMLDivElement>(null);
-  const isSyncingScroll = useRef(false);
   const [containerWidth, setContainerWidth] = useState(800);
 
   const PIXELS_PER_UNIT = 40; // 40px per simulation hour

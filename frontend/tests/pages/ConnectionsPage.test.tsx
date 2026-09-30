@@ -85,7 +85,7 @@ describe('ConnectionsPage', () => {
         availableStations: [],
         isLoadingData: true,
         setSelectedStation: vi.fn(),
-      }}>
+      } as any}>
         <ConnectionsPage />
       </StationContext.Provider>
     );
@@ -102,7 +102,7 @@ describe('ConnectionsPage', () => {
         availableStations: [],
         isLoadingData: false,
         setSelectedStation: vi.fn(),
-      }}>
+      } as any}>
         <ConnectionsPage />
       </StationContext.Provider>
     );
@@ -136,7 +136,7 @@ describe('ConnectionsPage', () => {
         availableStations: [],
         isLoadingData: false,
         setSelectedStation: vi.fn(),
-      }}>
+      } as any}>
         <ConnectionsPage />
       </StationContext.Provider>
     );

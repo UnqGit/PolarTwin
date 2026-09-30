@@ -6,7 +6,6 @@ import { api } from '../lib/api';
 import { TypeIcon } from './TypeIcon';
 import { ConnectionsList } from './ConnectionsList';
 import { Network, Link2, Sliders, ChevronRight, Eye, EyeOff, Focus, Edit2 } from 'lucide-react';
-import { useTheme } from './ThemeContext';
 
 const PANEL_BORDER = '1px solid var(--border-color)';
 const ITEM_HEIGHT = 26;
@@ -150,7 +149,6 @@ export interface HierarchyPanelProps {
   onResetCamera?: () => void;
   activeLayer?: number | null;
   setActiveLayer?: (layer: number | null) => void;
-  onShowGraph?: () => void;
   customSidebarTabs?: { id: string, icon: React.ReactNode, title: string, content: React.ReactNode }[];
   lightingMode?: 'dynamic' | 'static' | 'off';
   onLightingModeChange?: (mode: 'dynamic' | 'static' | 'off') => void;
@@ -226,7 +224,7 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
   hideAllComponents, hideAllConnections,
   onHideAllComponentsChange, onHideAllConnectionsChange,
   onResetCamera, activeLayer = null, setActiveLayer,
-  onShowGraph, customSidebarTabs,
+  customSidebarTabs,
   lightingMode, onLightingModeChange,
   containerOcclusion, onContainerOcclusionChange,
   bottomOffset = 0, hideEditInitials = false,
@@ -401,12 +399,7 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
               const states: string[] = [];
               const outputs: string[] = [];
 
-              const CANONICAL_UNITS: Record<string, string> = {
-                voltage: 'V', current: 'A', power: 'W', energy: 'J',
-                light_irradiance: 'W/m2', frequency: 'Hz', temperature: 'C',
-                flowrate: 'L/s', air_particulates: 'ppm', o2_level: '0-1',
-                co2_level: '0-1', volume: 'L', weight: 'kg'
-              };
+              // Check for power state as canonical state if state obj exists
 
               if (specObj.rating) {
                 for (const k of Object.keys((specObj.rating as any).input || {})) inputs.push(k);
