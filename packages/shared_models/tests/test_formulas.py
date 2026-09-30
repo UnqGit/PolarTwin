@@ -157,6 +157,7 @@ class TestFailureFormulas:
         """The countdown is in simulation time, scaled by reference_duration."""
         result_1 = compute_failure_countdown(105.0, 100.0, 110.0, reference_duration=1.0)
         result_240 = compute_failure_countdown(105.0, 100.0, 110.0, reference_duration=240.0)
+        assert result_1 is not None
         assert result_240 == pytest.approx(result_1 * 240.0)
 
 

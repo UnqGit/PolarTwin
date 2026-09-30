@@ -2,12 +2,12 @@ import argparse
 from pathlib import Path
 try:
     from .validate_twin import validate_twin
-    from .relation_parser import generate_relation_json
+    from .hierarchy_parser import generate_hierarchy_json
     from .connection_parser import generate_connection_json
     from .spec_parser import generate_spec_json
 except ImportError:
     from validate_twin import validate_twin
-    from relation_parser import generate_relation_json
+    from hierarchy_parser import generate_hierarchy_json
     from connection_parser import generate_connection_json
     from spec_parser import generate_spec_json
 
@@ -80,7 +80,7 @@ def main():
     print(f"Parsing relation file: {relation_file}")
 
     try:
-        generate_relation_json(
+        generate_hierarchy_json(
             relation_file,
             relation_output
         )
@@ -116,6 +116,7 @@ def main():
     try:
         generate_spec_json(
             spec_file,
+            [], # Empty hierarchy_components as this is a generic script
             spec_output
         )
     except Exception as e:

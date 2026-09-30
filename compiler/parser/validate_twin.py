@@ -451,7 +451,7 @@ def validate_cross_reference(relation, spec, nodes, result):
         and isinstance(component.get("type"), str)
     }
 
-    all_types = relation_types | spec_types
+    all_types = {t for t in (relation_types | spec_types) if t is not None}
 
     for component_type in sorted(all_types):
 
