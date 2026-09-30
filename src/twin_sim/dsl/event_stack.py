@@ -1,9 +1,10 @@
-from typing import Any, Dict, List, Optional
 import copy
+from typing import Any
+
 from pydantic import BaseModel
 
-from twin_sim.ingestion.models import RuntimeComponent, RuntimeConnection, ExternalModel
 from twin_sim.dsl.semantics import _set_nested_field
+from twin_sim.ingestion.models import ExternalModel, RuntimeComponent, RuntimeConnection
 
 
 class EventLayer(BaseModel):
@@ -19,8 +20,8 @@ class EventLayer(BaseModel):
 class TimelineStateManager:
     def __init__(
         self,
-        components: List[RuntimeComponent],
-        connections: List[RuntimeConnection],
+        components: list[RuntimeComponent],
+        connections: list[RuntimeConnection],
         external: ExternalModel,
     ):
         # We store the base state as deep copies so we don't mutate the originals
@@ -34,10 +35,10 @@ class TimelineStateManager:
         self.base_external = copy.deepcopy(external)
 
         # Active layers affecting fields
-        self.active_layers: List[EventLayer] = []
+        self.active_layers: list[EventLayer] = []
 
         # Permanent layers (infinite events applied to base state)
-        self.permanent_layers: List[EventLayer] = []
+        self.permanent_layers: list[EventLayer] = []
 
         # Current effective state (recalculated whenever layers change)
         self.effective_components = {
@@ -200,7 +201,7 @@ class TimelineStateManager:
             eff_node = self._get_effective_node(layer.node_key)
             _set_nested_field(eff_node, layer.field_path, layer.value)
 
-    def get_effective_state_dict(self) -> Dict[str, Any]:
+    def get_effective_state_dict(self) -> dict[str, Any]:
         """Returns the dictionary format expected by semantic evaluators."""
         return {
             "components": list(self.effective_components.values()),

@@ -4,13 +4,13 @@ from pathlib import Path
 
 try:
     # When run as a module (e.g., python -m compiler.formatter.format_twin)
-    from .relation_formatter import format_file as format_relation_file
     from .connection_formatter import format_file as format_connection_file
+    from .relation_formatter import format_file as format_relation_file
     from .spec_formatter import format_file as format_spec_file
 except ImportError:
     # When run directly as a script (e.g., python format_twin.py)
-    from relation_formatter import format_file as format_relation_file
     from connection_formatter import format_file as format_connection_file
+    from relation_formatter import format_file as format_relation_file
     from spec_formatter import format_file as format_spec_file
 
 
@@ -71,7 +71,7 @@ def main():
 
     try:
         format_relation_file(relation_file, relation_file, in_place=True)
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(
             f"Error formatting {relation_file}: {e}",
             file=sys.stderr
@@ -93,7 +93,7 @@ def main():
 
     try:
         format_connection_file(connection_file, connection_file, in_place=True)
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(
             f"Error formatting {connection_file}: {e}",
             file=sys.stderr
@@ -115,7 +115,7 @@ def main():
 
     try:
         format_spec_file(spec_file, spec_file)
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(
             f"Error formatting {spec_file}: {e}",
             file=sys.stderr

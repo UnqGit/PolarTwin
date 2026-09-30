@@ -1,5 +1,6 @@
 import re
 
+
 def strip_comments(text: str) -> str:
     """
     Strips single-line (#) and multi-line (/* ... */) comments from the text.

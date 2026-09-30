@@ -6,8 +6,8 @@ so that frontend diagnostics receive actionable information.
 """
 
 from __future__ import annotations
+
 from dataclasses import dataclass, field
-from typing import Optional
 
 
 @dataclass(frozen=True)
@@ -117,7 +117,7 @@ class Diagnostic:
     code: str
     message: str
     severity: str = "error"   # "error" | "warning"
-    location: Optional[SourceLocation] = None
+    location: SourceLocation | None = None
     context: dict = field(default_factory=dict)
 
     @property

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from .base import Behavior, BehaviorContext, SpecializedBehavior
+from .base import BehaviorContext, SpecializedBehavior
 
 
 def _get_nested(spec: dict[str, Any], key: str) -> dict[str, Any] | None:

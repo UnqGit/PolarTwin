@@ -25,7 +25,7 @@ class TelemetrySink(ABC):
     def close(self) -> None:
         return None
 
-    def __enter__(self) -> "TelemetrySink":
+    def __enter__(self) -> TelemetrySink:  # noqa: PYI034
         self.start()
         return self
 

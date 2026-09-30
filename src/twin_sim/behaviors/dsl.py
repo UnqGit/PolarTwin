@@ -7,6 +7,7 @@ import operator
 from typing import Any
 
 from twin_sim.model import Component
+
 from .base import Behavior, BehaviorContext
 
 
@@ -100,7 +101,7 @@ class DslEvaluator(ast.NodeVisitor):
         if op_type in self.operations:
             try:
                 return self.operations[op_type](left, right)  # type: ignore
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 raise DslExecutionError(f"Math error in '{op_type.__name__}': {e}")
         raise DslExecutionError(f"Unsupported binary operator: {op_type}")
 

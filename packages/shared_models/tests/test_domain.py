@@ -5,21 +5,20 @@ Tests that domain model serialization/deserialization round-trips correctly
 and that all spec-required fields are present.
 """
 
-import pytest
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 
 from packages.shared_models.domain import (
-    HierarchyComponent,
-    CompiledConnection,
-    RuntimeConnection,
-    RuntimeComponent,
+    ALL_COMPONENT_TYPES,
     CONTAINER_TYPES,
     LEAF_COMPONENT_TYPES,
-    ALL_COMPONENT_TYPES,
     SUPPORTED_CONNECTION_TYPES,
+    CompiledConnection,
+    HierarchyComponent,
+    RuntimeComponent,
+    RuntimeConnection,
 )
 
 

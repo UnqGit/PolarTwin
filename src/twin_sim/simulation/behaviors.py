@@ -1,5 +1,3 @@
-import math
-from typing import Any, Dict
 
 
 def clamp(val, min_val, max_val):
@@ -123,7 +121,7 @@ def container_temperature(
     t_prev: float,
     t_surr: float,
     inner_temps: list[float],
-    ac_vents: list[Dict[str, float]],
+    ac_vents: list[dict[str, float]],
     beta: float = 0.5,
     alpha_inner: float = 0.225,
     alpha_surr: float = 0.8,

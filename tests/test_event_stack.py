@@ -1,10 +1,11 @@
 import unittest
+
 from twin_sim.dsl.event_stack import TimelineStateManager
 from twin_sim.ingestion.models import (
-    RuntimeComponent,
     ExternalModel,
-    WeatherModel,
     NetworkModel,
+    RuntimeComponent,
+    WeatherModel,
 )
 
 

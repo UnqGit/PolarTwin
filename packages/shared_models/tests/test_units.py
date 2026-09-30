@@ -6,20 +6,18 @@ Boundary and zero values are tested.
 Error cases for unsupported units are tested.
 """
 
-import pytest
-import sys
 import os
-import math
+import sys
+
+import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 
 from packages.shared_models.units import (
+    UnitConversionError,
+    canonical_unit,
     to_canonical,
     validate_unit,
-    canonical_unit,
-    UnitConversionError,
-    ACCEPTED_UNITS,
-    CANONICAL_UNITS,
 )
 
 

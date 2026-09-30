@@ -11,9 +11,6 @@ All parameters use canonical units as defined in spec §3.6.
 
 from __future__ import annotations
 
-import math
-
-
 # ---------------------------------------------------------------------------
 # Constants used in formulas
 # ---------------------------------------------------------------------------

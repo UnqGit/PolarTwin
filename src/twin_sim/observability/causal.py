@@ -57,7 +57,7 @@ class CausalExplanation:
     def format_text(self) -> str:
         lines = [self.question, ""]
         if not self.chain:
-            return "\n".join([self.question, "", "No causal events recorded."])
+            return "\n".join([self.question, "", "No causal events recorded."])  # noqa: FLY002
         for i, step in enumerate(self.chain):
             lines.append(step)
             if i < len(self.chain) - 1:
@@ -105,7 +105,7 @@ class CausalTracer:
 
         for event in self.events:
             for effect in event.effects:
-                if effect.component == component:
+                if effect.component == component:  # noqa: SIM102
                     if event not in events:
                         events.append(event)
                         if event.chain:
@@ -119,7 +119,7 @@ class CausalTracer:
 
         if not events:
             chain = [
-                f"Component operated in steady state with no external disturbances or failure events."
+                "Component operated in steady state with no external disturbances or failure events."
             ]
 
         return CausalExplanation(

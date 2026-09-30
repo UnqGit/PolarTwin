@@ -1,16 +1,14 @@
+import json
 import unittest
 from pathlib import Path
-from tempfile import NamedTemporaryFile, TemporaryDirectory
-import json
+from tempfile import TemporaryDirectory
 
-from twin_sim.ingestion.models import (
-    to_canonical,
-    canonicalize_measurement,
-    WeatherModel,
-    NetworkModel,
-    ExternalModel,
-)
 from twin_sim.ingestion.loaders import initialize_simulation_state
+from twin_sim.ingestion.models import (
+    ExternalModel,
+    canonicalize_measurement,
+    to_canonical,
+)
 
 
 class TestRuntimeIngestion(unittest.TestCase):
@@ -110,7 +108,7 @@ class TestRuntimeIngestion(unittest.TestCase):
                 )
             )
 
-            components, connections, external = initialize_simulation_state(
+            components, connections, external = initialize_simulation_state(  # noqa: RUF059
                 h_path, c_path, s_path
             )
 

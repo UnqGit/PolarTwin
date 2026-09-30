@@ -1,15 +1,16 @@
 import argparse
 from pathlib import Path
+
 try:
-    from .validate_twin import validate_twin
-    from .hierarchy_parser import generate_hierarchy_json
     from .connection_parser import generate_connection_json
+    from .hierarchy_parser import generate_hierarchy_json
     from .spec_parser import generate_spec_json
+    from .validate_twin import validate_twin
 except ImportError:
-    from validate_twin import validate_twin
-    from hierarchy_parser import generate_hierarchy_json
-    from connection_parser import generate_connection_json
-    from spec_parser import generate_spec_json
+    from connection_parser import generate_connection_json  # type: ignore
+    from hierarchy_parser import generate_hierarchy_json  # type: ignore
+    from spec_parser import generate_spec_json  # type: ignore
+    from validate_twin import validate_twin  # type: ignore
 
 
 import json
@@ -84,7 +85,7 @@ def main():
             relation_file,
             relation_output
         )
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"Failed to generate relation.json: {e}")
         raise SystemExit(1)
 
@@ -103,7 +104,7 @@ def main():
             topology_data,
             connection_output
         )
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"Failed to generate connection.json: {e}")
         raise SystemExit(1)
 
@@ -119,7 +120,7 @@ def main():
             [], # Empty hierarchy_components as this is a generic script
             spec_output
         )
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001
         print(f"Failed to generate spec.json: {e}")
         raise SystemExit(1)
 

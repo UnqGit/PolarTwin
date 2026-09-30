@@ -4,9 +4,8 @@ Phase 0 tests: Status enums.
 Tests that the status enums are defined correctly and match spec §0.3 exactly.
 """
 
-import pytest
-import sys
 import os
+import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 

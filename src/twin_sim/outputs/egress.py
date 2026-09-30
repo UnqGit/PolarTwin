@@ -1,8 +1,10 @@
 """Egress pipeline (Demodulator) for expanding compressed telemetry before storage."""
 
 from typing import Any
+
+from twin_sim.telemetry.model import DeltaTelemetryMessage, TelemetryMessage
+
 from .base import TelemetrySink
-from twin_sim.telemetry.model import TelemetryMessage, DeltaTelemetryMessage
 
 
 class TelemetryDemodulator(TelemetrySink):

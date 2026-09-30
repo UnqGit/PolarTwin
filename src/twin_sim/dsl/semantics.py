@@ -1,6 +1,6 @@
 import re
-from typing import Any, Dict, List, Optional
-from twin_sim.ingestion.models import RuntimeComponent, RuntimeConnection, ExternalModel
+from typing import Any
+
 from packages.shared_models.errors import ParseError
 
 
@@ -14,7 +14,7 @@ class SemanticError(ParseError):
 
 
 class ASTNode:
-    def evaluate(self, node: Any, state: Dict[str, Any]) -> bool:
+    def evaluate(self, node: Any, state: dict[str, Any]) -> bool:
         raise NotImplementedError()
 
 
@@ -24,7 +24,7 @@ class ComparisonNode(ASTNode):
         self.op = op
         self.right = right
 
-    def evaluate(self, node: Any, state: Dict[str, Any]) -> bool:
+    def evaluate(self, node: Any, state: dict[str, Any]) -> bool:
         left_val = self._resolve_path(self.left, node, state)
         right_val = self._parse_literal(self.right)
 
@@ -48,7 +48,7 @@ class ComparisonNode(ASTNode):
             return False
         return False
 
-    def _resolve_path(self, path: str, node: Any, state: Dict[str, Any]) -> Any:
+    def _resolve_path(self, path: str, node: Any, state: dict[str, Any]) -> Any:
         # Handle @connection(...) and @component(...) lookups
         if path.startswith("@connection("):
             return self._resolve_connection_lookup(path, node, state)
@@ -73,7 +73,7 @@ class ComparisonNode(ASTNode):
         return current
 
     def _resolve_connection_lookup(
-        self, path: str, node: Any, state: Dict[str, Any]
+        self, path: str, node: Any, state: dict[str, Any]
     ) -> Any:
         # e.g., @connection(@node|data|).status
         m = re.match(r"^@connection\((.*?)\)(?:\.(.*))?$", path)
@@ -94,10 +94,8 @@ class ComparisonNode(ASTNode):
 
         # Check if there is any connection matching the query
         for c in connections:
-            if src_query:
-                if src_query == "@node" and c.source != node_name:
-                    continue
-                elif src_query != "@node" and c.source != src_query:
+            if src_query:  # noqa: SIM102
+                if src_query == "@node" and c.source != node_name or src_query != "@node" and c.source != src_query:
                     continue
 
             if type_query and c.type != type_query:
@@ -126,7 +124,7 @@ class ComparisonNode(ASTNode):
         return False
 
     def _resolve_component_lookup(
-        self, path: str, node: Any, state: Dict[str, Any]
+        self, path: str, node: Any, state: dict[str, Any]
     ) -> Any:
         # e.g., @component(source).type
         m = re.match(r"^@component\((.*?)\)(?:\.(.*))?$", path)
@@ -171,7 +169,7 @@ class ExistsNode(ASTNode):
     def __init__(self, path: str):
         self.path = path
 
-    def evaluate(self, node: Any, state: Dict[str, Any]) -> bool:
+    def evaluate(self, node: Any, state: dict[str, Any]) -> bool:
         comp = ComparisonNode(self.path, "=", "true")
         res = comp._resolve_path(self.path, node, state)
         return bool(res)
@@ -193,7 +191,7 @@ def build_where_ast(clause: str) -> ASTNode:
                     in_parens += 1
                 elif char == ")":
                     in_parens -= 1
-                elif in_parens == 0:
+                elif in_parens == 0:  # noqa: SIM102
                     if clause[i : i + len(op)] == op:
                         left = clause[:i].strip()
                         right = clause[i + len(op) :].strip()
@@ -203,7 +201,7 @@ def build_where_ast(clause: str) -> ASTNode:
     return ExistsNode(clause)
 
 
-def evaluate_node(node: Any, where_clauses: List[str], state: Dict[str, Any]) -> bool:
+def evaluate_node(node: Any, where_clauses: list[str], state: dict[str, Any]) -> bool:
     for clause in where_clauses:
         # Split by `&` at the outer level (handled loosely here by assuming `&` is already split in the parser)
         # Actually in parser I split by `& \n`, but if it's inline, we might need to split it here if not done.
@@ -219,7 +217,7 @@ def evaluate_node(node: Any, where_clauses: List[str], state: Dict[str, Any]) ->
 # ---------------------------------------------------------
 
 
-def dict_deep_update(base: Dict[str, Any], overrides: Dict[str, Any]):
+def dict_deep_update(base: dict[str, Any], overrides: dict[str, Any]):
     for k, v in overrides.items():
         if isinstance(v, dict) and k in base and isinstance(base[k], dict):
             dict_deep_update(base[k], v)
@@ -247,9 +245,9 @@ def _set_nested_field(obj: Any, path: str, value: Any):
 
 def apply_set(
     node: Any,
-    fixed_sets: Dict[str, Any],
-    payload: Dict[str, Any],
-    set_allowed: List[str],
+    fixed_sets: dict[str, Any],
+    payload: dict[str, Any],
+    set_allowed: list[str],
     set_fields_allowed: bool,
 ):
     """
@@ -263,8 +261,8 @@ def apply_set(
 
     # 2. Check payload restrictions against set_allowed / set_fields_allowed
     if not set_fields_allowed:
-        for key in payload.keys():
-            if key not in set_allowed and not any(
+        for key in payload:
+            if key not in set_allowed and not any(  # noqa: SIM102
                 a.startswith(f"{key}.") for a in set_allowed
             ):
                 # If they try to set `value` but only `value.temperature` is allowed, we must recursively check.
@@ -289,8 +287,8 @@ def apply_set(
                     setattr(node, k, v)
             else:
                 # If it's a dynamic field in 'value' dict, try putting it there
-                if hasattr(node, "value") and isinstance(getattr(node, "value"), dict):
-                    current_val = getattr(node, "value")
+                if hasattr(node, "value") and isinstance(node.value, dict):
+                    current_val = node.value
                     current_val[k] = v
                 else:
                     setattr(node, k, v)

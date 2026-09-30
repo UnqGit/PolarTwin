@@ -1,6 +1,6 @@
-import unittest
 import sqlite3
-import json
+import unittest
+
 from twin_sim.telemetry.database import TelemetryDatabase
 
 

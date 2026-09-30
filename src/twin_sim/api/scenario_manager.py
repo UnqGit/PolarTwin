@@ -11,11 +11,10 @@ Storage Layout:
 from __future__ import annotations
 
 import time
-from typing import Any, Dict, List
-import uuid
+from typing import Any
 
-from twin_sim.dsl.scene_parser import parse_scene_string, SceneParseError
 from twin_sim.dsl.models import SceneEvent
+from twin_sim.dsl.scene_parser import SceneParseError, parse_scene_string
 from twin_sim.telemetry.database import TelemetryDatabase
 
 
@@ -38,7 +37,7 @@ class ScenarioManager:
     # Scenarios (CRUD)
     # ------------------------------------------------------------------
 
-    def list_for_station(self, station_id: str) -> List[Dict[str, Any]]:
+    def list_for_station(self, station_id: str) -> list[dict[str, Any]]:
         cur = self.db.conn.execute(
             "SELECT * FROM scenario_files WHERE LOWER(station_id) = LOWER(?)",
             (station_id,),
@@ -56,7 +55,7 @@ class ScenarioManager:
             )
         return sorted(results, key=lambda x: x["name"])
 
-    def create(self, station_id: str, name: str, source: str = "") -> Dict[str, Any]:
+    def create(self, station_id: str, name: str, source: str = "") -> dict[str, Any]:
         name = name.strip().replace("/", "").replace("\\", "").replace(":", "")
         if not name:
             raise ValueError("Scenario name cannot be empty")
@@ -78,7 +77,7 @@ class ScenarioManager:
         self.db.conn.commit()
         return {"id": scenario_id, "station_id": station_id, "name": name}
 
-    def get(self, scenario_id: str) -> Dict[str, Any]:
+    def get(self, scenario_id: str) -> dict[str, Any]:
         cur = self.db.conn.execute(
             "SELECT * FROM scenario_files WHERE id = ?", (scenario_id,)
         )
@@ -103,7 +102,7 @@ class ScenarioManager:
             raise FileNotFoundError(f"Scenario '{scenario_id}' not found")
         return row["source"]
 
-    def update_source(self, scenario_id: str, source: str) -> Dict[str, Any]:
+    def update_source(self, scenario_id: str, source: str) -> dict[str, Any]:
         cur = self.db.conn.execute(
             "SELECT id FROM scenario_files WHERE id = ?", (scenario_id,)
         )
@@ -118,7 +117,7 @@ class ScenarioManager:
         self.db.conn.commit()
         return self.get(scenario_id)
 
-    def duplicate(self, scenario_id: str) -> Dict[str, Any]:
+    def duplicate(self, scenario_id: str) -> dict[str, Any]:
         cur = self.db.conn.execute(
             "SELECT * FROM scenario_files WHERE id = ?", (scenario_id,)
         )
@@ -148,7 +147,7 @@ class ScenarioManager:
         self.db.conn.execute("DELETE FROM scenario_files WHERE id = ?", (scenario_id,))
         self.db.conn.commit()
 
-    def get_parsed_events(self, scenario_id: str) -> List[SceneEvent]:
+    def get_parsed_events(self, scenario_id: str) -> list[SceneEvent]:
         source = self.get_source(scenario_id)
         events = parse_scene_string(source)
 
@@ -159,9 +158,10 @@ class ScenarioManager:
                     event_def = self.get_event(
                         f"{scenario_id.split(':')[0]}:{ev.event_ref}"
                     )
-                    from twin_sim.dsl.event_parser import parse_event_file
-                    import tempfile
                     import os
+                    import tempfile
+
+                    from twin_sim.dsl.event_parser import parse_event_file
 
                     # A bit hacky, but parse_event_file needs a Path. We can parse string directly if we write a helper, or just use a temp file.
                     # Alternatively, write a parse_event_string function. Let's just create a temp file.
@@ -179,17 +179,17 @@ class ScenarioManager:
                     pass
         return events
 
-    def validate(self, scenario_id: str) -> Dict[str, Any]:
+    def validate(self, scenario_id: str) -> dict[str, Any]:
         try:
             source = self.get_source(scenario_id)
             events = parse_scene_string(source)
             return {"valid": True, "errors": [], "parsed_event_count": len(events)}
         except SceneParseError as e:
             return {"valid": False, "errors": [str(e)], "parsed_event_count": 0}
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             return {
                 "valid": False,
-                "errors": [f"Unexpected error: {str(e)}"],
+                "errors": [f"Unexpected error: {e!s}"],
                 "parsed_event_count": 0,
             }
 
@@ -197,7 +197,7 @@ class ScenarioManager:
     # Event Definitions
     # ------------------------------------------------------------------
 
-    def list_events(self, station_id: str) -> List[Dict[str, Any]]:
+    def list_events(self, station_id: str) -> list[dict[str, Any]]:
         cur = self.db.conn.execute(
             "SELECT * FROM event_files WHERE LOWER(station_id) = LOWER(?)",
             (station_id,),
@@ -215,7 +215,7 @@ class ScenarioManager:
             )
         return sorted(results, key=lambda x: x["name"])
 
-    def get_event(self, event_id: str) -> Dict[str, Any]:
+    def get_event(self, event_id: str) -> dict[str, Any]:
         cur = self.db.conn.execute(
             "SELECT * FROM event_files WHERE id = ?", (event_id,)
         )
@@ -234,7 +234,7 @@ class ScenarioManager:
 
     def create_event(
         self, station_id: str, name: str, source: str = ""
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         name = name.strip().replace("/", "").replace("\\", "").replace(":", "")
         if not name:
             raise ValueError("Event name cannot be empty")
@@ -256,7 +256,7 @@ class ScenarioManager:
         self.db.conn.commit()
         return self.get_event(event_id)
 
-    def update_event(self, event_id: str, source: str) -> Dict[str, Any]:
+    def update_event(self, event_id: str, source: str) -> dict[str, Any]:
         cur = self.db.conn.execute(
             "SELECT id FROM event_files WHERE id = ?", (event_id,)
         )

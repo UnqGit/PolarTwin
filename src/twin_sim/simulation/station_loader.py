@@ -22,7 +22,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 from twin_sim.dsl.event_stack import TimelineStateManager
 from twin_sim.dsl.models import SceneEvent
@@ -36,7 +36,6 @@ from twin_sim.ingestion.models import (
     NetworkModel,
     RuntimeComponent,
     RuntimeConnection,
-    SupplyModel,
     WeatherModel,
 )
 from twin_sim.simulation.engine_core import HierarchyGraph, SimulationEngineCore
@@ -78,11 +77,11 @@ class LoadedStation:
     def __init__(
         self,
         station_id: str,
-        hierarchy_list: List[Dict[str, Any]],
-        runtime_components: List[RuntimeComponent],
-        runtime_connections: List[RuntimeConnection],
+        hierarchy_list: list[dict[str, Any]],
+        runtime_components: list[RuntimeComponent],
+        runtime_connections: list[RuntimeConnection],
         external: ExternalModel,
-        specs_list: List[Dict[str, Any]] | None = None,
+        specs_list: list[dict[str, Any]] | None = None,
     ):
         self.station_id = station_id
         self.hierarchy_list = hierarchy_list
@@ -96,9 +95,9 @@ class LoadedStation:
 
     def build_engine(
         self,
-        scenes: Optional[List[SceneEvent]] = None,
+        scenes: list[SceneEvent] | None = None,
         global_tolerance: float = 10.0,
-        value_overrides: Optional[Dict[str, Dict[str, Any]]] = None,
+        value_overrides: dict[str, dict[str, Any]] | None = None,
     ) -> SimulationEngineCore:
         """
         Construct a fresh ``SimulationEngineCore`` from this station data.
@@ -130,7 +129,7 @@ class LoadedStation:
             global_tolerance=global_tolerance,
         )
 
-    def to_manifest(self) -> Dict[str, Any]:
+    def to_manifest(self) -> dict[str, Any]:
         """Return a lightweight manifest describing this station."""
         return {
             "station_id": self.station_id,
@@ -148,7 +147,7 @@ class StationLoader:
     @staticmethod
     def load(
         compiled_dir: str | Path,
-        external_path: Optional[str | Path] = None,
+        external_path: str | Path | None = None,
     ) -> LoadedStation:
         """
         Load a compiled station from *compiled_dir*.
@@ -176,9 +175,9 @@ class StationLoader:
         if not spec_path.exists():
             raise FileNotFoundError(f"spec.json not found in {compiled_dir}")
 
-        hierarchy_list: List[Dict[str, Any]] = _load_json(hierarchy_path)
-        compiled_connections: List[Dict[str, Any]] = _load_json(connection_path)
-        specs: List[Dict[str, Any]] = _load_json(spec_path)
+        hierarchy_list: list[dict[str, Any]] = _load_json(hierarchy_path)
+        compiled_connections: list[dict[str, Any]] = _load_json(connection_path)
+        specs: list[dict[str, Any]] = _load_json(spec_path)
 
         # Read optional initial.json from compiled dir
         value_overrides = {}
@@ -212,7 +211,7 @@ class StationLoader:
         )
 
     @staticmethod
-    def list_stations(compiled_root: str | Path) -> List[str]:
+    def list_stations(compiled_root: str | Path) -> list[str]:
         """
         Return the names of all compiled stations found under *compiled_root*.
         A directory is considered a compiled station if it contains hierarchy.json.

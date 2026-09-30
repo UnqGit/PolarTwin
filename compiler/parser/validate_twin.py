@@ -24,9 +24,8 @@ Example:
 
 import argparse
 import json
-from pathlib import Path
 from collections import Counter
-
+from pathlib import Path
 
 # ---------------------------------------------------------------------------
 # Paths

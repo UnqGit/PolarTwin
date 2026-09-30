@@ -4,15 +4,15 @@ from __future__ import annotations
 
 from typing import Any
 
+from twin_sim.storage import SQLiteAdapter
+
 from .base import TelemetrySink
 from .csv import CsvSink
 from .database import DatabaseSink
 from .jsonl import JsonlSink
 from .mqtt import MqttSink
 from .mqtt_store_forward import MqttStoreForwardSink
-from .sqlite import SqliteSink
 from .stdout import StdoutSink
-from twin_sim.storage import SQLiteAdapter
 
 
 def create_sink(configuration: dict[str, Any]) -> TelemetrySink:

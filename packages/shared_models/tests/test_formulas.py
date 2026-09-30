@@ -5,45 +5,41 @@ Every formula is tested against its spec definition.
 Tests cover nominal, boundary, zero, max, tolerance, multi-tick, and unit-consistency cases.
 """
 
-import pytest
-import sys
 import os
-import math
+import sys
+
+import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "..", ".."))
 
 from packages.shared_models.formulas import (
-    compute_specific_tolerance,
-    compute_spf,
-    compute_max_tolerated_value,
-    compute_a,
-    compute_ac,
-    compute_t_off,
-    compute_failure_countdown,
-    compute_power,
-    compute_generator_temperature,
-    compute_generator_flow_requirement,
-    compute_generator_allocation_ratio,
-    compute_pump_total_demand,
-    compute_pump_allocation_ratio,
-    compute_pump_temperature,
-    compute_solar_power,
-    compute_tank_volume,
-    compute_antenna_current,
-    compute_server_temperature,
-    compute_alarm_current,
-    compute_ac_current,
-    compute_ac_output_temperature,
-    compute_inner_temperature_average,
-    compute_vent_ac_contribution,
-    compute_container_temperature,
-    compute_station_surr_temperature,
     GENERATOR_THRESHOLD,
     PUMP_THRESHOLD,
-    ALPHA_COMPONENT,
-    BETA_THERMAL,
+    compute_a,
+    compute_ac,
+    compute_ac_current,
+    compute_ac_output_temperature,
+    compute_alarm_current,
+    compute_antenna_current,
+    compute_container_temperature,
+    compute_failure_countdown,
+    compute_generator_allocation_ratio,
+    compute_generator_flow_requirement,
+    compute_generator_temperature,
+    compute_inner_temperature_average,
+    compute_max_tolerated_value,
+    compute_power,
+    compute_pump_allocation_ratio,
+    compute_pump_temperature,
+    compute_pump_total_demand,
+    compute_solar_power,
+    compute_specific_tolerance,
+    compute_spf,
+    compute_station_surr_temperature,
+    compute_t_off,
+    compute_tank_volume,
+    compute_vent_ac_contribution,
 )
-
 
 # ---------------------------------------------------------------------------
 # 1. Tolerance formulas
@@ -195,8 +191,8 @@ class TestGeneratorTemperature:
         """With P_curr=0, generator temperature should approach T_surr."""
         t_curr = 20.0
         t_surr = 20.0
-        T_range = 40.0  # t_rating_max - t_rating_min
-        P_range = 100_000.0
+        T_range = 40.0  # t_rating_max - t_rating_min  # noqa: F841
+        P_range = 100_000.0  # noqa: F841
         result = compute_generator_temperature(
             t_curr_prev=t_curr,
             p_curr=0.0,

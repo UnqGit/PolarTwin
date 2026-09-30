@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any, List, Dict, Optional
+from typing import Any
 
 from .models import (
+    ExternalModel,
     RuntimeComponent,
     RuntimeConnection,
-    ExternalModel,
     canonicalize_measurement,
 )
 
@@ -25,10 +25,10 @@ def load_external(path: str | Path) -> ExternalModel:
 
 
 def generate_runtime_components(
-    hierarchy: List[Dict[str, Any]],
-    specs: List[Dict[str, Any]],
-    value_overrides: Optional[Dict[str, Any]] = None,
-) -> List[RuntimeComponent]:
+    hierarchy: list[dict[str, Any]],
+    specs: list[dict[str, Any]],
+    value_overrides: dict[str, Any] | None = None,
+) -> list[RuntimeComponent]:
     """
     Generate component.json structure from hierarchy and spec artifacts.
     Merges input, output, and state ratings into the 'value' dict, applying canonical unit conversions.
@@ -83,7 +83,7 @@ def generate_runtime_components(
             for f_name, origins in field_origins.items():
                 if len(origins) == 1:
                     # Occurs in only one scope, flatten it
-                    scope = list(origins.keys())[0]
+                    scope = list(origins.keys())[0]  # noqa: RUF015
                     value_dict[f_name] = origins[scope]
                 else:
                     # Occurs in multiple scopes, nest it
@@ -111,8 +111,8 @@ def generate_runtime_components(
 
 
 def generate_runtime_connections(
-    compiled_connections: List[Dict[str, Any]],
-) -> List[RuntimeConnection]:
+    compiled_connections: list[dict[str, Any]],
+) -> list[RuntimeConnection]:
     """
     Generate runtime connection.json structure from compiled connections.
     """
@@ -130,7 +130,7 @@ def initialize_simulation_state(
     hierarchy_path: Path,
     connections_path: Path,
     specs_path: Path,
-    external_path: Optional[Path] = None,
+    external_path: Path | None = None,
 ):
     hierarchy = load_json(hierarchy_path)
     connections = load_json(connections_path)

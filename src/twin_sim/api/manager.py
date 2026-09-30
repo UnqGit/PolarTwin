@@ -14,14 +14,11 @@ The SimulationManager is designed to be a singleton used by the FastAPI app.
 
 from __future__ import annotations
 
-import copy
 import threading
 import time
-import uuid
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any
 
-from twin_sim.dsl.event_stack import TimelineStateManager
 from twin_sim.dsl.models import SceneEvent
 from twin_sim.simulation.engine_core import SimulationEngineCore
 from twin_sim.simulation.station_loader import LoadedStation
@@ -46,7 +43,7 @@ class RunRecord:
         run_id: str,
         engine: SimulationEngineCore,
         station_id: str,
-        scenario_id: Optional[str] = None,
+        scenario_id: str | None = None,
     ):
         self.run_id = run_id
         self.engine = engine
@@ -55,7 +52,7 @@ class RunRecord:
         self.status: RunStatus = RunStatus.IDLE
         self._db_created = False
 
-        self._thread: Optional[threading.Thread] = None
+        self._thread: threading.Thread | None = None
         self._stop_event = threading.Event()
         self._pause_event = threading.Event()
         self._pause_event.set()  # Not paused by default
@@ -81,7 +78,7 @@ class RunRecord:
                     self.engine.run_tick()
                     time.sleep(tick_interval)
                 self.status = RunStatus.FINISHED
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 import traceback
 
                 print(f"Run {self.run_id} crashed:", e)
@@ -121,7 +118,7 @@ class RunRecord:
         return False  # cannot step while running
 
     def reset(
-        self, loaded_station: LoadedStation, scenes: Optional[List[SceneEvent]] = None
+        self, loaded_station: LoadedStation, scenes: list[SceneEvent] | None = None
     ):
         """
         Stop the current run and rebuild the engine from the original station data.
@@ -150,7 +147,7 @@ class RunRecord:
     # State snapshot
     # ------------------------------------------------------------------
 
-    def state_snapshot(self) -> Dict[str, Any]:
+    def state_snapshot(self) -> dict[str, Any]:
         """Return the current effective simulation state as a JSON-serialisable dict."""
         eff = self.engine.state.get_effective_state_dict()
 
@@ -188,7 +185,7 @@ class RunRecord:
             "upcoming_events": upcoming_evs,
         }
 
-    def summary(self) -> Dict[str, Any]:
+    def summary(self) -> dict[str, Any]:
         return {
             "run_id": self.run_id,
             "station_id": self.station_id,
@@ -204,11 +201,11 @@ class SimulationManager:
     Singleton manager for all active simulation runs.
     """
 
-    def __init__(self, telemetry_db: Optional[TelemetryDatabase] = None):
-        self._runs: Dict[str, RunRecord] = {}
-        self._station_cache: Dict[str, LoadedStation] = {}
+    def __init__(self, telemetry_db: TelemetryDatabase | None = None):
+        self._runs: dict[str, RunRecord] = {}
+        self._station_cache: dict[str, LoadedStation] = {}
         self._lock = threading.Lock()
-        self._telemetry_db: Optional[TelemetryDatabase] = telemetry_db
+        self._telemetry_db: TelemetryDatabase | None = telemetry_db
 
     # ------------------------------------------------------------------
     # Station cache
@@ -219,11 +216,11 @@ class SimulationManager:
         with self._lock:
             self._station_cache[station.station_id] = station
 
-    def get_loaded_station(self, station_id: str) -> Optional[LoadedStation]:
+    def get_loaded_station(self, station_id: str) -> LoadedStation | None:
         with self._lock:
             return self._station_cache.get(station_id)
 
-    def list_stations(self) -> List[Dict[str, Any]]:
+    def list_stations(self) -> list[dict[str, Any]]:
         with self._lock:
             return [s.to_manifest() for s in self._station_cache.values()]
 
@@ -234,10 +231,10 @@ class SimulationManager:
     def create_run(
         self,
         station_id: str,
-        scenes: Optional[List[SceneEvent]] = None,
-        scenario_id: Optional[str] = None,
+        scenes: list[SceneEvent] | None = None,
+        scenario_id: str | None = None,
         global_tolerance: float = 10.0,
-        value_overrides: Optional[Dict[str, Dict[str, Any]]] = None,
+        value_overrides: dict[str, dict[str, Any]] | None = None,
     ) -> str:
         """
         Create a new simulation run for a registered station.
@@ -295,11 +292,11 @@ class SimulationManager:
     # Run lifecycle
     # ------------------------------------------------------------------
 
-    def get_run(self, run_id: str) -> Optional[RunRecord]:
+    def get_run(self, run_id: str) -> RunRecord | None:
         with self._lock:
             return self._runs.get(run_id)
 
-    def list_runs(self) -> List[Dict[str, Any]]:
+    def list_runs(self) -> list[dict[str, Any]]:
         with self._lock:
             return [r.summary() for r in self._runs.values()]
 
@@ -362,7 +359,7 @@ class SimulationManager:
             return rec.step()
         return False
 
-    def reset(self, run_id: str, scenes: Optional[List[SceneEvent]] = None) -> bool:
+    def reset(self, run_id: str, scenes: list[SceneEvent] | None = None) -> bool:
         rec = self.get_run(run_id)
         if rec:
             station = self.get_loaded_station(rec.station_id)
@@ -405,7 +402,7 @@ class SimulationManager:
         records = rec.engine.telemetry[:]
         rec.engine.telemetry.clear()
 
-        if records or getattr(rec.engine, "logs", []):
+        if records or getattr(rec.engine, "logs", []):  # noqa: SIM102
             if not rec._db_created and self._telemetry_db:
                 self._telemetry_db.create_simulation_run(
                     rec.run_id, rec.station_id, rec.scenario_id
@@ -432,13 +429,13 @@ class SimulationManager:
     # State / log
     # ------------------------------------------------------------------
 
-    def get_state(self, run_id: str) -> Optional[Dict[str, Any]]:
+    def get_state(self, run_id: str) -> dict[str, Any] | None:
         rec = self.get_run(run_id)
         if rec:
             return rec.state_snapshot()
         return None
 
-    def get_log(self, run_id: str) -> Optional[List[Dict[str, Any]]]:
+    def get_log(self, run_id: str) -> list[dict[str, Any]] | None:
         """Return persisted logs and any un-flushed logs."""
         logs = []
         if self._telemetry_db:
@@ -448,7 +445,7 @@ class SimulationManager:
             logs.extend(rec.engine.logs)
         return logs
 
-    def get_persisted_telemetry(self, run_id: str) -> Optional[Dict[str, Any]]:
+    def get_persisted_telemetry(self, run_id: str) -> dict[str, Any] | None:
         """Get the latest persisted telemetry record from DB."""
         if self._telemetry_db is None:
             return None

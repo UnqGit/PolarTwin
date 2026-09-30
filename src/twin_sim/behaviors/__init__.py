@@ -7,9 +7,9 @@ from .registry import BehaviorRegistry, default_registry
 __all__ = [
     "Behavior",
     "BehaviorContext",
-    "GenericBehavior",
-    "BehaviorResolution",
     "BehaviorRegistry",
+    "BehaviorResolution",
+    "GenericBehavior",
     "default_registry",
     "infer_behaviors",
 ]

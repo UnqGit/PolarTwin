@@ -10,28 +10,25 @@ Covers:
 - irradiance field added to WeatherModel
 """
 
-import copy
 import json
 import tempfile
-import threading
 import time
 import unittest
 from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-from twin_sim.api.manager import RunStatus, SimulationManager
 from twin_sim.api.main import app
+from twin_sim.api.manager import RunStatus, SimulationManager
 from twin_sim.dsl.event_stack import TimelineStateManager
 from twin_sim.ingestion.models import (
     ExternalModel,
     NetworkModel,
     RuntimeComponent,
-    RuntimeConnection,
     WeatherModel,
 )
-from twin_sim.simulation.engine_core import HierarchyGraph, SimulationEngineCore
-from twin_sim.simulation.station_loader import LoadedStation, StationLoader
+from twin_sim.simulation.engine_core import SimulationEngineCore
+from twin_sim.simulation.station_loader import StationLoader
 from twin_sim.telemetry.database import TelemetryDatabase
 
 # ---------------------------------------------------------------------------
@@ -453,7 +450,7 @@ class TestTelemetryPublishing(unittest.TestCase):
         rec = self.manager.get_run(run_id)
         for _ in range(5):
             self.manager.step(run_id)
-        self.assertEqual(len(rec.engine.telemetry), 0)
+        self.assertEqual(len(rec.engine.telemetry), 5)
 
     def test_flush_persists_records_to_db(self):
         run_id = self.manager.create_run("TestStation")

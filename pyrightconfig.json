@@ -1,3 +1,8 @@
 {
-  "extraPaths": ["src"]
+  "extraPaths": [
+    "src",
+    ".",
+    "compiler",
+    "packages"
+  ]
 }

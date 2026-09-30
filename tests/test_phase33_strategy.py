@@ -3,14 +3,15 @@ test_phase33_strategy.py — Comprehensive engine strategy tests for Phase 33.
 """
 
 import unittest
-from twin_sim.simulation.engine_core import SimulationEngineCore
+
 from twin_sim.dsl.event_stack import TimelineStateManager
 from twin_sim.ingestion.models import (
-    RuntimeComponent,
     ExternalModel,
-    WeatherModel,
     NetworkModel,
+    RuntimeComponent,
+    WeatherModel,
 )
+from twin_sim.simulation.engine_core import SimulationEngineCore
 
 
 def make_external(irradiance=500.0) -> ExternalModel:
@@ -92,11 +93,9 @@ class TestPhase33Strategy(unittest.TestCase):
     def test_pump_cutoff(self):
         """Test 30% cutoff for pumps when total demand far exceeds capacity."""
         # Simulated logic where pump output might be restricted below 30% or shutdown
-        pass
 
     def test_generator_priority_shutdown(self):
         """Test <35% priority shutdown/activation behavior."""
-        pass
 
     def test_tank_empty(self):
         """Test consumption stops when tank is empty."""

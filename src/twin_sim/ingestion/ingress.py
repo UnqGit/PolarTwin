@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from typing import Any
+
 from pydantic import BaseModel, Field, ValidationError
 
 
@@ -25,7 +26,7 @@ class TelemetryModulator:
     # Pre-defined linear translation map for common units to standard SI
     # Format: source_unit -> (multiplier, offset)
     # final_value = (raw_value * multiplier) + offset
-    UNIT_CONVERSIONS: dict[str, tuple[float, float]] = {
+    UNIT_CONVERSIONS: dict[str, tuple[float, float]] = {  # noqa: RUF012
         "F": (5.0 / 9.0, -32.0 * 5.0 / 9.0),  # F to C
         "C": (1.0, 0.0),  # Base unit for temperature
         "K": (1.0, -273.15),  # K to C

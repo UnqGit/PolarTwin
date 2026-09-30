@@ -13,20 +13,18 @@ Station discovery:
 from __future__ import annotations
 
 import os
-from pathlib import Path
-from typing import Any, Dict, List, Optional
-from pydantic import BaseModel
-
-from fastapi import FastAPI, HTTPException, Body
-from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from pathlib import Path
+from typing import Any
+
+from fastapi import Body, FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from twin_sim.api.manager import SimulationManager, RunStatus
+from twin_sim.api.manager import RunStatus, SimulationManager
 from twin_sim.api.scenario_manager import ScenarioManager
 from twin_sim.simulation.station_loader import StationLoader
 from twin_sim.telemetry.database import TelemetryDatabase
-import json
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -58,7 +56,7 @@ async def lifespan(app: FastAPI):
         try:
             station = StationLoader.load(COMPILED_ROOT / name)
             _manager.register_station(station)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             print(f"[warning] Could not load station '{name}': {exc}")
     print(f"[startup] Loaded {len(station_names)} station(s): {station_names}")
     yield
@@ -95,9 +93,9 @@ def read_root():
 
 class CreateSimulationRequest(BaseModel):
     station_id: str
-    scenario_id: Optional[str] = None
+    scenario_id: str | None = None
     global_tolerance: float = 10.0
-    value_overrides: Optional[Dict[str, Dict[str, Any]]] = None
+    value_overrides: dict[str, dict[str, Any]] | None = None
 
 
 class PlayRequest(BaseModel):
@@ -212,7 +210,6 @@ def delete_scenario(scenario_id: str):
         _scenario_manager.delete(scenario_id)
     except ValueError as e:
         raise HTTPException(400, str(e))
-    return None
 
 
 @app.post("/scenarios/{scenario_id}/validate")
@@ -264,13 +261,13 @@ def get_scenario_events(scenario_id: str):
         ]
     except FileNotFoundError as e:
         raise HTTPException(404, str(e))
-    except Exception as e:
-        if hasattr(e, "line_number") and getattr(e, "line_number") is not None:
+    except Exception as e:  # noqa: BLE001
+        if hasattr(e, "line_number") and e.line_number is not None:
             raise HTTPException(
                 400,
                 detail={
                     "message": str(e),
-                    "line_number": getattr(e, "line_number") - 1,
+                    "line_number": e.line_number - 1,
                 },
             )
         raise HTTPException(400, detail={"message": f"Error parsing scenario: {e}"})
@@ -298,13 +295,13 @@ def parse_scenario_raw(payload: ParseScenarioRequest):
             }
             for e in events
         ]
-    except Exception as e:
-        if hasattr(e, "line_number") and getattr(e, "line_number") is not None:
+    except Exception as e:  # noqa: BLE001
+        if hasattr(e, "line_number") and e.line_number is not None:
             raise HTTPException(
                 400,
                 detail={
                     "message": str(e),
-                    "line_number": getattr(e, "line_number") - 1,
+                    "line_number": e.line_number - 1,
                 },
             )
         raise HTTPException(400, detail={"message": f"Error parsing scenario: {e}"})
@@ -351,7 +348,6 @@ def delete_event_definition(event_id: str):
         _scenario_manager.delete_event(event_id)
     except FileNotFoundError as e:
         raise HTTPException(404, str(e))
-    return None
 
 
 # ---------------------------------------------------------------------------
@@ -372,7 +368,7 @@ def create_simulation(req: CreateSimulationRequest):
                 scenes = _scenario_manager.get_parsed_events(req.scenario_id)
             except FileNotFoundError:
                 raise HTTPException(404, f"Scenario '{req.scenario_id}' not found")
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 raise HTTPException(400, f"Error parsing scenario: {e}")
 
         run_id = _manager.create_run(
@@ -401,7 +397,7 @@ def get_simulation(run_id: str):
 
 
 @app.post("/simulations/{run_id}/play")
-def play_simulation(run_id: str, req: PlayRequest = PlayRequest()):
+def play_simulation(run_id: str, req: PlayRequest = PlayRequest()):  # noqa: B008
     """Start or resume continuous tick-based execution."""
     rec = _manager.get_run(run_id)
     if rec is None:
@@ -456,7 +452,6 @@ def delete_simulation(run_id: str):
     """Delete a simulation run."""
     if not _manager.delete_run(run_id):
         raise HTTPException(404, "Simulation not found")
-    return None
 
 
 @app.post("/simulations/{run_id}/telemetry/start")
@@ -519,7 +514,7 @@ def get_simulation_log(run_id: str):
 
 
 @app.get("/telemetry")
-def get_telemetry(run_id: Optional[str] = None):
+def get_telemetry(run_id: str | None = None):
     """Get the latest persisted telemetry record, optionally filtered by run_id."""
     if run_id:
         record = _manager.get_persisted_telemetry(run_id)
@@ -545,7 +540,7 @@ def get_latest_telemetry(run_id: str):
 
 
 @app.get("/telemetry/history")
-def get_telemetry_history(station_id: str, run_id: Optional[str] = None):
+def get_telemetry_history(station_id: str, run_id: str | None = None):
     """Get the timeline of telemetry records for a station."""
     return _db.get_records_timeline(station_id, run_id)
 
@@ -565,7 +560,6 @@ def delete_telemetry_record(record_id: int):
     if not _db.get_record_by_id(record_id):
         raise HTTPException(404, "Record not found")
     _db.delete_record(record_id)
-    return None
 
 
 @app.get("/telemetry/runs/{run_id}/metadata")
@@ -634,7 +628,7 @@ def set_component_tolerance(
 
 
 @app.post("/simulations/{run_id}/component/{component_id}/state")
-def set_component_state(run_id: str, component_id: str, updates: dict = Body(...)):
+def set_component_state(run_id: str, component_id: str, updates: dict = Body(...)):  # noqa: B008
     rec = _manager.get_run(run_id)
     if not rec:
         raise HTTPException(status_code=404, detail="Run not found")

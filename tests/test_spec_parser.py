@@ -2,8 +2,8 @@ import unittest
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
+from compiler.parser.spec_parser import SpecParseError, parse_spec_file
 from packages.shared_models.domain import HierarchyComponent
-from compiler.parser.spec_parser import parse_spec_file, SpecParseError
 
 
 class TestSpecParser(unittest.TestCase):

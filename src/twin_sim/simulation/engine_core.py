@@ -19,15 +19,14 @@ Architecture note:
 """
 
 import copy
-import math
 import random
 import time
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any
 
-from twin_sim.dsl.models import SceneEvent
 from twin_sim.dsl.event_stack import TimelineStateManager
-from twin_sim.ingestion.models import RuntimeComponent, RuntimeConnection, ExternalModel
-import twin_sim.simulation.behaviors as behaviors
+from twin_sim.dsl.models import SceneEvent
+from twin_sim.ingestion.models import ExternalModel, RuntimeComponent, RuntimeConnection
+from twin_sim.simulation import behaviors
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -65,29 +64,29 @@ class HierarchyNode:
     """Lightweight in-memory representation of a hierarchy entry."""
 
     __slots__ = (
-        "name",
-        "type",
-        "parent",
+        "backup_for",
         "children",
-        "priority",
+        "external_field",
         "floor",
         "is_backup",
-        "backup_for",
-        "external_field",
+        "name",
+        "parent",
+        "priority",
         "tags",
+        "type",
     )
 
-    def __init__(self, entry: Dict[str, Any]):
+    def __init__(self, entry: dict[str, Any]):
         self.name: str = entry["name"]
         self.type: str = entry["type"]
-        self.parent: Optional[str] = entry.get("parent")
-        self.children: List[str] = entry.get("children", [])
+        self.parent: str | None = entry.get("parent")
+        self.children: list[str] = entry.get("children", [])
         self.priority: int = entry.get("priority", 0)
         self.floor: int = entry.get("floor", 0)
         self.is_backup: bool = entry.get("is_backup", False)
-        self.backup_for: List[str] = entry.get("backup", [])
-        self.external_field: Optional[str] = entry.get("external_field")
-        self.tags: List[str] = entry.get("tags", [])
+        self.backup_for: list[str] = entry.get("backup", [])
+        self.external_field: str | None = entry.get("external_field")
+        self.tags: list[str] = entry.get("tags", [])
 
 
 class HierarchyGraph:
@@ -96,12 +95,12 @@ class HierarchyGraph:
     Built once from hierarchy.json list.
     """
 
-    def __init__(self, hierarchy_list: List[Dict[str, Any]]):
-        self.nodes: Dict[str, HierarchyNode] = {
+    def __init__(self, hierarchy_list: list[dict[str, Any]]):
+        self.nodes: dict[str, HierarchyNode] = {
             e["name"]: HierarchyNode(e) for e in hierarchy_list
         }
 
-    def ancestors(self, name: str) -> List[str]:
+    def ancestors(self, name: str) -> list[str]:
         """Returns list of ancestor names from parent → root."""
         result = []
         current = self.nodes.get(name)
@@ -110,9 +109,9 @@ class HierarchyGraph:
             current = self.nodes.get(current.parent)
         return result
 
-    def descendants(self, name: str) -> List[str]:
+    def descendants(self, name: str) -> list[str]:
         """Returns all descendant names (BFS)."""
-        result: List[str] = []
+        result: list[str] = []
         queue = list(self.nodes[name].children) if name in self.nodes else []
         while queue:
             child = queue.pop(0)
@@ -121,15 +120,15 @@ class HierarchyGraph:
                 queue.extend(self.nodes[child].children)
         return result
 
-    def direct_children(self, name: str) -> List[str]:
+    def direct_children(self, name: str) -> list[str]:
         return self.nodes[name].children if name in self.nodes else []
 
-    def parent_of(self, name: str) -> Optional[str]:
+    def parent_of(self, name: str) -> str | None:
         node = self.nodes.get(name)
         return node.parent if node else None
 
     def is_ancestor_inactive_or_failed(
-        self, name: str, component_statuses: Dict[str, str]
+        self, name: str, component_statuses: dict[str, str]
     ) -> bool:
         """
         Returns True if any ancestor of `name` is inactive or in failure.
@@ -147,14 +146,14 @@ class ConnectionGraph:
     Thin wrapper over the runtime connection list providing neighbour queries.
     """
 
-    def __init__(self, connections: List[RuntimeConnection]):
+    def __init__(self, connections: list[RuntimeConnection]):
         # Index by (source, type, target) for O(1) lookup
-        self._conns: List[RuntimeConnection] = list(connections)
+        self._conns: list[RuntimeConnection] = list(connections)
 
-    def update(self, connections: List[RuntimeConnection]):
+    def update(self, connections: list[RuntimeConnection]):
         self._conns = list(connections)
 
-    def active_power_sources(self, target_name: str) -> List[str]:
+    def active_power_sources(self, target_name: str) -> list[str]:
         """Components that send power to `target_name` via an active power connection."""
         return [
             c.source
@@ -162,7 +161,7 @@ class ConnectionGraph:
             if c.target == target_name and c.type == "power" and c.status == "active"
         ]
 
-    def active_power_targets(self, source_name: str) -> List[str]:
+    def active_power_targets(self, source_name: str) -> list[str]:
         """Components receiving power from `source_name` via active power connections."""
         return [
             c.target
@@ -170,7 +169,7 @@ class ConnectionGraph:
             if c.source == source_name and c.type == "power" and c.status == "active"
         ]
 
-    def active_resource_sources(self, target_name: str) -> List[str]:
+    def active_resource_sources(self, target_name: str) -> list[str]:
         """Components that send resources (flowrate) to `target_name` via active resource connections."""
         return [
             c.source
@@ -178,21 +177,21 @@ class ConnectionGraph:
             if c.target == target_name and c.type == "resource" and c.status == "active"
         ]
 
-    def active_resource_targets(self, source_name: str) -> List[str]:
+    def active_resource_targets(self, source_name: str) -> list[str]:
         return [
             c.target
             for c in self._conns
             if c.source == source_name and c.type == "resource" and c.status == "active"
         ]
 
-    def active_signal_sources(self, target_name: str) -> List[str]:
+    def active_signal_sources(self, target_name: str) -> list[str]:
         return [
             c.source
             for c in self._conns
             if c.target == target_name and c.type == "signal" and c.status == "active"
         ]
 
-    def active_connections_for_node(self, node_name: str) -> List[RuntimeConnection]:
+    def active_connections_for_node(self, node_name: str) -> list[RuntimeConnection]:
         """All active connections where node is source or target."""
         return [
             c
@@ -203,12 +202,12 @@ class ConnectionGraph:
     def active_connection_count(self, node_name: str) -> int:
         return len(self.active_connections_for_node(node_name))
 
-    def connections_of_type(self, conn_type: str) -> List[RuntimeConnection]:
+    def connections_of_type(self, conn_type: str) -> list[RuntimeConnection]:
         return [c for c in self._conns if c.type == conn_type]
 
     def get_connection(
         self, source: str, conn_type: str, target: str
-    ) -> Optional[RuntimeConnection]:
+    ) -> RuntimeConnection | None:
         for c in self._conns:
             if c.source == source and c.type == conn_type and c.target == target:
                 return c
@@ -238,34 +237,34 @@ class SimulationEngineCore:
         Global tolerance percentage (default 10.0).
     """
 
-    CONTAINERS = {"campus", "station", "block", "floor", "system", "generic"}
+    CONTAINERS = {"campus", "station", "block", "floor", "system", "generic"}  # noqa: RUF012
 
     def __init__(
         self,
         state_manager: TimelineStateManager,
-        scenes: List[SceneEvent],
-        hierarchy: Optional[HierarchyGraph] = None,
+        scenes: list[SceneEvent],
+        hierarchy: HierarchyGraph | None = None,
         global_tolerance: float = 10.0,
     ):
         self.state = state_manager
         # Sort by (at, stable source order) — scene order preserved within same at
-        self.scenes: List[SceneEvent] = sorted(scenes, key=lambda s: s.at)
+        self.scenes: list[SceneEvent] = sorted(scenes, key=lambda s: s.at)
         self._scene_index = 0  # pointer into sorted scenes list
 
         self.time: float = 0.0  # simulation hours
-        self.hierarchy: Optional[HierarchyGraph] = hierarchy
+        self.hierarchy: HierarchyGraph | None = hierarchy
         self.global_tolerance: float = global_tolerance
 
         # Track which components had their inactive state explicitly imposed by
         # a scene event; these must not be auto-activated.
-        self._explicit_inactive: Set[str] = set()
+        self._explicit_inactive: set[str] = set()
 
         # Telemetry list (one entry per tick when publishing is enabled)
-        self.telemetry: List[Dict[str, Any]] = []
+        self.telemetry: list[dict[str, Any]] = []
         self.telemetry_publishing: bool = False
 
         # Simulation event logs
-        self.logs: List[Dict[str, Any]] = []
+        self.logs: list[dict[str, Any]] = []
 
         # Build connection graph from initial base connections
         self._conn_graph = ConnectionGraph(
@@ -273,7 +272,7 @@ class SimulationEngineCore:
         )
 
         # Last-valid data cache for missing data extrapolation (field → value)
-        self._last_valid: Dict[str, Dict[str, Any]] = {}  # comp_name → {field: value}
+        self._last_valid: dict[str, dict[str, Any]] = {}  # comp_name → {field: value}
 
     # ------------------------------------------------------------------
     # Public API
@@ -304,7 +303,7 @@ class SimulationEngineCore:
 
         # Build effective status map (considers event layers) for hierarchical checks
         eff = self.state.get_effective_state_dict()
-        eff_status: Dict[str, str] = {c.name: c.status for c in eff["components"]}
+        eff_status: dict[str, str] = {c.name: c.status for c in eff["components"]}
 
         # ── Step 5: Hierarchical effective status ─────────────────────────
         # No mutation of descendants; we just use the eff_status for decisions.
@@ -398,7 +397,7 @@ class SimulationEngineCore:
 
             for target, node_key_hint in targets:
                 # Track explicitly imposed inactive
-                if scene.payload.get("status") == "inactive":
+                if scene.payload.get("status") == "inactive":  # noqa: SIM102
                     if isinstance(target, RuntimeComponent):
                         self._explicit_inactive.add(target.name)
 
@@ -442,10 +441,10 @@ class SimulationEngineCore:
     def _resolve_scene_targets(
         self,
         scene: SceneEvent,
-        eff_comps: Dict[str, RuntimeComponent],
-        eff_conns: List[RuntimeConnection],
+        eff_comps: dict[str, RuntimeComponent],
+        eff_conns: list[RuntimeConnection],
         ext: ExternalModel,
-    ) -> List[Tuple[Any, str]]:
+    ) -> list[tuple[Any, str]]:
         """Return list of (target_object, node_key_hint) for a scene event."""
         selector = scene.selector or ""
         targets = []
@@ -459,10 +458,10 @@ class SimulationEngineCore:
             if "." in selector and not selector.startswith("@(")
             else selector
         )
-        full_base = selector
-        if selector.startswith("@external.network") or selector.startswith("@network"):
+        full_base = selector  # noqa: F841
+        if selector.startswith("@external.network") or selector.startswith("@network"):  # noqa: PIE810
             targets.append((ext.network, "external"))
-        elif selector.startswith("@external.weather") or selector.startswith(
+        elif selector.startswith("@external.weather") or selector.startswith(  # noqa: PIE810
             "@weather"
         ):
             targets.append((ext.weather, "external"))
@@ -508,16 +507,16 @@ class SimulationEngineCore:
 
     def _resolve_connection_statuses(
         self,
-        base_comps: Dict[str, RuntimeComponent],
-        base_conns: Dict[str, RuntimeConnection],
-        eff_status: Dict[str, str],
+        base_comps: dict[str, RuntimeComponent],
+        base_conns: dict[str, RuntimeConnection],
+        eff_status: dict[str, str],
     ):
         """
         If a connection's source or target component is failed/inactive (or has
         an ancestor that is), mark the connection as inactive in base state.
         Only downgrade; do not upgrade connections that were set to failure by events.
         """
-        for key, conn in base_conns.items():
+        for key, conn in base_conns.items():  # noqa: PERF102
             if conn.status == "failure":
                 continue  # event-set failure, leave alone
 
@@ -532,7 +531,7 @@ class SimulationEngineCore:
                     conn.status = "active"
 
     def _component_is_effectively_down(
-        self, name: str, eff_status: Dict[str, str]
+        self, name: str, eff_status: dict[str, str]
     ) -> bool:
         """Returns True if the component or any ancestor is inactive/failed."""
         s = eff_status.get(name, "active")
@@ -548,8 +547,8 @@ class SimulationEngineCore:
 
     def _resolve_missing_data(
         self,
-        base_comps: Dict[str, RuntimeComponent],
-        base_conns: Dict[str, RuntimeConnection],
+        base_comps: dict[str, RuntimeComponent],
+        base_conns: dict[str, RuntimeConnection],
     ):
         """
         For any data connection that is inactive, the transmitted value is NULL.
@@ -582,7 +581,7 @@ class SimulationEngineCore:
 
     def _resolve_resource_allocation(
         self,
-        base_comps: Dict[str, RuntimeComponent],
+        base_comps: dict[str, RuntimeComponent],
         external: ExternalModel,
     ):
         """
@@ -612,7 +611,7 @@ class SimulationEngineCore:
             )
 
             p_max = _v(base_comps[gen.name].value.get("power", {}), "max", 0.0)
-            p_curr = _v(base_comps[gen.name].value.get("power", {}), "value", 0.0)
+            p_curr = _v(base_comps[gen.name].value.get("power", {}), "value", 0.0)  # noqa: F841
 
             if total_demanded <= 0:
                 p_obj = base_comps[gen.name].value.get("power", {})
@@ -629,7 +628,7 @@ class SimulationEngineCore:
 
                 if ratio >= 0.35:
                     # Proportional allocation: each consumer gets x * requested
-                    p_obj = base_comps[gen.name].value.get("power", {})
+                    p_obj = base_comps[gen.name].value.get("power", {})  # noqa: F841
                     _update_field(base_comps[gen.name], "power", p_max)
                     for n in consumer_names:
                         if n in base_comps:
@@ -655,7 +654,7 @@ class SimulationEngineCore:
             if not pump_names:
                 continue
 
-            total_fr_requested = sum(
+            total_fr_requested = sum(  # noqa: F841
                 _v(base_comps[p].value.get("flowrate", {}), "value", 0.0)
                 for p in pump_names
                 if p in base_comps
@@ -686,9 +685,9 @@ class SimulationEngineCore:
 
     def _try_activate_for_power(
         self,
-        base_comps: Dict[str, RuntimeComponent],
+        base_comps: dict[str, RuntimeComponent],
         gen: RuntimeComponent,
-        consumer_names: List[str],
+        consumer_names: list[str],
         total_demanded: float,
         p_max: float,
     ) -> bool:
@@ -726,8 +725,8 @@ class SimulationEngineCore:
 
     def _deactivate_lowest_priority(
         self,
-        base_comps: Dict[str, RuntimeComponent],
-        consumer_names: List[str],
+        base_comps: dict[str, RuntimeComponent],
+        consumer_names: list[str],
     ):
         """Deactivate the lowest-priority active consumer."""
         active_consumers = [
@@ -755,7 +754,7 @@ class SimulationEngineCore:
     # Step 9: Controller adjustments (Phase 12)
     # ------------------------------------------------------------------
 
-    def _apply_controller_adjustments(self, base_comps: Dict[str, RuntimeComponent]):
+    def _apply_controller_adjustments(self, base_comps: dict[str, RuntimeComponent]):
         """
         Components connected to an active controller via signal connections
         may have their operational values adjusted.
@@ -785,12 +784,12 @@ class SimulationEngineCore:
 
     def _run_component_behaviours(
         self,
-        base_comps: Dict[str, RuntimeComponent],
-        base_conns: Dict[str, RuntimeConnection],
+        base_comps: dict[str, RuntimeComponent],
+        base_conns: dict[str, RuntimeConnection],
         external: ExternalModel,
     ):
         """Run per-component-type physics for every non-skipped component."""
-        eff_status: Dict[str, str] = {c.name: c.status for c in base_comps.values()}
+        eff_status: dict[str, str] = {c.name: c.status for c in base_comps.values()}
 
         for c in base_comps.values():
             # Ensure failure tracking field exists
@@ -835,7 +834,7 @@ class SimulationEngineCore:
     def _surrounding_temperature(
         self,
         name: str,
-        base_comps: Dict[str, RuntimeComponent],
+        base_comps: dict[str, RuntimeComponent],
         external: ExternalModel,
     ) -> float:
         """
@@ -856,7 +855,7 @@ class SimulationEngineCore:
         self,
         c: RuntimeComponent,
         t_surr: float,
-        base_comps: Dict[str, RuntimeComponent],
+        base_comps: dict[str, RuntimeComponent],
         external: ExternalModel,
     ):
         t_obj = c.value.get("temperature", {})
@@ -905,7 +904,7 @@ class SimulationEngineCore:
         self,
         c: RuntimeComponent,
         t_surr: float,
-        base_comps: Dict[str, RuntimeComponent],
+        base_comps: dict[str, RuntimeComponent],
     ):
         t_obj = c.value.get("temperature", {})
         fr_obj = c.value.get("flowrate", {})
@@ -968,7 +967,7 @@ class SimulationEngineCore:
     # ── Tank ───────────────────────────────────────────────────────────
 
     def _behaviour_tank(
-        self, c: RuntimeComponent, base_comps: Dict[str, RuntimeComponent]
+        self, c: RuntimeComponent, base_comps: dict[str, RuntimeComponent]
     ):
         v_obj = c.value.get("volume", {})
         v_prev = _v(v_obj, "value", 100.0)
@@ -1029,7 +1028,7 @@ class SimulationEngineCore:
     # ── Alarm ─────────────────────────────────────────────────────────
 
     def _behaviour_alarm(self, c: RuntimeComponent):
-        p_obj = c.value.get("power", {})
+        p_obj = c.value.get("power", {})  # noqa: F841
         v_obj = c.value.get("voltage", {})
         voltage = _v(v_obj, "value", 220.0)
         new_i = behaviors.alarm_current(c.status)
@@ -1042,7 +1041,7 @@ class SimulationEngineCore:
         self,
         c: RuntimeComponent,
         t_surr: float,
-        base_comps: Dict[str, RuntimeComponent],
+        base_comps: dict[str, RuntimeComponent],
     ):
         t_obj = c.value.get("temperature", {})  # output temperature
         p_obj = c.value.get("power", {})
@@ -1102,8 +1101,8 @@ class SimulationEngineCore:
 
     def _evaluate_failure_countdowns(
         self,
-        base_comps: Dict[str, RuntimeComponent],
-        eff_status: Dict[str, str],
+        base_comps: dict[str, RuntimeComponent],
+        eff_status: dict[str, str],
         dt: float,
     ):
         """
@@ -1167,8 +1166,8 @@ class SimulationEngineCore:
 
     def _apply_backup_logic(
         self,
-        base_comps: Dict[str, RuntimeComponent],
-        eff_status: Dict[str, str],
+        base_comps: dict[str, RuntimeComponent],
+        eff_status: dict[str, str],
     ):
         """
         Backup activation rules (Phase 12):
@@ -1184,7 +1183,7 @@ class SimulationEngineCore:
                 continue  # scene explicitly set this to inactive; do not override
 
             # Get the list of components this backup is for (from hierarchy)
-            backed_up_names: List[str] = []
+            backed_up_names: list[str] = []
             if self.hierarchy and c.name in self.hierarchy.nodes:
                 backed_up_names = self.hierarchy.nodes[c.name].backup_for
 
@@ -1218,7 +1217,7 @@ class SimulationEngineCore:
 
     def _update_container_temperatures(
         self,
-        base_comps: Dict[str, RuntimeComponent],
+        base_comps: dict[str, RuntimeComponent],
         external: ExternalModel,
     ):
         """
@@ -1254,7 +1253,7 @@ class SimulationEngineCore:
                 t_surr = self._surrounding_temperature(name, base_comps, external)
 
             # Gather child temperatures
-            child_temps: List[float] = []
+            child_temps: list[float] = []
             if self.hierarchy:
                 for child_name in self.hierarchy.direct_children(name):
                     if child_name in base_comps:
@@ -1262,7 +1261,7 @@ class SimulationEngineCore:
                         child_temps.append(_v(child_t, "value", t_prev))
 
             # Gather AC vent data for connected vents
-            ac_vent_data: List[Dict[str, float]] = []
+            ac_vent_data: list[dict[str, float]] = []
             # Find vents that are direct children or descendants
             if self.hierarchy:
                 desc_names = self.hierarchy.descendants(name)
@@ -1303,7 +1302,7 @@ class SimulationEngineCore:
         self,
         c: RuntimeComponent,
         name: str,
-        base_comps: Dict[str, RuntimeComponent],
+        base_comps: dict[str, RuntimeComponent],
     ):
         """
         Corrective sequence when container overheats:
@@ -1344,15 +1343,15 @@ class SimulationEngineCore:
 
     def _bottom_up_order(
         self,
-        base_comps: Dict[str, RuntimeComponent],
-        containers: Set[str],
-    ) -> List[str]:
+        base_comps: dict[str, RuntimeComponent],
+        containers: set[str],
+    ) -> list[str]:
         """
         Return container names in bottom-up order (leaves first, root last).
         Uses a simple postorder DFS over the hierarchy.
         """
-        result: List[str] = []
-        visited: Set[str] = set()
+        result: list[str] = []
+        visited: set[str] = set()
 
         def dfs(name: str):
             if name in visited:
@@ -1375,10 +1374,10 @@ class SimulationEngineCore:
 
     def _snapshot(
         self,
-        base_comps: Dict[str, RuntimeComponent],
-        base_conns: Dict[str, RuntimeConnection],
+        base_comps: dict[str, RuntimeComponent],
+        base_conns: dict[str, RuntimeConnection],
         external: ExternalModel,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         return {
             "time": self.time,
             "persistence_time": time.time(),

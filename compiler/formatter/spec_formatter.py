@@ -1,6 +1,4 @@
-import sys
 from pathlib import Path
-
 
 INDENT = "    "
 

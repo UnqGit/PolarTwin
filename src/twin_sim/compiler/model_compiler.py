@@ -6,8 +6,8 @@ from typing import Any
 
 from twin_sim.behaviors import infer_behaviors
 from twin_sim.ingestion.validator import validate_documents
-from twin_sim.observability import SafetyError
 from twin_sim.model import Component, ComponentGraph, Connection
+from twin_sim.observability import SafetyError
 
 
 def compile_model(

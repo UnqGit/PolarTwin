@@ -5,7 +5,9 @@ from pathlib import Path
 
 from packages.shared_models.domain import ComponentSpec, HierarchyComponent
 from packages.shared_models.errors import ParseError
+
 from .utils import strip_comments
+
 
 class SpecParseError(ParseError):
     def __init__(self, message, line_number=None, line=None):

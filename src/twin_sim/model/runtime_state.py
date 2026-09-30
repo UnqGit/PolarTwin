@@ -12,5 +12,5 @@ class RuntimeState:
     health: float = 1.0
     available: bool = True
 
-    def copy(self) -> "RuntimeState":
+    def copy(self) -> RuntimeState:
         return RuntimeState(dict(self.values), self.health, self.available)

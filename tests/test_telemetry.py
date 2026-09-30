@@ -1,14 +1,13 @@
 import unittest
-import os
-import json
-from twin_sim.telemetry.database import TelemetryDatabase
+
 from twin_sim.ingestion.models import (
+    ExternalModel,
+    NetworkModel,
     RuntimeComponent,
     RuntimeConnection,
-    ExternalModel,
     WeatherModel,
-    NetworkModel,
 )
+from twin_sim.telemetry.database import TelemetryDatabase
 
 
 class TestTelemetryDatabase(unittest.TestCase):

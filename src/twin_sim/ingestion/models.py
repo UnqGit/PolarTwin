@@ -1,6 +1,6 @@
-import math
-from typing import Any, Dict, List, Optional, Union
-from pydantic import BaseModel, Field, model_validator
+from typing import Any
+
+from pydantic import BaseModel, model_validator
 
 # ---------------------------------------------------------
 # Phase 3 - Canonical Unit Conversions
@@ -74,7 +74,7 @@ def to_canonical(value: float, unit: str) -> float:
     return value * multiplier
 
 
-def canonicalize_measurement(data: Union[float, int, dict]) -> Union[float, dict]:
+def canonicalize_measurement(data: float | dict) -> float | dict:
     """
     If the data is a scalar, we assume it's canonical already (or unitless like 'count').
     If the data is a dict representing a RatingValue from spec.json: { "value": 100, "unit": "V" }
@@ -161,7 +161,7 @@ class SupplyModel(BaseModel):
 class ExternalModel(BaseModel):
     weather: WeatherModel
     network: NetworkModel
-    supplies: List[SupplyModel]
+    supplies: list[SupplyModel]
 
 
 # ---------------------------------------------------------
@@ -174,7 +174,7 @@ class RuntimeComponent(BaseModel):
     type: str
     is_backup: bool
     status: str
-    value: Dict[str, Any]
+    value: dict[str, Any]
 
 
 class RuntimeConnection(BaseModel):

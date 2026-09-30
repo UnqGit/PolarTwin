@@ -47,7 +47,7 @@ class AsyncTelemetryPipeline(TelemetrySink):
                 self._queue.task_done()
             except queue.Empty:
                 continue
-            except Exception as e:
+            except Exception:  # noqa: BLE001
                 # In a real system, we might want to log this or halt the pipeline.
                 # For the MVP, we continue pulling to avoid backing up the queue.
                 if self._queue.unfinished_tasks:

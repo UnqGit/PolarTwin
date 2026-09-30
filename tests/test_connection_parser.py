@@ -2,12 +2,12 @@ import unittest
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
-from packages.shared_models.domain import HierarchyComponent, CompiledConnection
-from packages.shared_models.enums import ConnectionType
 from compiler.parser.connection_parser import (
-    parse_connection_file,
     ConnectionParseError,
+    parse_connection_file,
 )
+from packages.shared_models.domain import HierarchyComponent
+from packages.shared_models.enums import ConnectionType
 
 
 class TestConnectionParser(unittest.TestCase):

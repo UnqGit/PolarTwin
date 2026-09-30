@@ -2,9 +2,8 @@ import unittest
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
-from twin_sim.dsl.models import EventDefinition, SceneEvent
-from twin_sim.dsl.event_parser import parse_event_file, EventParseError
-from twin_sim.dsl.scene_parser import parse_scene_file, SceneParseError
+from twin_sim.dsl.event_parser import parse_event_file
+from twin_sim.dsl.scene_parser import parse_scene_file
 
 
 class TestDSLParsers(unittest.TestCase):

@@ -1,10 +1,13 @@
-import re
 import json
+import re
 from pathlib import Path
-from packages.shared_models.domain import HierarchyComponent, CompiledConnection
+
+from packages.shared_models.domain import CompiledConnection, HierarchyComponent
 from packages.shared_models.enums import ConnectionType
 from packages.shared_models.errors import ParseError
+
 from .utils import strip_comments
+
 
 class ConnectionParseError(ParseError):
     """Raised when connection.twin contains invalid syntax or references."""

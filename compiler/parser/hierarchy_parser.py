@@ -1,9 +1,12 @@
-import re
 import json
+import re
 from pathlib import Path
+
 from packages.shared_models.domain import CONTAINER_TYPES, HierarchyComponent
 from packages.shared_models.errors import ParseError
+
 from .utils import strip_comments
+
 
 class HierarchyParseError(ParseError):
     """Raised when hierarchy.twin contains invalid syntax or references."""

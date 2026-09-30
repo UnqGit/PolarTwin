@@ -1,11 +1,12 @@
 import unittest
+
+from compiler.cross_validator import CrossValidationError, validate_asts
 from packages.shared_models.domain import (
-    HierarchyComponent,
     CompiledConnection,
     ComponentSpec,
+    HierarchyComponent,
 )
 from packages.shared_models.enums import ConnectionType
-from compiler.cross_validator import validate_asts, CrossValidationError
 
 
 class TestCrossValidator(unittest.TestCase):

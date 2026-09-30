@@ -3,12 +3,12 @@ test_phase17_scenarios.py — Comprehensive tests for Phase 17 (Scenario & Event
 """
 
 import tempfile
-from pathlib import Path
 import unittest
+from pathlib import Path
 
 from fastapi.testclient import TestClient
 
-from twin_sim.api.main import app, _scenario_manager
+from twin_sim.api.main import _scenario_manager, app
 
 
 class TestScenarioEndpoints(unittest.TestCase):

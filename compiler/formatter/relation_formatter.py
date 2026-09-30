@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-import sys
 import re
 from pathlib import Path
-
 
 INDENT = "    "
 
@@ -411,7 +409,7 @@ def format_spec(text: str) -> str:
 
             # Add a blank line before major top-level declarations,
             # but not after comments or at the beginning.
-            if depth == 0 and output:
+            if depth == 0 and output:  # noqa: SIM102
                 if output[-1] != "":
                     output.append("")
 
@@ -440,7 +438,7 @@ def format_spec(text: str) -> str:
 
         output.append(line)
 
-        previous_kind = kind
+        previous_kind = kind  # noqa: F841
 
     # ---------------------------------------------------------------
     # Cleanup

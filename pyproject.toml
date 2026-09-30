@@ -21,6 +21,7 @@ twin-sim = "twin_sim.cli:main"
 # Include both src (existing) and root (for packages/) in the Python path.
 pythonpath = ["src", "."]
 testpaths = ["tests", "packages"]
+norecursedirs = ["tests/manual"]
 
 [tool.pyright]
 include = ["src", "compiler", "packages"]

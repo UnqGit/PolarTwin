@@ -8,8 +8,7 @@ They must match the specification exactly.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Optional
-
+from typing import Any
 
 # ---------------------------------------------------------------------------
 # 2.1 Hierarchy model (spec §1, hierarchy.twin -> hierarchy.json)
@@ -43,7 +42,7 @@ class HierarchyComponent:
     type: str
     """Component or container type."""
 
-    parent: Optional[str]
+    parent: str | None
     """Name of the component's direct parent; None for root."""
 
     priority: int
@@ -58,7 +57,7 @@ class HierarchyComponent:
     backup: list[str] = field(default_factory=list)
     """Names of components that this component backs up (empty if is_backup=False)."""
 
-    external_field: Optional[str] = None
+    external_field: str | None = None
     """Referenced external field path (e.g. 'network.up'), or None."""
 
     children: list[str] = field(default_factory=list)
@@ -91,7 +90,7 @@ class HierarchyComponent:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> "HierarchyComponent":
+    def from_dict(cls, data: dict) -> HierarchyComponent:
         """Deserialize from the hierarchy.json format."""
         return cls(
             name=data["name"],
@@ -147,7 +146,7 @@ class CompiledConnection:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> "CompiledConnection":
+    def from_dict(cls, data: dict) -> CompiledConnection:
         return cls(
             source=data["source"],
             target=data["target"],
@@ -180,7 +179,7 @@ class RuntimeConnection:
         }
 
     @classmethod
-    def from_compiled(cls, compiled: CompiledConnection) -> "RuntimeConnection":
+    def from_compiled(cls, compiled: CompiledConnection) -> RuntimeConnection:
         """Create a runtime connection from a compiled connection."""
         return cls(
             source=compiled.source,
@@ -190,7 +189,7 @@ class RuntimeConnection:
         )
 
     @classmethod
-    def from_dict(cls, data: dict) -> "RuntimeConnection":
+    def from_dict(cls, data: dict) -> RuntimeConnection:
         return cls(
             source=data["source"],
             target=data["target"],
@@ -209,16 +208,16 @@ class RatingValue:
     A single rating value, which may be a scalar or a range (spec §3.3).
     """
 
-    value: Optional[float] = None
+    value: float | None = None
     """Scalar value (for fixed parameters like voltage=240)."""
 
-    min: Optional[float] = None
+    min: float | None = None
     """Minimum of a range (for voltage=120:255)."""
 
-    max: Optional[float] = None
+    max: float | None = None
     """Maximum of a range."""
 
-    unit: Optional[str] = None
+    unit: str | None = None
     """Unit string after canonical conversion."""
 
     def is_scalar(self) -> bool:
@@ -260,7 +259,7 @@ class ComponentSpec:
     representation: str = ""
 
     # Sensor-specific
-    measures: Optional[str] = None
+    measures: str | None = None
     """For sensor type: the measurement type (e.g. 'voltage')."""
 
     # Extra type-specific fields (HP for pump, etc.)
@@ -316,7 +315,7 @@ class RuntimeComponent:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> "RuntimeComponent":
+    def from_dict(cls, data: dict) -> RuntimeComponent:
         return cls(
             name=data["name"],
             type=data["type"],

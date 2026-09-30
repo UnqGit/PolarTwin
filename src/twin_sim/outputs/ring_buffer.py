@@ -1,6 +1,5 @@
 from collections import deque
 from threading import Lock
-from typing import List
 
 from twin_sim.outputs.base import TelemetrySink
 from twin_sim.telemetry import TelemetryMessage
@@ -18,11 +17,11 @@ class RingBufferSink(TelemetrySink):
         with self.lock:
             self.buffer.append(telemetry)
 
-    def write_batch(self, telemetries: List[TelemetryMessage]) -> None:
+    def write_batch(self, telemetries: list[TelemetryMessage]) -> None:
         with self.lock:
             self.buffer.extend(telemetries)
 
-    def get_all(self) -> List[TelemetryMessage]:
+    def get_all(self) -> list[TelemetryMessage]:
         """Return a snapshot of the current buffer."""
         with self.lock:
             return list(self.buffer)

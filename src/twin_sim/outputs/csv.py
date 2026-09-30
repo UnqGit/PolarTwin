@@ -12,7 +12,7 @@ from .base import TelemetrySink
 
 
 class CsvSink(TelemetrySink):
-    fieldnames = [
+    fieldnames = [  # noqa: RUF012
         "schema_version",
         "run_id",
         "timestamp",

@@ -2,10 +2,11 @@ import argparse
 import json
 from pathlib import Path
 
-from compiler.parser.hierarchy_parser import parse_hierarchy_file
+from compiler.cross_validator import CrossValidationError, validate_asts
 from compiler.parser.connection_parser import parse_connection_file
+from compiler.parser.hierarchy_parser import parse_hierarchy_file
 from compiler.parser.spec_parser import parse_spec_file
-from compiler.cross_validator import validate_asts, CrossValidationError
+
 
 def compile_station(input_dir: Path, output_dir: Path):
     """
@@ -54,7 +55,6 @@ def compile_station(input_dir: Path, output_dir: Path):
     
     import sys
     sys.path.append("src")
-    from twin_sim.ingestion.models import canonicalize_measurement
 
     initial_values = {}
     for s in specs:

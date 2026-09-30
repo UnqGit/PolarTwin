@@ -1,5 +1,6 @@
 import unittest
-from twin_sim.dsl.semantics import evaluate_node, apply_set, SemanticError
+
+from twin_sim.dsl.semantics import SemanticError, apply_set, evaluate_node
 from twin_sim.ingestion.models import RuntimeComponent, RuntimeConnection
 
 

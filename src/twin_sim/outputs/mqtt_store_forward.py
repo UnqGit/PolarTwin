@@ -96,7 +96,7 @@ class MqttStoreForwardSink(TelemetrySink):
             assert self.client is not None
             self.client.publish(record.topic, record.payload, record.qos, record.retain)
             self.outbox.mark_delivered(record.message_id)
-        except Exception as exc:
+        except Exception as exc:  # noqa: BLE001
             self.connected = False
             current_time = time.time() if now is None else now
             self.outbox.mark_failed(

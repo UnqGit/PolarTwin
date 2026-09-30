@@ -5,10 +5,14 @@ import json
 import random
 import sys
 import uuid
-from pathlib import Path
 
 from twin_sim.compiler import compile_model
+from twin_sim.dsl.scene_parser import parse_scene_string
 from twin_sim.ingestion.config import load_runtime_config
+from twin_sim.ingestion.loaders import (
+    generate_runtime_components,
+    generate_runtime_connections,
+)
 from twin_sim.ingestion.validator import ValidationError, load_json
 from twin_sim.observability import build_quality_report
 from twin_sim.outputs import (
@@ -16,16 +20,10 @@ from twin_sim.outputs import (
     DatabaseSink,
     JsonlSink,
     MultiSink,
-    create_sink,
     TelemetrySink,
+    create_sink,
 )
-from twin_sim.dsl.scene_parser import parse_scene_string
-from twin_sim.simulation.engine_core import SimulationEngineCore
-from twin_sim.simulation.station_loader import LoadedStation, _DEFAULT_EXTERNAL
-from twin_sim.ingestion.loaders import (
-    generate_runtime_components,
-    generate_runtime_connections,
-)
+from twin_sim.simulation.station_loader import _DEFAULT_EXTERNAL, LoadedStation
 from twin_sim.storage import SQLiteAdapter
 
 
@@ -103,7 +101,7 @@ def _merge_config(args):
         val = getattr(args, key, None)
         if val is not None:
             return val
-        if key == "scenario":
+        if key == "scenario":  # noqa: SIM102
             if "scenarios" in config:
                 return config["scenarios"]
         if key in config:
@@ -140,13 +138,13 @@ def _run_engine(args, _get=None, seed: int | None = None, run_id: str | None = N
 
         load_plugins_from_directory(plugins_dir)
 
-    graph = compile_model(topology, connections, specification, validation_config)
+    graph = compile_model(topology, connections, specification, validation_config)  # noqa: F841
 
     env_arg = _get("environment")
     environment = None
     if env_arg:
-        environment = json.loads(env_arg) if isinstance(env_arg, str) else env_arg
-    final_seed = seed if seed is not None else _get("seed", None)
+        environment = json.loads(env_arg) if isinstance(env_arg, str) else env_arg  # noqa: F841
+    final_seed = seed if seed is not None else _get("seed", None)  # noqa: F841
     final_run_id = run_id if run_id is not None else _get("run_id", "run-cli")
 
     hierarchy_list = topology if isinstance(topology, list) else [topology]
@@ -311,7 +309,7 @@ def command_experiment(args) -> int:
             else:
                 current_seed = random.randint(0, 2**31 - 1)
 
-            start_ts = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            start_ts = datetime.datetime.now(datetime.UTC).isoformat()
 
             engine = _run_engine(args, _get, seed=current_seed, run_id=run_id)
 
@@ -339,7 +337,7 @@ def command_experiment(args) -> int:
             finally:
                 pipeline.close()
 
-            end_ts = datetime.datetime.now(datetime.timezone.utc).isoformat()
+            end_ts = datetime.datetime.now(datetime.UTC).isoformat()
 
             db_adapter.record_experiment(
                 run_id=run_id,

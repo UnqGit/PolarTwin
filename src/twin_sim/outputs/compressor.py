@@ -1,7 +1,8 @@
 """Telemetry compression utilities to handle backpressure."""
 
 from typing import Any
-from ..telemetry.model import TelemetryMessage, DeltaTelemetryMessage
+
+from ..telemetry.model import DeltaTelemetryMessage, TelemetryMessage
 
 
 def _is_numeric_measurement(measurement: dict[str, Any] | None) -> bool:
@@ -54,7 +55,7 @@ def compress_telemetry_batch(messages: list[Any]) -> list[Any]:
             continue
 
         if comp_id in active_compressions:
-            start_msg, end_msg, count = active_compressions[comp_id]
+            start_msg, end_msg, count = active_compressions[comp_id]  # noqa: RUF059
             # Ensure same run_id
             if start_msg.run_id == msg.run_id:
                 active_compressions[comp_id] = (start_msg, msg, count + 1)

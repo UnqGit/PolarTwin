@@ -1,10 +1,9 @@
-from pathlib import Path
 import re
-from typing import List, Dict, Any
+from pathlib import Path
 
 from packages.shared_models.errors import ParseError
-from twin_sim.dsl.models import SceneEvent
 from twin_sim.dsl.event_parser import parse_value
+from twin_sim.dsl.models import SceneEvent
 
 
 class SceneParseError(ParseError):
@@ -18,7 +17,7 @@ class SceneParseError(ParseError):
         self.line_number = line_number
 
 
-def parse_scene_string(source: str) -> List[SceneEvent]:
+def parse_scene_string(source: str) -> list[SceneEvent]:
     events = []
     lines = source.splitlines()
 
@@ -121,6 +120,6 @@ def parse_scene_string(source: str) -> List[SceneEvent]:
     return sorted(events, key=lambda e: (e.at, e.source_order))
 
 
-def parse_scene_file(filepath: Path) -> List[SceneEvent]:
+def parse_scene_file(filepath: Path) -> list[SceneEvent]:
     with open(filepath, "r", encoding="utf-8") as f:
         return parse_scene_string(f.read())

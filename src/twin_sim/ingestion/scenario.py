@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from .validator import load_json, ValidationError
+from .validator import ValidationError, load_json
 
 
 def load_scenario(path: str | Path) -> dict[str, Any]:

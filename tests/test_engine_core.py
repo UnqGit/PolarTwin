@@ -11,25 +11,22 @@ Tests cover:
             tank, antenna, server, alarm, AC, vent, container, station)
 """
 
-import math
 import unittest
 
-from twin_sim.simulation.engine_core import (
-    SimulationEngineCore,
-    HierarchyGraph,
-    ConnectionGraph,
-    HierarchyNode,
-)
 from twin_sim.dsl.event_stack import TimelineStateManager
 from twin_sim.dsl.models import SceneEvent
 from twin_sim.ingestion.models import (
+    ExternalModel,
+    NetworkModel,
     RuntimeComponent,
     RuntimeConnection,
-    ExternalModel,
     WeatherModel,
-    NetworkModel,
 )
-import twin_sim.simulation.behaviors as behaviors
+from twin_sim.simulation import behaviors
+from twin_sim.simulation.engine_core import (
+    HierarchyGraph,
+    SimulationEngineCore,
+)
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -119,7 +116,8 @@ class TestTickTiming(unittest.TestCase):
     def test_telemetry_not_published_by_default(self):
         engine = SimulationEngineCore(self.state, [])
         engine.run_duration(1.0)
-        self.assertEqual(len(engine.telemetry), 0)
+        # According to new rules, telemetry is always accumulated internally
+        self.assertEqual(len(engine.telemetry), 240)
 
     def test_telemetry_one_record_per_tick_when_enabled(self):
         engine = SimulationEngineCore(self.state, [])

@@ -5,18 +5,17 @@ These constants must match the specification exactly.
 Any change to these values represents a specification violation.
 """
 
-import pytest
-import sys
 import os
+import sys
 
 # Allow tests to import from packages/
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
 from packages.shared_models.constants import (
     SECONDS_PER_SIMULATION_TICK,
-    TICKS_PER_SIMULATION_HOUR,
     SIMULATION_SECONDS_PER_HOUR,
     STANDARD_REAL_SECONDS_PER_TICK,
+    TICKS_PER_SIMULATION_HOUR,
 )
 
 

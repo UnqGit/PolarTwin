@@ -1,6 +1,5 @@
 from pathlib import Path
-import re
-from typing import List, Dict, Any
+from typing import Any
 
 from packages.shared_models.errors import ParseError
 from twin_sim.dsl.models import EventDefinition

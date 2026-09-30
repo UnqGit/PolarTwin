@@ -38,7 +38,7 @@ def validate_runtime_config(config: Any) -> dict[str, Any]:
             raise ValidationError(
                 f"runtime config outputs[{idx}] is missing required field 'type'"
             )
-    if "plugins" in root:
+    if "plugins" in root:  # noqa: SIM102
         if not isinstance(root["plugins"], str):
             raise ValidationError(
                 "runtime config plugins must be a string (directory path)"

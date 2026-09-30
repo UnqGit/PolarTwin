@@ -1,5 +1,3 @@
-import os
-import glob
 from pathlib import Path
 
 
@@ -32,7 +30,7 @@ def migrate_old_files_to_db(db, data_dir: Path):
                                     (scenario_id, station_id, name, source, now, now),
                                 )
                                 print(f"[migrate] Migrated scenario {scenario_id}")
-                        except Exception as e:
+                        except Exception as e:  # noqa: BLE001
                             print(f"[migrate] Error migrating {scene_file}: {e}")
 
     # Migrate events
@@ -64,7 +62,7 @@ def migrate_old_files_to_db(db, data_dir: Path):
                                     (event_id, station_id, name, source, now, now),
                                 )
                                 print(f"[migrate] Migrated event {event_id}")
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 print(f"[migrate] Error migrating {event_file}: {e}")
 
     db.conn.commit()

@@ -2,7 +2,7 @@ import unittest
 from pathlib import Path
 from tempfile import NamedTemporaryFile
 
-from compiler.parser.hierarchy_parser import parse_hierarchy_file, HierarchyParseError
+from compiler.parser.hierarchy_parser import HierarchyParseError, parse_hierarchy_file
 
 
 class TestHierarchyParser(unittest.TestCase):

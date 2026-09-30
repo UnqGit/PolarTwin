@@ -1,5 +1,10 @@
-from packages.shared_models.domain import HierarchyComponent, CompiledConnection, ComponentSpec
+from packages.shared_models.domain import (
+    CompiledConnection,
+    ComponentSpec,
+    HierarchyComponent,
+)
 from packages.shared_models.errors import ParseError
+
 
 class CrossValidationError(ParseError):
     pass
@@ -45,7 +50,7 @@ def validate_asts(
         required_measurements = set()
         for scope, scope_data in c_spec.rating.items():
             if isinstance(scope_data, dict):
-                for field in scope_data.keys():
+                for field in scope_data.keys():  # noqa: SIM118
                     required_measurements.add(f"{scope}.{field}")
                 
         if not required_measurements:
