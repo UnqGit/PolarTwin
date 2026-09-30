@@ -156,7 +156,7 @@ class TelemetryDatabase:
     ):
         with self.conn:
             self.conn.execute(
-                "INSERT INTO simulation_runs (id, station_model_id, scenario_id, start_time, status) VALUES (?, ?, ?, ?, ?)",
+                "INSERT OR IGNORE INTO simulation_runs (id, station_model_id, scenario_id, start_time, status) VALUES (?, ?, ?, ?, ?)",
                 (run_id, station_id, scenario_id, time.time(), "RUNNING"),
             )
 

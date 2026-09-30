@@ -61,7 +61,7 @@ class RunRecord:
     # Lifecycle
     # ------------------------------------------------------------------
 
-    def play(self, tick_interval: float = 1.0):
+    def play(self, tick_interval: float = 1.0, on_tick=None):
         """Start continuous simulation in a background thread."""
         if self.status == RunStatus.RUNNING:
             return
@@ -76,6 +76,8 @@ class RunRecord:
                     if self._stop_event.is_set():
                         break
                     self.engine.run_tick()
+                    if on_tick:
+                        on_tick()
                     time.sleep(tick_interval)
                 self.status = RunStatus.FINISHED
             except Exception as e:  # noqa: BLE001
@@ -318,7 +320,7 @@ class SimulationManager:
                         rec.run_id, rec.station_id, rec.scenario_id
                     )
                 rec._db_created = True
-            rec.play(tick_interval=tick_interval)
+            rec.play(tick_interval=tick_interval, on_tick=lambda: self.flush_telemetry(run_id))
             return True
         return False
 
@@ -356,7 +358,10 @@ class SimulationManager:
     def step(self, run_id: str) -> bool:
         rec = self.get_run(run_id)
         if rec:
-            return rec.step()
+            stepped = rec.step()
+            if stepped:
+                self.flush_telemetry(run_id)
+            return stepped
         return False
 
     def reset(self, run_id: str, scenes: list[SceneEvent] | None = None) -> bool:
