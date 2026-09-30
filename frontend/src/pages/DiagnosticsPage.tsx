@@ -9,9 +9,10 @@ import { SelectionProvider } from '../components/SelectionContext';
 import { HierarchyPanel } from '../components/HierarchyPanel';
 
 export function DiagnosticsPage() {
-  const { hierarchy, connections, spec } = useStation();
+  const { selectedStation, hierarchy, connections, spec } = useStation();
   const [runs, setRuns] = useState<any[]>([]);
   const [selectedRunId, setSelectedRunId] = useState<string>('');
+  const [selectedScenarioFilter, setSelectedScenarioFilter] = useState<string>('');
   const [runMeta, setRunMeta] = useState<any>(null);
   const [runEvents, setRunEvents] = useState<any[]>([]);
   const [runLogs, setRunLogs] = useState<any[]>([]);
@@ -49,6 +50,20 @@ export function DiagnosticsPage() {
       setRuns(r.filter((run: any) => run.status !== 'RUNNING'));
     }).catch(console.error);
   }, []);
+
+  // Filter runs by selected station and scenario
+  const stationRuns = useMemo(() => {
+    return runs.filter(r => r.station_model_id === selectedStation || r.station_id === selectedStation);
+  }, [runs, selectedStation]);
+
+  const uniqueScenarios = useMemo(() => {
+    return Array.from(new Set(stationRuns.map(r => r.scenario_id || 'Manual')));
+  }, [stationRuns]);
+
+  const filteredRuns = useMemo(() => {
+    if (!selectedScenarioFilter) return [];
+    return stationRuns.filter(r => (r.scenario_id || 'Manual') === selectedScenarioFilter);
+  }, [stationRuns, selectedScenarioFilter]);
 
   // When run selected
   useEffect(() => {
@@ -141,15 +156,34 @@ export function DiagnosticsPage() {
         <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Simulation History</h2>
 
         <select
-          value={selectedRunId}
-          onChange={e => setSelectedRunId(e.target.value)}
+          value={selectedScenarioFilter}
+          onChange={e => {
+            setSelectedScenarioFilter(e.target.value);
+            setSelectedRunId(''); // Clear run when scenario changes
+          }}
           style={{
             background: 'var(--bg-input)', color: 'var(--text-primary)', border: '1px solid var(--border-color)',
-            padding: '6px 12px', borderRadius: 6, fontSize: 13, outline: 'none', minWidth: 250
+            padding: '6px 12px', borderRadius: 6, fontSize: 13, outline: 'none', minWidth: 200
+          }}
+        >
+          <option value="">-- Select a Scenario --</option>
+          {uniqueScenarios.map(scenario => (
+            <option key={scenario} value={scenario}>{scenario}</option>
+          ))}
+        </select>
+
+        <select
+          value={selectedRunId}
+          onChange={e => setSelectedRunId(e.target.value)}
+          disabled={!selectedScenarioFilter}
+          style={{
+            background: 'var(--bg-input)', color: 'var(--text-primary)', border: '1px solid var(--border-color)',
+            padding: '6px 12px', borderRadius: 6, fontSize: 13, outline: 'none', minWidth: 250,
+            opacity: selectedScenarioFilter ? 1 : 0.5
           }}
         >
           <option value="">-- Select a Simulation Run --</option>
-          {runs.map(r => (
+          {filteredRuns.map(r => (
             <option key={r.run_id} value={r.run_id}>
               {new Date(r.start_time * 1000).toLocaleString()} | {r.run_id.substring(0, 8)} | {r.status}
             </option>
