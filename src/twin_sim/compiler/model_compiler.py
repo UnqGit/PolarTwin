@@ -10,9 +10,16 @@ from twin_sim.observability import SafetyError
 from twin_sim.model import Component, ComponentGraph, Connection
 
 
-def compile_model(topology: Any, raw_connections: Any, specification: Any, validation_config: dict[str, str] | None = None) -> ComponentGraph:
+def compile_model(
+    topology: Any,
+    raw_connections: Any,
+    specification: Any,
+    validation_config: dict[str, str] | None = None,
+) -> ComponentGraph:
     """Build a reusable graph without referring to topology-specific names."""
-    valid_topology, valid_connections, valid_specification = validate_documents(topology, raw_connections, specification, validation_config)
+    valid_topology, valid_connections, valid_specification = validate_documents(
+        topology, raw_connections, specification, validation_config
+    )
     components: dict[str, Component] = {}
 
     def build(node: dict[str, Any], parent: Component | None = None) -> Component:
@@ -35,26 +42,70 @@ def compile_model(topology: Any, raw_connections: Any, specification: Any, valid
 
     specified_names = set(valid_specification["components"])
     for name in sorted(specified_names - set(components)):
-        graph.diagnostics.append(f"specification component '{name}' is not present in topology")
+        graph.diagnostics.append(
+            f"specification component '{name}' is not present in topology"
+        )
     for name in components:
         if not graph.incoming(name) and not graph.outgoing(name):
-            graph.diagnostics.append(f"component '{name}' has no functional connections")
+            graph.diagnostics.append(
+                f"component '{name}' has no functional connections"
+            )
     for connection in connections:
         if connection.source == connection.target:
-            graph.diagnostics.append(f"self-connection detected for '{connection.source}'")
-            
+            graph.diagnostics.append(
+                f"self-connection detected for '{connection.source}'"
+            )
+
     # Check for unknown sensors
     validation_config = validation_config or {}
     for name, component in components.items():
         if component.type == "sensor":
             quantity = component.specification.get("quantity")
-            if quantity not in {None, '', 'wind_speed', 'data_integrity', 'battery_health', 'air_quality', 'storage_level', 'humidity', 'environmental_status', 'state_of_charge', 'ground_displacement', 'co2', 'fuel_level', 'access_event', 'temperature', 'network_status', 'position', 'occupancy', 'health_status', 'pressure', 'signal_quality', 'smoke_detection', 'emergency_status', 'salinity', 'voltage', 'gas_concentration', 'radiation', 'fire_detection', 'power', 'level', 'inventory_status', 'airflow', 'status', 'energy', 'fuel'}:
+            if quantity not in {
+                None,
+                "",
+                "wind_speed",
+                "data_integrity",
+                "battery_health",
+                "air_quality",
+                "storage_level",
+                "humidity",
+                "environmental_status",
+                "state_of_charge",
+                "ground_displacement",
+                "co2",
+                "fuel_level",
+                "access_event",
+                "temperature",
+                "network_status",
+                "position",
+                "occupancy",
+                "health_status",
+                "pressure",
+                "signal_quality",
+                "smoke_detection",
+                "emergency_status",
+                "salinity",
+                "voltage",
+                "gas_concentration",
+                "radiation",
+                "fire_detection",
+                "power",
+                "level",
+                "inventory_status",
+                "airflow",
+                "status",
+                "energy",
+                "fuel",
+            }:
                 msg = f"unknown sensor quantity '{quantity}' for sensor '{name}'"
                 severity = validation_config.get("unknown_sensor", "error")
                 if severity == "error":
-                    raise SafetyError(f"Safety violation (unknown_sensor): [{name}] {msg}")
+                    raise SafetyError(
+                        f"Safety violation (unknown_sensor): [{name}] {msg}"
+                    )
                 elif severity == "warning":
                     graph.diagnostics.append(msg)
-                    
+
     infer_behaviors(graph)
     return graph

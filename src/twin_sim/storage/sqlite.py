@@ -49,11 +49,22 @@ class SQLiteAdapter(DatabaseAdapter):
             self.start()
         document = telemetry.to_dict()
         component = document.get("component") or {}
-        message_type = "measurement" if telemetry.measurement is not None else "event" if telemetry.event is not None else "state"
+        message_type = (
+            "measurement"
+            if telemetry.measurement is not None
+            else "event" if telemetry.event is not None else "state"
+        )
         assert self.connection is not None
         self.connection.execute(
             "INSERT INTO telemetry (run_id, timestamp, message_type, component, component_type, payload) VALUES (?, ?, ?, ?, ?, ?)",
-            (telemetry.run_id, telemetry.timestamp, message_type, component.get("name"), component.get("type"), serialize(telemetry)),
+            (
+                telemetry.run_id,
+                telemetry.timestamp,
+                message_type,
+                component.get("name"),
+                component.get("type"),
+                serialize(telemetry),
+            ),
         )
 
     def record_experiment(

@@ -37,7 +37,11 @@ class TelemetryGenerator:
         messages: list[TelemetryMessage] = []
         for component in graph.components.values():
             state = dict(component.runtime_state.values)
-            component_info = {"name": component.name, "type": component.type, "tags": list(component.tags)}
+            component_info = {
+                "name": component.name,
+                "type": component.type,
+                "tags": list(component.tags),
+            }
             quality = {
                 "status": "good" if component.runtime_state.available else "bad",
                 "simulated": True,
@@ -50,33 +54,43 @@ class TelemetryGenerator:
                 unit = _unit(component.specification, quantity)
                 if unit is not None:
                     measurement["unit"] = unit
-                messages.append(TelemetryMessage(
-                    self.schema_version,
-                    self.run_id,
-                    timestamp,
-                    component=component_info,
-                    measurement=measurement,
-                    quality=quality,
-                    source={"component": component.name, "measures": quantity},
-                    context=context,
-                    active_events=active_events or [],
-                ))
+                messages.append(
+                    TelemetryMessage(
+                        self.schema_version,
+                        self.run_id,
+                        timestamp,
+                        component=component_info,
+                        measurement=measurement,
+                        quality=quality,
+                        source={"component": component.name, "measures": quantity},
+                        context=context,
+                        active_events=active_events or [],
+                    )
+                )
             else:
                 state.pop("inputs", None)
-                messages.append(TelemetryMessage(
-                    self.schema_version,
-                    self.run_id,
-                    timestamp,
-                    component=component_info,
-                    state={**state, "health": component.runtime_state.health, "available": component.runtime_state.available},
-                    quality=quality,
-                    source={"component": component.name},
-                    context=context,
-                    active_events=active_events or [],
-                ))
+                messages.append(
+                    TelemetryMessage(
+                        self.schema_version,
+                        self.run_id,
+                        timestamp,
+                        component=component_info,
+                        state={
+                            **state,
+                            "health": component.runtime_state.health,
+                            "available": component.runtime_state.available,
+                        },
+                        quality=quality,
+                        source={"component": component.name},
+                        context=context,
+                        active_events=active_events or [],
+                    )
+                )
         return messages
 
-    def event_message(self, timestamp: float, event: dict[str, Any], environment: dict[str, Any]) -> TelemetryMessage:
+    def event_message(
+        self, timestamp: float, event: dict[str, Any], environment: dict[str, Any]
+    ) -> TelemetryMessage:
         return TelemetryMessage(
             self.schema_version,
             self.run_id,

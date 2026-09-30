@@ -21,11 +21,17 @@ def load_scenario(path: str | Path) -> dict[str, Any]:
             if field not in event:
                 raise ValidationError(f"scenario.events[{index}] is missing '{field}'")
         if not isinstance(event["id"], str) or not event["id"]:
-            raise ValidationError(f"scenario.events[{index}].id must be a non-empty string")
+            raise ValidationError(
+                f"scenario.events[{index}].id must be a non-empty string"
+            )
         if not isinstance(event["timestamp"], (int, float)) or event["timestamp"] < 0:
-            raise ValidationError(f"scenario.events[{index}].timestamp must be non-negative")
+            raise ValidationError(
+                f"scenario.events[{index}].timestamp must be non-negative"
+            )
         if not isinstance(event["event"], str) or not event["event"]:
-            raise ValidationError(f"scenario.events[{index}].event must be a non-empty string")
+            raise ValidationError(
+                f"scenario.events[{index}].event must be a non-empty string"
+            )
     return document
 
 
@@ -37,10 +43,18 @@ def load_runtime_config(path: str | Path) -> dict[str, Any]:
         if field not in document:
             raise ValidationError(f"runtime configuration is missing '{field}'")
     if document["mode"] not in {"simulator", "generator"}:
-        raise ValidationError("runtime configuration.mode must be 'simulator' or 'generator'")
-    if not isinstance(document["tick_interval"], (int, float)) or document["tick_interval"] <= 0:
+        raise ValidationError(
+            "runtime configuration.mode must be 'simulator' or 'generator'"
+        )
+    if (
+        not isinstance(document["tick_interval"], (int, float))
+        or document["tick_interval"] <= 0
+    ):
         raise ValidationError("runtime configuration.tick_interval must be positive")
-    if not isinstance(document["time_scale"], (int, float)) or document["time_scale"] <= 0:
+    if (
+        not isinstance(document["time_scale"], (int, float))
+        or document["time_scale"] <= 0
+    ):
         raise ValidationError("runtime configuration.time_scale must be positive")
     if not isinstance(document["outputs"], list):
         raise ValidationError("runtime configuration.outputs must be an array")

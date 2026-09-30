@@ -38,7 +38,9 @@ def _string(value: Any, path: str) -> str:
     return value
 
 
-def validate_topology(document: Any, validation_config: dict[str, str] | None = None) -> tuple[dict[str, Any], dict[str, str]]:
+def validate_topology(
+    document: Any, validation_config: dict[str, str] | None = None
+) -> tuple[dict[str, Any], dict[str, str]]:
     validation_config = validation_config or {}
     root = _object(document, "topology")
     for field in ("name", "type", "tags", "children"):
@@ -46,7 +48,9 @@ def validate_topology(document: Any, validation_config: dict[str, str] | None = 
             raise ValidationError(f"topology is missing required field '{field}'")
     _string(root["name"], "topology.name")
     _string(root["type"], "topology.type")
-    if not isinstance(root["tags"], list) or not all(isinstance(tag, str) and tag for tag in root["tags"]):
+    if not isinstance(root["tags"], list) or not all(
+        isinstance(tag, str) and tag for tag in root["tags"]
+    ):
         raise ValidationError("topology.tags must be an array of non-empty strings")
     if len(root["tags"]) != len(set(root["tags"])):
         raise ValidationError("topology.tags must not contain duplicates")
@@ -63,9 +67,13 @@ def validate_topology(document: Any, validation_config: dict[str, str] | None = 
         name = _string(item["name"], f"{path}.name")
         _string(item["type"], f"{path}.type")
         if name in names:
-            raise ValidationError(f"duplicate component name '{name}' at {path}; first declared at {names[name]}")
+            raise ValidationError(
+                f"duplicate component name '{name}' at {path}; first declared at {names[name]}"
+            )
         names[name] = path
-        if not isinstance(item["tags"], list) or not all(isinstance(tag, str) and tag for tag in item["tags"]):
+        if not isinstance(item["tags"], list) or not all(
+            isinstance(tag, str) and tag for tag in item["tags"]
+        ):
             raise ValidationError(f"{path}.tags must be an array of non-empty strings")
         if not isinstance(item["children"], list):
             raise ValidationError(f"{path}.children must be an array")
@@ -75,11 +83,16 @@ def validate_topology(document: Any, validation_config: dict[str, str] | None = 
     visit(root, "topology")
     return root, names
 
-def validate_connections(document: Any, names: dict[str, str], validation_config: dict[str, str] | None = None) -> list[dict[str, Any]]:
+
+def validate_connections(
+    document: Any,
+    names: dict[str, str],
+    validation_config: dict[str, str] | None = None,
+) -> list[dict[str, Any]]:
     validation_config = validation_config or {}
     if not isinstance(document, list):
         raise ValidationError("connections must be an array")
-        
+
     for index, connection in enumerate(document):
         path = f"connections[{index}]"
         item = _object(connection, path)
@@ -90,7 +103,9 @@ def validate_connections(document: Any, names: dict[str, str], validation_config
         target = _string(item["target"], f"{path}.target")
         _string(item["type"], f"{path}.type")
         if item["direction"] not in ALLOWED_DIRECTIONS:
-            raise ValidationError(f"{path}.direction must be one of {sorted(ALLOWED_DIRECTIONS)}")
+            raise ValidationError(
+                f"{path}.direction must be one of {sorted(ALLOWED_DIRECTIONS)}"
+            )
         if source not in names or target not in names:
             missing = source if source not in names else target
             msg = f"{path} references unknown component '{missing}'"
@@ -113,18 +128,29 @@ def validate_specification(document: Any) -> dict[str, Any]:
         _string(name, "specification.components key")
         item = _object(component, f"specification.components['{name}']")
         if "type" not in item or "spec" not in item:
-            raise ValidationError(f"specification component '{name}' requires 'type' and 'spec'")
+            raise ValidationError(
+                f"specification component '{name}' requires 'type' and 'spec'"
+            )
         _string(item["type"], f"specification.components['{name}'].type")
         if not isinstance(item["spec"], dict):
-            raise ValidationError(f"specification.components['{name}'].spec must be an object")
+            raise ValidationError(
+                f"specification.components['{name}'].spec must be an object"
+            )
     for component_type, default in spec["defaults"].items():
         _string(component_type, "specification.defaults key")
         if not isinstance(default, dict):
-            raise ValidationError(f"specification.defaults['{component_type}'] must be an object")
+            raise ValidationError(
+                f"specification.defaults['{component_type}'] must be an object"
+            )
     return spec
 
 
-def validate_documents(topology: Any, connections: Any, specification: Any, validation_config: dict[str, str] | None = None) -> tuple[dict[str, Any], list[dict[str, Any]], dict[str, Any]]:
+def validate_documents(
+    topology: Any,
+    connections: Any,
+    specification: Any,
+    validation_config: dict[str, str] | None = None,
+) -> tuple[dict[str, Any], list[dict[str, Any]], dict[str, Any]]:
     """Validate both documents and their component/type cross references."""
     valid_topology, names = validate_topology(topology, validation_config)
     valid_connections = validate_connections(connections, names, validation_config)
@@ -142,5 +168,7 @@ def validate_documents(topology: Any, connections: Any, specification: Any, vali
         if component is None:
             raise ValidationError(f"component '{name}' has no specification")
         if component["type"] != relation_type:
-            raise ValidationError(f"type mismatch for '{name}': topology has '{relation_type}', specification has '{component['type']}'")
+            raise ValidationError(
+                f"type mismatch for '{name}': topology has '{relation_type}', specification has '{component['type']}'"
+            )
     return valid_topology, valid_connections, valid_specification

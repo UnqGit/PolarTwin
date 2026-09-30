@@ -8,6 +8,7 @@ from twin_sim.telemetry import TelemetryMessage
 
 class RingBufferSink(TelemetrySink):
     """A thread-safe in-memory sink that retains the last N telemetry messages."""
+
     def __init__(self, capacity: int = 1000):
         self.capacity = capacity
         self.buffer: deque[TelemetryMessage] = deque(maxlen=capacity)

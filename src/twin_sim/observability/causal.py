@@ -102,7 +102,7 @@ class CausalTracer:
         question = question or f"WHY did {component} change state?"
         chain: list[str] = []
         events: list[CausalEvent] = []
-        
+
         for event in self.events:
             for effect in event.effects:
                 if effect.component == component:
@@ -118,7 +118,9 @@ class CausalTracer:
                                 chain.extend(event.chain)
 
         if not events:
-            chain = [f"Component operated in steady state with no external disturbances or failure events."]
+            chain = [
+                f"Component operated in steady state with no external disturbances or failure events."
+            ]
 
         return CausalExplanation(
             target_component=component,

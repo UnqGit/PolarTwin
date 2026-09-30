@@ -15,32 +15,48 @@ import math
 import unittest
 
 from twin_sim.simulation.engine_core import (
-    SimulationEngineCore, HierarchyGraph, ConnectionGraph, HierarchyNode
+    SimulationEngineCore,
+    HierarchyGraph,
+    ConnectionGraph,
+    HierarchyNode,
 )
 from twin_sim.dsl.event_stack import TimelineStateManager
 from twin_sim.dsl.models import SceneEvent
 from twin_sim.ingestion.models import (
-    RuntimeComponent, RuntimeConnection, ExternalModel, WeatherModel, NetworkModel
+    RuntimeComponent,
+    RuntimeConnection,
+    ExternalModel,
+    WeatherModel,
+    NetworkModel,
 )
 import twin_sim.simulation.behaviors as behaviors
-
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def make_external(temperature: float = -10.0) -> ExternalModel:
     return ExternalModel(
         weather=WeatherModel(
-            temperature=temperature, wind_speed=5.0, humidity=50,
-            o2_level=21, co2_level=0, wind_direction=180,
-            visibility=1000, pressure=1000, dew_frost_point=-15
+            temperature=temperature,
+            wind_speed=5.0,
+            humidity=50,
+            o2_level=21,
+            co2_level=0,
+            wind_direction=180,
+            visibility=1000,
+            pressure=1000,
+            dew_frost_point=-15,
         ),
         network=NetworkModel(
-            bandwidth=100, mainland_connectivity=True, upload_window=False,
-            upload_speed=10, download_speed=10
+            bandwidth=100,
+            mainland_connectivity=True,
+            upload_window=False,
+            upload_speed=10,
+            download_speed=10,
         ),
-        supplies=[]
+        supplies=[],
     )
 
 
@@ -51,12 +67,15 @@ def make_comp(name, comp_type, status="active", is_backup=False, **value_overrid
         "power": {"value": 0.0, "min": 0.0, "max": 1000.0},
     }
     value.update(value_overrides)
-    return RuntimeComponent(name=name, type=comp_type, is_backup=is_backup,
-                            status=status, value=value)
+    return RuntimeComponent(
+        name=name, type=comp_type, is_backup=is_backup, status=status, value=value
+    )
 
 
 def make_conn(source, target, conn_type="power", status="active"):
-    return RuntimeConnection(source=source, target=target, type=conn_type, status=status)
+    return RuntimeConnection(
+        source=source, target=target, type=conn_type, status=status
+    )
 
 
 def make_state(comps, conns=None, ext=None):
@@ -75,6 +94,7 @@ def flat_hierarchy(entries):
 # ---------------------------------------------------------------------------
 # Phase 11 — Tick timing and telemetry
 # ---------------------------------------------------------------------------
+
 
 class TestTickTiming(unittest.TestCase):
 
@@ -125,6 +145,7 @@ class TestTickTiming(unittest.TestCase):
 # Phase 12 — Backup logic
 # ---------------------------------------------------------------------------
 
+
 class TestBackupLogic(unittest.TestCase):
 
     def _make_backup_setup(self, with_hierarchy=False):
@@ -133,13 +154,34 @@ class TestBackupLogic(unittest.TestCase):
 
         hier = None
         if with_hierarchy:
-            hier = flat_hierarchy([
-                {"name": "Gen1", "type": "generator", "parent": None, "children": [],
-                 "priority": 0, "floor": 0, "is_backup": False, "backup": [], "external_field": None, "tags": []},
-                {"name": "GenBackup", "type": "generator", "parent": None, "children": [],
-                 "priority": 1, "floor": 0, "is_backup": True, "backup": ["Gen1"],
-                 "external_field": None, "tags": []},
-            ])
+            hier = flat_hierarchy(
+                [
+                    {
+                        "name": "Gen1",
+                        "type": "generator",
+                        "parent": None,
+                        "children": [],
+                        "priority": 0,
+                        "floor": 0,
+                        "is_backup": False,
+                        "backup": [],
+                        "external_field": None,
+                        "tags": [],
+                    },
+                    {
+                        "name": "GenBackup",
+                        "type": "generator",
+                        "parent": None,
+                        "children": [],
+                        "priority": 1,
+                        "floor": 0,
+                        "is_backup": True,
+                        "backup": ["Gen1"],
+                        "external_field": None,
+                        "tags": [],
+                    },
+                ]
+            )
 
         state = make_state([gen, bkp])
         return state, hier
@@ -153,8 +195,13 @@ class TestBackupLogic(unittest.TestCase):
 
     def test_backup_activates_when_primary_fails(self):
         state, hier = self._make_backup_setup(with_hierarchy=True)
-        scene = SceneEvent(event_ref="fail", selector="@Gen1", at=0.0,
-                           duration=float("inf"), payload={"status": "failure"})
+        scene = SceneEvent(
+            event_ref="fail",
+            selector="@Gen1",
+            at=0.0,
+            duration=float("inf"),
+            payload={"status": "failure"},
+        )
         engine = SimulationEngineCore(state, [scene], hierarchy=hier)
         engine.run_tick()
         bkp = engine.state.base_components["GenBackup"]
@@ -162,8 +209,13 @@ class TestBackupLogic(unittest.TestCase):
 
     def test_backup_activates_when_primary_inactive(self):
         state, hier = self._make_backup_setup(with_hierarchy=True)
-        scene = SceneEvent(event_ref="shutdown", selector="@Gen1", at=0.0,
-                           duration=float("inf"), payload={"status": "inactive"})
+        scene = SceneEvent(
+            event_ref="shutdown",
+            selector="@Gen1",
+            at=0.0,
+            duration=float("inf"),
+            payload={"status": "inactive"},
+        )
         engine = SimulationEngineCore(state, [scene], hierarchy=hier)
         engine.run_tick()
         bkp = engine.state.base_components["GenBackup"]
@@ -174,31 +226,66 @@ class TestBackupLogic(unittest.TestCase):
         gen = make_comp("Gen1", "generator", status="active", is_backup=False)
         bkp = make_comp("GenBackup", "generator", status="inactive", is_backup=True)
 
-        hier = flat_hierarchy([
-            {"name": "Gen1", "type": "generator", "parent": None, "children": [],
-             "priority": 0, "floor": 0, "is_backup": False, "backup": [], "external_field": None, "tags": []},
-            {"name": "GenBackup", "type": "generator", "parent": None, "children": [],
-             "priority": 1, "floor": 0, "is_backup": True, "backup": ["Gen1"],
-             "external_field": None, "tags": []},
-        ])
+        hier = flat_hierarchy(
+            [
+                {
+                    "name": "Gen1",
+                    "type": "generator",
+                    "parent": None,
+                    "children": [],
+                    "priority": 0,
+                    "floor": 0,
+                    "is_backup": False,
+                    "backup": [],
+                    "external_field": None,
+                    "tags": [],
+                },
+                {
+                    "name": "GenBackup",
+                    "type": "generator",
+                    "parent": None,
+                    "children": [],
+                    "priority": 1,
+                    "floor": 0,
+                    "is_backup": True,
+                    "backup": ["Gen1"],
+                    "external_field": None,
+                    "tags": [],
+                },
+            ]
+        )
 
         # Scene: force backup to inactive, AND fail primary — backup must NOT activate
-        s1 = SceneEvent(event_ref="force_bkp_inactive", selector="@GenBackup", at=0.0,
-                        duration=float("inf"), payload={"status": "inactive"})
-        s2 = SceneEvent(event_ref="fail_primary", selector="@Gen1", at=0.0,
-                        duration=float("inf"), payload={"status": "failure"})
+        s1 = SceneEvent(
+            event_ref="force_bkp_inactive",
+            selector="@GenBackup",
+            at=0.0,
+            duration=float("inf"),
+            payload={"status": "inactive"},
+        )
+        s2 = SceneEvent(
+            event_ref="fail_primary",
+            selector="@Gen1",
+            at=0.0,
+            duration=float("inf"),
+            payload={"status": "failure"},
+        )
 
         state = make_state([gen, bkp])
         engine = SimulationEngineCore(state, [s1, s2], hierarchy=hier)
         engine.run_tick()
         bkp_comp = engine.state.base_components["GenBackup"]
-        self.assertEqual(bkp_comp.status, "inactive",
-                         "Backup explicitly set to inactive by scene must NOT be auto-activated")
+        self.assertEqual(
+            bkp_comp.status,
+            "inactive",
+            "Backup explicitly set to inactive by scene must NOT be auto-activated",
+        )
 
 
 # ---------------------------------------------------------------------------
 # Phase 12 — Hierarchical status propagation
 # ---------------------------------------------------------------------------
+
 
 class TestHierarchicalStatusPropagation(unittest.TestCase):
 
@@ -206,12 +293,34 @@ class TestHierarchicalStatusPropagation(unittest.TestCase):
         parent = make_comp("Block1", "block", status="inactive")
         child = make_comp("Gen1", "generator", status="active")
 
-        hier = flat_hierarchy([
-            {"name": "Block1", "type": "block", "parent": None, "children": ["Gen1"],
-             "priority": 0, "floor": 0, "is_backup": False, "backup": [], "external_field": None, "tags": []},
-            {"name": "Gen1", "type": "generator", "parent": "Block1", "children": [],
-             "priority": 0, "floor": 0, "is_backup": False, "backup": [], "external_field": None, "tags": []},
-        ])
+        hier = flat_hierarchy(
+            [
+                {
+                    "name": "Block1",
+                    "type": "block",
+                    "parent": None,
+                    "children": ["Gen1"],
+                    "priority": 0,
+                    "floor": 0,
+                    "is_backup": False,
+                    "backup": [],
+                    "external_field": None,
+                    "tags": [],
+                },
+                {
+                    "name": "Gen1",
+                    "type": "generator",
+                    "parent": "Block1",
+                    "children": [],
+                    "priority": 0,
+                    "floor": 0,
+                    "is_backup": False,
+                    "backup": [],
+                    "external_field": None,
+                    "tags": [],
+                },
+            ]
+        )
 
         state = make_state([parent, child])
         engine = SimulationEngineCore(state, [], hierarchy=hier)
@@ -225,12 +334,34 @@ class TestHierarchicalStatusPropagation(unittest.TestCase):
         parent = make_comp("Block1", "block", status="active")
         child = make_comp("Gen1", "generator", status="active")
 
-        hier = flat_hierarchy([
-            {"name": "Block1", "type": "block", "parent": None, "children": ["Gen1"],
-             "priority": 0, "floor": 0, "is_backup": False, "backup": [], "external_field": None, "tags": []},
-            {"name": "Gen1", "type": "generator", "parent": "Block1", "children": [],
-             "priority": 0, "floor": 0, "is_backup": False, "backup": [], "external_field": None, "tags": []},
-        ])
+        hier = flat_hierarchy(
+            [
+                {
+                    "name": "Block1",
+                    "type": "block",
+                    "parent": None,
+                    "children": ["Gen1"],
+                    "priority": 0,
+                    "floor": 0,
+                    "is_backup": False,
+                    "backup": [],
+                    "external_field": None,
+                    "tags": [],
+                },
+                {
+                    "name": "Gen1",
+                    "type": "generator",
+                    "parent": "Block1",
+                    "children": [],
+                    "priority": 0,
+                    "floor": 0,
+                    "is_backup": False,
+                    "backup": [],
+                    "external_field": None,
+                    "tags": [],
+                },
+            ]
+        )
 
         state = make_state([parent, child])
         engine = SimulationEngineCore(state, [], hierarchy=hier)
@@ -244,16 +375,23 @@ class TestHierarchicalStatusPropagation(unittest.TestCase):
 # Phase 13 — General failure model
 # ---------------------------------------------------------------------------
 
+
 class TestFailureModel(unittest.TestCase):
 
     def test_failure_countdown_formula(self):
         """toff = 1 - 3ac^2 + 2ac^3"""
         # At ac=0 (just at max_rating): toff = 1
-        self.assertAlmostEqual(behaviors.calculate_failure_countdown(100.0, 100.0, 110.0), 1.0)
+        self.assertAlmostEqual(
+            behaviors.calculate_failure_countdown(100.0, 100.0, 110.0), 1.0
+        )
         # At ac=1 (at max_tolerated): toff = 0
-        self.assertAlmostEqual(behaviors.calculate_failure_countdown(110.0, 100.0, 110.0), 0.0)
+        self.assertAlmostEqual(
+            behaviors.calculate_failure_countdown(110.0, 100.0, 110.0), 0.0
+        )
         # At ac=0.5: toff = 1 - 3*0.25 + 2*0.125 = 1 - 0.75 + 0.25 = 0.5
-        self.assertAlmostEqual(behaviors.calculate_failure_countdown(105.0, 100.0, 110.0), 0.5)
+        self.assertAlmostEqual(
+            behaviors.calculate_failure_countdown(105.0, 100.0, 110.0), 0.5
+        )
 
     def test_tolerance_calculation(self):
         """Tspecific = Tcomp * (1 + Tglobal/100); SPF = 1 + Tspecific/100; max_tol = max_rating * SPF"""
@@ -275,12 +413,15 @@ class TestFailureModel(unittest.TestCase):
         physics cannot cool it back below the rating within the test window.
         """
         gen = RuntimeComponent(
-            name="Gen1", type="generator", is_backup=False, status="active",
+            name="Gen1",
+            type="generator",
+            is_backup=False,
+            status="active",
             value={
                 "temperature": {"value": 125.0, "min": -20.0, "max": 120.0},
                 "power": {"value": 500.0, "min": 0.0, "max": 1000.0},
                 "failure_time_temperature": 0.0,
-            }
+            },
         )
         state = make_state([gen])
         engine = SimulationEngineCore(state, [], global_tolerance=0.0)
@@ -295,21 +436,29 @@ class TestFailureModel(unittest.TestCase):
         # a = (125-120)/(126-120) ≈ 0.833, toff ≈ 0.074 hours
         # So after 0.074 / dt ≈ 18 ticks the countdown expires
         for _ in range(25):  # well beyond 18 ticks
-            engine._evaluate_failure_countdowns(engine.state.base_components, eff_status, dt)
+            engine._evaluate_failure_countdowns(
+                engine.state.base_components, eff_status, dt
+            )
             if engine.state.base_components["Gen1"].status == "failure":
                 break
 
-        self.assertEqual(engine.state.base_components["Gen1"].status, "failure",
-                         "Generator should fail after countdown expires")
+        self.assertEqual(
+            engine.state.base_components["Gen1"].status,
+            "failure",
+            "Generator should fail after countdown expires",
+        )
 
     def test_countdown_cancelled_when_value_returns_to_range(self):
         """If temperature drops back below max_rating, countdown resets to 0."""
         gen = RuntimeComponent(
-            name="Gen1", type="generator", is_backup=False, status="active",
+            name="Gen1",
+            type="generator",
+            is_backup=False,
+            status="active",
             value={
                 "temperature": {"value": 125.0, "min": -20.0, "max": 120.0},
                 "power": {"value": 500.0, "min": 0.0, "max": 1000.0},
-            }
+            },
         )
         state = make_state([gen])
         engine = SimulationEngineCore(state, [])
@@ -320,7 +469,9 @@ class TestFailureModel(unittest.TestCase):
         engine.run_tick()
 
         # failure_time_temperature should be 0.0 now (reset)
-        ft = engine.state.base_components["Gen1"].value.get("failure_time_temperature", 0.0)
+        ft = engine.state.base_components["Gen1"].value.get(
+            "failure_time_temperature", 0.0
+        )
         self.assertAlmostEqual(ft, 0.0, places=5)
 
 
@@ -328,11 +479,14 @@ class TestFailureModel(unittest.TestCase):
 # Phase 14 — Resource allocation
 # ---------------------------------------------------------------------------
 
+
 class TestResourceAllocation(unittest.TestCase):
 
     def test_generator_proportional_allocation_at_35_percent(self):
         """If ratio ≥ 35%, generator distributes proportionally."""
-        gen = make_comp("Gen1", "generator", power={"value": 0.0, "min": 0.0, "max": 600.0})
+        gen = make_comp(
+            "Gen1", "generator", power={"value": 0.0, "min": 0.0, "max": 600.0}
+        )
         gen.value["power"] = {"value": 0.0, "min": 0.0, "max": 600.0}
 
         c1 = make_comp("Load1", "server")
@@ -347,7 +501,9 @@ class TestResourceAllocation(unittest.TestCase):
         ]
         state = make_state([gen, c1, c2], conns)
         engine = SimulationEngineCore(state, [])
-        engine._resolve_resource_allocation(engine.state.base_components, engine.state.base_external)
+        engine._resolve_resource_allocation(
+            engine.state.base_components, engine.state.base_external
+        )
 
         # Total demand = 1000. Gen max = 600. ratio = 0.6 ≥ 0.35 → proportional
         # Each load gets 600/1000 * 500 = 300
@@ -367,14 +523,46 @@ class TestResourceAllocation(unittest.TestCase):
         c2 = make_comp("LowPrio", "server")
         c2.value["power"] = {"value": 200.0, "min": 0.0, "max": 1000.0}
 
-        hier = flat_hierarchy([
-            {"name": "Gen1", "type": "generator", "parent": None, "children": [],
-             "priority": 0, "floor": 0, "is_backup": False, "backup": [], "external_field": None, "tags": []},
-            {"name": "HighPrio", "type": "server", "parent": None, "children": [],
-             "priority": 0, "floor": 0, "is_backup": False, "backup": [], "external_field": None, "tags": []},
-            {"name": "LowPrio", "type": "server", "parent": None, "children": [],
-             "priority": 5, "floor": 0, "is_backup": False, "backup": [], "external_field": None, "tags": []},
-        ])
+        hier = flat_hierarchy(
+            [
+                {
+                    "name": "Gen1",
+                    "type": "generator",
+                    "parent": None,
+                    "children": [],
+                    "priority": 0,
+                    "floor": 0,
+                    "is_backup": False,
+                    "backup": [],
+                    "external_field": None,
+                    "tags": [],
+                },
+                {
+                    "name": "HighPrio",
+                    "type": "server",
+                    "parent": None,
+                    "children": [],
+                    "priority": 0,
+                    "floor": 0,
+                    "is_backup": False,
+                    "backup": [],
+                    "external_field": None,
+                    "tags": [],
+                },
+                {
+                    "name": "LowPrio",
+                    "type": "server",
+                    "parent": None,
+                    "children": [],
+                    "priority": 5,
+                    "floor": 0,
+                    "is_backup": False,
+                    "backup": [],
+                    "external_field": None,
+                    "tags": [],
+                },
+            ]
+        )
 
         conns = [
             make_conn("Gen1", "HighPrio", "power"),
@@ -382,7 +570,9 @@ class TestResourceAllocation(unittest.TestCase):
         ]
         state = make_state([gen, c1, c2], conns)
         engine = SimulationEngineCore(state, [], hierarchy=hier)
-        engine._resolve_resource_allocation(engine.state.base_components, engine.state.base_external)
+        engine._resolve_resource_allocation(
+            engine.state.base_components, engine.state.base_external
+        )
 
         # Total demand = 400, gen max = 100 → ratio = 0.25 < 0.35 → deactivate LowPrio
         low_status = engine.state.base_components["LowPrio"].status
@@ -392,6 +582,7 @@ class TestResourceAllocation(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # Phase 15 — Component-specific behaviours
 # ---------------------------------------------------------------------------
+
 
 class TestComponentBehaviours(unittest.TestCase):
 
@@ -407,7 +598,9 @@ class TestComponentBehaviours(unittest.TestCase):
         p_min = 0.0
         t_max = 120.0
         t_min = -20.0
-        expected = behaviors.generator_temperature(t_prev, t_surr, p_curr, p_max, p_min, t_max, t_min)
+        expected = behaviors.generator_temperature(
+            t_prev, t_surr, p_curr, p_max, p_min, t_max, t_min
+        )
         self.assertGreater(expected, t_prev)  # Running generator should heat up
 
     def test_alarm_inactive_consumes_zero_amps(self):
@@ -419,8 +612,10 @@ class TestComponentBehaviours(unittest.TestCase):
     def test_alarm_power_calculation(self):
         """Alarm power = V * I = 220 * 5 = 1100W when active."""
         alarm = make_comp("Alarm1", "alarm", status="active")
-        alarm.value = {"power": {"value": 0.0, "min": 0.0, "max": 2000.0},
-                       "voltage": {"value": 220.0}}
+        alarm.value = {
+            "power": {"value": 0.0, "min": 0.0, "max": 2000.0},
+            "voltage": {"value": 220.0},
+        }
         state = make_state([alarm])
         engine = SimulationEngineCore(state, [])
         engine.run_tick()
@@ -442,7 +637,9 @@ class TestComponentBehaviours(unittest.TestCase):
         self.assertAlmostEqual(behaviors.solar_panel_power(100.0, 0.0, 1000.0), 0.0)
 
     def test_solar_panel_max_irradiance(self):
-        self.assertAlmostEqual(behaviors.solar_panel_power(100.0, 1000.0, 1000.0), 100.0)
+        self.assertAlmostEqual(
+            behaviors.solar_panel_power(100.0, 1000.0, 1000.0), 100.0
+        )
 
     def test_solar_panel_half_irradiance(self):
         self.assertAlmostEqual(behaviors.solar_panel_power(100.0, 500.0, 1000.0), 50.0)
@@ -485,7 +682,9 @@ class TestComponentBehaviours(unittest.TestCase):
         engine = SimulationEngineCore(state, [])
         engine.run_tick()
 
-        t_result = engine.state.base_components["Station1"].value["temperature"]["value"]
+        t_result = engine.state.base_components["Station1"].value["temperature"][
+            "value"
+        ]
         # Tsurr = -10 + 20 = 10, T_prev = -5
         # No children/vents: T_curr = -5 + 0.5*(0 + 0 + 0.8*10 - (-5)) = -5 + 0.5*13 = 1.5
         self.assertAlmostEqual(t_result, 1.5, places=5)
@@ -510,7 +709,9 @@ class TestComponentBehaviours(unittest.TestCase):
         fr_ratio = fr_curr / fr_max
         temp_ratio = abs(t_out - t_surr) / (t_max - t_min)
         expected = i_max * (alpha * fr_ratio + (1 - alpha) * temp_ratio)
-        result = behaviors.ac_current_requirement(i_max, fr_curr, fr_max, t_out, t_surr, t_max, t_min)
+        result = behaviors.ac_current_requirement(
+            i_max, fr_curr, fr_max, t_out, t_surr, t_max, t_min
+        )
         self.assertAlmostEqual(result, expected)
 
     def test_ac_output_temperature_approaches_target(self):
@@ -530,14 +731,19 @@ class TestComponentBehaviours(unittest.TestCase):
         fr_min = 0.0
         t_max = 100.0
         t_min = 0.0
-        result = behaviors.pump_temperature(t_prev, t_surr, fr_curr, fr_max, fr_min, t_max, t_min)
-        expected = behaviors.generator_temperature(t_prev, t_surr, fr_curr, fr_max, fr_min, t_max, t_min)
+        result = behaviors.pump_temperature(
+            t_prev, t_surr, fr_curr, fr_max, fr_min, t_max, t_min
+        )
+        expected = behaviors.generator_temperature(
+            t_prev, t_surr, fr_curr, fr_max, fr_min, t_max, t_min
+        )
         self.assertAlmostEqual(result, expected)
 
 
 # ---------------------------------------------------------------------------
 # Phase 15.10 — Container thermal correction
 # ---------------------------------------------------------------------------
+
 
 class TestContainerThermalCorrection(unittest.TestCase):
 
@@ -547,16 +753,40 @@ class TestContainerThermalCorrection(unittest.TestCase):
         container.value = {"temperature": {"value": 31.0, "min": 0.0, "max": 30.0}}
 
         vent = make_comp("Vent1", "vent", status="active")
-        vent.value = {"airflow": {"value": 10.0, "min": 0.0, "max": 100.0},
-                      "power": {"value": 0.0, "min": 0.0, "max": 1000.0},
-                      "voltage": {"value": 220.0}}
+        vent.value = {
+            "airflow": {"value": 10.0, "min": 0.0, "max": 100.0},
+            "power": {"value": 0.0, "min": 0.0, "max": 1000.0},
+            "voltage": {"value": 220.0},
+        }
 
-        hier = flat_hierarchy([
-            {"name": "Sys1", "type": "system", "parent": None, "children": ["Vent1"],
-             "priority": 0, "floor": 0, "is_backup": False, "backup": [], "external_field": None, "tags": []},
-            {"name": "Vent1", "type": "vent", "parent": "Sys1", "children": [],
-             "priority": 0, "floor": 0, "is_backup": False, "backup": [], "external_field": None, "tags": []},
-        ])
+        hier = flat_hierarchy(
+            [
+                {
+                    "name": "Sys1",
+                    "type": "system",
+                    "parent": None,
+                    "children": ["Vent1"],
+                    "priority": 0,
+                    "floor": 0,
+                    "is_backup": False,
+                    "backup": [],
+                    "external_field": None,
+                    "tags": [],
+                },
+                {
+                    "name": "Vent1",
+                    "type": "vent",
+                    "parent": "Sys1",
+                    "children": [],
+                    "priority": 0,
+                    "floor": 0,
+                    "is_backup": False,
+                    "backup": [],
+                    "external_field": None,
+                    "tags": [],
+                },
+            ]
+        )
 
         state = make_state([container, vent])
         engine = SimulationEngineCore(state, [], hierarchy=hier)
@@ -564,7 +794,9 @@ class TestContainerThermalCorrection(unittest.TestCase):
 
         engine._container_thermal_correction(container, "Sys1", base_comps)
         airflow = base_comps["Vent1"].value["airflow"]["value"]
-        self.assertAlmostEqual(airflow, 100.0, msg="Vent airflow should be maxed to 100")
+        self.assertAlmostEqual(
+            airflow, 100.0, msg="Vent airflow should be maxed to 100"
+        )
 
     def test_ac_target_decreases_when_vents_already_maxed(self):
         """When vents are already at max airflow, AC target temp should decrease by 2°C."""
@@ -572,25 +804,61 @@ class TestContainerThermalCorrection(unittest.TestCase):
         container.value = {"temperature": {"value": 31.0, "min": 0.0, "max": 30.0}}
 
         vent = make_comp("Vent1", "vent", status="active")
-        vent.value = {"airflow": {"value": 100.0, "min": 0.0, "max": 100.0},  # Already maxed
-                      "power": {"value": 0.0, "min": 0.0, "max": 1000.0},
-                      "voltage": {"value": 220.0}}
+        vent.value = {
+            "airflow": {"value": 100.0, "min": 0.0, "max": 100.0},  # Already maxed
+            "power": {"value": 0.0, "min": 0.0, "max": 1000.0},
+            "voltage": {"value": 220.0},
+        }
 
         ac = make_comp("AC1", "air_conditioner", status="active")
-        ac.value = {"temperature": {"value": 20.0, "min": 0.0, "max": 40.0},
-                    "target_temperature": {"value": 20.0},
-                    "airflow": {"value": 100.0, "min": 0.0, "max": 200.0},
-                    "power": {"value": 0.0, "min": 0.0, "max": 5000.0},
-                    "voltage": {"value": 220.0}}
+        ac.value = {
+            "temperature": {"value": 20.0, "min": 0.0, "max": 40.0},
+            "target_temperature": {"value": 20.0},
+            "airflow": {"value": 100.0, "min": 0.0, "max": 200.0},
+            "power": {"value": 0.0, "min": 0.0, "max": 5000.0},
+            "voltage": {"value": 220.0},
+        }
 
-        hier = flat_hierarchy([
-            {"name": "Sys1", "type": "system", "parent": None, "children": ["Vent1", "AC1"],
-             "priority": 0, "floor": 0, "is_backup": False, "backup": [], "external_field": None, "tags": []},
-            {"name": "Vent1", "type": "vent", "parent": "Sys1", "children": [],
-             "priority": 0, "floor": 0, "is_backup": False, "backup": [], "external_field": None, "tags": []},
-            {"name": "AC1", "type": "air_conditioner", "parent": "Sys1", "children": [],
-             "priority": 0, "floor": 0, "is_backup": False, "backup": [], "external_field": None, "tags": []},
-        ])
+        hier = flat_hierarchy(
+            [
+                {
+                    "name": "Sys1",
+                    "type": "system",
+                    "parent": None,
+                    "children": ["Vent1", "AC1"],
+                    "priority": 0,
+                    "floor": 0,
+                    "is_backup": False,
+                    "backup": [],
+                    "external_field": None,
+                    "tags": [],
+                },
+                {
+                    "name": "Vent1",
+                    "type": "vent",
+                    "parent": "Sys1",
+                    "children": [],
+                    "priority": 0,
+                    "floor": 0,
+                    "is_backup": False,
+                    "backup": [],
+                    "external_field": None,
+                    "tags": [],
+                },
+                {
+                    "name": "AC1",
+                    "type": "air_conditioner",
+                    "parent": "Sys1",
+                    "children": [],
+                    "priority": 0,
+                    "floor": 0,
+                    "is_backup": False,
+                    "backup": [],
+                    "external_field": None,
+                    "tags": [],
+                },
+            ]
+        )
 
         state = make_state([container, vent, ac])
         engine = SimulationEngineCore(state, [], hierarchy=hier)
@@ -598,12 +866,15 @@ class TestContainerThermalCorrection(unittest.TestCase):
 
         engine._container_thermal_correction(container, "Sys1", base_comps)
         target_temp = base_comps["AC1"].value["target_temperature"]["value"]
-        self.assertAlmostEqual(target_temp, 18.0, msg="AC target should decrease by 2°C")
+        self.assertAlmostEqual(
+            target_temp, 18.0, msg="AC target should decrease by 2°C"
+        )
 
 
 # ---------------------------------------------------------------------------
 # Phase 13 — Event instantiation
 # ---------------------------------------------------------------------------
+
 
 class TestEventInstantiation(unittest.TestCase):
 
@@ -616,7 +887,7 @@ class TestEventInstantiation(unittest.TestCase):
             selector="@Gen1",
             at=0.5,
             duration=float("inf"),
-            payload={"status": "failure"}
+            payload={"status": "failure"},
         )
         engine = SimulationEngineCore(state, [scene])
         engine.run_duration(0.4)
@@ -637,7 +908,7 @@ class TestEventInstantiation(unittest.TestCase):
             selector="@Gen1",
             at=0.0,
             duration=0.5,
-            payload={"temperature": {"value": 150.0, "min": -20.0, "max": 120.0}}
+            payload={"temperature": {"value": 150.0, "min": -20.0, "max": 120.0}},
         )
         engine = SimulationEngineCore(state, [scene])
         engine.run_duration(0.3)
@@ -657,7 +928,7 @@ class TestEventInstantiation(unittest.TestCase):
             selector="@(Gen1|power|Server1)",
             at=0.0,
             duration=float("inf"),
-            payload={"status": "failure"}
+            payload={"status": "failure"},
         )
         engine = SimulationEngineCore(state, [scene])
         engine.run_tick()
@@ -669,6 +940,7 @@ class TestEventInstantiation(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # Integration — full tick with topology
 # ---------------------------------------------------------------------------
+
 
 class TestFullTickIntegration(unittest.TestCase):
 
@@ -685,6 +957,7 @@ class TestFullTickIntegration(unittest.TestCase):
 
     def test_determinism_same_state_same_result(self):
         """Same inputs must produce identical output (deterministic)."""
+
         def build_and_run():
             comps = [
                 make_comp("Gen1", "generator"),
@@ -698,7 +971,9 @@ class TestFullTickIntegration(unittest.TestCase):
 
         r1 = build_and_run()
         r2 = build_and_run()
-        self.assertAlmostEqual(r1, r2, places=10, msg="Simulation must be deterministic")
+        self.assertAlmostEqual(
+            r1, r2, places=10, msg="Simulation must be deterministic"
+        )
 
 
 if __name__ == "__main__":

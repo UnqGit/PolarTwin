@@ -69,16 +69,27 @@ class GeneratorPhysicalBehavior(SpecializedBehavior):
         rating = _value(spec, "power", _value(spec, "continuous_power", 500.0))
         current = component.runtime_state.values
         inputs = _inputs(context)
-        command = inputs.get("power_command", inputs.get("command", current.get("power_command")))
+        command = inputs.get(
+            "power_command", inputs.get("command", current.get("power_command"))
+        )
         if not isinstance(command, (int, float)):
             command = None
         if command is None:
             command = rating if spec.get("role") != "backup" else 0.0
-        multiplier = context.values.get("environment", {}).get("heating_demand_multiplier") or 1.0
+        multiplier = (
+            context.values.get("environment", {}).get("heating_demand_multiplier")
+            or 1.0
+        )
         command *= float(multiplier)
         command = max(0.0, min(float(command), rating))
-        fuel = max(0.0, float(current.get("fuel_level", _value(spec, "fuel_capacity", 1000.0))))
-        running = bool(current.get("running", True)) and component.runtime_state.available and fuel > 0
+        fuel = max(
+            0.0, float(current.get("fuel_level", _value(spec, "fuel_capacity", 1000.0)))
+        )
+        running = (
+            bool(current.get("running", True))
+            and component.runtime_state.available
+            and fuel > 0
+        )
         output = command if running else 0.0
         consumption_l_per_hour = output * _value(spec, "fuel_rate", 0.25)
         fuel_next = max(0.0, fuel - consumption_l_per_hour * dt / 3600.0)
@@ -102,13 +113,21 @@ class BatteryPhysicalBehavior(SpecializedBehavior):
         maximum_power = _value(spec, "maximum_power", float("inf"))
         state = component.runtime_state.values
         inputs = _inputs(context)
-        charge_power = max(0.0, min(float(inputs.get("charge_power", 0.0)), maximum_power))
-        discharge_power = max(0.0, min(float(inputs.get("discharge_power", 0.0)), maximum_power))
+        charge_power = max(
+            0.0, min(float(inputs.get("charge_power", 0.0)), maximum_power)
+        )
+        discharge_power = max(
+            0.0, min(float(inputs.get("discharge_power", 0.0)), maximum_power)
+        )
         soc = max(0.0, min(float(state.get("state_of_charge", 1.0)), 1.0))
         if capacity > 0:
             soc += (charge_power - discharge_power) * dt / 3600.0 / capacity
         soc = max(0.0, min(soc, 1.0))
-        return {"state_of_charge": soc, "charge_power": charge_power, "discharge_power": discharge_power}
+        return {
+            "state_of_charge": soc,
+            "charge_power": charge_power,
+            "discharge_power": discharge_power,
+        }
 
 
 class SensorPhysicalBehavior(SpecializedBehavior):
@@ -123,7 +142,9 @@ class SensorPhysicalBehavior(SpecializedBehavior):
             quantity,
             inputs.get(
                 "value",
-                component.runtime_state.values.get(quantity, environment.get(quantity, 0.0)),
+                component.runtime_state.values.get(
+                    quantity, environment.get(quantity, 0.0)
+                ),
             ),
         )
         true_value = float(true_value) if isinstance(true_value, (int, float)) else 0.0
@@ -150,8 +171,14 @@ class InverterPhysicalBehavior(SpecializedBehavior):
         rating = _value(spec, "rating", float("inf"))
         efficiency_min, efficiency_max = _range(spec, "efficiency")
         efficiency = ((efficiency_min or 0.0) + (efficiency_max or 100.0)) / 200.0
-        input_power = max(0.0, min(float(inputs.get("input_power", inputs.get("power", 0.0))), rating))
-        return {"input_power": input_power, "output_power": input_power * efficiency, "efficiency": efficiency}
+        input_power = max(
+            0.0, min(float(inputs.get("input_power", inputs.get("power", 0.0))), rating)
+        )
+        return {
+            "input_power": input_power,
+            "output_power": input_power * efficiency,
+            "efficiency": efficiency,
+        }
 
 
 class BoundedActuatorBehavior(SpecializedBehavior):
@@ -188,13 +215,17 @@ class TankPhysicalBehavior(SpecializedBehavior):
     name = "tank"
 
     def initialize(self, component, context):
-        component.runtime_state.values.setdefault("volume", _value(component.specification, "volume", 1000.0))
+        component.runtime_state.values.setdefault(
+            "volume", _value(component.specification, "volume", 1000.0)
+        )
 
     def evaluate(self, component, context, dt):
         capacity = _value(component.specification, "volume", float("inf"))
         inputs = _inputs(context)
         level = float(component.runtime_state.values.get("volume", capacity))
-        level += (float(inputs.get("inflow", 0.0)) - float(inputs.get("outflow", 0.0))) * dt
+        level += (
+            float(inputs.get("inflow", 0.0)) - float(inputs.get("outflow", 0.0))
+        ) * dt
         return {"volume": max(0.0, min(level, capacity))}
 
 

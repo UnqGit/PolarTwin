@@ -23,15 +23,21 @@ class Behavior:
     def step(self, component: Component, context: BehaviorContext, dt: float) -> None:
         return None
 
-    def evaluate(self, component: Component, context: BehaviorContext, dt: float) -> dict[str, Any]:
+    def evaluate(
+        self, component: Component, context: BehaviorContext, dt: float
+    ) -> dict[str, Any]:
         """Return proposed state changes without mutating shared component state."""
         self.step(component, context, dt)
         return {}
 
-    def handle_event(self, component: Component, event: Any, context: BehaviorContext) -> None:
+    def handle_event(
+        self, component: Component, event: Any, context: BehaviorContext
+    ) -> None:
         return None
 
-    def produce_telemetry(self, component: Component, context: BehaviorContext) -> dict[str, Any]:
+    def produce_telemetry(
+        self, component: Component, context: BehaviorContext
+    ) -> dict[str, Any]:
         return {
             "component": component.name,
             "type": component.type,

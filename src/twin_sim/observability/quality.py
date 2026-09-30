@@ -89,20 +89,25 @@ def build_quality_report(graph: ComponentGraph) -> ModelQualityReport:
         for component in graph.components.values()
     )
     specialized = sum(
-        1 for component in graph.components.values()
+        1
+        for component in graph.components.values()
         if component.behavior is not None and component.behavior.level == "specialized"
     )
     unconnected = sorted(
-        name for name in graph.components
+        name
+        for name in graph.components
         if not graph.incoming(name) and not graph.outgoing(name)
     )
     missing = sorted(
-        name for name, component in graph.components.items()
+        name
+        for name, component in graph.components.items()
         if not isinstance(component.specification, dict)
     )
     unresolved = sum(
-        1 for connection in graph.connections
-        if connection.source not in graph.components or connection.target not in graph.components
+        1
+        for connection in graph.connections
+        if connection.source not in graph.components
+        or connection.target not in graph.components
     )
     return ModelQualityReport(
         components=len(graph.components),

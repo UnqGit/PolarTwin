@@ -1,6 +1,12 @@
 """Model diagnostics and quality reporting."""
 
-from .causal import CausalCause, CausalEffect, CausalEvent, CausalExplanation, CausalTracer
+from .causal import (
+    CausalCause,
+    CausalEffect,
+    CausalEvent,
+    CausalExplanation,
+    CausalTracer,
+)
 from .quality import ModelQualityReport, build_quality_report
 from .safety import SafetyError, SafetyMonitor, SafetyViolation
 

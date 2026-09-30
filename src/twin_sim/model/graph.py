@@ -57,7 +57,10 @@ class ComponentGraph:
         for connection in self.connections:
             self._outgoing[connection.source].append(connection)
             self._incoming[connection.target].append(connection)
-            if connection.direction == "<-->" and connection.source != connection.target:
+            if (
+                connection.direction == "<-->"
+                and connection.source != connection.target
+            ):
                 reverse = Connection(
                     source=connection.target,
                     target=connection.source,

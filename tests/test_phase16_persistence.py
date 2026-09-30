@@ -24,16 +24,20 @@ from twin_sim.api.manager import RunStatus, SimulationManager
 from twin_sim.api.main import app
 from twin_sim.dsl.event_stack import TimelineStateManager
 from twin_sim.ingestion.models import (
-    ExternalModel, NetworkModel, RuntimeComponent, RuntimeConnection, WeatherModel
+    ExternalModel,
+    NetworkModel,
+    RuntimeComponent,
+    RuntimeConnection,
+    WeatherModel,
 )
 from twin_sim.simulation.engine_core import HierarchyGraph, SimulationEngineCore
 from twin_sim.simulation.station_loader import LoadedStation, StationLoader
 from twin_sim.telemetry.database import TelemetryDatabase
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _make_station_dir(tmp_path: Path, station_name: str = "TestStation") -> Path:
     """Create a minimal compiled station directory for testing."""
@@ -42,51 +46,106 @@ def _make_station_dir(tmp_path: Path, station_name: str = "TestStation") -> Path
 
     hierarchy = [
         {
-            "name": station_name, "type": "station", "parent": None,
-            "priority": 0, "floor": 0, "is_backup": False, "backup": [],
+            "name": station_name,
+            "type": "station",
+            "parent": None,
+            "priority": 0,
+            "floor": 0,
+            "is_backup": False,
+            "backup": [],
             "children": ["GenMain", "GenBackup"],
-            "external_field": None, "tags": []
+            "external_field": None,
+            "tags": [],
         },
         {
-            "name": "GenMain", "type": "generator", "parent": station_name,
-            "priority": 1, "floor": 0, "is_backup": False, "backup": [],
+            "name": "GenMain",
+            "type": "generator",
+            "parent": station_name,
+            "priority": 1,
+            "floor": 0,
+            "is_backup": False,
+            "backup": [],
             "children": [],
-            "external_field": None, "tags": []
+            "external_field": None,
+            "tags": [],
         },
         {
-            "name": "GenBackup", "type": "generator", "parent": station_name,
-            "priority": 2, "floor": 0, "is_backup": True, "backup": ["GenMain"],
+            "name": "GenBackup",
+            "type": "generator",
+            "parent": station_name,
+            "priority": 2,
+            "floor": 0,
+            "is_backup": True,
+            "backup": ["GenMain"],
             "children": [],
-            "external_field": None, "tags": []
+            "external_field": None,
+            "tags": [],
         },
     ]
     spec = [
         {
-            "name": station_name, "type": "station",
-            "rating": {"state": {"temperature": {"value": -30.0, "min": -50.0, "max": 50.0, "unit": "C"}}},
-        },
-        {
-            "name": "GenMain", "type": "generator",
+            "name": station_name,
+            "type": "station",
             "rating": {
-                "state": {"temperature": {"value": 20.0, "min": -20.0, "max": 120.0, "unit": "C"}},
-                "output": {"power": {"value": 0.0, "min": 0.0, "max": 1000.0, "unit": "W"}},
+                "state": {
+                    "temperature": {
+                        "value": -30.0,
+                        "min": -50.0,
+                        "max": 50.0,
+                        "unit": "C",
+                    }
+                }
             },
         },
         {
-            "name": "GenBackup", "type": "generator",
+            "name": "GenMain",
+            "type": "generator",
             "rating": {
-                "state": {"temperature": {"value": 20.0, "min": -20.0, "max": 120.0, "unit": "C"}},
-                "output": {"power": {"value": 0.0, "min": 0.0, "max": 500.0, "unit": "W"}},
+                "state": {
+                    "temperature": {
+                        "value": 20.0,
+                        "min": -20.0,
+                        "max": 120.0,
+                        "unit": "C",
+                    }
+                },
+                "output": {
+                    "power": {"value": 0.0, "min": 0.0, "max": 1000.0, "unit": "W"}
+                },
+            },
+        },
+        {
+            "name": "GenBackup",
+            "type": "generator",
+            "rating": {
+                "state": {
+                    "temperature": {
+                        "value": 20.0,
+                        "min": -20.0,
+                        "max": 120.0,
+                        "unit": "C",
+                    }
+                },
+                "output": {
+                    "power": {"value": 0.0, "min": 0.0, "max": 500.0, "unit": "W"}
+                },
             },
         },
     ]
     connections = [
-        {"source": "GenMain", "target": "GenBackup", "type": "signal", "relation": "monitor"},
+        {
+            "source": "GenMain",
+            "target": "GenBackup",
+            "type": "signal",
+            "relation": "monitor",
+        },
     ]
 
     (station_dir / "hierarchy.json").write_text(json.dumps(hierarchy), encoding="utf-8")
     (station_dir / "spec.json").write_text(json.dumps(spec), encoding="utf-8")
-    (station_dir / "connection.json").write_text(json.dumps(connections), encoding="utf-8")
+    (station_dir / "connection.json").write_text(
+        json.dumps(connections), encoding="utf-8"
+    )
 
     return station_dir
 
@@ -94,15 +153,25 @@ def _make_station_dir(tmp_path: Path, station_name: str = "TestStation") -> Path
 def _make_external() -> ExternalModel:
     return ExternalModel(
         weather=WeatherModel(
-            temperature=-30.0, wind_speed=10.0, humidity=60.0, o2_level=0.21,
-            co2_level=0.00041, wind_direction=180.0, visibility=5000.0,
-            pressure=1013.25, dew_frost_point=-35.0, irradiance=500.0
+            temperature=-30.0,
+            wind_speed=10.0,
+            humidity=60.0,
+            o2_level=0.21,
+            co2_level=0.00041,
+            wind_direction=180.0,
+            visibility=5000.0,
+            pressure=1013.25,
+            dew_frost_point=-35.0,
+            irradiance=500.0,
         ),
         network=NetworkModel(
-            bandwidth=5.0, mainland_connectivity=True, upload_window=False,
-            upload_speed=2.0, download_speed=5.0
+            bandwidth=5.0,
+            mainland_connectivity=True,
+            upload_window=False,
+            upload_speed=2.0,
+            download_speed=5.0,
         ),
-        supplies=[]
+        supplies=[],
     )
 
 
@@ -110,32 +179,49 @@ def _make_external() -> ExternalModel:
 # WeatherModel irradiance field
 # ---------------------------------------------------------------------------
 
+
 class TestWeatherModelIrradiance(unittest.TestCase):
 
     def test_irradiance_default_is_zero(self):
         w = WeatherModel(
-            temperature=-10.0, wind_speed=5.0, humidity=50, o2_level=0.21,
-            co2_level=0.00041, wind_direction=180.0, visibility=1000.0,
-            pressure=1013.0, dew_frost_point=-15.0
+            temperature=-10.0,
+            wind_speed=5.0,
+            humidity=50,
+            o2_level=0.21,
+            co2_level=0.00041,
+            wind_direction=180.0,
+            visibility=1000.0,
+            pressure=1013.0,
+            dew_frost_point=-15.0,
         )
         self.assertEqual(w.irradiance, 0.0)
 
     def test_irradiance_can_be_set(self):
         w = WeatherModel(
-            temperature=-10.0, wind_speed=5.0, humidity=50, o2_level=0.21,
-            co2_level=0.00041, wind_direction=180.0, visibility=1000.0,
-            pressure=1013.0, dew_frost_point=-15.0, irradiance=750.0
+            temperature=-10.0,
+            wind_speed=5.0,
+            humidity=50,
+            o2_level=0.21,
+            co2_level=0.00041,
+            wind_direction=180.0,
+            visibility=1000.0,
+            pressure=1013.0,
+            dew_frost_point=-15.0,
+            irradiance=750.0,
         )
         self.assertAlmostEqual(w.irradiance, 750.0)
 
     def test_solar_panel_uses_irradiance(self):
         """Solar panel power should use external.weather.irradiance from the engine."""
         solar = RuntimeComponent(
-            name="Solar1", type="solar_panel", is_backup=False, status="active",
+            name="Solar1",
+            type="solar_panel",
+            is_backup=False,
+            status="active",
             value={
                 "power": {"value": 0.0, "min": 0.0, "max": 100.0},
                 "irradiance": {"max": 1000.0},
-            }
+            },
         )
         ext = _make_external()  # irradiance=500
         state = TimelineStateManager(components=[solar], connections=[], external=ext)
@@ -150,6 +236,7 @@ class TestWeatherModelIrradiance(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # StationLoader
 # ---------------------------------------------------------------------------
+
 
 class TestStationLoader(unittest.TestCase):
 
@@ -213,6 +300,7 @@ class TestStationLoader(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # SimulationManager lifecycle
 # ---------------------------------------------------------------------------
+
 
 class TestSimulationManagerLifecycle(unittest.TestCase):
 
@@ -310,6 +398,7 @@ class TestSimulationManagerLifecycle(unittest.TestCase):
 # ---------------------------------------------------------------------------
 # Telemetry publishing
 # ---------------------------------------------------------------------------
+
 
 class TestTelemetryPublishing(unittest.TestCase):
 
@@ -424,6 +513,7 @@ class TestTelemetryPublishing(unittest.TestCase):
 # State snapshot
 # ---------------------------------------------------------------------------
 
+
 class TestStateSnapshot(unittest.TestCase):
 
     def setUp(self):
@@ -459,12 +549,14 @@ class TestStateSnapshot(unittest.TestCase):
 # API endpoints (via TestClient)
 # ---------------------------------------------------------------------------
 
+
 class TestAPIEndpoints(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
         """Register the test station with the app's manager before testing."""
         from twin_sim.api.main import _manager
+
         # Create a temp station
         cls._tmp = tempfile.mkdtemp()
         station_dir = _make_station_dir(Path(cls._tmp), "Maitri")

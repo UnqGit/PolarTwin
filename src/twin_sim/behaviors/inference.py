@@ -40,7 +40,9 @@ def resolve_behavior(component, registry: BehaviorRegistry) -> BehaviorResolutio
     return BehaviorResolution(registry.create("generic"), "generic")
 
 
-def infer_behaviors(graph: ComponentGraph, registry: BehaviorRegistry | None = None) -> dict[str, BehaviorResolution]:
+def infer_behaviors(
+    graph: ComponentGraph, registry: BehaviorRegistry | None = None
+) -> dict[str, BehaviorResolution]:
     active_registry = registry or default_registry()
     resolutions: dict[str, BehaviorResolution] = {}
     for name, component in graph.components.items():

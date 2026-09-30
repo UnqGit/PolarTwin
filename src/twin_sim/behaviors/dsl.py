@@ -15,7 +15,13 @@ class DslExecutionError(Exception):
 
 
 class DslEvaluator(ast.NodeVisitor):
-    def __init__(self, state: dict[str, Any], inputs: dict[str, Any], env: dict[str, Any], dt: float) -> None:
+    def __init__(
+        self,
+        state: dict[str, Any],
+        inputs: dict[str, Any],
+        env: dict[str, Any],
+        dt: float,
+    ) -> None:
         self.state = state
         self.inputs = inputs
         self.env = env
@@ -55,7 +61,9 @@ class DslEvaluator(ast.NodeVisitor):
                 if isinstance(target.value, ast.Name) and target.value.id == "state":
                     self.proposals[target.attr] = value
                 else:
-                    raise DslExecutionError(f"Can only assign to 'state.*' or local variables, got {ast.dump(target)}")
+                    raise DslExecutionError(
+                        f"Can only assign to 'state.*' or local variables, got {ast.dump(target)}"
+                    )
             else:
                 raise DslExecutionError("Unsupported assignment target")
 
@@ -136,10 +144,10 @@ class DslEvaluator(ast.NodeVisitor):
         else:
             for stmt in node.orelse:
                 self.visit(stmt)
-                
+
     def visit_Expr(self, node: ast.Expr) -> Any:
         return self.visit(node.value)
-        
+
     def visit_Pass(self, node: ast.Pass) -> None:
         pass
 
@@ -149,31 +157,60 @@ class DslEvaluator(ast.NodeVisitor):
 
 class DslBehavior(Behavior):
     level = "specialized"
-    
+
     def __init__(self, name: str, code: str) -> None:
         self.name = name
         try:
             self.ast_tree = ast.parse(code, mode="exec")
         except SyntaxError as e:
             raise ValueError(f"DSL syntax error in {name}: {e}")
-            
+
         # Optional: pre-validate all nodes by traversing once to ensure no invalid nodes exist before execution
         for node in ast.walk(self.ast_tree):
             if type(node) not in (
-                ast.Module, ast.Assign, ast.Name, ast.Store, ast.Load,
-                ast.Attribute, ast.Constant, ast.BinOp, ast.UnaryOp,
-                ast.BoolOp, ast.Compare, ast.If, ast.Expr, ast.Pass,
-                ast.Add, ast.Sub, ast.Mult, ast.Div, ast.Mod, ast.Pow,
-                ast.Eq, ast.NotEq, ast.Lt, ast.LtE, ast.Gt, ast.GtE,
-                ast.And, ast.Or, ast.Not, ast.USub, ast.UAdd
+                ast.Module,
+                ast.Assign,
+                ast.Name,
+                ast.Store,
+                ast.Load,
+                ast.Attribute,
+                ast.Constant,
+                ast.BinOp,
+                ast.UnaryOp,
+                ast.BoolOp,
+                ast.Compare,
+                ast.If,
+                ast.Expr,
+                ast.Pass,
+                ast.Add,
+                ast.Sub,
+                ast.Mult,
+                ast.Div,
+                ast.Mod,
+                ast.Pow,
+                ast.Eq,
+                ast.NotEq,
+                ast.Lt,
+                ast.LtE,
+                ast.Gt,
+                ast.GtE,
+                ast.And,
+                ast.Or,
+                ast.Not,
+                ast.USub,
+                ast.UAdd,
             ):
-                raise ValueError(f"DSL security error in {name}: unsupported syntax node {type(node).__name__}")
-            
-    def evaluate(self, component: Component, context: BehaviorContext, dt: float) -> dict[str, Any]:
+                raise ValueError(
+                    f"DSL security error in {name}: unsupported syntax node {type(node).__name__}"
+                )
+
+    def evaluate(
+        self, component: Component, context: BehaviorContext, dt: float
+    ) -> dict[str, Any]:
         state = dict(component.runtime_state.values)
         inputs = state.get("inputs", {})
         env = dict(context.values.get("environment", {}))
-        
+
         evaluator = DslEvaluator(state, inputs, env, dt)
         evaluator.visit(self.ast_tree)
         return evaluator.proposals

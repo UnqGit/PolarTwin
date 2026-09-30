@@ -9,9 +9,9 @@ from .base import TelemetrySink
 
 class AsyncTelemetryPipeline(TelemetrySink):
     """Wraps a synchronous sink in a background thread to avoid blocking simulation.
-    
+
     If the internal queue fills up, new batches are processed according to the
-    `backpressure_policy`. The default 'drop' policy avoids slowing down the 
+    `backpressure_policy`. The default 'drop' policy avoids slowing down the
     simulation loop at the cost of dropped metrics.
     """
 
@@ -77,11 +77,12 @@ class AsyncTelemetryPipeline(TelemetrySink):
             try:
                 old_messages = self._queue.get_nowait()
                 self._queue.task_done()
-                
+
                 from .compressor import compress_telemetry_batch
+
                 combined = (old_messages or []) + telemetries
                 compressed = compress_telemetry_batch(combined)
-                
+
                 self._queue.put_nowait(compressed)
             except queue.Empty:
                 try:
@@ -98,7 +99,7 @@ class AsyncTelemetryPipeline(TelemetrySink):
                 self.dropped_batches += 1
             except queue.Empty:
                 pass
-            
+
             # Now try to put again.
             try:
                 self._queue.put_nowait(telemetries)

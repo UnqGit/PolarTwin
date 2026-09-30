@@ -3,21 +3,23 @@
 from typing import Any
 from ..telemetry.model import TelemetryMessage, DeltaTelemetryMessage
 
+
 def _is_numeric_measurement(measurement: dict[str, Any] | None) -> bool:
     if not measurement:
         return False
     return all(isinstance(v, (int, float)) for v in measurement.values())
 
+
 def compress_telemetry_batch(messages: list[Any]) -> list[Any]:
     """Compress a batch of telemetry messages by merging numeric measurements per component."""
     if not messages:
         return []
-    
+
     compressed: list[Any] = []
-    
+
     # component_id -> (start_msg, end_msg, count)
     active_compressions: dict[str, tuple[TelemetryMessage, TelemetryMessage, int]] = {}
-    
+
     def _flush_comp(comp_id: str):
         if comp_id in active_compressions:
             start_msg, end_msg, count = active_compressions.pop(comp_id)
@@ -35,7 +37,7 @@ def compress_telemetry_batch(messages: list[Any]) -> list[Any]:
                     end_measurement=end_msg.measurement,
                     quality=start_msg.quality,
                     source=start_msg.source,
-                    context=start_msg.context
+                    context=start_msg.context,
                 )
                 compressed.append(delta)
 
@@ -43,14 +45,14 @@ def compress_telemetry_batch(messages: list[Any]) -> list[Any]:
         if not isinstance(msg, TelemetryMessage):
             compressed.append(msg)
             continue
-            
+
         comp_dict = msg.component
         comp_id = comp_dict.get("id") if comp_dict else None
-        
+
         if not comp_id or not _is_numeric_measurement(msg.measurement):
             compressed.append(msg)
             continue
-            
+
         if comp_id in active_compressions:
             start_msg, end_msg, count = active_compressions[comp_id]
             # Ensure same run_id
@@ -61,9 +63,9 @@ def compress_telemetry_batch(messages: list[Any]) -> list[Any]:
                 active_compressions[comp_id] = (msg, msg, 1)
         else:
             active_compressions[comp_id] = (msg, msg, 1)
-            
+
     # Flush remaining
     for comp_id in list(active_compressions.keys()):
         _flush_comp(comp_id)
-        
+
     return compressed

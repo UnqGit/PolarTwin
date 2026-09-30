@@ -29,10 +29,10 @@ from twin_sim.dsl.event_stack import TimelineStateManager
 from twin_sim.ingestion.models import RuntimeComponent, RuntimeConnection, ExternalModel
 import twin_sim.simulation.behaviors as behaviors
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _v(data: Any, key: str, default: float) -> float:
     """Extract a float value from a dict-like value object or scalar."""
@@ -43,10 +43,12 @@ def _v(data: Any, key: str, default: float) -> float:
     except (TypeError, ValueError):
         return default
 
+
 def _set_v(data: Any, key: str, value: float):
     """Set a value inside a dict-like value object."""
     if isinstance(data, dict):
         data[key] = value
+
 
 def _update_field(c, field: str, new_val: float):
     obj = c.value.get(field)
@@ -54,18 +56,26 @@ def _update_field(c, field: str, new_val: float):
         obj["value"] = new_val
     elif obj is not None:
         # Upgrade scalar to dict to preserve its value as max
-        c.value[field] = {
-            "value": new_val,
-            "max": float(obj)
-        }
+        c.value[field] = {"value": new_val, "max": float(obj)}
     else:
         c.value[field] = new_val
 
 
 class HierarchyNode:
     """Lightweight in-memory representation of a hierarchy entry."""
-    __slots__ = ("name", "type", "parent", "children", "priority",
-                 "floor", "is_backup", "backup_for", "external_field", "tags")
+
+    __slots__ = (
+        "name",
+        "type",
+        "parent",
+        "children",
+        "priority",
+        "floor",
+        "is_backup",
+        "backup_for",
+        "external_field",
+        "tags",
+    )
 
     def __init__(self, entry: Dict[str, Any]):
         self.name: str = entry["name"]
@@ -118,7 +128,9 @@ class HierarchyGraph:
         node = self.nodes.get(name)
         return node.parent if node else None
 
-    def is_ancestor_inactive_or_failed(self, name: str, component_statuses: Dict[str, str]) -> bool:
+    def is_ancestor_inactive_or_failed(
+        self, name: str, component_statuses: Dict[str, str]
+    ) -> bool:
         """
         Returns True if any ancestor of `name` is inactive or in failure.
         This implements hierarchical status propagation without mutating descendants.
@@ -145,40 +157,46 @@ class ConnectionGraph:
     def active_power_sources(self, target_name: str) -> List[str]:
         """Components that send power to `target_name` via an active power connection."""
         return [
-            c.source for c in self._conns
+            c.source
+            for c in self._conns
             if c.target == target_name and c.type == "power" and c.status == "active"
         ]
 
     def active_power_targets(self, source_name: str) -> List[str]:
         """Components receiving power from `source_name` via active power connections."""
         return [
-            c.target for c in self._conns
+            c.target
+            for c in self._conns
             if c.source == source_name and c.type == "power" and c.status == "active"
         ]
 
     def active_resource_sources(self, target_name: str) -> List[str]:
         """Components that send resources (flowrate) to `target_name` via active resource connections."""
         return [
-            c.source for c in self._conns
+            c.source
+            for c in self._conns
             if c.target == target_name and c.type == "resource" and c.status == "active"
         ]
 
     def active_resource_targets(self, source_name: str) -> List[str]:
         return [
-            c.target for c in self._conns
+            c.target
+            for c in self._conns
             if c.source == source_name and c.type == "resource" and c.status == "active"
         ]
 
     def active_signal_sources(self, target_name: str) -> List[str]:
         return [
-            c.source for c in self._conns
+            c.source
+            for c in self._conns
             if c.target == target_name and c.type == "signal" and c.status == "active"
         ]
 
     def active_connections_for_node(self, node_name: str) -> List[RuntimeConnection]:
         """All active connections where node is source or target."""
         return [
-            c for c in self._conns
+            c
+            for c in self._conns
             if (c.source == node_name or c.target == node_name) and c.status == "active"
         ]
 
@@ -188,7 +206,9 @@ class ConnectionGraph:
     def connections_of_type(self, conn_type: str) -> List[RuntimeConnection]:
         return [c for c in self._conns if c.type == conn_type]
 
-    def get_connection(self, source: str, conn_type: str, target: str) -> Optional[RuntimeConnection]:
+    def get_connection(
+        self, source: str, conn_type: str, target: str
+    ) -> Optional[RuntimeConnection]:
         for c in self._conns:
             if c.source == source and c.type == conn_type and c.target == target:
                 return c
@@ -198,6 +218,7 @@ class ConnectionGraph:
 # ---------------------------------------------------------------------------
 # SimulationEngineCore
 # ---------------------------------------------------------------------------
+
 
 class SimulationEngineCore:
     """
@@ -242,7 +263,7 @@ class SimulationEngineCore:
         # Telemetry list (one entry per tick when publishing is enabled)
         self.telemetry: List[Dict[str, Any]] = []
         self.telemetry_publishing: bool = False
-        
+
         # Simulation event logs
         self.logs: List[Dict[str, Any]] = []
 
@@ -278,7 +299,7 @@ class SimulationEngineCore:
         base_comps = self.state.base_components
         base_conns = self.state.base_connections
         external = self.state.base_external
-        
+
         prev_statuses = {name: c.status for name, c in base_comps.items()}
 
         # Build effective status map (considers event layers) for hierarchical checks
@@ -317,24 +338,36 @@ class SimulationEngineCore:
 
         # ── Step 14-15: Write runtime state ──────────────────────────────
         # (base_comps and base_conns are already the runtime state; we mutate in-place)
-        
+
         # Log status changes
         for name, c in base_comps.items():
             prev = prev_statuses.get(name)
             if prev and c.status != prev:
-                level = "ERROR" if c.status == "failure" else ("WARN" if c.status == "inactive" else "INFO")
-                self.logs.append({
-                    "time": self.time,
-                    "level": level,
-                    "message": f"Component '{name}' status changed from {prev.upper()} to {c.status.upper()}"
-                })
+                level = (
+                    "ERROR"
+                    if c.status == "failure"
+                    else ("WARN" if c.status == "inactive" else "INFO")
+                )
+                self.logs.append(
+                    {
+                        "time": self.time,
+                        "level": level,
+                        "message": f"Component '{name}' status changed from {prev.upper()} to {c.status.upper()}",
+                    }
+                )
 
         # ── Recalculate effective state with new physics base ─────────────
         self.state.recalculate_effective_state()
 
         # ── Steps 17-18: Telemetry ───────────────────────────────────────
         # if self.telemetry_publishing:
-        self.telemetry.append(self._snapshot(self.state.effective_components, self.state.effective_connections, self.state.effective_external))
+        self.telemetry.append(
+            self._snapshot(
+                self.state.effective_components,
+                self.state.effective_connections,
+                self.state.effective_external,
+            )
+        )
 
     def run_duration(self, hours: float):
         """Run for the given number of simulation hours."""
@@ -348,7 +381,9 @@ class SimulationEngineCore:
 
     def _instantiate_events(self):
         """Instantiate all scene events whose `at` time ≤ current simulation time."""
-        eff_comps = {c.name: c for c in self.state.get_effective_state_dict()["components"]}
+        eff_comps = {
+            c.name: c for c in self.state.get_effective_state_dict()["components"]
+        }
         eff_conns = list(self.state.effective_connections.values())
         ext = self.state.base_external
 
@@ -375,20 +410,29 @@ class SimulationEngineCore:
                         field_path = field if field in ("status",) else f"value.{field}"
 
                     if is_inf:
-                        self.state.apply_infinite_event(scene.event_ref, 0, scene.at, target, field_path, value)
+                        self.state.apply_infinite_event(
+                            scene.event_ref, 0, scene.at, target, field_path, value
+                        )
                     else:
                         self.state.add_finite_event(
-                            scene.event_ref, 0,
-                            scene.at, scene.at + scene.duration,
-                            target, field_path, value
+                            scene.event_ref,
+                            0,
+                            scene.at,
+                            scene.at + scene.duration,
+                            target,
+                            field_path,
+                            value,
                         )
 
             # Log event start
-            self.logs.append({
-                "time": self.time,
-                "level": "INFO",
-                "message": f"Event '{scene.event_ref}' started" + (f" targeting {scene.selector}" if scene.selector else "")
-            })
+            self.logs.append(
+                {
+                    "time": self.time,
+                    "level": "INFO",
+                    "message": f"Event '{scene.event_ref}' started"
+                    + (f" targeting {scene.selector}" if scene.selector else ""),
+                }
+            )
 
             # if self.telemetry_publishing:
             snap = self._snapshot(eff_comps, self.state.effective_connections, ext)
@@ -410,11 +454,17 @@ class SimulationEngineCore:
             return targets
 
         # @external.network / @external.weather / @external.supplies
-        base_sel = selector.split('.')[0] if '.' in selector and not selector.startswith('@(') else selector
+        base_sel = (
+            selector.split(".")[0]
+            if "." in selector and not selector.startswith("@(")
+            else selector
+        )
         full_base = selector
-        if selector.startswith('@external.network') or selector.startswith('@network'):
+        if selector.startswith("@external.network") or selector.startswith("@network"):
             targets.append((ext.network, "external"))
-        elif selector.startswith('@external.weather') or selector.startswith('@weather'):
+        elif selector.startswith("@external.weather") or selector.startswith(
+            "@weather"
+        ):
             targets.append((ext.weather, "external"))
         elif selector.startswith("@(") and "|" in selector:
             # Connection selector: @(source|type|target)
@@ -481,7 +531,9 @@ class SimulationEngineCore:
                     # Only restore to active if it was not explicitly set to failure
                     conn.status = "active"
 
-    def _component_is_effectively_down(self, name: str, eff_status: Dict[str, str]) -> bool:
+    def _component_is_effectively_down(
+        self, name: str, eff_status: Dict[str, str]
+    ) -> bool:
         """Returns True if the component or any ancestor is inactive/failed."""
         s = eff_status.get(name, "active")
         if s in ("inactive", "failure"):
@@ -546,7 +598,7 @@ class SimulationEngineCore:
             if gen.status != "active":
                 _update_field(base_comps[gen.name], "power", 0.0)
                 continue
-                
+
             consumer_names = self._conn_graph.active_power_targets(gen.name)
             if not consumer_names:
                 _update_field(base_comps[gen.name], "power", 0.0)
@@ -555,7 +607,8 @@ class SimulationEngineCore:
             # Total demanded power
             total_demanded = sum(
                 _v(base_comps[n].value.get("power", {}), "value", 0.0)
-                for n in consumer_names if n in base_comps
+                for n in consumer_names
+                if n in base_comps
             )
 
             p_max = _v(base_comps[gen.name].value.get("power", {}), "max", 0.0)
@@ -586,7 +639,9 @@ class SimulationEngineCore:
                 else:
                     # Below 35%: shut down lowest-priority consumer
                     # Try activating an inactive component first
-                    activated = self._try_activate_for_power(base_comps, gen, consumer_names, total_demanded, p_max)
+                    activated = self._try_activate_for_power(
+                        base_comps, gen, consumer_names, total_demanded, p_max
+                    )
                     if not activated:
                         self._deactivate_lowest_priority(base_comps, consumer_names)
 
@@ -595,14 +650,15 @@ class SimulationEngineCore:
         for tank in tanks:
             if tank.status != "active":
                 continue
-                
+
             pump_names = self._conn_graph.active_resource_targets(tank.name)
             if not pump_names:
                 continue
 
             total_fr_requested = sum(
                 _v(base_comps[p].value.get("flowrate", {}), "value", 0.0)
-                for p in pump_names if p in base_comps
+                for p in pump_names
+                if p in base_comps
             )
 
             v_obj = base_comps[tank.name].value.get("volume", {})
@@ -614,11 +670,15 @@ class SimulationEngineCore:
                     if p_name in base_comps:
                         # Only deactivate if no other non-empty tank supplies them
                         other_tanks = [
-                            t for t in tanks
-                            if t.name != tank.name and p_name in self._conn_graph.active_resource_targets(t.name)
+                            t
+                            for t in tanks
+                            if t.name != tank.name
+                            and p_name
+                            in self._conn_graph.active_resource_targets(t.name)
                         ]
                         other_nonempty = any(
-                            _v(base_comps[t.name].value.get("volume", {}), "value", 0.0) > 0
+                            _v(base_comps[t.name].value.get("volume", {}), "value", 0.0)
+                            > 0
                             for t in other_tanks
                         )
                         if not other_nonempty:
@@ -634,9 +694,11 @@ class SimulationEngineCore:
     ) -> bool:
         """Try to activate an inactive component to restore ≥35% supply."""
         inactive_consumers = [
-            n for n in consumer_names
-            if n in base_comps and base_comps[n].status == "inactive"
-               and n not in self._explicit_inactive
+            n
+            for n in consumer_names
+            if n in base_comps
+            and base_comps[n].status == "inactive"
+            and n not in self._explicit_inactive
         ]
         if not inactive_consumers:
             return False
@@ -645,12 +707,16 @@ class SimulationEngineCore:
         if self.hierarchy:
             hier = self.hierarchy
             inactive_consumers.sort(
-                key=lambda n: hier.nodes.get(n, HierarchyNode({"name": n, "type": "generic"})).priority
+                key=lambda n: hier.nodes.get(
+                    n, HierarchyNode({"name": n, "type": "generic"})
+                ).priority
             )
 
         for candidate in inactive_consumers:
             # Activate and see if ratio improves to ≥35%
-            candidate_demand = _v(base_comps[candidate].value.get("power", {}), "value", 0.0)
+            candidate_demand = _v(
+                base_comps[candidate].value.get("power", {}), "value", 0.0
+            )
             new_total = total_demanded + candidate_demand
             if p_max / new_total >= 0.35:
                 base_comps[candidate].status = "active"
@@ -665,7 +731,8 @@ class SimulationEngineCore:
     ):
         """Deactivate the lowest-priority active consumer."""
         active_consumers = [
-            n for n in consumer_names
+            n
+            for n in consumer_names
             if n in base_comps and base_comps[n].status == "active"
         ]
         if not active_consumers:
@@ -675,7 +742,11 @@ class SimulationEngineCore:
             # Highest priority number = lowest priority
             hier = self.hierarchy
             active_consumers.sort(
-                key=lambda n: -(hier.nodes.get(n, HierarchyNode({"name": n, "type": "generic"})).priority)
+                key=lambda n: -(
+                    hier.nodes.get(
+                        n, HierarchyNode({"name": n, "type": "generic"})
+                    ).priority
+                )
             )
         # Deactivate the first (lowest priority)
         base_comps[active_consumers[0]].status = "inactive"
@@ -691,7 +762,11 @@ class SimulationEngineCore:
         Simplified: if a controller is active and connected via signal to a generator,
         set generator power to full capacity (controller manages demand).
         """
-        controllers = [c for c in base_comps.values() if c.type == "controller" and c.status == "active"]
+        controllers = [
+            c
+            for c in base_comps.values()
+            if c.type == "controller" and c.status == "active"
+        ]
         for ctrl in controllers:
             controlled = self._conn_graph.active_signal_sources(ctrl.name)
             for comp_name in controlled:
@@ -794,7 +869,7 @@ class SimulationEngineCore:
         p_min = _v(p_obj, "min", 0.0)
         t_max = _v(t_obj, "max", 120.0)
         t_min_t = _v(t_obj, "min", -20.0)
-        
+
         # Ensure power has a value even if 0
         _update_field(c, "power", p_curr)
 
@@ -809,14 +884,19 @@ class SimulationEngineCore:
         # Startup deadlock prevention: generator inactive + pump inactive → start at p_min
         if p_curr <= 0:
             pump_sources = [
-                n for n in self._conn_graph.active_resource_sources(c.name)
+                n
+                for n in self._conn_graph.active_resource_sources(c.name)
                 if n in base_comps and base_comps[n].type == "pump"
             ]
-            if pump_sources and all(base_comps[p].status == "inactive" for p in pump_sources):
+            if pump_sources and all(
+                base_comps[p].status == "inactive" for p in pump_sources
+            ):
                 p_curr = p_min
                 _update_field(c, "power", p_curr)
 
-        new_t = behaviors.generator_temperature(t_prev, t_surr, p_curr, p_max, p_min, t_max, t_min_t)
+        new_t = behaviors.generator_temperature(
+            t_prev, t_surr, p_curr, p_max, p_min, t_max, t_min_t
+        )
         _update_field(c, "temperature", new_t)
 
     # ── Pump ───────────────────────────────────────────────────────────
@@ -842,7 +922,8 @@ class SimulationEngineCore:
         consumers = self._conn_graph.active_resource_targets(c.name)
         total_fr_demand = sum(
             _v(base_comps[n].value.get("flowrate", {}), "value", 0.0)
-            for n in consumers if n in base_comps
+            for n in consumers
+            if n in base_comps
         )
 
         if total_fr_demand > fr_max:
@@ -860,7 +941,9 @@ class SimulationEngineCore:
         _update_field(c, "flowrate", fr_curr)
 
         # Temperature uses generator model with fr term
-        new_t = behaviors.pump_temperature(t_prev, t_surr, fr_curr, fr_max, fr_min, t_max, t_min_t)
+        new_t = behaviors.pump_temperature(
+            t_prev, t_surr, fr_curr, fr_max, fr_min, t_max, t_min_t
+        )
         _update_field(c, "temperature", new_t)
 
         # Power proportional to flowrate
@@ -884,7 +967,9 @@ class SimulationEngineCore:
 
     # ── Tank ───────────────────────────────────────────────────────────
 
-    def _behaviour_tank(self, c: RuntimeComponent, base_comps: Dict[str, RuntimeComponent]):
+    def _behaviour_tank(
+        self, c: RuntimeComponent, base_comps: Dict[str, RuntimeComponent]
+    ):
         v_obj = c.value.get("volume", {})
         v_prev = _v(v_obj, "value", 100.0)
         dt = 15.0 / 3600.0
@@ -893,7 +978,8 @@ class SimulationEngineCore:
         pumps = self._conn_graph.active_resource_targets(c.name)
         total_fr = sum(
             _v(base_comps[p].value.get("flowrate", {}), "value", 0.0)
-            for p in pumps if p in base_comps
+            for p in pumps
+            if p in base_comps
         )
 
         new_v = behaviors.tank_volume(v_prev, total_fr, dt)
@@ -935,7 +1021,9 @@ class SimulationEngineCore:
         t_max = _v(t_obj, "max", 80.0)
         t_min_t = _v(t_obj, "min", 0.0)
 
-        new_t = behaviors.server_temperature(t_prev, t_surr, p_req, p_max, p_min, t_max, t_min_t)
+        new_t = behaviors.server_temperature(
+            t_prev, t_surr, p_req, p_max, p_min, t_max, t_min_t
+        )
         _update_field(c, "temperature", new_t)
 
     # ── Alarm ─────────────────────────────────────────────────────────
@@ -973,7 +1061,8 @@ class SimulationEngineCore:
         vent_names = self._conn_graph.active_resource_targets(c.name)
         fr_required = sum(
             _v(base_comps[v].value.get("airflow", {}), "value", 0.0)
-            for v in vent_names if v in base_comps
+            for v in vent_names
+            if v in base_comps
         )
 
         fr_obj = c.value.get("airflow", {})
@@ -985,7 +1074,9 @@ class SimulationEngineCore:
         # Current and power
         i_max = _v(p_obj, "max", 5000.0)
         voltage = _v(v_obj, "value", 220.0)
-        new_i = behaviors.ac_current_requirement(i_max, fr_curr, fr_max_for_i, new_t_out, t_surr, t_max, t_min_t)
+        new_i = behaviors.ac_current_requirement(
+            i_max, fr_curr, fr_max_for_i, new_t_out, t_surr, t_max, t_min_t
+        )
         new_p = voltage * new_i
         _update_field(c, "power", new_p)
 
@@ -1057,7 +1148,9 @@ class SimulationEngineCore:
                     max_rating, comp_tolerance, self.global_tolerance
                 )
 
-                toff = behaviors.calculate_failure_countdown(val, max_rating, max_tolerated)
+                toff = behaviors.calculate_failure_countdown(
+                    val, max_rating, max_tolerated
+                )
 
                 c.value.setdefault(ft_key, 0.0)
 
@@ -1098,7 +1191,8 @@ class SimulationEngineCore:
             if not backed_up_names:
                 # Fallback: find same-type non-backup components (legacy behaviour)
                 backed_up_names = [
-                    name for name, comp in base_comps.items()
+                    name
+                    for name, comp in base_comps.items()
                     if comp.type == c.type and not comp.is_backup
                 ]
 
@@ -1153,7 +1247,9 @@ class SimulationEngineCore:
 
             # Surrounding temperature
             if c.type == "station":
-                t_surr = behaviors.station_surrounding_temperature(external.weather.temperature)
+                t_surr = behaviors.station_surrounding_temperature(
+                    external.weather.temperature
+                )
             else:
                 t_surr = self._surrounding_temperature(name, base_comps, external)
 
@@ -1184,12 +1280,19 @@ class SimulationEngineCore:
                     # Find associated AC (AC → vent resource connection)
                     ac_sources = self._conn_graph.active_resource_sources(desc_name)
                     for ac_name in ac_sources:
-                        if ac_name in base_comps and base_comps[ac_name].type == "air_conditioner":
+                        if (
+                            ac_name in base_comps
+                            and base_comps[ac_name].type == "air_conditioner"
+                        ):
                             ac_t_obj = base_comps[ac_name].value.get("temperature", {})
                             t_ac_out = _v(ac_t_obj, "value", 20.0)
-                            ac_vent_data.append({"t_out": t_ac_out, "a_curr": a_curr, "a_max": a_max})
+                            ac_vent_data.append(
+                                {"t_out": t_ac_out, "a_curr": a_curr, "a_max": a_max}
+                            )
 
-            new_t = behaviors.container_temperature(t_prev, t_surr, child_temps, ac_vent_data)
+            new_t = behaviors.container_temperature(
+                t_prev, t_surr, child_temps, ac_vent_data
+            )
             _update_field(c, "temperature", new_t)
 
             # Thermal corrective action when overheating (Phase 15.10)

@@ -1,4 +1,3 @@
-
 """
 main.py — Phase 16 (FastAPI Backend)
 
@@ -29,7 +28,6 @@ from twin_sim.simulation.station_loader import StationLoader
 from twin_sim.telemetry.database import TelemetryDatabase
 import json
 
-
 # ---------------------------------------------------------------------------
 # Configuration
 # ---------------------------------------------------------------------------
@@ -47,12 +45,14 @@ else:
 # Application bootstrap
 # ---------------------------------------------------------------------------
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Auto-discover and register all compiled stations on startup."""
     from twin_sim.api.migrate import migrate_old_files_to_db
+
     migrate_old_files_to_db(_db, DATA_DIR)
-    
+
     station_names = StationLoader.list_stations(COMPILED_ROOT)
     for name in station_names:
         try:
@@ -62,6 +62,7 @@ async def lifespan(app: FastAPI):
             print(f"[warning] Could not load station '{name}': {exc}")
     print(f"[startup] Loaded {len(station_names)} station(s): {station_names}")
     yield
+
 
 app = FastAPI(title="PolarTwin Backend API", version="2.0.0", lifespan=lifespan)
 
@@ -83,13 +84,14 @@ def read_root():
         "name": "PolarTwin Backend API",
         "version": "2.0.0",
         "status": "running",
-        "docs": "/docs"
+        "docs": "/docs",
     }
 
 
 # ---------------------------------------------------------------------------
 # Request/Response models
 # ---------------------------------------------------------------------------
+
 
 class CreateSimulationRequest(BaseModel):
     station_id: str
@@ -105,6 +107,7 @@ class PlayRequest(BaseModel):
 # ---------------------------------------------------------------------------
 # Stations
 # ---------------------------------------------------------------------------
+
 
 @app.get("/stations")
 def get_stations():
@@ -160,12 +163,15 @@ def get_station_runtime(station_id: str):
 # Scenarios
 # ---------------------------------------------------------------------------
 
+
 class CreateScenarioRequest(BaseModel):
     name: str
     source: str = ""
 
+
 class UpdateScenarioSourceRequest(BaseModel):
     source: str
+
 
 @app.get("/stations/{station_id}/scenarios")
 def get_station_scenarios(station_id: str):
@@ -251,25 +257,34 @@ def get_scenario_events(scenario_id: str):
                 "at": e.at,
                 "duration": None if e.duration == float("inf") else e.duration,
                 "payload": e.payload,
-                "source_location": getattr(e, 'source_location', 0),
-                "source_order": getattr(e, 'source_order', 0)
+                "source_location": getattr(e, "source_location", 0),
+                "source_order": getattr(e, "source_order", 0),
             }
             for e in events
         ]
     except FileNotFoundError as e:
         raise HTTPException(404, str(e))
     except Exception as e:
-        if hasattr(e, 'line_number') and getattr(e, 'line_number') is not None:
-            raise HTTPException(400, detail={"message": str(e), "line_number": getattr(e, 'line_number') - 1})
+        if hasattr(e, "line_number") and getattr(e, "line_number") is not None:
+            raise HTTPException(
+                400,
+                detail={
+                    "message": str(e),
+                    "line_number": getattr(e, "line_number") - 1,
+                },
+            )
         raise HTTPException(400, detail={"message": f"Error parsing scenario: {e}"})
+
 
 class ParseScenarioRequest(BaseModel):
     source: str
+
 
 @app.post("/scenarios/parse")
 def parse_scenario_raw(payload: ParseScenarioRequest):
     try:
         from twin_sim.dsl.scene_parser import parse_scene_string
+
         events = parse_scene_string(payload.source)
         return [
             {
@@ -278,20 +293,27 @@ def parse_scenario_raw(payload: ParseScenarioRequest):
                 "at": e.at,
                 "duration": None if e.duration == float("inf") else e.duration,
                 "payload": e.payload,
-                "source_location": getattr(e, 'source_location', 0),
-                "source_order": getattr(e, 'source_order', 0)
+                "source_location": getattr(e, "source_location", 0),
+                "source_order": getattr(e, "source_order", 0),
             }
             for e in events
         ]
     except Exception as e:
-        if hasattr(e, 'line_number') and getattr(e, 'line_number') is not None:
-            raise HTTPException(400, detail={"message": str(e), "line_number": getattr(e, 'line_number') - 1})
+        if hasattr(e, "line_number") and getattr(e, "line_number") is not None:
+            raise HTTPException(
+                400,
+                detail={
+                    "message": str(e),
+                    "line_number": getattr(e, "line_number") - 1,
+                },
+            )
         raise HTTPException(400, detail={"message": f"Error parsing scenario: {e}"})
 
 
 # ---------------------------------------------------------------------------
 # Event Definitions
 # ---------------------------------------------------------------------------
+
 
 @app.get("/stations/{station_id}/event-definitions")
 def get_event_definitions(station_id: str):
@@ -305,12 +327,15 @@ def get_event_definition(event_id: str):
     except FileNotFoundError as e:
         raise HTTPException(404, str(e))
 
+
 class EventUpdatePayload(BaseModel):
     source: str
+
 
 @app.post("/stations/{station_id}/event-definitions/{name}")
 def create_event_definition(station_id: str, name: str):
     return _scenario_manager.create_event(station_id, name)
+
 
 @app.put("/event-definitions/{event_id}")
 def update_event_definition(event_id: str, payload: EventUpdatePayload):
@@ -318,6 +343,7 @@ def update_event_definition(event_id: str, payload: EventUpdatePayload):
         return _scenario_manager.update_event(event_id, payload.source)
     except FileNotFoundError as e:
         raise HTTPException(404, str(e))
+
 
 @app.delete("/event-definitions/{event_id}", status_code=204)
 def delete_event_definition(event_id: str):
@@ -331,6 +357,7 @@ def delete_event_definition(event_id: str):
 # ---------------------------------------------------------------------------
 # Simulations
 # ---------------------------------------------------------------------------
+
 
 @app.post("/simulations", status_code=201)
 def create_simulation(req: CreateSimulationRequest):
@@ -423,6 +450,7 @@ def reset_simulation(run_id: str):
         raise HTTPException(404, "Simulation not found")
     return {"status": "reset"}
 
+
 @app.delete("/simulations/{run_id}", status_code=204)
 def delete_simulation(run_id: str):
     """Delete a simulation run."""
@@ -489,6 +517,7 @@ def get_simulation_log(run_id: str):
 # Telemetry (DB queries)
 # ---------------------------------------------------------------------------
 
+
 @app.get("/telemetry")
 def get_telemetry(run_id: Optional[str] = None):
     """Get the latest persisted telemetry record, optionally filtered by run_id."""
@@ -529,6 +558,7 @@ def get_telemetry_record(record_id: int):
         raise HTTPException(404, "Record not found")
     return rec
 
+
 @app.delete("/telemetry/records/{record_id}", status_code=204)
 def delete_telemetry_record(record_id: int):
     """Delete a specific telemetry record by ID."""
@@ -537,6 +567,7 @@ def delete_telemetry_record(record_id: int):
     _db.delete_record(record_id)
     return None
 
+
 @app.get("/telemetry/runs/{run_id}/metadata")
 def get_run_metadata(run_id: str):
     meta = _db.get_run_metadata(run_id)
@@ -544,17 +575,21 @@ def get_run_metadata(run_id: str):
         raise HTTPException(404, "Run metadata not found in database")
     return meta
 
+
 @app.get("/telemetry/runs/{run_id}/components/{component_id}/history")
 def get_component_history(run_id: str, component_id: str):
     return _db.get_component_history(run_id, component_id)
+
 
 @app.get("/telemetry/runs/{run_id}/connections/{connection_id}/history")
 def get_connection_history(run_id: str, connection_id: str):
     return _db.get_connection_history(run_id, connection_id)
 
+
 @app.get("/telemetry/runs/{run_id}/external/history")
 def get_external_history(run_id: str):
     return _db.get_external_history(run_id)
+
 
 @app.get("/telemetry/runs/{run_id}/events")
 def get_run_events(run_id: str):
@@ -564,46 +599,52 @@ def get_run_events(run_id: str):
 class GlobalToleranceRequest(BaseModel):
     value: float
 
+
 @app.post("/simulations/{run_id}/tolerance/global")
 def set_global_tolerance(run_id: str, req: GlobalToleranceRequest):
     rec = _manager.get_run(run_id)
     if not rec:
         raise HTTPException(status_code=404, detail="Run not found")
-    
+
     # Engine should have global_tolerance attribute
     rec.engine.global_tolerance = req.value
     return {"status": "ok", "global_tolerance": req.value}
 
+
 class ComponentToleranceRequest(BaseModel):
     value: float
 
+
 @app.post("/simulations/{run_id}/tolerance/component/{component_id}")
-def set_component_tolerance(run_id: str, component_id: str, req: ComponentToleranceRequest):
+def set_component_tolerance(
+    run_id: str, component_id: str, req: ComponentToleranceRequest
+):
     rec = _manager.get_run(run_id)
     if not rec:
         raise HTTPException(status_code=404, detail="Run not found")
-    
+
     if component_id not in rec.engine.state.base_components:
         raise HTTPException(status_code=404, detail="Component not found in simulation")
-        
+
     comp = rec.engine.state.base_components[component_id]
-    
+
     # Update specification's tolerance
     comp.value["tolerance"] = req.value
     return {"status": "ok", "component": component_id, "tolerance": req.value}
+
 
 @app.post("/simulations/{run_id}/component/{component_id}/state")
 def set_component_state(run_id: str, component_id: str, updates: dict = Body(...)):
     rec = _manager.get_run(run_id)
     if not rec:
         raise HTTPException(status_code=404, detail="Run not found")
-    
+
     if component_id not in rec.engine.state.base_components:
         raise HTTPException(status_code=404, detail="Component not found in simulation")
-    
+
     # Update state fields
     comp = rec.engine.state.base_components[component_id]
     for k, v in updates.items():
         comp.value[k] = v
-        
+
     return {"status": "ok", "component": component_id, "updates": updates}

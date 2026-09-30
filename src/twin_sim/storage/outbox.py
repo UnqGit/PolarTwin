@@ -43,7 +43,9 @@ class SQLiteOutbox:
             """)
             self.connection.commit()
 
-    def enqueue(self, message_id: str, topic: str, payload: str, qos: int, retain: bool) -> None:
+    def enqueue(
+        self, message_id: str, topic: str, payload: str, qos: int, retain: bool
+    ) -> None:
         self.start()
         assert self.connection is not None
         self.connection.execute(
@@ -71,7 +73,10 @@ class SQLiteOutbox:
     def mark_delivered(self, message_id: str) -> None:
         self.start()
         assert self.connection is not None
-        self.connection.execute("UPDATE mqtt_outbox SET status = 'DELIVERED' WHERE message_id = ?", (message_id,))
+        self.connection.execute(
+            "UPDATE mqtt_outbox SET status = 'DELIVERED' WHERE message_id = ?",
+            (message_id,),
+        )
         self.connection.commit()
 
     def mark_failed(self, message_id: str, error: str, next_attempt: float) -> None:
@@ -88,8 +93,12 @@ class SQLiteOutbox:
         if self.connection is None:
             return 0
         if status is None:
-            return self.connection.execute("SELECT COUNT(*) FROM mqtt_outbox").fetchone()[0]
-        return self.connection.execute("SELECT COUNT(*) FROM mqtt_outbox WHERE status = ?", (status,)).fetchone()[0]
+            return self.connection.execute(
+                "SELECT COUNT(*) FROM mqtt_outbox"
+            ).fetchone()[0]
+        return self.connection.execute(
+            "SELECT COUNT(*) FROM mqtt_outbox WHERE status = ?", (status,)
+        ).fetchone()[0]
 
     def close(self) -> None:
         if self.connection is not None:

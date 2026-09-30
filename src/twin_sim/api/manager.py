@@ -83,11 +83,14 @@ class RunRecord:
                 self.status = RunStatus.FINISHED
             except Exception as e:
                 import traceback
+
                 print(f"Run {self.run_id} crashed:", e)
                 traceback.print_exc()
                 self.status = RunStatus.FAILED
 
-        self._thread = threading.Thread(target=_loop, daemon=True, name=f"sim-{self.run_id}")
+        self._thread = threading.Thread(
+            target=_loop, daemon=True, name=f"sim-{self.run_id}"
+        )
         self._thread.start()
 
     def pause(self):
@@ -117,7 +120,9 @@ class RunRecord:
             return True
         return False  # cannot step while running
 
-    def reset(self, loaded_station: LoadedStation, scenes: Optional[List[SceneEvent]] = None):
+    def reset(
+        self, loaded_station: LoadedStation, scenes: Optional[List[SceneEvent]] = None
+    ):
         """
         Stop the current run and rebuild the engine from the original station data.
         The run_id is preserved.
@@ -148,22 +153,24 @@ class RunRecord:
     def state_snapshot(self) -> Dict[str, Any]:
         """Return the current effective simulation state as a JSON-serialisable dict."""
         eff = self.engine.state.get_effective_state_dict()
-        
+
         # Clean infinite values for JSON parsing in JS
         active_evs = []
-        for layer in self.engine.state.active_layers + self.engine.state.permanent_layers:
+        for layer in (
+            self.engine.state.active_layers + self.engine.state.permanent_layers
+        ):
             d = layer.model_dump()
             if d.get("end_time") == float("inf"):
                 d["end_time"] = None
             active_evs.append(d)
-            
+
         upcoming_evs = []
         for scene in self.engine.scenes:
             d = scene.model_dump()
             if d.get("duration") == float("inf"):
                 d["duration"] = None
             upcoming_evs.append(d)
-            
+
         return {
             "run_id": self.run_id,
             "station_id": self.station_id,
@@ -172,7 +179,11 @@ class RunRecord:
             "telemetry_publishing": self.engine.telemetry_publishing,
             "components": [c.model_dump() for c in eff["components"]],
             "connections": [c.model_dump() for c in eff["connections"]],
-            "external": eff["external"].model_dump() if hasattr(eff["external"], "model_dump") else {},
+            "external": (
+                eff["external"].model_dump()
+                if hasattr(eff["external"], "model_dump")
+                else {}
+            ),
             "active_events": active_evs,
             "upcoming_events": upcoming_evs,
         }
@@ -240,22 +251,30 @@ class SimulationManager:
 
         scenario_name = "manual"
         if scenario_id:
-            scenario_name = scenario_id.split(":")[-1] if ":" in scenario_id else scenario_id
+            scenario_name = (
+                scenario_id.split(":")[-1] if ":" in scenario_id else scenario_id
+            )
 
         runno = 1
         if self._telemetry_db:
             runno = self._telemetry_db.get_next_run_number(station_id, scenario_id)
 
         engine = station.build_engine(
-            scenes=scenes, 
-            global_tolerance=global_tolerance, 
-            value_overrides=value_overrides
+            scenes=scenes,
+            global_tolerance=global_tolerance,
+            value_overrides=value_overrides,
         )
 
         with self._lock:
-            local_count = len([r for r in self._runs.values() if r.station_id == station_id and r.scenario_id == scenario_id])
+            local_count = len(
+                [
+                    r
+                    for r in self._runs.values()
+                    if r.station_id == station_id and r.scenario_id == scenario_id
+                ]
+            )
             runno = max(runno, local_count + 1)
-            
+
             while True:
                 run_id = f"{station_id}{scenario_name}{runno}"
                 if run_id not in self._runs:
@@ -298,7 +317,9 @@ class SimulationManager:
         if rec:
             if not rec._db_created:
                 if self._telemetry_db:
-                    self._telemetry_db.create_simulation_run(rec.run_id, rec.station_id, rec.scenario_id)
+                    self._telemetry_db.create_simulation_run(
+                        rec.run_id, rec.station_id, rec.scenario_id
+                    )
                 rec._db_created = True
             rec.play(tick_interval=tick_interval)
             return True
@@ -384,9 +405,11 @@ class SimulationManager:
         records = rec.engine.telemetry[:]
         rec.engine.telemetry.clear()
 
-        if records or getattr(rec.engine, 'logs', []):
+        if records or getattr(rec.engine, "logs", []):
             if not rec._db_created and self._telemetry_db:
-                self._telemetry_db.create_simulation_run(rec.run_id, rec.station_id, rec.scenario_id)
+                self._telemetry_db.create_simulation_run(
+                    rec.run_id, rec.station_id, rec.scenario_id
+                )
                 rec._db_created = True
 
         if records:
@@ -396,13 +419,13 @@ class SimulationManager:
                 source="SIMULATION",
                 records=records,
             )
-        
+
         # Flush simulation logs
-        logs = getattr(rec.engine, 'logs', [])[:]
+        logs = getattr(rec.engine, "logs", [])[:]
         if logs:
             self._telemetry_db.insert_simulation_logs(run_id, logs)
             rec.engine.logs.clear()
-            
+
         return len(records)
 
     # ------------------------------------------------------------------
@@ -421,7 +444,7 @@ class SimulationManager:
         if self._telemetry_db:
             logs.extend(self._telemetry_db.get_simulation_logs(run_id))
         rec = self.get_run(run_id)
-        if rec and hasattr(rec.engine, 'logs'):
+        if rec and hasattr(rec.engine, "logs"):
             logs.extend(rec.engine.logs)
         return logs
 

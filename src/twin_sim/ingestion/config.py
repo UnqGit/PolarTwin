@@ -9,32 +9,41 @@ from .validator import ValidationError, _object, _string
 
 def validate_runtime_config(config: Any) -> dict[str, Any]:
     root = _object(config, "runtime config")
-    
+
     for field in ("mode", "tick_interval", "time_scale", "outputs"):
         if field not in root:
             raise ValidationError(f"runtime config is missing required field '{field}'")
-            
+
     mode = _string(root["mode"], "runtime_config.mode")
     if mode not in ("simulator", "generator"):
-        raise ValidationError(f"runtime config mode must be 'simulator' or 'generator', got {mode}")
-        
-    if not isinstance(root["tick_interval"], (int, float)) or root["tick_interval"] <= 0:
+        raise ValidationError(
+            f"runtime config mode must be 'simulator' or 'generator', got {mode}"
+        )
+
+    if (
+        not isinstance(root["tick_interval"], (int, float))
+        or root["tick_interval"] <= 0
+    ):
         raise ValidationError("runtime config tick_interval must be a number > 0")
-        
+
     if not isinstance(root["time_scale"], (int, float)) or root["time_scale"] <= 0:
         raise ValidationError("runtime config time_scale must be a number > 0")
-        
+
     if not isinstance(root["outputs"], list):
         raise ValidationError("runtime config outputs must be an array")
-        
+
     for idx, output in enumerate(root["outputs"]):
         item = _object(output, f"runtime_config.outputs[{idx}]")
         if "type" not in item:
-            raise ValidationError(f"runtime config outputs[{idx}] is missing required field 'type'")
+            raise ValidationError(
+                f"runtime config outputs[{idx}] is missing required field 'type'"
+            )
     if "plugins" in root:
         if not isinstance(root["plugins"], str):
-            raise ValidationError("runtime config plugins must be a string (directory path)")
-            
+            raise ValidationError(
+                "runtime config plugins must be a string (directory path)"
+            )
+
     return root
 
 

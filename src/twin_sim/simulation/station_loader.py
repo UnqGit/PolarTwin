@@ -41,7 +41,6 @@ from twin_sim.ingestion.models import (
 )
 from twin_sim.simulation.engine_core import HierarchyGraph, SimulationEngineCore
 
-
 # ---------------------------------------------------------------------------
 # Default external model (no field data available yet)
 # ---------------------------------------------------------------------------
@@ -109,12 +108,12 @@ class LoadedStation:
 
         # Deep-copy runtime state so multiple engines don't share mutable objects
         comps = copy.deepcopy(self.runtime_components)
-        
+
         if value_overrides:
             for c in comps:
                 if c.name in value_overrides:
                     c.value.update(value_overrides[c.name])
-                    
+
         conns = copy.deepcopy(self.runtime_connections)
         ext = copy.deepcopy(self.external)
 
@@ -188,11 +187,15 @@ class StationLoader:
             value_overrides = _load_json(initial_path)
 
         # Generate runtime models
-        runtime_components = generate_runtime_components(hierarchy_list, specs, value_overrides)
+        runtime_components = generate_runtime_components(
+            hierarchy_list, specs, value_overrides
+        )
         runtime_connections = generate_runtime_connections(compiled_connections)
 
         # External model: explicit path → compiled_dir/external.json → built-in default
-        ext_file = Path(external_path) if external_path else compiled_dir / "external.json"
+        ext_file = (
+            Path(external_path) if external_path else compiled_dir / "external.json"
+        )
         if ext_file.exists():
             external = load_external(ext_file)
         else:
@@ -205,7 +208,7 @@ class StationLoader:
             runtime_components=runtime_components,
             runtime_connections=runtime_connections,
             external=external,
-            specs_list=specs
+            specs_list=specs,
         )
 
     @staticmethod

@@ -44,6 +44,7 @@ class TelemetryMessage:
 @dataclass(frozen=True)
 class DeltaTelemetryMessage:
     """Compressed telemetry message that represents a linear change over time."""
+
     schema_version: str
     run_id: str
     start_timestamp: float
@@ -55,7 +56,7 @@ class DeltaTelemetryMessage:
     quality: dict[str, Any] = field(default_factory=dict)
     source: dict[str, Any] = field(default_factory=dict)
     context: dict[str, Any] = field(default_factory=dict)
-    
+
     def to_dict(self) -> dict[str, Any]:
         """Convert delta message to dictionary for transport/serialization."""
         message: dict[str, Any] = {

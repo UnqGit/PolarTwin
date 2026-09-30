@@ -46,15 +46,25 @@ class MqttStoreForwardSink(TelemetrySink):
     def start(self) -> None:
         self.outbox.start()
         if self.worker_enabled and self._thread is None:
-            self._thread = threading.Thread(target=self._run, name="mqtt-outbox", daemon=True)
+            self._thread = threading.Thread(
+                target=self._run, name="mqtt-outbox", daemon=True
+            )
             self._thread.start()
 
     def write(self, telemetry: TelemetryMessage) -> None:
         self.start()
         self._sequence += 1
         message_id = f"{telemetry.run_id}-{self._sequence:08d}"
-        payload = __import__("json").dumps(telemetry.to_dict(), sort_keys=True, separators=(",", ":"))
-        self.outbox.enqueue(message_id, topic_for(telemetry, self.topic_prefix), payload, self.qos, self.retain)
+        payload = __import__("json").dumps(
+            telemetry.to_dict(), sort_keys=True, separators=(",", ":")
+        )
+        self.outbox.enqueue(
+            message_id,
+            topic_for(telemetry, self.topic_prefix),
+            payload,
+            self.qos,
+            self.retain,
+        )
 
     def _connect(self) -> None:
         if self.client is None:
@@ -71,7 +81,12 @@ class MqttStoreForwardSink(TelemetrySink):
         try:
             environment = {}
             try:
-                environment = __import__("json").loads(record.payload).get("context", {}).get("environment", {})
+                environment = (
+                    __import__("json")
+                    .loads(record.payload)
+                    .get("context", {})
+                    .get("environment", {})
+                )
             except (TypeError, ValueError):
                 pass
             self.connectivity_policy.delay(environment)
@@ -84,7 +99,11 @@ class MqttStoreForwardSink(TelemetrySink):
         except Exception as exc:
             self.connected = False
             current_time = time.time() if now is None else now
-            self.outbox.mark_failed(record.message_id, str(exc), current_time + self.retry_base * (2 ** (record.attempts - 1)))
+            self.outbox.mark_failed(
+                record.message_id,
+                str(exc),
+                current_time + self.retry_base * (2 ** (record.attempts - 1)),
+            )
         return True
 
     def _run(self) -> None:
@@ -96,7 +115,10 @@ class MqttStoreForwardSink(TelemetrySink):
         deadline = time.monotonic() + 2.0
         while time.monotonic() < deadline:
             self.drain_once()
-            if self.outbox.count("PENDING") == 0 and self.outbox.count("IN_FLIGHT") == 0:
+            if (
+                self.outbox.count("PENDING") == 0
+                and self.outbox.count("IN_FLIGHT") == 0
+            ):
                 return
             time.sleep(0.01)
 

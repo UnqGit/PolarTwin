@@ -8,43 +8,71 @@ from pydantic import BaseModel, Field, model_validator
 
 UNIT_MULTIPLIERS = {
     # Voltage -> V
-    "V": 1.0, "mV": 1e-3, "kV": 1e3,
+    "V": 1.0,
+    "mV": 1e-3,
+    "kV": 1e3,
     # Current -> A
-    "A": 1.0, "mA": 1e-3,
+    "A": 1.0,
+    "mA": 1e-3,
     # Power -> W
-    "W": 1.0, "kW": 1e3,
+    "W": 1.0,
+    "kW": 1e3,
     # Energy -> J
-    "J": 1.0, "kJ": 1e3, "Wh": 3600.0, "kWh": 3.6e6,
+    "J": 1.0,
+    "kJ": 1e3,
+    "Wh": 3600.0,
+    "kWh": 3.6e6,
     # Light Irradiance -> W/m2
     "W/m2": 1.0,
     # Frequency -> Hz
-    "Hz": 1.0, "kHz": 1e3, "MHz": 1e6, "mHz": 1e-3,
+    "Hz": 1.0,
+    "kHz": 1e3,
+    "MHz": 1e6,
+    "mHz": 1e-3,
     # Temperature (Handled separately)
-    "C": None, "K": None, "F": None,
+    "C": None,
+    "K": None,
+    "F": None,
     # Flowrate -> L/s
-    "L/s": 1.0, "cc/s": 1e-3, "m3/hr": 1000.0 / 3600.0, "CFM": 28.316846592 / 60.0, "L/hr": 1.0 / 3600.0, "ltr/hr": 1.0 / 3600.0,
+    "L/s": 1.0,
+    "cc/s": 1e-3,
+    "m3/hr": 1000.0 / 3600.0,
+    "CFM": 28.316846592 / 60.0,
+    "L/hr": 1.0 / 3600.0,
+    "ltr/hr": 1.0 / 3600.0,
     # Air Particulates -> ppm
-    "ppm": 1.0, "bpm": 1.0,
+    "ppm": 1.0,
+    "bpm": 1.0,
     # O2 / CO2 level -> 0-1
     "%": 0.01,
     # Volume -> L
-    "L": 1.0, "m3": 1000.0, "cm3": 1e-3, "ml": 1e-3,
+    "L": 1.0,
+    "m3": 1000.0,
+    "cm3": 1e-3,
+    "ml": 1e-3,
     # Weight -> kg
-    "kg": 1.0, "g": 1e-3, "mg": 1e-6,
+    "kg": 1.0,
+    "g": 1e-3,
+    "mg": 1e-6,
 }
+
 
 def to_canonical(value: float, unit: str) -> float:
     unit = unit.strip()
     if unit in ("C", "K", "F"):
-        if unit == "C": return value
-        if unit == "K": return value - 273.15
-        if unit == "F": return (value - 32) * 5.0 / 9.0
-        
+        if unit == "C":
+            return value
+        if unit == "K":
+            return value - 273.15
+        if unit == "F":
+            return (value - 32) * 5.0 / 9.0
+
     multiplier = UNIT_MULTIPLIERS.get(unit)
     if multiplier is None:
         # Default fallback or no-op if unrecognized
         return value
     return value * multiplier
+
 
 def canonicalize_measurement(data: Union[float, int, dict]) -> Union[float, dict]:
     """
@@ -54,28 +82,36 @@ def canonicalize_measurement(data: Union[float, int, dict]) -> Union[float, dict
     """
     if isinstance(data, (float, int)):
         return float(data)
-    
+
     if isinstance(data, dict):
         if "unit" in data:
             unit = data["unit"]
             res = {}
-            if "value" in data: res["value"] = to_canonical(float(data["value"]), unit)
-            if "min" in data: res["min"] = to_canonical(float(data["min"]), unit)
-            if "max" in data: res["max"] = to_canonical(float(data["max"]), unit)
+            if "value" in data:
+                res["value"] = to_canonical(float(data["value"]), unit)
+            if "min" in data:
+                res["min"] = to_canonical(float(data["min"]), unit)
+            if "max" in data:
+                res["max"] = to_canonical(float(data["max"]), unit)
             return res
         else:
             # Maybe unitless
             res = {}
-            if "value" in data: res["value"] = float(data["value"])
-            if "min" in data: res["min"] = float(data["min"])
-            if "max" in data: res["max"] = float(data["max"])
+            if "value" in data:
+                res["value"] = float(data["value"])
+            if "min" in data:
+                res["min"] = float(data["min"])
+            if "max" in data:
+                res["max"] = float(data["max"])
             return res
-            
+
     return data
+
 
 # ---------------------------------------------------------
 # Phase 7 - External Models
 # ---------------------------------------------------------
+
 
 class WeatherModel(BaseModel):
     temperature: float
@@ -88,8 +124,8 @@ class WeatherModel(BaseModel):
     pressure: float
     dew_frost_point: float
     irradiance: float = 0.0  # Light irradiance in W/m2; 0 by default (polar winter)
-    
-    @model_validator(mode='before')
+
+    @model_validator(mode="before")
     @classmethod
     def convert_weather_units(cls, data: Any) -> Any:
         if isinstance(data, dict):
@@ -98,14 +134,15 @@ class WeatherModel(BaseModel):
                     data[k] = to_canonical(v["value"], v.get("unit", ""))
         return data
 
+
 class NetworkModel(BaseModel):
     bandwidth: float
     mainland_connectivity: bool
     upload_window: bool
     upload_speed: float
     download_speed: float
-    
-    @model_validator(mode='before')
+
+    @model_validator(mode="before")
     @classmethod
     def convert_network_units(cls, data: Any) -> Any:
         if isinstance(data, dict):
@@ -114,19 +151,23 @@ class NetworkModel(BaseModel):
                     data[k] = to_canonical(v["value"], v.get("unit", ""))
         return data
 
+
 class SupplyModel(BaseModel):
     ETA: float
     description: str
     mode: str
+
 
 class ExternalModel(BaseModel):
     weather: WeatherModel
     network: NetworkModel
     supplies: List[SupplyModel]
 
+
 # ---------------------------------------------------------
 # Phase 7 - Component Models (Runtime component.json)
 # ---------------------------------------------------------
+
 
 class RuntimeComponent(BaseModel):
     name: str
@@ -134,6 +175,7 @@ class RuntimeComponent(BaseModel):
     is_backup: bool
     status: str
     value: Dict[str, Any]
+
 
 class RuntimeConnection(BaseModel):
     source: str
