@@ -149,6 +149,7 @@ export interface HierarchyPanelProps {
   onResetCamera?: () => void;
   activeLayer?: number | null;
   setActiveLayer?: (layer: number | null) => void;
+  customSidebarTopTabs?: { id: string, icon: React.ReactNode, title: string, onClick?: (toggleView: (id: string) => void) => void }[];
   customSidebarTabs?: { id: string, icon: React.ReactNode, title: string, content: React.ReactNode }[];
   lightingMode?: 'dynamic' | 'static' | 'off';
   onLightingModeChange?: (mode: 'dynamic' | 'static' | 'off') => void;
@@ -224,6 +225,7 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
   hideAllComponents, hideAllConnections,
   onHideAllComponentsChange, onHideAllConnectionsChange,
   onResetCamera, activeLayer = null, setActiveLayer,
+  customSidebarTopTabs,
   customSidebarTabs,
   lightingMode, onLightingModeChange,
   containerOcclusion, onContainerOcclusionChange,
@@ -678,6 +680,9 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
         display: 'flex', flexDirection: 'column', alignItems: 'center',
         paddingTop: 8, paddingBottom: 8, boxSizing: 'border-box', pointerEvents: 'auto',
       }}>
+        {customSidebarTopTabs?.map(tab => (
+          <IconBtn key={tab.id} icon={tab.icon} active={activeView === tab.id} onClick={tab.onClick ? () => tab.onClick!(toggleView) : () => toggleView(tab.id)} title={tab.title} />
+        ))}
         <IconBtn icon={<Network size={20} />} active={activeView === 'hierarchy'} onClick={() => toggleView('hierarchy')} title="Hierarchy" />
         <IconBtn icon={<Link2 size={20} />} active={activeView === 'connections'} onClick={() => toggleView('connections')} title="Connections" />
         {!hideSettings && <IconBtn icon={<Sliders size={20} />} active={activeView === 'interactivity'} onClick={() => toggleView('interactivity')} title="Settings" />}

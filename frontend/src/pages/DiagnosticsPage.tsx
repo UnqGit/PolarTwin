@@ -62,12 +62,11 @@ export function DiagnosticsPage() {
     api.getRunEvents(selectedRunId).then(setRunEvents).catch(console.error);
     api.getSimulationLog(selectedRunId).then(setRunLogs).catch(console.error);
 
-    // Refresh history data if category/item is already selected
-    if (selectedCategory && selectedItemId) {
-      fetchHistory(selectedCategory, selectedItemId);
-    } else {
-      setHistoryData([]);
-    }
+    // Clear selected category/item to show overview for new run
+    setSelectedCategory(null);
+    setSelectedItemId(null);
+    setSelectedName(null);
+    setHistoryData([]);
   }, [selectedRunId]);
 
   // When category/item selected
@@ -178,6 +177,18 @@ export function DiagnosticsPage() {
               hideEditInitials={true}
               hideSettings={true}
               hideSensors={true}
+              customSidebarTopTabs={[
+                {
+                  id: 'overview',
+                  title: 'Overview',
+                  icon: <Activity size={20} />,
+                  onClick: () => {
+                    setSelectedCategory(null);
+                    setSelectedItemId(null);
+                    setSelectedName(null);
+                  }
+                }
+              ]}
               customSidebarTabs={[
                 {
                   id: 'external',
