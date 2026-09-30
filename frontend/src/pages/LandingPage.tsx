@@ -26,8 +26,8 @@ export function LandingPage() {
       {/* Hero Section */}
       <section style={{
         position: 'relative',
-        height: '45vh',
-        minHeight: '350px',
+        height: '64vh',
+        minHeight: '530px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

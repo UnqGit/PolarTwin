@@ -425,12 +425,6 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                 const unitSelectionKey = `${editingTarget.name}-${key}`;
                 const selectedUnit = unitSelections[unitSelectionKey] || canonicalUnit;
 
-                const availableUnits = AVAILABLE_UNITS[key];
-                const canonicalUnit = availableUnits ? availableUnits[0] : originalUnit;
-
-                const unitSelectionKey = `${editingTarget.name}-${key}`;
-                const selectedUnit = unitSelections[unitSelectionKey] || canonicalUnit;
-
                 const runtimeComponent = runtime?.find(c => c.name === editingTarget.name);
                 const canonicalVal = runtimeComponent?.value?.[key] ?? detail?.value ?? '';
 
@@ -486,11 +480,11 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
 
               return (
                 <>
-                  <div key={`${editingTarget.name}-tolerance-${valueOverrides?.[editingTarget.name]?.tolerance ?? (specObj.tolerance as number) || 10}`} style={{ marginBottom: 12 }}>
+                  <div key={`${editingTarget.name}-tolerance-${(valueOverrides?.[editingTarget.name]?.tolerance ?? (specObj.tolerance as number)) || 10}`} style={{ marginBottom: 12 }}>
                     <label style={{ display: 'block', marginBottom: 4, color: 'var(--text-secondary)', fontSize: 11 }}>Individual Tolerance</label>
                     <input
                       type="number"
-                      defaultValue={valueOverrides?.[editingTarget.name]?.tolerance ?? (specObj.tolerance as number) || 10}
+                      defaultValue={(valueOverrides?.[editingTarget.name]?.tolerance ?? (specObj.tolerance as number)) || 10}
                       onBlur={(e) => {
                         const numVal = parseFloat(e.target.value);
                         if (!isNaN(numVal)) {
