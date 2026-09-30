@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Edit2, Eye, EyeOff } from 'lucide-react';
 import type { ConnectionLayout } from '../lib/layout';
 import { useSelection } from './SelectionContext';
+import { Dropdown } from './Dropdown';
 
 interface ConnectionsListProps {
   connections: ConnectionLayout[];
@@ -130,18 +131,16 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 11, color: 'var(--text-secondary)' }}>
             <span>Sort By:</span>
-            <select 
-              value={sortBy} 
-              onChange={(e) => setSortBy(e.target.value as 'source' | 'target')}
-              style={{ 
-                background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-solid)', 
-                borderRadius: 4, padding: '2px 4px', fontSize: 11, outline: 'none', cursor: 'pointer' 
-              }}
-            >
-              <option value="source">source</option>
-              <option value="target">target</option>
-              <option value="type">type</option>
-            </select>
+            <Dropdown
+              value={sortBy}
+              onChange={val => setSortBy(val as 'source' | 'target')}
+              options={[
+                { value: 'source', label: 'source' },
+                { value: 'target', label: 'target' },
+                { value: 'type', label: 'type' }
+              ]}
+              style={{ minWidth: 80 }}
+            />
           </div>
           <div style={{ display: 'flex', gap: 4 }}>
             {sortedKeys.length > 0 && expandedGroups.size > 0 ? (

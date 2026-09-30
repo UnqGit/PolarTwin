@@ -9,6 +9,7 @@ import { EventInspector } from '../components/EventInspector';
 import { SimulationMonitor } from '../components/SimulationMonitor';
 import { Play, Pause, RefreshCw, StepForward, Code, List, Activity, Library, ChevronUp, ChevronDown, MousePointer2, LayoutDashboard, Trash2, FileText, FilePlus, PanelLeft, PanelRight, PanelBottom, Edit2 } from 'lucide-react';
 import { formatTime } from '../utils';
+import { Dropdown } from '../components/Dropdown';
 const STYLE_INJECTION = `
   .glass-btn-sm {
     transition: all 0.2s ease;
@@ -549,16 +550,13 @@ export function ScenariosPage() {
       {/* Top Bar */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px', backgroundColor: 'var(--bg-panel-secondary)', borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <select
-            style={{ backgroundColor: 'var(--bg-input)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', borderRadius: '4px', padding: '4px 8px', outline: 'none' }}
+          <Dropdown
             value={selectedScenarioId || ''}
-            onChange={e => { setSelectedScenarioId(e.target.value || null); setEditingType('scenario'); }}
-          >
-            <option value="">-- Select Scenario --</option>
-            {scenarios.map(s => (
-              <option key={s.id} value={s.id}>{s.name}</option>
-            ))}
-          </select>
+            onChange={val => { setSelectedScenarioId(val || null); setEditingType('scenario'); }}
+            options={scenarios.map(s => ({ value: s.id, label: s.name }))}
+            placeholder="-- Select Scenario --"
+            style={{ minWidth: 200 }}
+          />
           <button className="glass-btn-sm" onClick={() => { setSelectedScenarioId(null); setScenarioEvents([]); setRunId(null); setSimStatus('Ready'); if (editingType === 'scenario') setScenarioSource(''); }} style={{ fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-input)', color: 'var(--text-secondary)' }}>Deselect</button>
 
           <button className="glass-btn-sm" onClick={saveSource} style={{ fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-input)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -670,27 +668,25 @@ export function ScenariosPage() {
           </div>
 
           {/* Playback Speed Dropdown */}
-          <select
-            value={playbackSpeed}
-            onChange={async (e) => {
-              const speed = parseFloat(e.target.value);
+          <Dropdown
+            value={playbackSpeed.toString()}
+            onChange={async (val) => {
+              const speed = parseFloat(val);
               setPlaybackSpeed(speed);
               if (runId && (simStatus === 'RUNNING' || simStatus === 'running')) {
                 await api.playSimulation(runId, 1.0 / speed);
               }
             }}
-            style={{
-              background: 'var(--bg-input)', border: '1px solid var(--border-color)',
-              color: 'var(--text-primary)', borderRadius: 4, padding: '4px', fontSize: 12, marginLeft: 8
-            }}
-          >
-            <option value="1">1x Speed</option>
-            <option value="2">2x Speed</option>
-            <option value="5">5x Speed</option>
-            <option value="10">10x Speed</option>
-            <option value="60">60x Speed</option>
-            <option value="240">MAX (240x)</option>
-          </select>
+            options={[
+              { value: "1", label: "1x Speed" },
+              { value: "2", label: "2x Speed" },
+              { value: "5", label: "5x Speed" },
+              { value: "10", label: "10x Speed" },
+              { value: "60", label: "60x Speed" },
+              { value: "240", label: "MAX (240x)" },
+            ]}
+            style={{ minWidth: 100, marginLeft: 8 }}
+          />
 
           {/* Start/Stop Button */}
           <button

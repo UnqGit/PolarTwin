@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { GitCompare } from 'lucide-react';
 import { api } from '../lib/api';
+import { Dropdown } from './Dropdown';
 
 export function ScenarioComparison({ stationId }: { stationId: string }) {
   const [runs, setRuns] = useState<{run_id: string, station_id: string}[]>([]);
@@ -95,23 +96,27 @@ export function ScenarioComparison({ stationId }: { stationId: string }) {
       <div style={{ display: 'flex', gap: 16, marginBottom: 24 }}>
         <div style={{ flex: 1 }}>
           <label style={{ fontSize: 12, fontWeight: 'bold', color: 'var(--text-secondary)' }}>Scenario A (Run ID)</label>
-          <select 
-            value={runA} onChange={e => setRunA(e.target.value)}
-            style={{ width: '100%', marginTop: 4, padding: 8, background: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: 4 }}
-          >
-            <option value="">-- Select Run A --</option>
-            {runs.map(r => <option key={r.run_id} value={r.run_id}>{r.run_id}</option>)}
-          </select>
+          <div style={{ marginTop: 4 }}>
+            <Dropdown
+              value={runA}
+              onChange={val => setRunA(val)}
+              options={runs.map(r => ({ value: r.run_id, label: r.run_id }))}
+              placeholder="-- Select Run A --"
+              style={{ width: '100%' }}
+            />
+          </div>
         </div>
         <div style={{ flex: 1 }}>
           <label style={{ fontSize: 12, fontWeight: 'bold', color: 'var(--text-secondary)' }}>Scenario B (Run ID)</label>
-          <select 
-            value={runB} onChange={e => setRunB(e.target.value)}
-            style={{ width: '100%', marginTop: 4, padding: 8, background: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: 4 }}
-          >
-            <option value="">-- Select Run B --</option>
-            {runs.map(r => <option key={r.run_id} value={r.run_id}>{r.run_id}</option>)}
-          </select>
+          <div style={{ marginTop: 4 }}>
+            <Dropdown
+              value={runB}
+              onChange={val => setRunB(val)}
+              options={runs.map(r => ({ value: r.run_id, label: r.run_id }))}
+              placeholder="-- Select Run B --"
+              style={{ width: '100%' }}
+            />
+          </div>
         </div>
       </div>
 

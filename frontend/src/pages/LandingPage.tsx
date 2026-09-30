@@ -233,6 +233,56 @@ export function LandingPage() {
                 </div>
               </Link>
             ))}
+
+            {/* Mock Card for Bharati */}
+            <div
+              style={{ textDecoration: 'none', display: 'flex', width: '320px', cursor: 'not-allowed', opacity: 0.8 }}
+              title="Compilation pending / Invalid twin format"
+            >
+              <div style={{
+                backgroundColor: 'var(--bg-panel)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '16px',
+                padding: '24px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '16px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.05)',
+                position: 'relative',
+                overflow: 'hidden',
+                width: '100%',
+                height: '100%',
+                boxSizing: 'border-box'
+              }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    width: '48px', height: '48px',
+                    borderRadius: '12px',
+                    backgroundColor: 'var(--bg-input)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    color: 'var(--text-secondary)'
+                  }}>
+                    <MapPin size={24} />
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '20px', color: 'var(--text-primary)' }}>Bharati</h3>
+                    <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>Mock Deployment</span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', gap: '16px', marginTop: '8px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '14px' }}>
+                    <Box size={16} />
+                    278 Components
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '14px' }}>
+                    <Activity size={16} />
+                    433 Connections
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         )}
       </section>

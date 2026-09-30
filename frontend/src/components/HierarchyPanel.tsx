@@ -6,6 +6,7 @@ import { api } from '../lib/api';
 import { TypeIcon } from './TypeIcon';
 import { ConnectionsList } from './ConnectionsList';
 import { Network, Link2, Sliders, ChevronRight, Eye, EyeOff, Focus, Edit2 } from 'lucide-react';
+import { Dropdown } from './Dropdown';
 
 const PANEL_BORDER = '1px solid var(--border-color)';
 const ITEM_HEIGHT = 26;
@@ -441,13 +442,12 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
                       <label style={{ color: 'var(--text-secondary)', fontSize: 11 }}>{key}</label>
                       {availableUnits ? (
-                        <select
+                        <Dropdown
                           value={selectedUnit}
-                          onChange={(e) => setUnitSelections(prev => ({ ...prev, [unitSelectionKey]: e.target.value }))}
-                          style={{ background: 'var(--bg-input)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', fontSize: 10, borderRadius: 2, padding: '2px 4px' }}
-                        >
-                          {availableUnits.map(u => <option key={u} value={u}>{u}</option>)}
-                        </select>
+                          onChange={(val) => setUnitSelections(prev => ({ ...prev, [unitSelectionKey]: val }))}
+                          options={availableUnits.map(u => ({ value: u, label: u }))}
+                          style={{ minWidth: 60 }}
+                        />
                       ) : (
                         <span style={{ color: 'var(--text-tertiary)', fontSize: 10 }}>{selectedUnit}</span>
                       )}
@@ -632,28 +632,30 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                 {onLightingModeChange && (
                   <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
                     <span>Lighting</span>
-                    <select
-                      value={lightingMode}
-                      onChange={e => onLightingModeChange(e.target.value as any)}
-                      style={{ background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-solid)', borderRadius: 4, padding: '2px 4px', outline: 'none', cursor: 'pointer' }}
-                    >
-                      <option value="dynamic">Dynamic</option>
-                      <option value="static">Static</option>
-                      <option value="off">Off</option>
-                    </select>
+                    <Dropdown
+                      value={lightingMode || 'dynamic'}
+                      onChange={val => onLightingModeChange(val as any)}
+                      options={[
+                        { value: 'dynamic', label: 'Dynamic' },
+                        { value: 'static', label: 'Static' },
+                        { value: 'off', label: 'Off' }
+                      ]}
+                      style={{ minWidth: 100 }}
+                    />
                   </label>
                 )}
                 {onContainerOcclusionChange && (
                   <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
                     <span>Occlusion</span>
-                    <select
-                      value={containerOcclusion}
-                      onChange={e => onContainerOcclusionChange(e.target.value as any)}
-                      style={{ background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-solid)', borderRadius: 4, padding: '2px 4px', outline: 'none', cursor: 'pointer' }}
-                    >
-                      <option value="off">Translucent</option>
-                      <option value="off_on_hover">Opaque (Off on hover)</option>
-                    </select>
+                    <Dropdown
+                      value={containerOcclusion || 'off'}
+                      onChange={val => onContainerOcclusionChange(val as any)}
+                      options={[
+                        { value: 'off', label: 'Translucent' },
+                        { value: 'off_on_hover', label: 'Opaque (Off on hover)' }
+                      ]}
+                      style={{ minWidth: 160 }}
+                    />
                   </label>
                 )}
                 <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>

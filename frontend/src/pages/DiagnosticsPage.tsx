@@ -7,6 +7,7 @@ import {
 import { buildSceneLayout, type NodeLayout } from '../lib/layout';
 import { SelectionProvider } from '../components/SelectionContext';
 import { HierarchyPanel } from '../components/HierarchyPanel';
+import { Dropdown } from '../components/Dropdown';
 
 export function DiagnosticsPage() {
   const { selectedStation, hierarchy, connections, spec } = useStation();
@@ -155,40 +156,28 @@ export function DiagnosticsPage() {
         <History size={20} style={{ color: 'var(--accent-blue)' }} />
         <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Simulation History</h2>
 
-        <select
+        <Dropdown
           value={selectedScenarioFilter}
-          onChange={e => {
-            setSelectedScenarioFilter(e.target.value);
+          onChange={val => {
+            setSelectedScenarioFilter(val);
             setSelectedRunId(''); // Clear run when scenario changes
           }}
-          style={{
-            background: 'var(--bg-input)', color: 'var(--text-primary)', border: '1px solid var(--border-color)',
-            padding: '6px 12px', borderRadius: 6, fontSize: 13, outline: 'none', minWidth: 200
-          }}
-        >
-          <option value="">-- Select a Scenario --</option>
-          {uniqueScenarios.map(scenario => (
-            <option key={scenario} value={scenario}>{scenario}</option>
-          ))}
-        </select>
+          options={uniqueScenarios.map(scenario => ({ value: scenario, label: scenario }))}
+          placeholder="-- Select a Scenario --"
+          style={{ minWidth: 200 }}
+        />
 
-        <select
+        <Dropdown
           value={selectedRunId}
-          onChange={e => setSelectedRunId(e.target.value)}
+          onChange={val => setSelectedRunId(val)}
           disabled={!selectedScenarioFilter}
-          style={{
-            background: 'var(--bg-input)', color: 'var(--text-primary)', border: '1px solid var(--border-color)',
-            padding: '6px 12px', borderRadius: 6, fontSize: 13, outline: 'none', minWidth: 250,
-            opacity: selectedScenarioFilter ? 1 : 0.5
-          }}
-        >
-          <option value="">-- Select a Simulation Run --</option>
-          {filteredRuns.map(r => (
-            <option key={r.run_id} value={r.run_id}>
-              {new Date(r.start_time * 1000).toLocaleString()} | {r.run_id.substring(0, 8)} | {r.status}
-            </option>
-          ))}
-        </select>
+          options={filteredRuns.map(r => ({
+            value: r.run_id,
+            label: `${new Date(r.start_time * 1000).toLocaleString()} | ${r.run_id.substring(0, 8)} | ${r.status}`
+          }))}
+          placeholder="-- Select a Simulation Run --"
+          style={{ minWidth: 250 }}
+        />
 
         {runMeta && (
           <div style={{ display: 'flex', gap: 16, fontSize: 13, color: 'var(--text-secondary)' }}>
