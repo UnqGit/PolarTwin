@@ -10,34 +10,6 @@ import { SimulationMonitor } from '../components/SimulationMonitor';
 import { Play, Pause, RefreshCw, StepForward, Code, List, Activity, Library, ChevronUp, ChevronDown, MousePointer2, LayoutDashboard, Trash2, FileText, FilePlus, PanelLeft, PanelRight, PanelBottom, Edit2 } from 'lucide-react';
 import { formatTime } from '../utils';
 import { Dropdown } from '../components/Dropdown';
-const STYLE_INJECTION = `
-  .glass-btn-sm {
-    transition: all 0.2s ease;
-  }
-  .glass-btn-sm:hover {
-    background: var(--accent-blue) !important;
-    color: #fff !important;
-    border-color: var(--accent-blue) !important;
-    box-shadow: 0 0 10px rgba(0, 230, 118, 0.3);
-  }
-  .topbar-select {
-    transition: border-color 0.2s;
-  }
-  .topbar-select:hover {
-    border-color: var(--accent-blue) !important;
-  }
-  .page-container::-webkit-scrollbar {
-    display: none;
-  }
-  .page-container {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-  .modal-btn:focus {
-    outline: 2px solid var(--accent-blue);
-    outline-offset: 2px;
-  }
-`;
 
 export function ScenariosPage() {
   const {
@@ -53,6 +25,7 @@ export function ScenariosPage() {
   } = useStation();
 
   const [savedScenarioSource, setSavedScenarioSource] = useState<string>('');
+  const [sourceVersion, setSourceVersion] = useState<number>(0);
 
   // Scenarios local state
   const [scenarios, setScenarios] = useState<any[]>([]);
@@ -129,17 +102,20 @@ export function ScenariosPage() {
         const src = res.source.replace(/\r\n/g, '\n');
         setScenarioSource(src);
         setSavedScenarioSource(src);
+        setSourceVersion(v => v + 1);
       }).catch(console.error);
     } else if (editingType === 'event' && selectedEventDefId) {
       api.getEventDefinitionSource(selectedEventDefId).then(res => {
         const src = res.source.replace(/\r\n/g, '\n');
         setScenarioSource(src);
         setSavedScenarioSource(src);
+        setSourceVersion(v => v + 1);
       }).catch(console.error);
       // keep scenario running
     } else {
       setScenarioSource('');
       setSavedScenarioSource('');
+      setSourceVersion(v => v + 1);
       // keep scenario running
     }
   }, [selectedScenarioId, selectedEventDefId, editingType, selectedStation]);
@@ -371,6 +347,7 @@ export function ScenariosPage() {
       lines.splice(idx, endIdx - idx + 1, ...newSourceSnippet.split('\n'));
       const newSource = lines.join('\n');
       setScenarioSource(newSource);
+      setSourceVersion(v => v + 1);
       // Re-parse and update selectedEvent so the inspector refreshes
       api.parseScenarioRaw(newSource)
         .then(events => {
@@ -397,6 +374,7 @@ export function ScenariosPage() {
       }
       lines[idx] = line;
       setScenarioSource(lines.join('\n'));
+      setSourceVersion(v => v + 1);
     }
   };
 
@@ -417,6 +395,7 @@ export function ScenariosPage() {
       }
       lines.splice(idx, endIdx - idx + 1);
       setScenarioSource(lines.join('\n'));
+      setSourceVersion(v => v + 1);
       if (selectedEvent === event) setSelectedEvent(null);
     }
   };
@@ -549,7 +528,33 @@ export function ScenariosPage() {
 
   return (
     <div className="page-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: 'var(--bg-main)', color: 'var(--text-primary)', overflow: 'hidden' }}>
-      <style>{STYLE_INJECTION}</style>
+      <style>{
+        `.glass-btn-sm {
+          transition: all 0.2s ease;
+        }
+        .glass-btn-sm:hover {
+          background: var(--accent-blue) !important;
+          color: #fff !important;
+          border-color: var(--accent-blue) !important;
+          box-shadow: 0 0 10px rgba(0, 230, 118, 0.3);
+        }
+        .topbar-select {
+          transition: border-color 0.2s;
+        }
+        .topbar-select:hover {
+          border-color: var(--accent-blue) !important;
+        }
+        .page-container::-webkit-scrollbar {
+          display: none;
+        }
+        .page-container {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+        .modal-btn:focus {
+          outline: 2px solid var(--accent-blue);
+          outline-offset: 2px;
+      }`}</style>
 
       {/* Top Bar */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px', backgroundColor: 'var(--bg-panel-secondary)', borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
@@ -818,6 +823,7 @@ export function ScenariosPage() {
                     onChange={setScenarioSource}
                     selectedLine={selectedEvent?.source_location ? selectedEvent.source_location - 1 : undefined}
                     errorLine={errorLine}
+                    sourceVersion={sourceVersion}
                   />
                 </div>
               )}
@@ -998,7 +1004,7 @@ export function ScenariosPage() {
       {/* New File Modal */}
       {newFileModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <form 
+          <form
             onKeyDown={(e) => {
               if (e.key === 'Escape') setNewFileModal(null);
             }}
@@ -1034,10 +1040,10 @@ export function ScenariosPage() {
               style={{ width: '100%', padding: '8px', marginTop: '12px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: '4px', boxSizing: 'border-box' }}
             />
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '20px' }}>
-              <button 
+              <button
                 type="button"
                 className="modal-btn"
-                onClick={() => setNewFileModal(null)} 
+                onClick={() => setNewFileModal(null)}
                 style={{ padding: '6px 12px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-primary)' }}
               >
                 Cancel

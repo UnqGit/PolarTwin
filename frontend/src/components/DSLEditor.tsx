@@ -6,9 +6,10 @@ interface DSLEditorProps {
   onChange: (val: string) => void;
   selectedLine?: number; // 0-indexed
   errorLine?: number;    // 0-indexed
+  sourceVersion?: number; // optional, when changed, forces an editor update
 }
 
-export function DSLEditor({ value, onChange, selectedLine, errorLine }: DSLEditorProps) {
+export function DSLEditor({ value, onChange, selectedLine, errorLine, sourceVersion }: DSLEditorProps) {
   const monaco = useMonaco();
   const editorRef = useRef<any>(null);
   const [currentTheme, setCurrentTheme] = React.useState('twin-dark');
@@ -92,6 +93,15 @@ export function DSLEditor({ value, onChange, selectedLine, errorLine }: DSLEdito
   }, [selectedLine, errorLine, monaco]);
 
 
+  // Sync external changes using sourceVersion
+  useEffect(() => {
+    if (editorRef.current) {
+      if (editorRef.current.getValue() !== value) {
+        editorRef.current.setValue(value);
+      }
+    }
+  }, [sourceVersion]);
+
   return (
     <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
       <style>{`
@@ -102,8 +112,10 @@ export function DSLEditor({ value, onChange, selectedLine, errorLine }: DSLEdito
         height="100%"
         language="twin-dsl"
         theme={currentTheme}
-        value={value}
-        onChange={(val) => onChange(val || '')}
+        defaultValue={value}
+        onChange={(val) => {
+          onChange(val || '');
+        }}
         onMount={handleEditorDidMount}
         beforeMount={handleEditorWillMount}
         options={{
