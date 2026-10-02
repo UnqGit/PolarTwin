@@ -4,4 +4,12 @@ PROJECT_CONTEXT.md
 specifications.md
 IMPLEMENTATION_PLAN.md
 __pycache__/
+*/__pycache__/
 *.pyc
+.env
+.env.local
+.env.*.local
+*.egg-info/
+.pytest-cache/
+.venv/
+venv/

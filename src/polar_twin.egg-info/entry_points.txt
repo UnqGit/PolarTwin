@@ -1,2 +1,0 @@
-[console_scripts]
-twin-sim = twin_sim.cli:main
