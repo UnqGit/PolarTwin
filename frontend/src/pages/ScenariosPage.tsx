@@ -33,6 +33,10 @@ const STYLE_INJECTION = `
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+  .modal-btn:focus {
+    outline: 2px solid var(--accent-blue);
+    outline-offset: 2px;
+  }
 `;
 
 export function ScenariosPage() {
@@ -994,66 +998,59 @@ export function ScenariosPage() {
       {/* New File Modal */}
       {newFileModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ backgroundColor: 'var(--bg-main)', padding: '24px', borderRadius: '8px', width: '300px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', border: '1px solid var(--border-color)' }}>
+          <form 
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') setNewFileModal(null);
+            }}
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const name = newFileModal.name.trim();
+              if (!name) return;
+              if (newFileModal.type === 'scenario' && selectedStation) {
+                const res = await api.createScenario(selectedStation, name, '');
+                api.getScenarios(selectedStation).then(setScenarios);
+                setSelectedScenarioId(res.id);
+                setEditingType('scenario');
+                setSelectedEventDefId(null);
+              } else if (newFileModal.type === 'event' && selectedStation) {
+                const res = await api.createEventDefinition(selectedStation, name);
+                if (selectedStation) api.getEventDefinitions(selectedStation).then(setEventDefs);
+                setEditingType('event');
+                setSelectedEventDefId(res.id);
+                setSelectedScenarioId(null);
+              }
+              setBottomTab('source');
+              setBottomOpen(true);
+              setNewFileModal(null);
+            }}
+            style={{ backgroundColor: 'var(--bg-main)', padding: '24px', borderRadius: '8px', width: '300px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', border: '1px solid var(--border-color)' }}
+          >
             <h3 style={{ marginTop: 0, color: 'var(--text-primary)' }}>New {newFileModal.type === 'scenario' ? 'Scenario' : 'Event'}</h3>
             <input
               autoFocus
               type="text"
               value={newFileModal.name}
               onChange={e => setNewFileModal({ ...newFileModal, name: e.target.value })}
-              onKeyDown={async e => {
-                if (e.key === 'Enter') {
-                  const name = newFileModal.name.trim();
-                  if (!name) return;
-                  if (newFileModal.type === 'scenario' && selectedStation) {
-                    const res = await api.createScenario(selectedStation, name, '');
-                    api.getScenarios(selectedStation).then(setScenarios);
-                    setSelectedScenarioId(res.id);
-                    setEditingType('scenario');
-                    setSelectedEventDefId(null);
-                  } else if (newFileModal.type === 'event' && selectedStation) {
-                    const res = await api.createEventDefinition(selectedStation, name);
-                    if (selectedStation) api.getEventDefinitions(selectedStation).then(setEventDefs);
-                    setEditingType('event');
-                    setSelectedEventDefId(res.id);
-                    setSelectedScenarioId(null);
-                  }
-                  setBottomTab('source');
-                  setBottomOpen(true);
-                  setNewFileModal(null);
-                }
-              }}
               style={{ width: '100%', padding: '8px', marginTop: '12px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: '4px', boxSizing: 'border-box' }}
             />
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '20px' }}>
-              <button onClick={() => setNewFileModal(null)} style={{ padding: '6px 12px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-primary)' }}>Cancel</button>
+              <button 
+                type="button"
+                className="modal-btn"
+                onClick={() => setNewFileModal(null)} 
+                style={{ padding: '6px 12px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-primary)' }}
+              >
+                Cancel
+              </button>
               <button
-                onClick={async () => {
-                  const name = newFileModal.name.trim();
-                  if (!name) return;
-                  if (newFileModal.type === 'scenario' && selectedStation) {
-                    const res = await api.createScenario(selectedStation, name, '');
-                    api.getScenarios(selectedStation).then(setScenarios);
-                    setSelectedScenarioId(res.id);
-                    setEditingType('scenario');
-                    setSelectedEventDefId(null);
-                  } else if (newFileModal.type === 'event' && selectedStation) {
-                    const res = await api.createEventDefinition(selectedStation, name);
-                    if (selectedStation) api.getEventDefinitions(selectedStation).then(setEventDefs);
-                    setEditingType('event');
-                    setSelectedEventDefId(res.id);
-                    setSelectedScenarioId(null);
-                  }
-                  setBottomTab('source');
-                  setBottomOpen(true);
-                  setNewFileModal(null);
-                }}
+                type="submit"
+                className="modal-btn"
                 style={{ padding: '6px 12px', background: 'var(--accent-blue)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
               >
                 Create
               </button>
             </div>
-          </div>
+          </form>
         </div>
       )}
     </div>
