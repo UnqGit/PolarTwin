@@ -821,6 +821,7 @@ export function ScenariosPage() {
                   <DSLEditor
                     value={scenarioSource}
                     onChange={setScenarioSource}
+                    fileType={editingType}
                     selectedLine={selectedEvent?.source_location ? selectedEvent.source_location - 1 : undefined}
                     errorLine={errorLine}
                     sourceVersion={sourceVersion}
