@@ -170,6 +170,9 @@ class CreateScenarioRequest(BaseModel):
 class UpdateScenarioSourceRequest(BaseModel):
     source: str
 
+class RenameRequest(BaseModel):
+    name: str
+
 
 @app.get("/stations/{station_id}/scenarios")
 def get_station_scenarios(station_id: str):
@@ -236,6 +239,16 @@ def get_scenario_source(scenario_id: str):
 def update_scenario_source(scenario_id: str, payload: UpdateScenarioSourceRequest):
     try:
         return _scenario_manager.update_source(scenario_id, payload.source)
+    except FileNotFoundError as e:
+        raise HTTPException(404, str(e))
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+
+@app.put("/scenarios/{scenario_id}/rename")
+def rename_scenario(scenario_id: str, payload: RenameRequest):
+    try:
+        return _scenario_manager.rename_scenario(scenario_id, payload.name)
     except FileNotFoundError as e:
         raise HTTPException(404, str(e))
     except ValueError as e:
@@ -348,6 +361,15 @@ def delete_event_definition(event_id: str):
         _scenario_manager.delete_event(event_id)
     except FileNotFoundError as e:
         raise HTTPException(404, str(e))
+
+@app.put("/event-definitions/{event_id}/rename")
+def rename_event_definition(event_id: str, payload: RenameRequest):
+    try:
+        return _scenario_manager.rename_event(event_id, payload.name)
+    except FileNotFoundError as e:
+        raise HTTPException(404, str(e))
+    except ValueError as e:
+        raise HTTPException(400, str(e))
 
 
 # ---------------------------------------------------------------------------

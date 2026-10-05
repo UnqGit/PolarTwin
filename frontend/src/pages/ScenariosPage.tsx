@@ -43,6 +43,13 @@ export function ScenariosPage() {
   const [isEditingInitials, setIsEditingInitials] = useState<boolean>(false);
   const [valueOverrides, setValueOverrides] = useState<Record<string, Record<string, number>>>({});
   const [newFileModal, setNewFileModal] = useState<{ type: 'scenario' | 'event', name: string } | null>(null);
+  const [newFileError, setNewFileError] = useState<string | null>(null);
+  const [renameModal, setRenameModal] = useState<{ type: 'scenario' | 'event', id: string, name: string } | null>(null);
+  const [renameError, setRenameError] = useState<string | null>(null);
+  const [isManageMode, setIsManageMode] = useState<boolean>(false);
+  const [selectedManageScenarios, setSelectedManageScenarios] = useState<string[]>([]);
+  const [selectedManageEvents, setSelectedManageEvents] = useState<string[]>([]);
+  const [showBulkDeleteModal, setShowBulkDeleteModal] = useState<boolean>(false);
 
   // Simulation UI state
   const [telemetryEnabled, setTelemetryEnabled] = useState<boolean>(false);
@@ -400,19 +407,96 @@ export function ScenariosPage() {
     }
   };
 
+  const handleBulkDelete = async () => {
+    for (const id of selectedManageScenarios) {
+      await api.deleteScenario(id);
+      if (selectedScenarioId === id) setSelectedScenarioId(null);
+    }
+    for (const id of selectedManageEvents) {
+      await api.deleteEventDefinition(id);
+      if (selectedEventDefId === id) setSelectedEventDefId(null);
+    }
+    if (selectedStation) {
+      api.getScenarios(selectedStation).then(setScenarios);
+      api.getEventDefinitions(selectedStation).then(setEventDefs);
+    }
+    setIsManageMode(false);
+    setSelectedManageScenarios([]);
+    setSelectedManageEvents([]);
+    setShowBulkDeleteModal(false);
+  };
+
   const libraryTabContent = (
     <div style={{ padding: '8px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>
+        <div style={{ display: 'flex', gap: '4px' }}>
+          <button
+            onClick={() => {
+              setIsManageMode(!isManageMode);
+              setSelectedManageScenarios([]);
+              setSelectedManageEvents([]);
+            }}
+            style={{ background: 'transparent', border: '1px solid var(--border-color)', color: isManageMode ? 'var(--accent-blue)' : 'var(--text-secondary)', cursor: 'pointer', fontSize: '11px', padding: '4px 8px', borderRadius: '4px' }}
+          >
+            {isManageMode ? 'Cancel' : 'Manage'}
+          </button>
+          {isManageMode && (
+            <button
+              onClick={() => {
+                if (selectedManageScenarios.length === scenarios.length && selectedManageEvents.length === eventDefs.length) {
+                  setSelectedManageScenarios([]);
+                  setSelectedManageEvents([]);
+                } else {
+                  setSelectedManageScenarios(scenarios.map(s => s.id));
+                  setSelectedManageEvents(eventDefs.map(e => e.id));
+                }
+              }}
+              style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '11px', padding: '4px 8px', borderRadius: '4px' }}
+            >
+              {selectedManageScenarios.length === scenarios.length && selectedManageEvents.length === eventDefs.length ? 'Deselect All' : 'Select All'}
+            </button>
+          )}
+        </div>
+        {isManageMode && (selectedManageScenarios.length > 0 || selectedManageEvents.length > 0) && (
+          <button
+            onClick={() => setShowBulkDeleteModal(true)}
+            style={{ background: '#ef4444', border: 'none', color: 'white', cursor: 'pointer', fontSize: '11px', padding: '4px 8px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}
+          >
+            <Trash2 size={12} /> Delete Selected
+          </button>
+        )}
+      </div>
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', marginTop: '8px' }}>
         <h3 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-tertiary)', textTransform: 'uppercase', margin: 0, letterSpacing: '0.05em' }}>Scenarios</h3>
-        <button
-          onClick={() => {
-            setNewFileModal({ type: 'scenario', name: 'New Scenario' });
-          }}
-          style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '2px' }}
-          title="New File..."
-        >
-          <FilePlus size={14} />
-        </button>
+        <div style={{ display: 'flex', gap: '4px' }}>
+          {isManageMode && (
+            <button
+              onClick={() => {
+                if (selectedManageScenarios.length === scenarios.length) {
+                  setSelectedManageScenarios([]);
+                } else {
+                  setSelectedManageScenarios(scenarios.map(s => s.id));
+                }
+              }}
+              style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '10px' }}
+            >
+              Select All
+            </button>
+          )}
+          {!isManageMode && (
+            <button
+              onClick={() => {
+                setNewFileModal({ type: 'scenario', name: 'New Scenario' });
+                setNewFileError(null);
+              }}
+              style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '2px' }}
+              title="New File..."
+            >
+              <FilePlus size={14} />
+            </button>
+          )}
+        </div>
       </div>
       {scenarios.map(s => (
         <div
@@ -420,103 +504,182 @@ export function ScenariosPage() {
           style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center', userSelect: 'none',
             fontSize: '13px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', marginBottom: '2px',
-            backgroundColor: selectedScenarioId === s.id ? 'var(--bg-input)' : 'transparent',
-            color: selectedScenarioId === s.id ? 'var(--text-primary)' : 'var(--text-secondary)',
+            backgroundColor: selectedScenarioId === s.id && !isManageMode ? 'var(--bg-input)' : 'transparent',
+            color: selectedScenarioId === s.id && !isManageMode ? 'var(--text-primary)' : 'var(--text-secondary)',
           }}
           onClick={() => {
-            if (selectedScenarioId === s.id) {
-              setSelectedScenarioId(null);
-              setScenarioEvents([]);
-              setRunId(null);
-              setSimStatus('Ready');
-              if (editingType === 'scenario') setScenarioSource('');
+            if (isManageMode) {
+              setSelectedManageScenarios(prev => 
+                prev.includes(s.id) ? prev.filter(id => id !== s.id) : [...prev, s.id]
+              );
             } else {
-              setEditingType('scenario');
-              setSelectedScenarioId(s.id);
-              setSelectedEventDefId(null);
-              setBottomTab('source');
-              setBottomOpen(true);
+              if (selectedScenarioId === s.id) {
+                setSelectedScenarioId(null);
+                setScenarioEvents([]);
+                setRunId(null);
+                setSimStatus('Ready');
+                if (editingType === 'scenario') setScenarioSource('');
+              } else {
+                setEditingType('scenario');
+                setSelectedScenarioId(s.id);
+                setSelectedEventDefId(null);
+                setBottomTab('source');
+                setBottomOpen(true);
+              }
             }
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexGrow: 1 }}>
-            <FileText size={14} style={{ color: 'var(--accent-blue)' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexGrow: 1, minWidth: 0 }}>
+            {isManageMode && (
+              <input 
+                type="checkbox" 
+                checked={selectedManageScenarios.includes(s.id)}
+                readOnly
+                style={{ cursor: 'pointer' }}
+              />
+            )}
+            <FileText size={14} style={{ color: 'var(--accent-blue)', flexShrink: 0 }} />
             <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.name}.scene</span>
           </div>
-          <button
-            onClick={async (e) => {
-              e.stopPropagation();
-              if (confirm('Delete scenario?')) {
-                await api.deleteScenario(s.id);
-                if (selectedScenarioId === s.id) setSelectedScenarioId(null);
-                if (selectedStation) {
-                  api.getScenarios(selectedStation).then(setScenarios);
-                }
-              }
-            }}
-            style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-            title="Delete Scenario"
-          >
-            <Trash2 size={12} />
-          </button>
+          {!isManageMode && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setRenameModal({ type: 'scenario', id: s.id, name: s.name });
+                  setRenameError(null);
+                }}
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                title="Rename Scenario"
+              >
+                <Edit2 size={12} />
+              </button>
+              <button
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  if (confirm('Delete scenario?')) {
+                    await api.deleteScenario(s.id);
+                    if (selectedScenarioId === s.id) setSelectedScenarioId(null);
+                    if (selectedStation) {
+                      api.getScenarios(selectedStation).then(setScenarios);
+                    }
+                  }
+                }}
+                style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                title="Delete Scenario"
+              >
+                <Trash2 size={12} />
+              </button>
+            </div>
+          )}
         </div>
       ))}
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px', marginTop: '24px' }}>
         <h3 style={{ fontSize: '11px', fontWeight: 'bold', color: 'var(--text-tertiary)', textTransform: 'uppercase', margin: 0, letterSpacing: '0.05em' }}>Event Definitions</h3>
-        <button
-          onClick={() => {
-            setNewFileModal({ type: 'event', name: 'New Event' });
-          }}
-          style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '2px' }}
-          title="New File..."
-        >
-          <FilePlus size={14} />
-        </button>
+        <div style={{ display: 'flex', gap: '4px' }}>
+          {isManageMode && (
+            <button
+              onClick={() => {
+                if (selectedManageEvents.length === eventDefs.length) {
+                  setSelectedManageEvents([]);
+                } else {
+                  setSelectedManageEvents(eventDefs.map(e => e.id));
+                }
+              }}
+              style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: '10px' }}
+            >
+              Select All
+            </button>
+          )}
+          {!isManageMode && (
+            <button
+              onClick={() => {
+                setNewFileModal({ type: 'event', name: 'New Event' });
+                setNewFileError(null);
+              }}
+              style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '2px' }}
+              title="New File..."
+            >
+              <FilePlus size={14} />
+            </button>
+          )}
+        </div>
       </div>
       {eventDefs.map((e, i) => (
         <div
           key={i}
-          draggable
+          draggable={!isManageMode}
           onDragStart={(evt) => {
-            evt.dataTransfer.setData('text/plain', e.name);
-            evt.dataTransfer.setData('application/x-event-def', 'true');
+            if (!isManageMode) {
+              evt.dataTransfer.setData('text/plain', e.name);
+              evt.dataTransfer.setData('application/x-event-def', 'true');
+            }
           }}
           onClick={() => {
-            if (selectedEventDefId === e.id) {
-              setSelectedEventDefId(null);
+            if (isManageMode) {
+              setSelectedManageEvents(prev => 
+                prev.includes(e.id) ? prev.filter(id => id !== e.id) : [...prev, e.id]
+              );
             } else {
-              setEditingType('event');
-              setSelectedEventDefId(e.id);
-              setBottomTab('source');
-              setBottomOpen(true);
+              if (selectedEventDefId === e.id) {
+                setSelectedEventDefId(null);
+              } else {
+                setEditingType('event');
+                setSelectedEventDefId(e.id);
+                setBottomTab('source');
+                setBottomOpen(true);
+              }
             }
           }}
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            fontSize: '13px', padding: '4px 8px', borderRadius: '4px', cursor: 'grab', marginBottom: '2px',
-            backgroundColor: selectedEventDefId === e.id ? 'var(--bg-input)' : 'transparent',
-            color: selectedEventDefId === e.id ? 'var(--text-primary)' : 'var(--text-secondary)',
+            fontSize: '13px', padding: '4px 8px', borderRadius: '4px', cursor: isManageMode ? 'pointer' : 'grab', marginBottom: '2px',
+            backgroundColor: selectedEventDefId === e.id && !isManageMode ? 'var(--bg-input)' : 'transparent',
+            color: selectedEventDefId === e.id && !isManageMode ? 'var(--text-primary)' : 'var(--text-secondary)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexGrow: 1 }}>
-            <FileText size={14} style={{ color: 'var(--accent-cyan)' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexGrow: 1, minWidth: 0 }}>
+            {isManageMode && (
+              <input 
+                type="checkbox" 
+                checked={selectedManageEvents.includes(e.id)}
+                readOnly
+                style={{ cursor: 'pointer' }}
+              />
+            )}
+            <FileText size={14} style={{ color: 'var(--accent-cyan)', flexShrink: 0 }} />
             <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.name}.event</span>
           </div>
-          <button
-            onClick={async (evt) => {
-              evt.stopPropagation();
-              if (confirm('Delete event definition?')) {
-                await api.deleteEventDefinition(e.id);
-                if (selectedEventDefId === e.id) setSelectedEventDefId(null);
-                if (selectedStation) api.getEventDefinitions(selectedStation).then(setEventDefs);
-              }
-            }}
-            style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-            title="Delete Event Definition"
-          >
-            <Trash2 size={12} />
-          </button>
+          {!isManageMode && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <button
+                onClick={(evt) => {
+                  evt.stopPropagation();
+                  setRenameModal({ type: 'event', id: e.id, name: e.name });
+                  setRenameError(null);
+                }}
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                title="Rename Event Definition"
+              >
+                <Edit2 size={12} />
+              </button>
+              <button
+                onClick={async (evt) => {
+                  evt.stopPropagation();
+                  if (confirm('Delete event definition?')) {
+                    await api.deleteEventDefinition(e.id);
+                    if (selectedEventDefId === e.id) setSelectedEventDefId(null);
+                    if (selectedStation) api.getEventDefinitions(selectedStation).then(setEventDefs);
+                  }
+                }}
+                style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                title="Delete Event Definition"
+              >
+                <Trash2 size={12} />
+              </button>
+            </div>
+          )}
         </div>
       ))}
     </div>
@@ -1013,26 +1176,32 @@ export function ScenariosPage() {
               e.preventDefault();
               const name = newFileModal.name.trim();
               if (!name) return;
-              if (newFileModal.type === 'scenario' && selectedStation) {
-                const res = await api.createScenario(selectedStation, name, '');
-                api.getScenarios(selectedStation).then(setScenarios);
-                setSelectedScenarioId(res.id);
-                setEditingType('scenario');
-                setSelectedEventDefId(null);
-              } else if (newFileModal.type === 'event' && selectedStation) {
-                const res = await api.createEventDefinition(selectedStation, name);
-                if (selectedStation) api.getEventDefinitions(selectedStation).then(setEventDefs);
-                setEditingType('event');
-                setSelectedEventDefId(res.id);
-                setSelectedScenarioId(null);
+              try {
+                if (newFileModal.type === 'scenario' && selectedStation) {
+                  const res = await api.createScenario(selectedStation, name, '');
+                  api.getScenarios(selectedStation).then(setScenarios);
+                  setSelectedScenarioId(res.id);
+                  setEditingType('scenario');
+                  setSelectedEventDefId(null);
+                } else if (newFileModal.type === 'event' && selectedStation) {
+                  const res = await api.createEventDefinition(selectedStation, name);
+                  if (selectedStation) api.getEventDefinitions(selectedStation).then(setEventDefs);
+                  setEditingType('event');
+                  setSelectedEventDefId(res.id);
+                  setSelectedScenarioId(null);
+                }
+                setBottomTab('source');
+                setBottomOpen(true);
+                setNewFileModal(null);
+                setNewFileError(null);
+              } catch (err: any) {
+                setNewFileError(err.message || 'Failed to create file');
               }
-              setBottomTab('source');
-              setBottomOpen(true);
-              setNewFileModal(null);
             }}
             style={{ backgroundColor: 'var(--bg-main)', padding: '24px', borderRadius: '8px', width: '300px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', border: '1px solid var(--border-color)' }}
           >
             <h3 style={{ marginTop: 0, color: 'var(--text-primary)' }}>New {newFileModal.type === 'scenario' ? 'Scenario' : 'Event'}</h3>
+            {newFileError && <div style={{ color: '#ef4444', fontSize: '12px', marginBottom: '8px' }}>{newFileError}</div>}
             <input
               autoFocus
               type="text"
@@ -1058,6 +1227,92 @@ export function ScenariosPage() {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Rename File Modal */}
+      {renameModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <form
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') setRenameModal(null);
+            }}
+            onSubmit={async (e) => {
+              e.preventDefault();
+              const name = renameModal.name.trim();
+              if (!name) return;
+              try {
+                if (renameModal.type === 'scenario') {
+                  await api.renameScenario(renameModal.id, name);
+                  if (selectedStation) api.getScenarios(selectedStation).then(setScenarios);
+                } else if (renameModal.type === 'event') {
+                  await api.renameEventDefinition(renameModal.id, name);
+                  if (selectedStation) api.getEventDefinitions(selectedStation).then(setEventDefs);
+                }
+                setRenameModal(null);
+                setRenameError(null);
+              } catch (err: any) {
+                setRenameError(err.message || 'Failed to rename file');
+              }
+            }}
+            style={{ backgroundColor: 'var(--bg-main)', padding: '24px', borderRadius: '8px', width: '300px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', border: '1px solid var(--border-color)' }}
+          >
+            <h3 style={{ marginTop: 0, color: 'var(--text-primary)' }}>Rename {renameModal.type === 'scenario' ? 'Scenario' : 'Event'}</h3>
+            {renameError && <div style={{ color: '#ef4444', fontSize: '12px', marginBottom: '8px' }}>{renameError}</div>}
+            <input
+              autoFocus
+              type="text"
+              value={renameModal.name}
+              onChange={e => setRenameModal({ ...renameModal, name: e.target.value })}
+              style={{ width: '100%', padding: '8px', marginTop: '12px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: '4px', boxSizing: 'border-box' }}
+            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '20px' }}>
+              <button
+                type="button"
+                className="modal-btn"
+                onClick={() => setRenameModal(null)}
+                style={{ padding: '6px 12px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-primary)' }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="modal-btn"
+                style={{ padding: '6px 12px', background: 'var(--accent-blue)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                Rename
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Bulk Delete Modal */}
+      {showBulkDeleteModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ backgroundColor: 'var(--bg-main)', padding: '24px', borderRadius: '8px', width: '320px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', border: '1px solid var(--border-color)' }}>
+            <h3 style={{ marginTop: 0, color: 'var(--text-primary)' }}>Confirm Bulk Deletion</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.5' }}>
+              Are you sure you want to permanently delete {selectedManageScenarios.length} scenario(s) and {selectedManageEvents.length} event definition(s)?
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '20px' }}>
+              <button
+                type="button"
+                className="modal-btn"
+                onClick={() => setShowBulkDeleteModal(false)}
+                style={{ padding: '6px 12px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-primary)' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                className="modal-btn"
+                style={{ padding: '6px 12px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                Delete Selected
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

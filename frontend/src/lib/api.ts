@@ -105,7 +105,10 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, source })
     });
-    if (!res.ok) throw new Error("Failed to create scenario");
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Failed to create scenario");
+    }
     return res.json();
   },
   getScenario: async (scenarioId: string) => {
@@ -135,6 +138,18 @@ export const api = {
   deleteScenario: async (scenarioId: string) => {
     const res = await fetch(`${API_BASE}/scenarios/${scenarioId}`, { method: 'DELETE' });
     if (!res.ok) throw new Error("Failed to delete scenario");
+  },
+  renameScenario: async (scenarioId: string, name: string) => {
+    const res = await fetch(`${API_BASE}/scenarios/${scenarioId}/rename`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Failed to rename scenario");
+    }
+    return res.json();
   },
   validateScenario: async (scenarioId: string) => {
     const res = await fetch(`${API_BASE}/scenarios/${scenarioId}/validate`, { method: 'POST' });
@@ -170,7 +185,10 @@ export const api = {
   },
   createEventDefinition: async (stationId: string, name: string) => {
     const res = await fetch(`${API_BASE}/stations/${stationId}/event-definitions/${name}`, { method: 'POST' });
-    if (!res.ok) throw new Error("Failed to create event definition");
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Failed to create event definition");
+    }
     return res.json();
   },
   getEventDefinitionSource: async (eventId: string) => {
@@ -190,6 +208,18 @@ export const api = {
   deleteEventDefinition: async (eventId: string) => {
     const res = await fetch(`${API_BASE}/event-definitions/${eventId}`, { method: 'DELETE' });
     if (!res.ok) throw new Error("Failed to delete event definition");
+  },
+  renameEventDefinition: async (eventId: string, name: string) => {
+    const res = await fetch(`${API_BASE}/event-definitions/${eventId}/rename`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || "Failed to rename event definition");
+    }
+    return res.json();
   },
 
   // Simulations

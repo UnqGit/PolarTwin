@@ -147,6 +147,37 @@ class ScenarioManager:
         self.db.conn.execute("DELETE FROM scenario_files WHERE id = ?", (scenario_id,))
         self.db.conn.commit()
 
+    def rename_scenario(self, scenario_id: str, new_name: str) -> dict[str, Any]:
+        cur = self.db.conn.execute("SELECT station_id FROM scenario_files WHERE id = ?", (scenario_id,))
+        row = cur.fetchone()
+        if not row:
+            raise FileNotFoundError(f"Scenario '{scenario_id}' not found")
+            
+        station_id = row["station_id"]
+        new_name = new_name.strip().replace("/", "").replace("\\", "").replace(":", "")
+        if not new_name:
+            raise ValueError("Scenario name cannot be empty")
+            
+        new_id = f"{station_id}:{new_name}"
+        if new_id == scenario_id:
+            return self.get(scenario_id)
+            
+        cur = self.db.conn.execute("SELECT id FROM scenario_files WHERE id = ?", (new_id,))
+        if cur.fetchone():
+            raise ValueError(f"Scenario '{new_name}' already exists for station '{station_id}'")
+            
+        now = time.time()
+        self.db.conn.execute(
+            "UPDATE scenario_files SET id = ?, name = ?, updated_at = ? WHERE id = ?",
+            (new_id, new_name, now, scenario_id),
+        )
+        self.db.conn.execute(
+            "UPDATE simulation_runs SET scenario_id = ? WHERE scenario_id = ?",
+            (new_id, scenario_id),
+        )
+        self.db.conn.commit()
+        return self.get(new_id)
+
     def get_parsed_events(self, scenario_id: str) -> list[SceneEvent]:
         source = self.get_source(scenario_id)
         events = parse_scene_string(source)
@@ -280,3 +311,30 @@ class ScenarioManager:
 
         self.db.conn.execute("DELETE FROM event_files WHERE id = ?", (event_id,))
         self.db.conn.commit()
+
+    def rename_event(self, event_id: str, new_name: str) -> dict[str, Any]:
+        cur = self.db.conn.execute("SELECT station_id FROM event_files WHERE id = ?", (event_id,))
+        row = cur.fetchone()
+        if not row:
+            raise FileNotFoundError(f"Event definition '{event_id}' not found")
+            
+        station_id = row["station_id"]
+        new_name = new_name.strip().replace("/", "").replace("\\", "").replace(":", "")
+        if not new_name:
+            raise ValueError("Event name cannot be empty")
+            
+        new_id = f"{station_id}:{new_name}"
+        if new_id == event_id:
+            return self.get_event(event_id)
+            
+        cur = self.db.conn.execute("SELECT id FROM event_files WHERE id = ?", (new_id,))
+        if cur.fetchone():
+            raise ValueError(f"Event '{new_name}' already exists for station '{station_id}'")
+            
+        now = time.time()
+        self.db.conn.execute(
+            "UPDATE event_files SET id = ?, name = ?, updated_at = ? WHERE id = ?",
+            (new_id, new_name, now, event_id),
+        )
+        self.db.conn.commit()
+        return self.get_event(new_id)
