@@ -249,10 +249,9 @@ def update_scenario_source(scenario_id: str, payload: UpdateScenarioSourceReques
 def rename_scenario(scenario_id: str, payload: RenameRequest):
     try:
         return _scenario_manager.rename_scenario(scenario_id, payload.name)
-    except FileNotFoundError as e:
-        raise HTTPException(404, str(e))
-    except ValueError as e:
-        raise HTTPException(400, str(e))
+    except (FileNotFoundError, ValueError) as e:
+        status_code = 404 if isinstance(e, FileNotFoundError) else 400
+        raise HTTPException(status_code, str(e))
 
 
 @app.get("/scenarios/{scenario_id}/events")
@@ -344,7 +343,10 @@ class EventUpdatePayload(BaseModel):
 
 @app.post("/stations/{station_id}/event-definitions/{name}")
 def create_event_definition(station_id: str, name: str):
-    return _scenario_manager.create_event(station_id, name)
+    try:
+        return _scenario_manager.create_event(station_id, name)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
 
 
 @app.put("/event-definitions/{event_id}")
@@ -366,10 +368,9 @@ def delete_event_definition(event_id: str):
 def rename_event_definition(event_id: str, payload: RenameRequest):
     try:
         return _scenario_manager.rename_event(event_id, payload.name)
-    except FileNotFoundError as e:
-        raise HTTPException(404, str(e))
-    except ValueError as e:
-        raise HTTPException(400, str(e))
+    except (FileNotFoundError, ValueError) as e:
+        status_code = 404 if isinstance(e, FileNotFoundError) else 400
+        raise HTTPException(status_code, str(e))
 
 
 # ---------------------------------------------------------------------------

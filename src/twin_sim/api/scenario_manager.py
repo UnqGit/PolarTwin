@@ -26,6 +26,13 @@ class ScenarioManager:
     # ID Helpers
     # ------------------------------------------------------------------
 
+    def _validate_name(self, name: str) -> None:
+        import re
+        if not re.match(r"^[A-Za-z][A-Za-z0-9_]*$", name):
+            raise ValueError(
+                f"Invalid name '{name}'. Names must start with a letter and contain only letters, numbers, and underscores."
+            )
+
     def _parse_id(self, scenario_id: str) -> tuple[str, str]:
         """Split 'station:name' into (station_id, name)."""
         if ":" not in scenario_id:
@@ -56,9 +63,10 @@ class ScenarioManager:
         return sorted(results, key=lambda x: x["name"])
 
     def create(self, station_id: str, name: str, source: str = "") -> dict[str, Any]:
-        name = name.strip().replace("/", "").replace("\\", "").replace(":", "")
+        name = name.strip()
         if not name:
             raise ValueError("Scenario name cannot be empty")
+        self._validate_name(name)
 
         scenario_id = f"{station_id}:{name}"
         cur = self.db.conn.execute(
@@ -154,9 +162,12 @@ class ScenarioManager:
             raise FileNotFoundError(f"Scenario '{scenario_id}' not found")
             
         station_id = row["station_id"]
-        new_name = new_name.strip().replace("/", "").replace("\\", "").replace(":", "")
+        old_name = scenario_id.split(":", 1)[1]
+        
+        new_name = new_name.strip()
         if not new_name:
             raise ValueError("Scenario name cannot be empty")
+        self._validate_name(new_name)
             
         new_id = f"{station_id}:{new_name}"
         if new_id == scenario_id:
@@ -171,6 +182,20 @@ class ScenarioManager:
             "UPDATE scenario_files SET id = ?, name = ?, updated_at = ? WHERE id = ?",
             (new_id, new_name, now, scenario_id),
         )
+        
+        cur = self.db.conn.execute("SELECT id FROM simulation_runs WHERE scenario_id = ?", (scenario_id,))
+        run_rows = cur.fetchall()
+        for run_row in run_rows:
+            old_run_id = run_row["id"]
+            prefix = f"{station_id}{old_name}"
+            if old_run_id.startswith(prefix):
+                suffix = old_run_id[len(prefix):]
+                new_run_id = f"{station_id}{new_name}{suffix}"
+                
+                self.db.conn.execute("UPDATE telemetry_records SET run_id = ? WHERE run_id = ?", (new_run_id, old_run_id))
+                self.db.conn.execute("UPDATE simulation_logs SET run_id = ? WHERE run_id = ?", (new_run_id, old_run_id))
+                self.db.conn.execute("UPDATE simulation_runs SET id = ?, scenario_id = ? WHERE id = ?", (new_run_id, new_id, old_run_id))
+                
         self.db.conn.execute(
             "UPDATE simulation_runs SET scenario_id = ? WHERE scenario_id = ?",
             (new_id, scenario_id),
@@ -266,9 +291,10 @@ class ScenarioManager:
     def create_event(
         self, station_id: str, name: str, source: str = ""
     ) -> dict[str, Any]:
-        name = name.strip().replace("/", "").replace("\\", "").replace(":", "")
+        name = name.strip()
         if not name:
             raise ValueError("Event name cannot be empty")
+        self._validate_name(name)
 
         event_id = f"{station_id}:{name}"
         cur = self.db.conn.execute(
@@ -319,9 +345,10 @@ class ScenarioManager:
             raise FileNotFoundError(f"Event definition '{event_id}' not found")
             
         station_id = row["station_id"]
-        new_name = new_name.strip().replace("/", "").replace("\\", "").replace(":", "")
+        new_name = new_name.strip()
         if not new_name:
             raise ValueError("Event name cannot be empty")
+        self._validate_name(new_name)
             
         new_id = f"{station_id}:{new_name}"
         if new_id == event_id:

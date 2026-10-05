@@ -50,6 +50,7 @@ export function ScenariosPage() {
   const [selectedManageScenarios, setSelectedManageScenarios] = useState<string[]>([]);
   const [selectedManageEvents, setSelectedManageEvents] = useState<string[]>([]);
   const [showBulkDeleteModal, setShowBulkDeleteModal] = useState<boolean>(false);
+  const [deleteModal, setDeleteModal] = useState<{ type: 'scenario' | 'event', id: string, name: string } | null>(null);
 
   // Simulation UI state
   const [telemetryEnabled, setTelemetryEnabled] = useState<boolean>(false);
@@ -487,7 +488,7 @@ export function ScenariosPage() {
           {!isManageMode && (
             <button
               onClick={() => {
-                setNewFileModal({ type: 'scenario', name: 'New Scenario' });
+                setNewFileModal({ type: 'scenario', name: 'new_scenario' });
                 setNewFileError(null);
               }}
               style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '2px' }}
@@ -555,15 +556,9 @@ export function ScenariosPage() {
                 <Edit2 size={12} />
               </button>
               <button
-                onClick={async (e) => {
+                onClick={(e) => {
                   e.stopPropagation();
-                  if (confirm('Delete scenario?')) {
-                    await api.deleteScenario(s.id);
-                    if (selectedScenarioId === s.id) setSelectedScenarioId(null);
-                    if (selectedStation) {
-                      api.getScenarios(selectedStation).then(setScenarios);
-                    }
-                  }
+                  setDeleteModal({ type: 'scenario', id: s.id, name: s.name });
                 }}
                 style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                 title="Delete Scenario"
@@ -595,7 +590,7 @@ export function ScenariosPage() {
           {!isManageMode && (
             <button
               onClick={() => {
-                setNewFileModal({ type: 'event', name: 'New Event' });
+                setNewFileModal({ type: 'event', name: 'new_event' });
                 setNewFileError(null);
               }}
               style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center', padding: '2px' }}
@@ -665,13 +660,9 @@ export function ScenariosPage() {
                 <Edit2 size={12} />
               </button>
               <button
-                onClick={async (evt) => {
+                onClick={(evt) => {
                   evt.stopPropagation();
-                  if (confirm('Delete event definition?')) {
-                    await api.deleteEventDefinition(e.id);
-                    if (selectedEventDefId === e.id) setSelectedEventDefId(null);
-                    if (selectedStation) api.getEventDefinitions(selectedStation).then(setEventDefs);
-                  }
+                  setDeleteModal({ type: 'event', id: e.id, name: e.name });
                 }}
                 style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                 title="Delete Event Definition"
@@ -1290,7 +1281,15 @@ export function ScenariosPage() {
       {/* Bulk Delete Modal */}
       {showBulkDeleteModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ backgroundColor: 'var(--bg-main)', padding: '24px', borderRadius: '8px', width: '320px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', border: '1px solid var(--border-color)' }}>
+          <form 
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') setShowBulkDeleteModal(false);
+            }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleBulkDelete();
+            }}
+            style={{ backgroundColor: 'var(--bg-main)', padding: '24px', borderRadius: '8px', width: '320px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', border: '1px solid var(--border-color)' }}>
             <h3 style={{ marginTop: 0, color: 'var(--text-primary)' }}>Confirm Bulk Deletion</h3>
             <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.5' }}>
               Are you sure you want to permanently delete {selectedManageScenarios.length} scenario(s) and {selectedManageEvents.length} event definition(s)?
@@ -1305,14 +1304,62 @@ export function ScenariosPage() {
                 Cancel
               </button>
               <button
-                onClick={handleBulkDelete}
+                type="submit"
+                autoFocus
                 className="modal-btn"
                 style={{ padding: '6px 12px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
               >
                 Delete Selected
               </button>
             </div>
-          </div>
+          </form>
+        </div>
+      )}
+
+      {/* Single Delete Modal */}
+      {deleteModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <form 
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') setDeleteModal(null);
+            }}
+            onSubmit={async (e) => {
+              e.preventDefault();
+              if (deleteModal.type === 'scenario') {
+                await api.deleteScenario(deleteModal.id);
+                if (selectedScenarioId === deleteModal.id) setSelectedScenarioId(null);
+                if (selectedStation) api.getScenarios(selectedStation).then(setScenarios);
+              } else if (deleteModal.type === 'event') {
+                await api.deleteEventDefinition(deleteModal.id);
+                if (selectedEventDefId === deleteModal.id) setSelectedEventDefId(null);
+                if (selectedStation) api.getEventDefinitions(selectedStation).then(setEventDefs);
+              }
+              setDeleteModal(null);
+            }}
+            style={{ backgroundColor: 'var(--bg-main)', padding: '24px', borderRadius: '8px', width: '320px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', border: '1px solid var(--border-color)' }}>
+            <h3 style={{ marginTop: 0, color: 'var(--text-primary)' }}>Confirm Deletion</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.5' }}>
+              Are you sure you want to permanently delete {deleteModal.type} <strong>{deleteModal.name}</strong>?
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '20px' }}>
+              <button
+                type="button"
+                className="modal-btn"
+                onClick={() => setDeleteModal(null)}
+                style={{ padding: '6px 12px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-primary)' }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                autoFocus
+                className="modal-btn"
+                style={{ padding: '6px 12px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                Delete
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </div>
