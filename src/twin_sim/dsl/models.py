@@ -1,6 +1,56 @@
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, Field
+
+
+# ---------------------------------------------------------------------------
+# Target kind constants (derived from parsed target clause, Spec §9)
+# ---------------------------------------------------------------------------
+
+TargetKind = Literal[
+    "component.name",    # @component.name
+    "component.type",    # @component.type
+    "component.any",     # @component.type | @component.name  (combined)
+    "connection",        # @connection  (full 3-field selector from scene)
+    "connection.source", # @connection.source
+    "connection.target", # @connection.target
+    "connection.type",   # @connection.type
+    "connection.multi",  # @connection.(field1 & field2)
+    "external",          # @external  (scene provides which group)
+    "external.network",  # @external.network
+    "external.weather",  # @external.weather
+    "external.supplies", # @external.supplies
+]
+
+
+def derive_target_kind(target: str) -> TargetKind:
+    """Derive the TargetKind from a validated target string."""
+    if "|" in target:
+        return "component.any"
+    if target == "@component.name":
+        return "component.name"
+    if target == "@component.type":
+        return "component.type"
+    if target == "@connection":
+        return "connection"
+    if target == "@connection.source":
+        return "connection.source"
+    if target == "@connection.target":
+        return "connection.target"
+    if target == "@connection.type":
+        return "connection.type"
+    if target.startswith("@connection.("):
+        return "connection.multi"
+    if target == "@external":
+        return "external"
+    if target == "@external.network":
+        return "external.network"
+    if target == "@external.weather":
+        return "external.weather"
+    if target == "@external.supplies":
+        return "external.supplies"
+    # Fallback (should not happen if target was validated)
+    return "component.any"
 
 
 class EventDefinition(BaseModel):
@@ -8,6 +58,11 @@ class EventDefinition(BaseModel):
 
     name: str
     target: str
+    # Derived from target for fast dispatch in the engine
+    target_kind: TargetKind = "component.any"
+    # Multi-field connection fields (populated when target_kind == "connection.multi")
+    connection_multi_fields: list[str] = Field(default_factory=list)
+
     where: list[str] = Field(default_factory=list)
 
     # If the set block contains `fields`

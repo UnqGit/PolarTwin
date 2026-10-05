@@ -445,12 +445,198 @@ class SimulationEngineCore:
         eff_conns: list[RuntimeConnection],
         ext: ExternalModel,
     ) -> list[tuple[Any, str]]:
-        """Return list of (target_object, node_key_hint) for a scene event."""
-        selector = scene.selector or ""
-        targets = []
+        """
+        Return list of (target_object, node_key_hint) for a scene event.
 
+        Resolution is governed by the event definition's target_kind when present
+        (attached as ``scene.event_definition`` by ScenarioManager). When no
+        definition is available the old heuristic fallback is used so that
+        ad-hoc / test scenes continue to work.
+
+        Spec 9 target kinds:
+          component.name   -- exact component name from scene selector
+          component.type   -- all components of the given type
+          component.any    -- combined: match by name OR type
+          connection       -- full @(source|type|target) three-field selector
+          connection.source/target/type -- single-field, selector is the value
+          connection.multi -- two connection fields, selector is still 3-field
+          external         -- scene selector is @network / @weather / @supplies
+          external.network / .weather / .supplies -- no selector needed
+        """
+        selector = scene.selector or ""
+        targets: list[tuple[Any, str]] = []
+
+        # Retrieve attached event definition (set by ScenarioManager)
+        event_def = getattr(scene, "event_definition", None)
+        target_kind: str = event_def.target_kind if event_def else ""
+
+        # Build the state dict once for where-clause evaluation
+        state_dict = self.state.get_effective_state_dict()
+
+        def _apply_where(node):
+            """Evaluate where clauses from the event definition against a node."""
+            if event_def is None or not event_def.where:
+                return True
+            from twin_sim.dsl.semantics import evaluate_node
+            return evaluate_node(node, event_def.where, state_dict)
+
+        # External targets - specific (no selector needed, Spec 9.3)
+        if target_kind == "external.network":
+            if _apply_where(ext.network):
+                targets.append((ext.network, "external"))
+            return targets
+
+        if target_kind == "external.weather":
+            if _apply_where(ext.weather):
+                targets.append((ext.weather, "external"))
+            return targets
+
+        if target_kind == "external.supplies":
+            if _apply_where(ext.supplies):
+                targets.append((ext.supplies, "external"))
+            return targets
+
+        if target_kind == "external":
+            # Scene provides the group selector: @network / @weather / @supplies
+            sel_stripped = selector.lstrip("@").lower()
+            if sel_stripped == "network":
+                if _apply_where(ext.network):
+                    targets.append((ext.network, "external"))
+            elif sel_stripped == "weather":
+                if _apply_where(ext.weather):
+                    targets.append((ext.weather, "external"))
+            elif sel_stripped == "supplies":
+                if _apply_where(ext.supplies):
+                    targets.append((ext.supplies, "external"))
+            return targets
+
+        # Component targets
+        if target_kind in ("component.name", "component.type", "component.any"):
+            sel_val = selector.lstrip("@")
+
+            if target_kind == "component.name":
+                # Exact name match only (Spec 9.1)
+                if sel_val in eff_comps:
+                    base_c = self.state.base_components.get(sel_val)
+                    if base_c and _apply_where(base_c):
+                        targets.append((base_c, "component"))
+
+            elif target_kind == "component.type":
+                # All components of the given type (Spec 9.1)
+                for cname, comp in eff_comps.items():
+                    if comp.type == sel_val:
+                        base_c = self.state.base_components.get(cname)
+                        if base_c and _apply_where(base_c):
+                            targets.append((base_c, "component"))
+
+            else:
+                # component.any: try name first; if not found, match by type (Spec 9.1)
+                if sel_val in eff_comps:
+                    base_c = self.state.base_components.get(sel_val)
+                    if base_c and _apply_where(base_c):
+                        targets.append((base_c, "component"))
+                else:
+                    for cname, comp in eff_comps.items():
+                        if comp.type == sel_val:
+                            base_c = self.state.base_components.get(cname)
+                            if base_c and _apply_where(base_c):
+                                targets.append((base_c, "component"))
+            return targets
+
+        # Connection targets - full three-field selector (Spec 9.2)
+        if target_kind == "connection":
+            if selector.startswith("@(") and "|" in selector:
+                inner = selector[2:-1]
+                parts = inner.split("|")
+                src_f = parts[0] if len(parts) > 0 else ""
+                typ_f = parts[1] if len(parts) > 1 else ""
+                tgt_f = parts[2] if len(parts) > 2 else ""
+                for c in eff_conns:
+                    if src_f and c.source != src_f:
+                        continue
+                    if typ_f and c.type != typ_f:
+                        continue
+                    if tgt_f and c.target != tgt_f:
+                        continue
+                    key = "{}_{}_{}" .format(c.source, c.type, c.target)
+                    base_conn = self.state.base_connections.get(key)
+                    if base_conn and _apply_where(base_conn):
+                        targets.append((base_conn, "connection"))
+            return targets
+
+        # Connection targets - single field (Spec 9.2 field-specific)
+        if target_kind in ("connection.source", "connection.target", "connection.type"):
+            field = target_kind.split(".", 1)[1]  # "source", "target", or "type"
+            sel_val = selector.lstrip("@")
+            for c in eff_conns:
+                if getattr(c, field, None) == sel_val:
+                    key = "{}_{}_{}" .format(c.source, c.type, c.target)
+                    base_conn = self.state.base_connections.get(key)
+                    if base_conn and _apply_where(base_conn):
+                        targets.append((base_conn, "connection"))
+            return targets
+
+        # Connection targets - multi-field (Spec 9.2 @connection.(field1 & field2))
+        if target_kind == "connection.multi":
+            fields = event_def.connection_multi_fields if event_def else []
+            if selector.startswith("@(") and "|" in selector:
+                inner = selector[2:-1]
+                parts = inner.split("|")
+                slot_map = {"source": 0, "type": 1, "target": 2}
+                filter_vals = {}
+                for f in fields:
+                    idx = slot_map.get(f)
+                    if idx is not None and idx < len(parts) and parts[idx]:
+                        filter_vals[f] = parts[idx]
+                for c in eff_conns:
+                    if all(getattr(c, f, None) == v for f, v in filter_vals.items()):
+                        key = "{}_{}_{}" .format(c.source, c.type, c.target)
+                        base_conn = self.state.base_connections.get(key)
+                        if base_conn and _apply_where(base_conn):
+                            targets.append((base_conn, "connection"))
+            return targets
+
+        # FALLBACK: no event definition attached -- use heuristic (legacy / tests)
         if not selector:
             return targets
+
+        if selector.startswith("@external.network") or selector.startswith("@network"):
+            targets.append((ext.network, "external"))
+        elif selector.startswith("@external.weather") or selector.startswith("@weather"):
+            targets.append((ext.weather, "external"))
+        elif selector.startswith("@external.supplies") or selector.startswith("@supplies"):
+            targets.append((ext.supplies, "external"))
+        elif selector.startswith("@(") and "|" in selector:
+            inner = selector[2:-1]
+            parts = inner.split("|")
+            src_f = parts[0] if len(parts) > 0 else ""
+            typ_f = parts[1] if len(parts) > 1 else ""
+            tgt_f = parts[2] if len(parts) > 2 else ""
+            for c in eff_conns:
+                if src_f and c.source != src_f:
+                    continue
+                if typ_f and c.type != typ_f:
+                    continue
+                if tgt_f and c.target != tgt_f:
+                    continue
+                key = "{}_{}_{}" .format(c.source, c.type, c.target)
+                base_conn = self.state.base_connections.get(key)
+                if base_conn:
+                    targets.append((base_conn, "connection"))
+        elif selector.startswith("@"):
+            sel_val = selector.lstrip("@")
+            if sel_val in eff_comps:
+                base_c = self.state.base_components.get(sel_val)
+                if base_c:
+                    targets.append((base_c, "component"))
+            else:
+                for cname, comp in eff_comps.items():
+                    if comp.type == sel_val:
+                        base_c = self.state.base_components.get(cname)
+                        if base_c:
+                            targets.append((base_c, "component"))
+
+        return targets
 
         # @external.network / @external.weather / @external.supplies
         base_sel = (

@@ -13,6 +13,7 @@ from __future__ import annotations
 import time
 from typing import Any
 
+from twin_sim.dsl.event_parser import parse_event_string
 from twin_sim.dsl.models import SceneEvent
 from twin_sim.dsl.scene_parser import SceneParseError, parse_scene_string
 from twin_sim.telemetry.database import TelemetryDatabase
@@ -207,32 +208,35 @@ class ScenarioManager:
         source = self.get_source(scenario_id)
         events = parse_scene_string(source)
 
-        # Merge event definitions for inline events
+        # Merge event definitions into scene events.
+        # The event definition governs what the engine actually does; the scene's
+        # payload only provides the dynamic values allowed by the definition.
+        station_id = scenario_id.split(":")[0]
         for ev in events:
-            if not ev.payload:  # empty dict
-                try:
-                    event_def = self.get_event(
-                        f"{scenario_id.split(':')[0]}:{ev.event_ref}"
-                    )
-                    import os
-                    import tempfile
+            try:
+                event_def_row = self.get_event(f"{station_id}:{ev.event_ref}")
+                parsed_def = parse_event_string(
+                    event_def_row["source"], name=ev.event_ref
+                )
+                # Attach the parsed definition to the scene event so the engine
+                # can use target_kind, where clauses, set_fixed, set_allowed, etc.
+                ev.event_definition = parsed_def  # type: ignore[attr-defined]
 
-                    from twin_sim.dsl.event_parser import parse_event_file
-
-                    # A bit hacky, but parse_event_file needs a Path. We can parse string directly if we write a helper, or just use a temp file.
-                    # Alternatively, write a parse_event_string function. Let's just create a temp file.
-                    fd, path = tempfile.mkstemp(suffix=".event")
-                    with os.fdopen(fd, "w") as f:
-                        f.write(event_def["source"])
-                    from pathlib import Path
-
-                    parsed_def = parse_event_file(Path(path))
-                    os.remove(path)
-                    ev.payload = parsed_def.set_fixed
-                    if not ev.selector:
-                        ev.selector = f"@{parsed_def.target}"
-                except FileNotFoundError:
-                    pass
+                # For events that target specific externals (e.g. @external.network),
+                # the scene file does not need to provide a selector – synthesise one.
+                if ev.selector is None:
+                    specific_external_targets = {
+                        "external.network": "@network",
+                        "external.weather": "@weather",
+                        "external.supplies": "@supplies",
+                    }
+                    synthetic = specific_external_targets.get(parsed_def.target_kind)
+                    if synthetic:
+                        ev.selector = synthetic
+            except (FileNotFoundError, Exception):  # noqa: BLE001
+                # Event definition not found or invalid – leave as-is so the
+                # scene can still be previewed even with missing definitions.
+                pass
         return events
 
     def validate(self, scenario_id: str) -> dict[str, Any]:

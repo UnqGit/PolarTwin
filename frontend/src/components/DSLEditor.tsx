@@ -28,30 +28,52 @@ export function DSLEditor({ value, onChange, selectedLine, errorLine, sourceVers
   const handleEditorWillMount = (monaco: any) => {
     const isRegistered = monaco.languages.getLanguages().some((lang: any) => lang.id === 'twin-scenario-dsl' || lang.id === 'twin-event-dsl');
     if (!isRegistered) {
+      // ── Scene file tokenizer (.scene) ─────────────────────────────────
       monaco.languages.register({ id: 'twin-scenario-dsl' });
       monaco.languages.setMonarchTokensProvider('twin-scenario-dsl', {
         tokenizer: {
           root: [
+            // Comments
             [/#.*/, 'comment'],
+            // Connection selectors with parens: @(source|type|target)
+            [/@\([^)]*\)/, 'selector'],
+            // Standard @-selectors: @Generator1, @network, @external.network, etc.
             [/@[A-Za-z0-9_.]+/, 'selector'],
-            [/\b(event|at|for)\b/, 'keyword'],
-            [/[={}]/, 'delimiter'],
-            [/[0-9.]+/, 'number'],
+            // Keywords: event keyword prefix, timing attrs, inf value
+            [/\b(event|at|for|inf)\b/, 'keyword'],
+            // Pipe and ampersand operators (used in connection selectors)
+            [/[|&]/, 'operator'],
+            // Delimiters: = { } :
+            [/[={}:]/, 'delimiter'],
+            // Numbers (including decimals)
+            [/\b\d+(\.\d+)?\b/, 'number'],
           ]
         }
       });
+
+      // ── Event file tokenizer (.event) ─────────────────────────────────
       monaco.languages.register({ id: 'twin-event-dsl' });
       monaco.languages.setMonarchTokensProvider('twin-event-dsl', {
         tokenizer: {
           root: [
+            // Comments
             [/#.*/, 'comment'],
+            // Selectors with parens: @connection(@node|data|), @connection.(f1 & f2)
+            [/@[A-Za-z0-9_.]*\([^)]*\)(?:\.[A-Za-z0-9_.]*)?/, 'selector'],
+            // Standard @-selectors: @component.type, @external.network, @connection, etc.
             [/@[A-Za-z0-9_.]+/, 'selector'],
-            [/\b(set|where|target)\b/, 'keyword'],
+            // Keywords: clause keywords + 'fields' (Spec §11) + 'inf' (Spec §7.2)
+            [/\b(set|where|target|fields|inf)\b/, 'keyword'],
+            // Pipe and ampersand operators (combined target selectors, where continuations)
+            [/[|&]/, 'operator'],
+            // Delimiters: = { }
             [/[={}]/, 'delimiter'],
-            [/[0-9.]+/, 'number'],
+            // Numbers
+            [/\b\d+(\.\d+)?\b/, 'number'],
           ]
         }
       });
+
       monaco.editor.defineTheme('twin-dark', {
         base: 'vs-dark',
         inherit: true,
@@ -59,6 +81,7 @@ export function DSLEditor({ value, onChange, selectedLine, errorLine, sourceVers
           { token: 'comment', foreground: '64748b' },
           { token: 'selector', foreground: '00e676' }, // Aurora green
           { token: 'keyword', foreground: 'b566ff', fontStyle: 'bold' }, // Aurora purple
+          { token: 'operator', foreground: '00d2ff' }, // Aurora cyan
           { token: 'delimiter', foreground: '00d2ff' }, // Aurora cyan
           { token: 'number', foreground: 'fbbf24' },
         ],
@@ -74,6 +97,7 @@ export function DSLEditor({ value, onChange, selectedLine, errorLine, sourceVers
           { token: 'comment', foreground: '94a3b8' },
           { token: 'selector', foreground: '0ea5e9' }, // Icy blue
           { token: 'keyword', foreground: '38bdf8', fontStyle: 'bold' }, // Light icy blue
+          { token: 'operator', foreground: '475569' },
           { token: 'delimiter', foreground: '475569' },
           { token: 'number', foreground: 'd97706' },
         ],
