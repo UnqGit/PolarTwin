@@ -3,6 +3,7 @@ import time
 from typing import Any
 
 try:
+    # pyright: ignore[reportMissingImports]
     import libsql_experimental
     HAS_LIBSQL = True
 except ImportError:
@@ -17,6 +18,15 @@ class TelemetryDatabase:
             self.conn = libsql_experimental.connect(db_path, auth_token=auth_token, check_same_thread=False)
             self.conn.row_factory = libsql_experimental.Row
         else:
+            # Standard sqlite3 cannot open Turso URLs. Fallback to local DB.
+            if db_path.startswith(("libsql://", "http://", "https://")):
+                import os
+                from pathlib import Path
+                fallback_dir = Path(os.getcwd()) / "data"
+                fallback_dir.mkdir(exist_ok=True)
+                db_path = str(fallback_dir / "telemetry.db")
+                print(f"[warning] Turso driver missing locally. Falling back to {db_path}")
+
             self.conn = sqlite3.connect(db_path, check_same_thread=False)
             try:
                 self.conn.execute("PRAGMA journal_mode=WAL")
