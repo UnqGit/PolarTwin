@@ -275,6 +275,10 @@ export const api = {
     const res = await fetch(`${API_BASE}/simulations/${runId}`, { method: 'DELETE' });
     if (!res.ok) throw new Error("Failed to delete simulation");
   },
+  deleteScenarioRuns: async (scenarioId: string) => {
+    const res = await fetch(`${API_BASE}/scenarios/${scenarioId}/runs`, { method: 'DELETE' });
+    if (!res.ok) throw new Error("Failed to delete scenario runs");
+  },
   setComponentState: async (runId: string, componentId: string, stateUpdate: Record<string, unknown>) => {
     const res = await fetch(`${API_BASE}/simulations/${runId}/component/${componentId}/state`, {
       method: 'POST',

@@ -473,8 +473,18 @@ def reset_simulation(run_id: str):
 @app.delete("/simulations/{run_id}", status_code=204)
 def delete_simulation(run_id: str):
     """Delete a simulation run."""
-    if not _manager.delete_run(run_id):
+    _manager.delete_run(run_id)
+    if not _db.delete_run(run_id):
         raise HTTPException(404, "Simulation not found")
+
+@app.delete("/scenarios/{scenario_id}/runs", status_code=204)
+def delete_scenario_runs(scenario_id: str):
+    """Delete all simulation runs for a scenario."""
+    active_runs = _manager.list_runs()
+    for r in active_runs:
+        if r["scenario_id"] == scenario_id:
+            _manager.delete_run(r["run_id"])
+    _db.delete_scenario_runs(scenario_id)
 
 
 @app.post("/simulations/{run_id}/telemetry/start")

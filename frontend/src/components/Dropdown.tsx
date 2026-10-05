@@ -13,9 +13,10 @@ interface DropdownProps {
   placeholder?: string;
   disabled?: boolean;
   style?: React.CSSProperties;
+  onManage?: () => void;
 }
 
-export function Dropdown({ value, onChange, options, placeholder = 'Select...', disabled = false, style }: DropdownProps) {
+export function Dropdown({ value, onChange, options, placeholder = 'Select...', disabled = false, style, onManage }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -78,10 +79,12 @@ export function Dropdown({ value, onChange, options, placeholder = 'Select...', 
           borderRadius: 6,
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
           zIndex: 100,
-          maxHeight: 250,
-          overflowY: 'auto'
+          display: 'flex',
+          flexDirection: 'column',
+          overflow: 'hidden'
         }}>
-          {placeholder && (
+          <div style={{ maxHeight: 250, overflowY: 'auto' }}>
+            {placeholder && (
             <div
               onClick={() => {
                 onChange('');
@@ -126,6 +129,29 @@ export function Dropdown({ value, onChange, options, placeholder = 'Select...', 
               {opt.label}
             </div>
           ))}
+          </div>
+          {onManage && (
+            <div
+              onClick={() => {
+                setIsOpen(false);
+                onManage();
+              }}
+              style={{
+                padding: '8px 12px',
+                fontSize: 13,
+                cursor: 'pointer',
+                color: 'var(--accent-blue)',
+                borderTop: '1px solid var(--border-color)',
+                textAlign: 'center',
+                userSelect: 'none',
+                fontWeight: 500
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              Manage...
+            </div>
+          )}
         </div>
       )}
     </div>

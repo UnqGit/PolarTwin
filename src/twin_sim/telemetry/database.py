@@ -455,6 +455,25 @@ class TelemetryDatabase:
         # Populate run metadata (counts) if necessary, or just return them
         return runs
 
+    def delete_run(self, run_id: str) -> bool:
+        cur = self.conn.execute("SELECT id FROM simulation_runs WHERE id = ?", (run_id,))
+        if not cur.fetchone():
+            return False
+            
+        self.conn.execute("DELETE FROM telemetry_external_states WHERE record_id IN (SELECT id FROM telemetry_records WHERE run_id = ?)", (run_id,))
+        self.conn.execute("DELETE FROM telemetry_connection_states WHERE record_id IN (SELECT id FROM telemetry_records WHERE run_id = ?)", (run_id,))
+        self.conn.execute("DELETE FROM telemetry_component_states WHERE record_id IN (SELECT id FROM telemetry_records WHERE run_id = ?)", (run_id,))
+        self.conn.execute("DELETE FROM telemetry_records WHERE run_id = ?", (run_id,))
+        self.conn.execute("DELETE FROM simulation_logs WHERE run_id = ?", (run_id,))
+        self.conn.execute("DELETE FROM simulation_runs WHERE id = ?", (run_id,))
+        self.conn.commit()
+        return True
+
+    def delete_scenario_runs(self, scenario_id: str) -> None:
+        runs = self.conn.execute("SELECT id FROM simulation_runs WHERE scenario_id = ?", (scenario_id,)).fetchall()
+        for run in runs:
+            self.delete_run(run["id"])
+
     def insert_simulation_logs(self, run_id: str, logs: list[dict[str, Any]]) -> None:
         if not logs:
             return

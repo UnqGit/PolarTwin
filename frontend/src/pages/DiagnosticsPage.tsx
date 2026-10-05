@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useStation } from '../components/StationContext';
 import { api } from '../lib/api';
 import {
-  ChevronDown, ChevronRight, Activity, Cloud, Signal, Droplets, History, Box, Globe
+  ChevronDown, ChevronRight, Activity, Cloud, Signal, Droplets, History, Box, Globe, Trash2
 } from 'lucide-react';
 import { buildSceneLayout, type NodeLayout } from '../lib/layout';
 import { SelectionProvider } from '../components/SelectionContext';
@@ -17,6 +17,15 @@ export function DiagnosticsPage() {
   const [runMeta, setRunMeta] = useState<any>(null);
   const [runEvents, setRunEvents] = useState<any[]>([]);
   const [runLogs, setRunLogs] = useState<any[]>([]);
+
+  const [deleteRunModal, setDeleteRunModal] = useState<string | null>(null);
+  const [deleteScenarioModal, setDeleteScenarioModal] = useState<string | null>(null);
+
+  const [showManageScenarios, setShowManageScenarios] = useState(false);
+  const [selectedManageScenarios, setSelectedManageScenarios] = useState<string[]>([]);
+
+  const [showManageRuns, setShowManageRuns] = useState(false);
+  const [selectedManageRuns, setSelectedManageRuns] = useState<string[]>([]);
 
   const [selectedCategory, setSelectedCategory] = useState<'connections' | 'components' | 'environment' | null>(null);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
@@ -156,28 +165,72 @@ export function DiagnosticsPage() {
         <History size={20} style={{ color: 'var(--accent-blue)' }} />
         <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Simulation History</h2>
 
-        <Dropdown
-          value={selectedScenarioFilter}
-          onChange={val => {
-            setSelectedScenarioFilter(val);
-            setSelectedRunId(''); // Clear run when scenario changes
-          }}
-          options={uniqueScenarios.map(scenario => ({ value: scenario, label: scenario }))}
-          placeholder="-- Select a Scenario --"
-          style={{ minWidth: 200 }}
-        />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <Dropdown
+            value={selectedScenarioFilter}
+            onChange={val => {
+              setSelectedScenarioFilter(val);
+              setSelectedRunId(''); // Clear run when scenario changes
+            }}
+            options={uniqueScenarios.map(scenario => ({ value: scenario, label: scenario }))}
+            placeholder="-- Select a Scenario --"
+            style={{ minWidth: 200 }}
+            onManage={() => {
+              setSelectedManageScenarios([]);
+              setShowManageScenarios(true);
+            }}
+          />
+          {selectedScenarioFilter && (
+            <button
+              onClick={() => setDeleteScenarioModal(selectedScenarioFilter)}
+              style={{ padding: '6px', background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+              title="Delete all runs for this scenario"
+            >
+              <Trash2 size={16} />
+            </button>
+          )}
+        </div>
 
-        <Dropdown
-          value={selectedRunId}
-          onChange={val => setSelectedRunId(val)}
-          disabled={!selectedScenarioFilter}
-          options={filteredRuns.map(r => ({
-            value: r.run_id,
-            label: `${new Date(r.start_time * 1000).toLocaleString()} | ${r.run_id.substring(0, 8)} | ${r.status}`
-          }))}
-          placeholder="-- Select a Simulation Run --"
-          style={{ minWidth: 250 }}
-        />
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <Dropdown
+            value={selectedRunId}
+            onChange={val => setSelectedRunId(val)}
+            disabled={!selectedScenarioFilter}
+            options={filteredRuns.map(r => {
+              const runNoMatch = r.run_id.match(/\d+$/);
+              const runNo = runNoMatch ? runNoMatch[0] : '?';
+              const isRunning = r.status === 'RUNNING' || r.status === 'running';
+              const dotColor = isRunning ? '#4ade80' : '#3b82f6';
+              const dateStr = new Date(r.start_time * 1000).toLocaleString();
+              
+              return {
+                value: r.run_id,
+                label: (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontWeight: 500 }}>Run {runNo}</span>
+                    <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: dotColor, flexShrink: 0 }} title={r.status} />
+                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{dateStr}</span>
+                  </div>
+                )
+              };
+            })}
+            placeholder="-- Select a Simulation Run --"
+            style={{ minWidth: 250 }}
+            onManage={() => {
+              setSelectedManageRuns([]);
+              setShowManageRuns(true);
+            }}
+          />
+          {selectedRunId && (
+            <button
+              onClick={() => setDeleteRunModal(selectedRunId)}
+              style={{ padding: '6px', background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer' }}
+              title="Delete this run"
+            >
+              <Trash2 size={16} />
+            </button>
+          )}
+        </div>
 
         {runMeta && (
           <div style={{ display: 'flex', gap: 16, fontSize: 13, color: 'var(--text-secondary)' }}>
@@ -314,6 +367,155 @@ export function DiagnosticsPage() {
           )}
         </div>
       </div>
+
+      {deleteScenarioModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <form 
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') setDeleteScenarioModal(null);
+            }}
+            onSubmit={async (e) => {
+              e.preventDefault();
+              await api.deleteScenarioRuns(deleteScenarioModal);
+              const updatedRuns = await api.getTelemetryRuns();
+              setRuns(updatedRuns.filter((run: any) => run.status !== 'RUNNING'));
+              setSelectedScenarioFilter('');
+              setSelectedRunId('');
+              setDeleteScenarioModal(null);
+            }}
+            style={{ backgroundColor: 'var(--bg-main)', padding: '24px', borderRadius: '8px', width: '320px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', border: '1px solid var(--border-color)' }}>
+            <h3 style={{ marginTop: 0, color: 'var(--text-primary)' }}>Confirm Deletion</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.5' }}>
+              Are you sure you want to permanently delete all simulation runs for scenario <strong>{deleteScenarioModal}</strong>?
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '20px' }}>
+              <button type="button" onClick={() => setDeleteScenarioModal(null)} style={{ padding: '6px 12px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-primary)' }}>Cancel</button>
+              <button type="submit" autoFocus style={{ padding: '6px 12px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Delete</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {deleteRunModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <form 
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') setDeleteRunModal(null);
+            }}
+            onSubmit={async (e) => {
+              e.preventDefault();
+              await api.deleteSimulation(deleteRunModal);
+              const updatedRuns = await api.getTelemetryRuns();
+              setRuns(updatedRuns.filter((run: any) => run.status !== 'RUNNING'));
+              setSelectedRunId('');
+              setDeleteRunModal(null);
+            }}
+            style={{ backgroundColor: 'var(--bg-main)', padding: '24px', borderRadius: '8px', width: '320px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', border: '1px solid var(--border-color)' }}>
+            <h3 style={{ marginTop: 0, color: 'var(--text-primary)' }}>Confirm Deletion</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.5' }}>
+              Are you sure you want to permanently delete simulation run <strong>{deleteRunModal}</strong>?
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '20px' }}>
+              <button type="button" onClick={() => setDeleteRunModal(null)} style={{ padding: '6px 12px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-primary)' }}>Cancel</button>
+              <button type="submit" autoFocus style={{ padding: '6px 12px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>Delete</button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {showManageScenarios && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <form 
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') setShowManageScenarios(false);
+            }}
+            onSubmit={async (e) => {
+              e.preventDefault();
+              for (const scenarioId of selectedManageScenarios) {
+                await api.deleteScenarioRuns(scenarioId);
+              }
+              const updatedRuns = await api.getTelemetryRuns();
+              setRuns(updatedRuns.filter((run: any) => run.status !== 'RUNNING'));
+              setSelectedScenarioFilter('');
+              setSelectedRunId('');
+              setShowManageScenarios(false);
+            }}
+            style={{ backgroundColor: 'var(--bg-main)', padding: '24px', borderRadius: '8px', width: '400px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', border: '1px solid var(--border-color)' }}>
+            <h3 style={{ marginTop: 0, color: 'var(--text-primary)' }}>Manage Scenarios</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>Select scenarios to delete all their runs.</p>
+            
+            <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid var(--border-color)', borderRadius: '4px', background: 'var(--bg-input)', padding: '8px' }}>
+              {uniqueScenarios.map(scenario => (
+                <label key={scenario} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px', cursor: 'pointer' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={selectedManageScenarios.includes(scenario)}
+                    onChange={(e) => {
+                      if (e.target.checked) setSelectedManageScenarios([...selectedManageScenarios, scenario]);
+                      else setSelectedManageScenarios(selectedManageScenarios.filter(s => s !== scenario));
+                    }}
+                  />
+                  <span style={{ fontSize: '13px' }}>{scenario}</span>
+                </label>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '20px' }}>
+              <button type="button" onClick={() => setShowManageScenarios(false)} style={{ padding: '6px 12px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-primary)' }}>Cancel</button>
+              <button type="submit" autoFocus disabled={selectedManageScenarios.length === 0} style={{ padding: '6px 12px', background: selectedManageScenarios.length > 0 ? '#ef4444' : 'var(--border-color)', color: '#fff', border: 'none', borderRadius: '4px', cursor: selectedManageScenarios.length > 0 ? 'pointer' : 'not-allowed' }}>
+                Delete Selected ({selectedManageScenarios.length})
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {showManageRuns && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <form 
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') setShowManageRuns(false);
+            }}
+            onSubmit={async (e) => {
+              e.preventDefault();
+              for (const runId of selectedManageRuns) {
+                await api.deleteSimulation(runId);
+              }
+              const updatedRuns = await api.getTelemetryRuns();
+              setRuns(updatedRuns.filter((run: any) => run.status !== 'RUNNING'));
+              setSelectedRunId('');
+              setShowManageRuns(false);
+            }}
+            style={{ backgroundColor: 'var(--bg-main)', padding: '24px', borderRadius: '8px', width: '400px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', border: '1px solid var(--border-color)' }}>
+            <h3 style={{ marginTop: 0, color: 'var(--text-primary)' }}>Manage Runs</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>Select simulation runs to delete.</p>
+            
+            <div style={{ maxHeight: '200px', overflowY: 'auto', border: '1px solid var(--border-color)', borderRadius: '4px', background: 'var(--bg-input)', padding: '8px' }}>
+              {filteredRuns.map(r => (
+                <label key={r.run_id} style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '4px', cursor: 'pointer' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={selectedManageRuns.includes(r.run_id)}
+                    onChange={(e) => {
+                      if (e.target.checked) setSelectedManageRuns([...selectedManageRuns, r.run_id]);
+                      else setSelectedManageRuns(selectedManageRuns.filter(id => id !== r.run_id));
+                    }}
+                  />
+                  <span style={{ fontSize: '13px' }}>{new Date(r.start_time * 1000).toLocaleString()} | {r.run_id.substring(0, 8)}</span>
+                </label>
+              ))}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '20px' }}>
+              <button type="button" onClick={() => setShowManageRuns(false)} style={{ padding: '6px 12px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-primary)' }}>Cancel</button>
+              <button type="submit" autoFocus disabled={selectedManageRuns.length === 0} style={{ padding: '6px 12px', background: selectedManageRuns.length > 0 ? '#ef4444' : 'var(--border-color)', color: '#fff', border: 'none', borderRadius: '4px', cursor: selectedManageRuns.length > 0 ? 'pointer' : 'not-allowed' }}>
+                Delete Selected ({selectedManageRuns.length})
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
     </div>
   );
 }
