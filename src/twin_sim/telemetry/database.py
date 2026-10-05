@@ -1,14 +1,28 @@
 import json
-import sqlite3
 import time
 from typing import Any
 
+try:
+    import libsql_experimental
+    HAS_LIBSQL = True
+except ImportError:
+    HAS_LIBSQL = False
+
+import sqlite3
+
 
 class TelemetryDatabase:
-    def __init__(self, db_path: str = ":memory:"):
-        self.conn = sqlite3.connect(db_path, check_same_thread=False)
-        self.conn.execute("PRAGMA journal_mode=WAL")
-        self.conn.row_factory = sqlite3.Row
+    def __init__(self, db_path: str = ":memory:", auth_token: str | None = None):
+        if auth_token and HAS_LIBSQL:
+            self.conn = libsql_experimental.connect(db_path, auth_token=auth_token, check_same_thread=False)
+            self.conn.row_factory = libsql_experimental.Row
+        else:
+            self.conn = sqlite3.connect(db_path, check_same_thread=False)
+            try:
+                self.conn.execute("PRAGMA journal_mode=WAL")
+            except Exception:
+                pass
+            self.conn.row_factory = sqlite3.Row
         self._create_tables()
 
     def _create_tables(self):

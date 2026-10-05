@@ -30,14 +30,22 @@ from twin_sim.telemetry.database import TelemetryDatabase
 # Configuration
 # ---------------------------------------------------------------------------
 
+from dotenv import load_dotenv
+load_dotenv()
+
 _PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent.parent
 DATA_DIR = Path(os.getenv("DATA_DIR", str(_PROJECT_ROOT / "data")))
 COMPILED_ROOT = DATA_DIR / "compiled"
 
-if os.getenv("VERCEL") == "1":
-    DB_PATH = Path("/tmp/telemetry.db")
+TURSO_DB_URL = os.getenv("TURSO_DATABASE_URL")
+TURSO_AUTH_TOKEN = os.getenv("TURSO_AUTH_TOKEN")
+
+if TURSO_DB_URL:
+    DB_PATH = TURSO_DB_URL
+elif os.getenv("VERCEL") == "1":
+    DB_PATH = str(Path("/tmp/telemetry.db"))
 else:
-    DB_PATH = DATA_DIR / "telemetry.db"
+    DB_PATH = str(DATA_DIR / "telemetry.db")
 
 # ---------------------------------------------------------------------------
 # Application bootstrap
@@ -71,7 +79,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-_db = TelemetryDatabase(str(DB_PATH))
+_db = TelemetryDatabase(str(DB_PATH), auth_token=TURSO_AUTH_TOKEN)
 _manager = SimulationManager(telemetry_db=_db)
 _scenario_manager = ScenarioManager(_db)
 
