@@ -111,8 +111,11 @@ export const PropertyInspector: React.FC<InspectorProps> = ({ node, connections,
     let isOob = false;
     let limitStr = '';
     let displayVal: any = undefined;
-    
-    // Handle nested dict values from runtime state (e.g., power: { value: 100, min: 0, max: 1000 })
+    let isDisplayCanonical = false;
+    let isLimitCanonical = false;
+    const unit = getUnit(k);
+
+    // 1. Get value and bounds from live state
     if (typeof liveVal === 'object' && liveVal !== null && !Array.isArray(liveVal)) {
       const liveObj = liveVal as Record<string, any>;
       const numericVal = liveObj.value ?? liveObj.current;
@@ -121,42 +124,64 @@ export const PropertyInspector: React.FC<InspectorProps> = ({ node, connections,
       
       if (min !== undefined && max !== undefined) {
         limitStr = `${min} : ${max}`;
+        isLimitCanonical = true;
         if (typeof numericVal === 'number' && (numericVal < min || numericVal > max)) isOob = true;
       } else if (max !== undefined) {
         limitStr = `≤ ${max}`;
+        isLimitCanonical = true;
         if (typeof numericVal === 'number' && numericVal > max) isOob = true;
       }
-      
       displayVal = numericVal;
+      isDisplayCanonical = true;
     } else if (liveVal !== undefined) {
       displayVal = liveVal;
+      isDisplayCanonical = true;
     }
     
-    // Fallback to spec if no live value
-    if (displayVal === undefined && specVal !== undefined) {
-      if (typeof specVal === 'object' && specVal !== null) {
-        const min = (specVal as any).min;
-        const max = (specVal as any).max;
-        if (min !== undefined && max !== undefined) {
-          limitStr = `${min} : ${max}`;
-        }
+    // 2. Fill missing bounds and values from spec
+    let specMin: number | undefined;
+    let specMax: number | undefined;
+    if (typeof specVal === 'object' && specVal !== null) {
+      specMin = (specVal as any).min;
+      specMax = (specVal as any).max;
+      if (!limitStr && specMin !== undefined && specMax !== undefined) {
+        limitStr = `${specMin} : ${specMax}`;
+        isLimitCanonical = false;
+      } else if (!limitStr && specMax !== undefined) {
+        limitStr = `≤ ${specMax}`;
+        isLimitCanonical = false;
+      }
+      if (displayVal === undefined) {
         displayVal = (specVal as any).value ?? (specVal as any).current;
-      } else if (typeof specVal === 'number') {
+        isDisplayCanonical = false;
+      }
+    } else if (specVal !== undefined) {
+      if (!limitStr && typeof specVal === 'number') {
         limitStr = `≤ ${specVal}`;
+        isLimitCanonical = false;
+      }
+      if (displayVal === undefined) {
         displayVal = specVal;
-      } else {
-        displayVal = specVal;
+        isDisplayCanonical = false;
       }
     }
 
-    const unit = getUnit(k);
-    let valStr = '';
-    
-    if (unit && typeof displayVal === 'number') {
+    // 3. Convert displayVal from canonical if needed
+    if (isDisplayCanonical && unit && typeof displayVal === 'number') {
       displayVal = fromCanonical(displayVal, unit);
     }
-    // Also convert bounds
-    if (limitStr && unit) {
+    
+    // 4. OOB check if we have a numeric live value but bounds came from spec
+    if (isDisplayCanonical && !isLimitCanonical && typeof displayVal === 'number') {
+      if (specMin !== undefined && specMax !== undefined) {
+        if (displayVal < specMin || displayVal > specMax) isOob = true;
+      } else if (specMax !== undefined) {
+        if (displayVal > specMax) isOob = true;
+      }
+    }
+
+    // 5. Convert limitStr from canonical if needed
+    if (isLimitCanonical && limitStr && unit) {
        const parts = limitStr.split(':').map(s => s.trim());
        if (parts.length === 2) {
           const min = parseFloat(parts[0]);
@@ -171,7 +196,7 @@ export const PropertyInspector: React.FC<InspectorProps> = ({ node, connections,
           }
        }
     }
-
+    let valStr = '';
     if (displayVal !== undefined && displayVal !== null) {
       if (typeof displayVal === 'object') {
          if ('value' in displayVal) displayVal = displayVal.value;

@@ -72,6 +72,7 @@ export interface NodeLayout {
   level?: number;
   yOffset?: number; // local vertical offset for the container mesh (e.g., to enclose basements)
   buildIndex?: number;
+  groupedSensors?: any[];
 }
 
 // ConnectionVisual removed

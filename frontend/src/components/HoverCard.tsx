@@ -3,6 +3,7 @@ import { TypeIcon } from './TypeIcon';
 import type { NodeLayout, ConnectionLayout } from '../lib/layout';
 import { HoverContext } from './HoverContext';
 import { Link2 } from 'lucide-react';
+import { fromCanonical } from './HierarchyPanel';
 
 interface HoverCardProps {
   root: NodeLayout;
@@ -97,6 +98,9 @@ export const HoverCard: React.FC<HoverCardProps> = ({ root, connections, liveSta
                       const val = liveStateRef?.current?.[node.name] ? (liveStateRef.current[node.name] as any)[k] : undefined;
                       let displayVal = val !== undefined ? val : valObj.max;
                       if (displayVal && typeof displayVal === 'object' && 'value' in displayVal) displayVal = displayVal.value;
+                      if (val !== undefined && valObj.unit && typeof displayVal === 'number') {
+                        displayVal = fromCanonical(displayVal, valObj.unit);
+                      }
                       return <Row key={k} label={k} value={`${displayVal !== undefined ? (typeof displayVal === 'number' ? displayVal.toFixed(2) : displayVal) : '--'}${valObj.unit ? ' ' + valObj.unit : ''}`} />;
                     })}
                   </div>
@@ -112,6 +116,9 @@ export const HoverCard: React.FC<HoverCardProps> = ({ root, connections, liveSta
                 const val = liveStateRef?.current?.[node.name] ? (liveStateRef.current[node.name] as any)[k] : undefined;
                 let displayVal = val !== undefined ? val : valObj.value;
                 if (displayVal && typeof displayVal === 'object' && 'value' in displayVal) displayVal = displayVal.value;
+                if (val !== undefined && valObj.unit && typeof displayVal === 'number') {
+                  displayVal = fromCanonical(displayVal, valObj.unit);
+                }
                 return <Row key={k} label={k} value={`${displayVal !== undefined ? (typeof displayVal === 'number' ? displayVal.toFixed(2) : displayVal) : '--'}${valObj.unit ? ' ' + valObj.unit : ''}`} />;
               })}
             </div>
