@@ -362,11 +362,15 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
       onClick={onClick}
       title={title}
       style={{
-        width: '100%', height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center',
-        cursor: 'pointer', color: active ? 'var(--text-primary)' : 'var(--text-tertiary)',
-        borderLeft: active ? '2px solid var(--accent-blue)' : '2px solid transparent',
-        background: active ? 'var(--hover-overlay)' : 'transparent',
+        width: '100%', height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        cursor: 'pointer',
+        color: active ? 'var(--accent-primary)' : 'var(--text-tertiary)',
+        borderLeft: active ? '2px solid var(--accent-primary)' : '2px solid transparent',
+        background: active ? 'rgba(99,219,188,0.08)' : 'transparent',
+        transition: 'all 0.15s ease',
       }}
+      onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'; (e.currentTarget as HTMLElement).style.background = active ? 'rgba(99,219,188,0.08)' : 'var(--hover-overlay)'; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = active ? 'var(--accent-primary)' : 'var(--text-tertiary)'; (e.currentTarget as HTMLElement).style.background = active ? 'rgba(99,219,188,0.08)' : 'transparent'; }}
     >
       {icon}
     </div>
@@ -553,16 +557,16 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                 {!hideEditInitials && (
                   <button
                     onClick={() => setIsEditingInitials(!isEditingInitials)}
-                    style={{ background: isEditingInitials ? 'var(--accent-blue)' : 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: isEditingInitials ? '#fff' : 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                    style={{ background: isEditingInitials ? 'var(--accent-primary)' : 'var(--bg-input)', border: `1px solid ${isEditingInitials ? 'var(--accent-primary)' : 'var(--border-color)'}`, color: isEditingInitials ? '#030a0f' : 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'all 0.15s ease' }}
                     title="Edit Initials"
                   >
                     <Edit2 size={12} />
                   </button>
                 )}
                 {allHierarchyExpanded ? (
-                  <button onClick={collapseAllHierarchy} style={{ background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}>Collapse All</button>
+                  <button onClick={collapseAllHierarchy} style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', transition: 'all 0.15s ease' }}>Collapse All</button>
                 ) : (
-                  <button onClick={expandAllHierarchy} style={{ background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}>Expand All</button>
+                  <button onClick={expandAllHierarchy} style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', transition: 'all 0.15s ease' }}>Expand All</button>
                 )}
               </div>
             )}
@@ -678,9 +682,13 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
 
       {/* Activity Bar */}
       <div style={{
-        width: 48, background: 'var(--bg-panel-solid)', borderRight: PANEL_BORDER,
+        width: 48,
+        background: 'var(--bg-panel-solid)',
+        borderRight: '1px solid var(--border-color)',
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        paddingTop: 8, paddingBottom: 8, boxSizing: 'border-box', pointerEvents: 'auto',
+        paddingTop: 8, paddingBottom: 8,
+        boxSizing: 'border-box', pointerEvents: 'auto',
+        backdropFilter: 'blur(12px)',
       }}>
         {customSidebarTopTabs?.map(tab => (
           <IconBtn key={tab.id} icon={tab.icon} active={activeView === tab.id} onClick={tab.onClick ? () => tab.onClick!(toggleView) : () => toggleView(tab.id)} title={tab.title} />

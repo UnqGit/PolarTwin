@@ -131,8 +131,9 @@ export function DiagnosticsPage() {
           style={{
             display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px',
             cursor: 'pointer', borderRadius: 4,
-            background: isSelected ? 'var(--bg-input)' : 'transparent',
-            color: isSelected ? 'var(--accent-blue)' : 'var(--text-secondary)'
+            background: isSelected ? 'rgba(99,219,188,0.08)' : 'transparent',
+            color: isSelected ? 'var(--accent-primary)' : 'var(--text-secondary)',
+            transition: 'all 0.15s ease',
           }}
           onClick={() => {
             if (!isLeaf) setExpanded(!expanded);
@@ -161,9 +162,9 @@ export function DiagnosticsPage() {
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '100%', backgroundColor: 'var(--bg-main)', color: 'var(--text-primary)' }}>
 
       {/* RUN SELECTOR */}
-      <div style={{ padding: '16px 24px', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: 16 }}>
-        <History size={20} style={{ color: 'var(--accent-blue)' }} />
-        <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Simulation History</h2>
+      <div style={{ position: 'relative', zIndex: 100, padding: '14px 24px', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', background: 'var(--bg-panel)', backdropFilter: 'blur(12px)' }}>
+        <History size={18} style={{ color: 'var(--accent-primary)' }} />
+        <h2 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Simulation History</h2>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
           <Dropdown

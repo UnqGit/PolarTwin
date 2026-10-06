@@ -32,11 +32,6 @@ const CONN_TYPE_COLORS: Record<string, { light: string; dark: string }> = {
   resource: { light: '#059669', dark: '#34d399' },
 };
 
-function edgeColor(connType: string, theme: string): string {
-  const entry = CONN_TYPE_COLORS[connType?.toLowerCase()];
-  if (entry) return theme === 'light' ? entry.light : entry.dark;
-  return theme === 'light' ? '#475569' : '#94a3b8';
-}
 
 // Traverse hierarchy tree to collect NodeInfo map
 function buildNodesMap(root: NodeLayout): Map<string, NodeInfo> {
@@ -180,7 +175,7 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
       cy.elements().filter((e: any) => hiddenSet.has(e.data('originalId')) || hiddenSet.has(e.data('represents'))).addClass('hidden');
     }
 
-    cy.edges('.bundle-edge').forEach((bEdge: any) => {
+    cy.edges('.bundle-edge').forEach(() => {
       // Keep bundle edges logic if needed, but they are visually hidden now
     });
 
@@ -579,16 +574,25 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
       </div>
       
       {selectedName && root && connections && (
-        <div style={{
-          position: 'absolute', right: 0, top: 0, bottom: 0,
-          width: 400, zIndex: 100,
-          background: 'var(--bg-panel)', borderLeft: '1px solid var(--border-color)',
-          boxShadow: '-4px 0 15px rgba(0,0,0,0.3)',
-          display: 'flex', flexDirection: 'column', overflow: 'hidden'
-        }}>
-          <div style={{ padding: 16, borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>Inspector</h3>
-            <button onClick={() => setSelectedName(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 20 }}>&times;</button>
+        <div
+          className="slide-in-right"
+          style={{
+            position: 'absolute', right: 0, top: 0, bottom: 0,
+            width: 380, zIndex: 100,
+            background: 'var(--bg-panel-solid)',
+            borderLeft: '1px solid var(--border-color)',
+            boxShadow: '-8px 0 24px rgba(0,0,0,0.4)',
+            display: 'flex', flexDirection: 'column', overflow: 'hidden'
+          }}
+        >
+          <div style={{
+            padding: '14px 18px',
+            borderBottom: '1px solid var(--border-color)',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            flexShrink: 0, background: 'rgba(99,219,188,0.03)'
+          }}>
+            <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>Inspector</h3>
+            <button onClick={() => setSelectedName(null)} className="btn-icon" style={{ borderRadius: 'var(--radius-full)', padding: 6 }}>&times;</button>
           </div>
           <div style={{ flex: 1, overflowY: 'auto' }}>
             {selectedNodeObj ? (
@@ -658,17 +662,28 @@ export function ConnectionsPage() {
   }, [sceneLayout]);
 
   if (isLoadingData) {
-    return <div style={{ padding: 24, color: 'var(--text-primary)' }}>Loading...</div>;
+    return (
+      <div className="loading-container" style={{ height: '100%' }}>
+        <div className="loading-spinner" />
+        <span>Loading twin data...</span>
+      </div>
+    );
   }
 
   if (!rawHierarchy || !rawConnections || !sceneLayout) {
-    return <div style={{ padding: 24, color: 'var(--text-primary)' }}>No twin data available.</div>;
+    return (
+      <div className="empty-state" style={{ height: '100%' }}>
+        <span className="empty-state-title">No twin data available.</span>
+        <span className="empty-state-desc">Please wait for station data to load or check the connection.</span>
+      </div>
+    );
   }
 
   return (
     <HoverContext.Provider value={{
       hoveredName,
-      hoveredNodes: new Set(),
+      hoveredAssociated: new Set(),
+      selectedAssociated: new Set(),
       hoveredAncestors: new Set(),
       selectedAncestors: new Set(),
       activeLayer: null,

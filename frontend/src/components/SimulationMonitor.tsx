@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { formatTime } from '../utils';
 
 interface SimulationMonitorProps {
@@ -30,7 +30,7 @@ export function SimulationMonitor({ simState }: SimulationMonitorProps) {
     <div style={{ padding: '16px', height: '100%', overflowY: 'auto', color: 'var(--text-primary)', fontSize: '13px' }}>
       
       <div style={{ marginBottom: '24px' }}>
-        <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--accent-blue)', marginBottom: '8px', textTransform: 'uppercase' }}>Station Overview</h3>
+        <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--accent-primary)', marginBottom: '8px', textTransform: 'uppercase' }}>Station Overview</h3>
         <div style={{ display: 'flex', gap: '16px', backgroundColor: 'var(--bg-input)', padding: '12px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
           <div>
             <div style={{ color: 'var(--text-secondary)', fontSize: '11px', textTransform: 'uppercase' }}>Time</div>
@@ -118,7 +118,7 @@ export function SimulationMonitor({ simState }: SimulationMonitorProps) {
         ) : (
           upcoming_events.slice(0, 5).map((ev: any, idx: number) => (
             <div key={idx} style={{ backgroundColor: 'var(--bg-input)', padding: '8px', marginBottom: '8px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
-              <div style={{ fontWeight: 'bold', color: 'var(--accent-blue)' }}>{ev.event_ref}</div>
+              <div style={{ fontWeight: 'bold', color: 'var(--accent-primary)' }}>{ev.event_ref}</div>
               <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{ev.selector ? `Target: ${ev.selector}` : 'Global'}</div>
               <div style={{ fontSize: '11px', color: 'var(--text-tertiary)', marginTop: '4px' }}>
                 At: {ev.at} h | For: {ev.duration === Infinity || ev.duration === null ? 'Infinite' : `${ev.duration} h`}

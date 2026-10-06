@@ -79,15 +79,15 @@ export function DSLEditor({ value, onChange, selectedLine, errorLine, sourceVers
         inherit: true,
         rules: [
           { token: 'comment', foreground: '64748b' },
-          { token: 'selector', foreground: '00e676' }, // Aurora green
-          { token: 'keyword', foreground: 'b566ff', fontStyle: 'bold' }, // Aurora purple
-          { token: 'operator', foreground: '00d2ff' }, // Aurora cyan
-          { token: 'delimiter', foreground: '00d2ff' }, // Aurora cyan
+          { token: 'selector', foreground: '63dbbc' }, // accent-primary
+          { token: 'keyword', foreground: 'b566ff', fontStyle: 'bold' }, // aurora purple
+          { token: 'operator', foreground: '0ea5e9' }, // aurora blue
+          { token: 'delimiter', foreground: '0ea5e9' }, // aurora blue
           { token: 'number', foreground: 'fbbf24' },
         ],
         colors: {
-          'editor.background': '#06060c', // Matches --bg-main
-          'editor.lineHighlightBackground': '#161a29', // Matches --bg-panel-secondary
+          'editor.background': '#060812', // Matches --bg-main
+          'editor.lineHighlightBackground': '#0b1221', // Matches --bg-panel-secondary
         }
       });
       monaco.editor.defineTheme('twin-light', {
@@ -163,8 +163,8 @@ export function DSLEditor({ value, onChange, selectedLine, errorLine, sourceVers
   return (
     <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
       <style>{`
-        .error-line-highlight { background-color: rgba(239, 68, 68, 0.2) !important; }
-        .selected-line-highlight { background-color: rgba(255, 255, 255, 0.1) !important; }
+        .error-line-highlight { background-color: rgba(244, 63, 94, 0.2) !important; }
+        .selected-line-highlight { background-color: rgba(99, 219, 188, 0.1) !important; }
       `}</style>
       <Editor
         height="100%"
@@ -179,8 +179,8 @@ export function DSLEditor({ value, onChange, selectedLine, errorLine, sourceVers
         options={{
           minimap: { enabled: false },
           scrollBeyondLastLine: false,
-          fontSize: 14,
-          fontFamily: '"Consolas", "Monaco", monospace',
+          fontSize: 13,
+          fontFamily: '"JetBrains Mono", "Consolas", monospace',
           wordWrap: 'on',
           lineNumbersMinChars: 3,
         }}

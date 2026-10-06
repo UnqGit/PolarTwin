@@ -28,19 +28,19 @@ export const ConnectionInspector: React.FC<ConnectionInspectorProps> = ({ connec
   }, [connection.id, liveStateRef, (connection as any).isBus, (connection as any).groupedConnections]);
 
   let statusStr = "ACTIVE";
-  let statusColor = "#4ade80"; // green
+  let statusColor = "var(--status-active)";
   if ((connection as any).isBus && (connection as any).groupedConnections) {
      const activeCount = (connection as any).groupedConnections.filter((c: any) => {
        const st = liveStateRef?.current?.[c.id] as any;
        return st && (String(st.status).toLowerCase() === 'active' || String(st.status).toLowerCase() === 'ok');
      }).length;
      statusStr = `${activeCount}/${(connection as any).groupedConnections.length} ACTIVE`;
-     statusColor = activeCount > 0 ? "#4ade80" : "#94a3b8";
+     statusColor = activeCount > 0 ? "var(--status-active)" : "var(--status-inactive)";
   } else if (liveState.status) {
     const s = String(liveState.status).toLowerCase();
-    if (s === 'active' || s === 'ok') { statusStr = 'ACTIVE'; statusColor = '#4ade80'; }
-    else if (s === 'inactive' || s === 'off') { statusStr = 'INACTIVE'; statusColor = '#94a3b8'; }
-    else { statusStr = 'FAILURE'; statusColor = '#ef4444'; }
+    if (s === 'active' || s === 'ok') { statusStr = 'ACTIVE'; statusColor = 'var(--status-active)'; }
+    else if (s === 'inactive' || s === 'off') { statusStr = 'INACTIVE'; statusColor = 'var(--status-inactive)'; }
+    else { statusStr = 'FAILURE'; statusColor = 'var(--status-critical)'; }
   }
 
   return (
@@ -113,12 +113,12 @@ export const ConnectionInspector: React.FC<ConnectionInspectorProps> = ({ connec
               {(connection as any).groupedConnections.map((c: any, i: number) => {
                 const cLive = liveState[c.id] as any || {};
                 let cStatus = 'UNKNOWN';
-                let cColor = '#94a3b8';
+                let cColor = 'var(--status-inactive)';
                 if (cLive.status) {
                    const cs = String(cLive.status).toLowerCase();
-                   if (cs === 'active' || cs === 'ok') { cStatus = 'ACTIVE'; cColor = '#4ade80'; }
-                   else if (cs === 'inactive' || cs === 'off') { cStatus = 'INACTIVE'; cColor = '#94a3b8'; }
-                   else { cStatus = 'FAILURE'; cColor = '#ef4444'; }
+                   if (cs === 'active' || cs === 'ok') { cStatus = 'ACTIVE'; cColor = 'var(--status-active)'; }
+                   else if (cs === 'inactive' || cs === 'off') { cStatus = 'INACTIVE'; cColor = 'var(--status-inactive)'; }
+                   else { cStatus = 'FAILURE'; cColor = 'var(--status-critical)'; }
                 }
                 
                 return (

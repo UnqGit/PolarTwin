@@ -684,34 +684,34 @@ export function ScenariosPage() {
     <div className="page-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: 'var(--bg-main)', color: 'var(--text-primary)', overflow: 'hidden' }}>
       <style>{
         `.glass-btn-sm {
-          transition: all 0.2s ease;
+          transition: all 0.18s ease;
         }
         .glass-btn-sm:hover {
-          background: var(--accent-blue) !important;
-          color: #fff !important;
-          border-color: var(--accent-blue) !important;
-          box-shadow: 0 0 10px rgba(0, 230, 118, 0.3);
+          background: var(--accent-primary) !important;
+          color: #030a0f !important;
+          border-color: var(--accent-primary) !important;
+          box-shadow: 0 0 12px rgba(99, 219, 188, 0.3);
         }
         .topbar-select {
           transition: border-color 0.2s;
         }
         .topbar-select:hover {
-          border-color: var(--accent-blue) !important;
+          border-color: var(--accent-primary) !important;
         }
         .page-container::-webkit-scrollbar {
-          display: none;
+          width: 5px; height: 5px;
         }
-        .page-container {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
+        .page-container::-webkit-scrollbar-thumb {
+          background: rgba(99,219,188,0.15);
+          border-radius: 9999px;
         }
         .modal-btn:focus {
-          outline: 2px solid var(--accent-blue);
+          outline: 2px solid var(--accent-primary);
           outline-offset: 2px;
       }`}</style>
 
       {/* Top Bar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px', backgroundColor: 'var(--bg-panel-secondary)', borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
+      <div style={{ position: 'relative', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px', backgroundColor: 'var(--bg-panel-secondary)', borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
           <Dropdown
             value={selectedScenarioId || ''}

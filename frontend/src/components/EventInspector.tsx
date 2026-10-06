@@ -71,14 +71,14 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
   return (
     <div style={{ padding: 16, color: 'var(--text-primary)', fontSize: 13, height: '100%', overflowY: 'auto' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-        <h3 style={{ fontSize: 14, fontWeight: 'bold', color: 'var(--accent-blue)', margin: 0 }}>{event.event_ref}</h3>
+        <h3 style={{ fontSize: 14, fontWeight: 'bold', color: 'var(--accent-primary)', margin: 0 }}>{event.event_ref}</h3>
         {onUpdateEvent && (
           <button 
             onClick={() => isEditing ? handleSave() : setIsEditing(true)}
             style={{ 
               padding: '4px 8px', 
-              backgroundColor: isEditing ? 'var(--accent-green)' : 'var(--bg-input)', 
-              color: isEditing ? '#fff' : 'var(--text-primary)', 
+              backgroundColor: isEditing ? 'var(--accent-primary)' : 'var(--bg-input)', 
+              color: isEditing ? '#030a0f' : 'var(--text-primary)', 
               fontSize: '12px', 
               borderRadius: '4px', 
               border: '1px solid var(--border-color)', 

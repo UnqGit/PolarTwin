@@ -437,22 +437,23 @@ export const PropertyInspector: React.FC<InspectorProps> = ({ node, connections,
 
 export const SectionHeader: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <div style={{
-    marginTop: 12,
+    marginTop: 14,
     marginBottom: 6,
     fontSize: 10,
     textTransform: 'uppercase',
-    letterSpacing: '0.08em',
+    letterSpacing: '0.1em',
+    fontWeight: 700,
     color: 'var(--text-tertiary)',
-    borderBottom: '1px solid var(--hover-overlay)',
-    paddingBottom: 4,
+    borderBottom: '1px solid var(--border-color)',
+    paddingBottom: 5,
   }}>
     {children}
   </div>
 );
 
 export const Row: React.FC<{ label: string; value: React.ReactNode }> = ({ label, value }) => (
-  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4, gap: 8 }}>
-    <span style={{ color: 'var(--text-tertiary)' }}>{label}</span>
-    <span style={{ color: 'var(--text-secondary)', textAlign: 'right', wordBreak: 'break-all' }}>{value}</span>
+  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 5, gap: 8, alignItems: 'flex-start' }}>
+    <span style={{ color: 'var(--text-tertiary)', fontSize: 12, flexShrink: 0 }}>{label}</span>
+    <span style={{ color: 'var(--text-secondary)', textAlign: 'right', wordBreak: 'break-all', fontSize: 12, fontWeight: 500 }}>{value}</span>
   </div>
 );

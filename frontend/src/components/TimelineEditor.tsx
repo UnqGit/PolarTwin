@@ -116,7 +116,7 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }}>
             <div style={{ marginTop: containerRef.current ? -containerRef.current.scrollTop : 0 }}>
               {events.map((ev, i) => (
-                <div key={i} style={{ height: ROW_HEIGHT, display: 'flex', alignItems: 'center', padding: '0 8px', borderBottom: '1px solid rgba(255,255,255,0.05)', color: 'var(--text-secondary)', fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', backgroundColor: selectedEvent === ev ? 'var(--bg-input)' : 'transparent' }}>
+                <div key={i} style={{ height: ROW_HEIGHT, display: 'flex', alignItems: 'center', padding: '0 8px', borderBottom: '1px solid var(--border-color)', color: selectedEvent === ev ? 'var(--accent-primary)' : 'var(--text-secondary)', fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', backgroundColor: selectedEvent === ev ? 'rgba(99,219,188,0.08)' : 'transparent' }}>
                   {ev.event_ref}
                 </div>
               ))}
@@ -176,8 +176,8 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
             <div style={{ position: 'absolute', top: 30, bottom: 0, left: 0, right: 0, width: '100%', backgroundImage: 'linear-gradient(to right, var(--border-color) 1px, transparent 1px)', backgroundSize: `${PIXELS_PER_UNIT}px 100%`, zIndex: 0 }} />
 
             {/* Playhead */}
-            <div style={{ position: 'absolute', top: 30, bottom: 0, width: '2px', backgroundColor: '#ef4444', zIndex: 10, boxShadow: '0 0 8px rgba(239,68,68,0.8)', left: `${simTime * PIXELS_PER_UNIT}px`, transition: 'left 0.1s linear' }}>
-              <div style={{ position: 'absolute', top: '-24px', transform: 'translateX(-50%)', backgroundColor: '#ef4444', color: '#fff', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
+            <div style={{ position: 'absolute', top: 30, bottom: 0, width: '2px', backgroundColor: 'var(--accent-primary)', zIndex: 10, boxShadow: '0 0 8px rgba(99,219,188,0.8)', left: `${simTime * PIXELS_PER_UNIT}px`, transition: 'left 0.1s linear' }}>
+              <div style={{ position: 'absolute', top: '-24px', transform: 'translateX(-50%)', backgroundColor: 'var(--accent-primary)', color: '#030a0f', fontSize: '10px', padding: '2px 6px', borderRadius: '4px', fontWeight: 'bold' }}>
                 {formatTime(simTime || 0)}
               </div>
             </div>

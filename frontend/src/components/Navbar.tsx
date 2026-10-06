@@ -1,127 +1,85 @@
 import { NavLink, Link } from 'react-router-dom';
-import { 
-  Box, 
-  Activity, 
-  Network, 
-  Settings2, 
-  History, 
+import {
+  Activity,
+  Network,
+  Settings2,
+  History,
   Snowflake,
   MonitorPlay,
   Sun,
-  Moon
+  Moon,
+  Box
 } from 'lucide-react';
 import { useStation } from './StationContext';
 import { useTheme } from './ThemeContext';
 import { SimulationManager } from './SimulationManager';
-
 
 export function Navbar() {
   const { selectedStation } = useStation();
   const { theme, toggleTheme } = useTheme();
 
   const navItems = [
-    { path: `/${selectedStation}/overview`, icon: Activity, label: 'Overview' },
-    { path: `/${selectedStation}/twin`, icon: MonitorPlay, label: 'Digital Twin' },
-    { path: `/${selectedStation}/components`, icon: Box, label: 'Components' },
-    { path: `/${selectedStation}/connections`, icon: Network, label: 'Connections' },
-    { path: `/${selectedStation}/scenarios`, icon: Settings2, label: 'Scenario/Simulation' },
-    { path: `/${selectedStation}/diagnostics`, icon: History, label: 'History' },
+    { path: `/${selectedStation}/overview`,     icon: Activity,    label: 'Overview' },
+    { path: `/${selectedStation}/twin`,         icon: MonitorPlay, label: 'Twin' },
+    { path: `/${selectedStation}/components`,   icon: Box,         label: 'Components' },
+    { path: `/${selectedStation}/connections`,  icon: Network,     label: 'Connections' },
+    { path: `/${selectedStation}/scenarios`,    icon: Settings2,   label: 'Scenarios' },
+    { path: `/${selectedStation}/diagnostics`,  icon: History,     label: 'History' },
   ];
 
   return (
-    <div className="glass-panel" style={{
-      width: '100%',
-      height: '64px',
-      display: 'grid',
-      gridTemplateColumns: '1fr auto 1fr',
-      alignItems: 'center',
-      borderLeft: 'none',
-      borderRight: 'none',
-      borderTop: 'none',
-      borderRadius: '0 0 8px 8px',
-      zIndex: 100,
-      padding: '0 24px',
-      boxSizing: 'border-box'
-    }}>
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        color: 'var(--text-primary)'
-      }}>
-        <Link to="/" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ 
-            color: 'var(--accent-blue)', 
-            display: 'flex', 
-            alignItems: 'center',
-            background: 'var(--bg-input)',
-            padding: '6px',
-            borderRadius: '8px',
-            boxShadow: 'var(--shadow-glow)'
-          }}>
-            <Snowflake size={20} />
+    <header className="navbar">
+      {/* Left — Logo + Station */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+        <Link to="/" className="nav-logo">
+          <div className="nav-logo-icon">
+            <Snowflake size={17} />
           </div>
-          <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, letterSpacing: '-0.03em' }}>
-            PolarTwin
-          </h1>
+          <span className="nav-logo-text">PolarTwin</span>
         </Link>
-        
-        <div style={{ width: '1px', height: '24px', background: 'var(--border-color)', margin: '0 8px' }} />
-        
-        <div style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-secondary)' }}>
-          {selectedStation || 'Loading...'}
-        </div>
+
+        {selectedStation && (
+          <>
+            <div className="divider-v" style={{ height: 20, margin: '0 12px' }} />
+            <div className="nav-station-badge">
+              <div style={{
+                width: 7, height: 7, borderRadius: '50%',
+                background: 'var(--status-active)',
+                boxShadow: '0 0 6px var(--status-active)',
+                animation: 'pulseDot 2.5s infinite'
+              }} />
+              {selectedStation}
+            </div>
+          </>
+        )}
       </div>
 
-      <nav style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+      {/* Center — Nav items */}
+      <nav className="nav-items">
         {navItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
-            style={({ isActive }) => ({
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '8px 14px',
-              borderRadius: '6px',
-              textDecoration: 'none',
-              fontWeight: 500,
-              fontSize: '13px',
-              transition: 'all 0.2s ease',
-              color: isActive ? 'var(--accent-blue)' : 'var(--text-secondary)',
-              background: isActive ? 'var(--bg-input)' : 'transparent',
-              boxShadow: isActive ? 'inset 0 -2px 0 var(--accent-blue)' : 'none',
-            })}
+            className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
           >
-            <item.icon size={16} />
+            <item.icon size={15} />
             {item.label}
           </NavLink>
         ))}
       </nav>
-      
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '16px' }}>
+
+      {/* Right — Controls */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
         <SimulationManager />
-        <button 
+        <button
           onClick={toggleTheme}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            color: 'var(--icon-color)',
-            cursor: 'pointer',
-            padding: '8px',
-            borderRadius: '50%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'background 0.2s',
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.background = 'var(--hover-overlay)'}
-          onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+          className="btn-icon"
           title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+          style={{ borderRadius: 'var(--radius-full)' }}
         >
-          {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
+          {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
         </button>
       </div>
-    </div>
+    </header>
   );
 }

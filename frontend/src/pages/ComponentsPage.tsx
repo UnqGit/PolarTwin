@@ -1,54 +1,23 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useStation } from '../components/StationContext';
-import { ChevronRight, Zap, Info, Box, Layers, Activity } from 'lucide-react';
+import {
+  ChevronRight, Info, Box, Layers, Activity, Search, X
+} from 'lucide-react';
 import { PropertyInspector } from '../components/PropertyInspector';
 import { buildSceneLayout } from '../lib/layout';
 import { IMAGE_MAP } from '../lib/constants';
 import { Footer } from '../components/Footer';
 
-const STYLE_INJECTION = `
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(15px); }
-    to { opacity: 1; transform: translateY(0); }
+const ANIM_STYLE = `
+  @keyframes cardIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
-  .card-hover {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  .card-hover:hover {
-    transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 230, 118, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
-  }
-  .image-zoom {
-    transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-  .card-hover:hover .image-zoom {
-    transform: scale(1.08);
-  }
-  .glass-btn {
-    transition: all 0.2s ease;
-  }
-  .glass-btn:hover {
-    background: var(--accent-blue);
-    color: #000;
-    border-color: var(--accent-blue);
-    box-shadow: 0 0 15px rgba(0, 230, 118, 0.3);
-  }
-  .breadcrumb-item {
-    transition: all 0.2s;
-  }
-  .breadcrumb-item:hover {
-    color: var(--accent-blue);
-    text-shadow: 0 0 8px rgba(0,230,118,0.4);
-  }
-  .page-container::-webkit-scrollbar {
-    display: none;
-  }
-  .page-container {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
+  .comp-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+  .comp-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg), var(--shadow-glow); border-color: rgba(99,219,188,0.25); }
+  .comp-img { transition: transform 0.5s ease; }
+  .comp-card:hover .comp-img { transform: scale(1.05); }
 `;
 
 export function ComponentsPage() {
@@ -57,165 +26,272 @@ export function ComponentsPage() {
   const [drillStack, setDrillStack] = useState<string[]>(location.state?.drillStack || []);
   const [fadeState, setFadeState] = useState<'in' | 'out'>('in');
   const [inspectNodeName, setInspectNodeName] = useState<string | null>(location.state?.inspectNodeName || null);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  // When location.state changes (e.g. user clicks a card in Overview again)
   useEffect(() => {
-    if (location.state?.drillStack) {
-      setDrillStack(location.state.drillStack);
-    }
-    if (location.state?.inspectNodeName) {
-      setInspectNodeName(location.state.inspectNodeName);
-    }
+    if (location.state?.drillStack) setDrillStack(location.state.drillStack);
+    if (location.state?.inspectNodeName) setInspectNodeName(location.state.inspectNodeName);
   }, [location.state]);
 
   const currentParentName = drillStack.length > 0 ? drillStack[drillStack.length - 1] : null;
 
   const displayedNodes = useMemo(() => {
     if (!hierarchyData || hierarchyData.length === 0) return [];
-
+    let nodes;
     if (currentParentName === null) {
       const allNames = new Set(hierarchyData.map((n: any) => n.name));
-      return hierarchyData.filter((n: any) => !n.parent || !allNames.has(n.parent));
+      nodes = hierarchyData.filter((n: any) => !n.parent || !allNames.has(n.parent));
     } else {
       const parentNode = hierarchyData.find((n: any) => n.name === currentParentName);
-      if (!parentNode || !parentNode.children) return [];
-      return hierarchyData.filter((n: any) => parentNode.children.includes(n.name));
+      if (!parentNode?.children) return [];
+      nodes = hierarchyData.filter((n: any) => parentNode.children.includes(n.name));
     }
-  }, [hierarchyData, currentParentName]);
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      nodes = nodes.filter((n: any) =>
+        n.name.toLowerCase().includes(q) || (n.type || '').toLowerCase().includes(q)
+      );
+    }
+    return nodes;
+  }, [hierarchyData, currentParentName, searchQuery]);
+
+  const transition = (fn: () => void) => {
+    setFadeState('out');
+    setTimeout(() => { fn(); setFadeState('in'); }, 200);
+  };
 
   const handleDrillDown = (nodeName: string) => {
     const node = hierarchyData.find((n: any) => n.name === nodeName);
-    if (!node || !node.children || node.children.length === 0) return;
-
-    setFadeState('out');
-    setTimeout(() => {
-      setInspectNodeName(null);
-      setDrillStack(prev => [...prev, nodeName]);
-      setFadeState('in');
-    }, 250);
+    if (!node?.children?.length) return;
+    transition(() => { setInspectNodeName(null); setDrillStack(prev => [...prev, nodeName]); });
   };
 
-  const handleCrumbClick = (index: number) => {
-    setFadeState('out');
-    setTimeout(() => {
-      setInspectNodeName(null);
-      setDrillStack(prev => prev.slice(0, index + 1));
-      setFadeState('in');
-    }, 250);
-  };
+  const handleCrumbClick = (index: number) =>
+    transition(() => { setInspectNodeName(null); setDrillStack(prev => prev.slice(0, index + 1)); });
 
-  const handleRootClick = () => {
-    setFadeState('out');
-    setTimeout(() => {
-      setInspectNodeName(null);
-      setDrillStack([]);
-      setFadeState('in');
-    }, 250);
-  };
+  const handleRootClick = () =>
+    transition(() => { setInspectNodeName(null); setDrillStack([]); });
 
-  if (!selectedStation) {
-    return <div style={{ color: 'white', padding: 24 }}>No station selected.</div>;
-  }
+  if (!selectedStation) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+      <p style={{ color: 'var(--text-secondary)' }}>No station selected.</p>
+    </div>
+  );
 
   return (
-    <div className="page-container" style={{ display: 'flex', height: '100%', overflow: 'hidden', color: 'var(--text-primary)' }}>
-      <style>{STYLE_INJECTION}</style>
+    <div style={{ display: 'flex', height: '100%', overflow: 'hidden', color: 'var(--text-primary)' }}>
+      <style>{ANIM_STYLE}</style>
+
+      {/* Main scrollable area */}
       <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ padding: '32px 48px', flex: 1 }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
+        <div style={{ padding: '28px 36px', flex: 1 }}>
+
+          {/* Page header */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
             <div>
-              <h1 style={{ fontSize: '32px', fontWeight: 800, margin: '0 0 8px 0', letterSpacing: '-0.5px' }}>Component Library</h1>
-              <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '15px' }}>Explore and inspect subsystem components</p>
+              <h1 style={{ fontSize: 24, fontWeight: 800, margin: '0 0 5px 0', letterSpacing: '-0.03em' }}>
+                Component Library
+              </h1>
+              <p style={{ color: 'var(--text-secondary)', margin: 0, fontSize: 13 }}>
+                Explore and inspect subsystem components
+              </p>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: 600, color: 'var(--accent-cyan)', padding: '8px 16px', background: 'rgba(181, 102, 255, 0.1)', borderRadius: '20px', border: '1px solid rgba(181, 102, 255, 0.2)' }}>
-              <Layers size={16} />
-              {displayedNodes.length} Items
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {/* Search */}
+              <div style={{ position: 'relative' }}>
+                <Search size={14} style={{
+                  position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)',
+                  color: 'var(--text-tertiary)', pointerEvents: 'none'
+                }} />
+                <input
+                  type="text"
+                  placeholder="Search components..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  style={{ paddingLeft: 32, paddingRight: searchQuery ? 28 : 12, width: 200 }}
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    style={{
+                      position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)',
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      color: 'var(--text-tertiary)', padding: 2,
+                    }}
+                  >
+                    <X size={12} />
+                  </button>
+                )}
+              </div>
+              {/* Count badge */}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '6px 14px',
+                background: 'rgba(99,219,188,0.08)',
+                border: '1px solid rgba(99,219,188,0.2)',
+                borderRadius: 'var(--radius-full)',
+                fontSize: 12, fontWeight: 700, color: 'var(--accent-primary)'
+              }}>
+                <Layers size={13} />
+                {displayedNodes.length} Items
+              </div>
             </div>
           </div>
 
-          {/* Breadcrumbs */}
-          <div className="glass-panel" style={{ padding: '12px 20px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 32, fontSize: 14, color: 'var(--text-secondary)', width: 'max-content' }}>
-            <div
+          {/* Breadcrumb */}
+          <div className="glass-panel breadcrumb" style={{
+            padding: '10px 16px',
+            borderRadius: 'var(--radius-md)',
+            marginBottom: 24,
+            width: 'max-content',
+            maxWidth: '100%',
+            flexWrap: 'wrap',
+          }}>
+            <span
+              className={`breadcrumb-item${drillStack.length === 0 ? ' active' : ''}`}
               onClick={handleRootClick}
-              style={{ cursor: 'pointer', fontWeight: drillStack.length === 0 ? 600 : 400, color: drillStack.length === 0 ? 'var(--text-primary)' : 'var(--text-secondary)' }}
-              className="breadcrumb-item"
             >
               {selectedStation}
-            </div>
-
+            </span>
             {drillStack.map((crumb, idx) => {
               const isLast = idx === drillStack.length - 1;
               return (
-                <div key={crumb} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <ChevronRight size={14} color="var(--text-tertiary)" />
-                  <div
+                <span key={crumb} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <ChevronRight size={13} className="breadcrumb-sep" />
+                  <span
+                    className={`breadcrumb-item${isLast ? ' active' : ''}`}
                     onClick={() => !isLast && handleCrumbClick(idx)}
-                    style={{ cursor: isLast ? 'default' : 'pointer', fontWeight: isLast ? 600 : 400, color: isLast ? 'var(--text-primary)' : 'var(--text-secondary)' }}
-                    className={!isLast ? "breadcrumb-item" : ""}
                   >
                     {crumb}
-                  </div>
-                </div>
+                  </span>
+                </span>
               );
             })}
           </div>
 
           {/* Grid */}
-          <div
-            style={{
-              display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 24,
-              opacity: fadeState === 'in' ? 1 : 0, transition: 'opacity 0.25s ease-in-out',
-              paddingBottom: '40px'
-            }}
-          >
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+            gap: 20,
+            opacity: fadeState === 'in' ? 1 : 0,
+            transition: 'opacity 0.2s ease',
+            paddingBottom: 40,
+          }}>
             {displayedNodes.map((node: any, i: number) => {
-              const isContainer = node.children && node.children.length > 0;
-              const img = IMAGE_MAP[node.type] || IMAGE_MAP.default;
+              const isContainer = node.children?.length > 0;
+              const imgArr = IMAGE_MAP[node.type] || IMAGE_MAP.default;
+              const imgSrc = imgArr[Math.abs(node.name.split('').reduce((a: number, b: string) => {
+                a = ((a << 5) - a) + b.charCodeAt(0); return a;
+              }, 0)) % imgArr.length];
+
               return (
                 <div
                   key={node.name}
-                  className="glass-panel card-hover"
+                  className="glass-panel comp-card"
                   onClick={() => isContainer && handleDrillDown(node.name)}
                   style={{
-                    borderRadius: 16, overflow: 'hidden', cursor: isContainer ? 'pointer' : 'default',
+                    borderRadius: 'var(--radius-xl)',
+                    overflow: 'hidden',
+                    cursor: isContainer ? 'pointer' : 'default',
                     display: 'flex', flexDirection: 'column',
-                    animation: fadeState === 'in' ? `fadeUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards ${i * 0.05}s` : 'none',
-                    opacity: fadeState === 'in' ? 0 : 1,
-                    boxShadow: node.name === inspectNodeName ? '0 0 0 2px var(--accent-blue)' : 'none'
+                    boxShadow: node.name === inspectNodeName
+                      ? '0 0 0 2px var(--accent-primary), var(--shadow-glow)'
+                      : 'var(--shadow-sm)',
+                    animation: `cardIn 0.45s cubic-bezier(0.4,0,0.2,1) ${i * 0.04}s both`,
+                    border: node.name === inspectNodeName
+                      ? '1px solid var(--accent-primary)'
+                      : '1px solid var(--border-color)',
                   }}
                 >
-                  <div style={{ height: 160, position: 'relative', overflow: 'hidden' }}>
-                    <div className="image-zoom" style={{ width: '100%', height: '100%', backgroundImage: `url(${img[Math.abs(node.name.split('').reduce((a: number, b: string) => { a = ((a << 5) - a) + b.charCodeAt(0); return a }, 0)) % img.length]})`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-                    <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)' }} />
-                    <div style={{ position: 'absolute', top: 12, right: 12, background: 'rgba(0,230,118,0.15)', border: '1px solid rgba(0,230,118,0.3)', backdropFilter: 'blur(8px)', padding: '4px 10px', borderRadius: 20, fontSize: 11, fontWeight: 700, color: 'var(--accent-blue)', display: 'flex', alignItems: 'center', gap: 6, boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}>
-                      <div style={{ width: 6, height: 6, borderRadius: '50%', background: 'currentColor', boxShadow: '0 0 8px currentColor' }} />
+                  {/* Image */}
+                  <div style={{ height: 150, position: 'relative', overflow: 'hidden', background: 'var(--bg-panel-secondary)' }}>
+                    <div
+                      className="comp-img"
+                      style={{
+                        width: '100%', height: '100%',
+                        backgroundImage: `url(${imgSrc})`,
+                        backgroundSize: 'cover', backgroundPosition: 'center',
+                      }}
+                    />
+                    <div style={{
+                      position: 'absolute', inset: 0,
+                      background: 'linear-gradient(to top, rgba(6,8,18,0.88) 0%, rgba(6,8,18,0.1) 60%, transparent 100%)',
+                    }} />
+                    {/* Status badge */}
+                    <div style={{
+                      position: 'absolute', top: 10, right: 10,
+                      display: 'flex', alignItems: 'center', gap: 5,
+                      padding: '3px 9px', borderRadius: 'var(--radius-full)',
+                      background: 'rgba(74,222,128,0.15)',
+                      border: '1px solid rgba(74,222,128,0.3)',
+                      backdropFilter: 'blur(8px)',
+                      fontSize: 10, fontWeight: 700,
+                      color: 'var(--status-active)',
+                      letterSpacing: '0.06em',
+                    }}>
+                      <div style={{
+                        width: 5, height: 5, borderRadius: '50%',
+                        background: 'currentColor', animation: 'pulseDot 2.5s infinite'
+                      }} />
                       ACTIVE
                     </div>
+                    {isContainer && (
+                      <div style={{
+                        position: 'absolute', bottom: 10, right: 10,
+                        display: 'flex', alignItems: 'center', gap: 5,
+                        padding: '3px 9px', borderRadius: 'var(--radius-full)',
+                        background: 'rgba(99,219,188,0.12)',
+                        border: '1px solid rgba(99,219,188,0.2)',
+                        backdropFilter: 'blur(8px)',
+                        fontSize: 10, fontWeight: 700, color: 'var(--accent-primary)',
+                      }}>
+                        {node.children.length} items inside
+                      </div>
+                    )}
                   </div>
-                  <div style={{ padding: 20, display: 'flex', flexDirection: 'column', gap: 12, flex: 1, background: 'var(--bg-panel-solid)' }}>
+
+                  {/* Card body */}
+                  <div style={{
+                    padding: '16px 18px',
+                    display: 'flex', flexDirection: 'column', gap: 10, flex: 1,
+                    background: 'var(--bg-panel-solid)',
+                  }}>
                     <div>
-                      <h3 style={{ fontSize: 18, fontWeight: 700, margin: 0, color: 'var(--text-primary)', letterSpacing: '-0.3px' }}>{node.name}</h3>
-                      <div style={{ fontSize: 12, color: 'var(--accent-amber)', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em', marginTop: 6 }}>
-                        {node.type} {isContainer ? `· ${node.children.length} items` : ''}
+                      <h3 style={{
+                        fontSize: 15, fontWeight: 700, margin: '0 0 4px 0',
+                        color: 'var(--text-primary)', letterSpacing: '-0.02em',
+                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                      }}>
+                        {node.name}
+                      </h3>
+                      <div style={{
+                        fontSize: 11, color: 'var(--accent-amber)',
+                        textTransform: 'uppercase', fontWeight: 700,
+                        letterSpacing: '0.06em',
+                      }}>
+                        {node.type || 'Component'}
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 'auto', paddingTop: 12, borderTop: '1px solid var(--border-color)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', fontWeight: 500 }}>
-                        <Activity size={14} color="var(--accent-blue)" />
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 10,
+                      paddingTop: 10, borderTop: '1px solid var(--border-color)',
+                    }}>
+                      <div style={{
+                        display: 'flex', alignItems: 'center', gap: 5,
+                        fontSize: 12, color: 'var(--text-secondary)',
+                      }}>
+                        <Activity size={12} style={{ color: 'var(--status-active)' }} />
                         Operational
                       </div>
                       <div style={{ flex: 1 }} />
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setInspectNodeName(node.name);
-                        }}
-                        className="glass-btn"
-                        style={{ background: 'var(--bg-panel)', border: '1px solid var(--border-color)', borderRadius: 8, padding: '8px 14px', fontSize: 12, fontWeight: 600, color: 'var(--text-primary)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}
+                        onClick={(e) => { e.stopPropagation(); setInspectNodeName(node.name); }}
+                        className="btn btn-sm btn-secondary"
+                        style={{ gap: 5, fontSize: 11 }}
                       >
-                        <Info size={14} />
-                        Inspect
+                        <Info size={12} /> Inspect
                       </button>
                     </div>
                   </div>
@@ -225,46 +301,74 @@ export function ComponentsPage() {
           </div>
 
           {displayedNodes.length === 0 && (
-            <div className="glass-panel" style={{ textAlign: 'center', padding: '60px 48px', color: 'var(--text-tertiary)', borderRadius: 16 }}>
-              <Box size={48} style={{ margin: '0 auto', opacity: 0.2, marginBottom: 16 }} />
-              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 600, color: 'var(--text-secondary)' }}>No components found</h3>
-              <p style={{ margin: '8px 0 0 0', fontSize: 14 }}>This directory is empty or could not be loaded.</p>
+            <div className="glass-panel empty-state">
+              <Box size={40} className="empty-state-icon" />
+              <span className="empty-state-title">No components found</span>
+              <span className="empty-state-desc">
+                {searchQuery ? `No results for "${searchQuery}"` : 'This directory is empty or could not be loaded.'}
+              </span>
             </div>
           )}
         </div>
         <Footer />
       </div>
 
+      {/* Inspector panel */}
       {inspectNodeName && hierarchyData && (
-        <div style={{
-          width: 420, flexShrink: 0,
-          background: 'var(--bg-panel-solid)', borderLeft: '1px solid var(--border-color)',
-          display: 'flex', flexDirection: 'column', overflow: 'hidden',
-          boxShadow: '-10px 0 30px rgba(0,0,0,0.5)', zIndex: 10
-        }}>
-          <div style={{ padding: '24px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0, background: 'var(--bg-panel)' }}>
+        <div
+          className="slide-in-right"
+          style={{
+            width: 380, flexShrink: 0,
+            background: 'var(--bg-panel-solid)',
+            borderLeft: '1px solid var(--border-color)',
+            display: 'flex', flexDirection: 'column',
+            overflow: 'hidden',
+            boxShadow: '-8px 0 24px rgba(0,0,0,0.4)',
+            zIndex: 10,
+          }}
+        >
+          {/* Inspector header */}
+          <div style={{
+            padding: '16px 20px',
+            borderBottom: '1px solid var(--border-color)',
+            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            flexShrink: 0,
+            background: 'rgba(99,219,188,0.03)',
+          }}>
             <div>
-              <h3 style={{ margin: 0, fontSize: 18, fontWeight: 700 }}>Inspector</h3>
-              <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>{inspectNodeName}</div>
+              <h3 style={{ margin: 0, fontSize: 15, fontWeight: 700 }}>Inspector</h3>
+              <div style={{
+                fontSize: 11, color: 'var(--accent-primary)',
+                marginTop: 3, fontWeight: 600, letterSpacing: '0.02em',
+                overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                maxWidth: 260,
+              }}>
+                {inspectNodeName}
+              </div>
             </div>
-            <button onClick={() => setInspectNodeName(null)} style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', fontSize: 24, padding: '4px 8px', borderRadius: '4px' }} className="hover:bg-[var(--hover-overlay)] transition-colors">&times;</button>
+            <button
+              onClick={() => setInspectNodeName(null)}
+              className="btn-icon"
+              style={{ borderRadius: 'var(--radius-full)' }}
+            >
+              <X size={16} />
+            </button>
           </div>
-          {(() => {
-            try {
-              const layout = buildSceneLayout(hierarchyData, connections || [], spec || { components: {}, globals: {} });
-              const node = layout.allNodes.get(inspectNodeName);
-              if (node) {
-                return (
-                  <div className="page-container" style={{ flex: 1, overflowY: 'auto', padding: '12px' }}>
-                    <PropertyInspector node={node} connections={layout.connections} liveStateRef={liveStateRef || { current: {} }} flat={true} />
-                  </div>
-                );
+
+          <div style={{ flex: 1, overflowY: 'auto', padding: '8px' }}>
+            {(() => {
+              try {
+                const layout = buildSceneLayout(hierarchyData, connections || [], spec || { components: {}, globals: {} });
+                const node = layout.allNodes.get(inspectNodeName);
+                if (node) {
+                  return <PropertyInspector node={node as any} connections={layout.connections} liveStateRef={liveStateRef || { current: {} }} flat={true} />;
+                }
+              } catch (e) {
+                console.error(e);
               }
-            } catch (e) {
-              console.error(e);
-            }
-            return <div style={{ padding: 24, color: 'var(--text-secondary)' }}>Failed to load inspector for {inspectNodeName}.</div>;
-          })()}
+              return <div style={{ padding: 20, color: 'var(--text-secondary)', fontSize: 13 }}>Failed to load inspector for {inspectNodeName}.</div>;
+            })()}
+          </div>
         </div>
       )}
     </div>
