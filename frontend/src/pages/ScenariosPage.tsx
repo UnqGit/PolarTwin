@@ -698,13 +698,7 @@ export function ScenariosPage() {
         .topbar-select:hover {
           border-color: var(--accent-primary) !important;
         }
-        .page-container::-webkit-scrollbar {
-          width: 5px; height: 5px;
-        }
-        .page-container::-webkit-scrollbar-thumb {
-          background: rgba(99,219,188,0.15);
-          border-radius: 9999px;
-        }
+
         .modal-btn:focus {
           outline: 2px solid var(--accent-primary);
           outline-offset: 2px;

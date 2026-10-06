@@ -9,7 +9,7 @@ import {
 import { useTheme } from '../components/ThemeContext';
 
 /* ── Aurora particle canvas ───────────────────────────── */
-function AuroraCanvas() {
+function AuroraCanvas({ theme }: { theme: 'light' | 'dark' }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -27,18 +27,35 @@ function AuroraCanvas() {
     };
     window.addEventListener('resize', resize);
 
-    // Particles
-    const particles: { x: number; y: number; r: number; speed: number; alpha: number; color: string }[] = [];
-    const colors = ['#63dbc0', '#38d9f5', '#a78bfa', '#f8d57e'];
-    for (let i = 0; i < 60; i++) {
-      particles.push({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        r: Math.random() * 1.5 + 0.3,
-        speed: Math.random() * 0.3 + 0.05,
-        alpha: Math.random() * 0.5 + 0.1,
-        color: colors[Math.floor(Math.random() * colors.length)],
-      });
+    const isDark = theme === 'dark';
+    const particles: { x: number; y: number; r: number; speed: number; speedX: number; alpha: number; color: string }[] = [];
+    
+    if (isDark) {
+      const colors = ['#63dbc0', '#38d9f5', '#a78bfa', '#f8d57e'];
+      for (let i = 0; i < 60; i++) {
+        particles.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: Math.random() * 1.5 + 0.3,
+          speed: Math.random() * 0.3 + 0.05,
+          speedX: 0,
+          alpha: Math.random() * 0.5 + 0.1,
+          color: colors[Math.floor(Math.random() * colors.length)],
+        });
+      }
+    } else {
+      // Light theme: Snow particles
+      for (let i = 0; i < 60; i++) {
+        particles.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: Math.random() * 2 + 0.8,
+          speed: Math.random() * 1.2 + 0.4,
+          speedX: Math.random() * 0.8 - 0.4,
+          alpha: Math.random() * 0.6 + 0.2,
+          color: '#ffffff',
+        });
+      }
     }
 
     let frame = 0;
@@ -48,41 +65,57 @@ function AuroraCanvas() {
       ctx.clearRect(0, 0, w, h);
       frame += 0.005;
 
-      // Aurora waves
-      for (let band = 0; band < 3; band++) {
-        const grad = ctx.createLinearGradient(0, 0, w, 0);
-        const offset = band * 0.15;
-        const yBase = h * (0.3 + band * 0.12) + Math.sin(frame * 0.7 + band) * 40;
-        grad.addColorStop(0, 'transparent');
-        grad.addColorStop(Math.min(1, 0.2 + offset), `rgba(99,219,188,${0.04 + band * 0.015})`);
-        grad.addColorStop(Math.min(1, 0.5 + offset), `rgba(56,217,245,${0.06 + band * 0.01})`);
-        grad.addColorStop(Math.min(1, 0.8 + offset), `rgba(167,139,250,${0.04})`);
-        grad.addColorStop(1, 'transparent');
+      if (isDark) {
+        // Aurora waves
+        for (let band = 0; band < 3; band++) {
+          const grad = ctx.createLinearGradient(0, 0, w, 0);
+          const offset = band * 0.15;
+          const yBase = h * (0.3 + band * 0.12) + Math.sin(frame * 0.7 + band) * 40;
+          grad.addColorStop(0, 'transparent');
+          grad.addColorStop(Math.min(1, 0.2 + offset), `rgba(99,219,188,${0.04 + band * 0.015})`);
+          grad.addColorStop(Math.min(1, 0.5 + offset), `rgba(56,217,245,${0.06 + band * 0.01})`);
+          grad.addColorStop(Math.min(1, 0.8 + offset), `rgba(167,139,250,${0.04})`);
+          grad.addColorStop(1, 'transparent');
 
-        ctx.save();
-        ctx.beginPath();
-        ctx.moveTo(0, yBase);
-        for (let x = 0; x <= w; x += 8) {
-          const y = yBase +
-            Math.sin(x * 0.003 + frame + band) * 30 +
-            Math.sin(x * 0.007 + frame * 1.3) * 15;
-          ctx.lineTo(x, y);
+          ctx.save();
+          ctx.beginPath();
+          ctx.moveTo(0, yBase);
+          for (let x = 0; x <= w; x += 8) {
+            const y = yBase +
+              Math.sin(x * 0.003 + frame + band) * 30 +
+              Math.sin(x * 0.007 + frame * 1.3) * 15;
+            ctx.lineTo(x, y);
+          }
+          ctx.lineTo(w, h);
+          ctx.lineTo(0, h);
+          ctx.closePath();
+          ctx.fillStyle = grad;
+          ctx.fill();
+          ctx.restore();
         }
-        ctx.lineTo(w, h);
-        ctx.lineTo(0, h);
-        ctx.closePath();
-        ctx.fillStyle = grad;
-        ctx.fill();
-        ctx.restore();
       }
 
-      // Stars
-      particles.forEach(p => {
-        p.y -= p.speed;
-        if (p.y < -5) { p.y = h + 5; p.x = Math.random() * w; }
+      // Particles (Stars or Snow)
+      particles.forEach((p, idx) => {
+        if (isDark) {
+          p.y -= p.speed;
+          if (p.y < -5) { p.y = h + 5; p.x = Math.random() * w; }
+        } else {
+          // Snow movement with gentle breeze
+          p.y += p.speed;
+          p.x += p.speedX + Math.sin(frame * 2 + idx * 0.1) * 0.4;
+          if (p.y > h + 5) { p.y = -5; p.x = Math.random() * w; }
+          if (p.x > w + 5) { p.x = -5; }
+          if (p.x < -5) { p.x = w + 5; }
+        }
+
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        ctx.fillStyle = p.color + Math.round(p.alpha * 255).toString(16).padStart(2, '0');
+        if (isDark) {
+          ctx.fillStyle = p.color + Math.round(p.alpha * 255).toString(16).padStart(2, '0');
+        } else {
+          ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha})`;
+        }
         ctx.fill();
       });
 
@@ -94,7 +127,7 @@ function AuroraCanvas() {
       window.removeEventListener('resize', resize);
       cancelAnimationFrame(animId);
     };
-  }, []);
+  }, [theme]);
 
   return (
     <canvas
@@ -342,8 +375,8 @@ export function LandingPage() {
           transition: 'filter 0.4s ease',
         }} />
 
-        {/* Aurora canvas */}
-        <AuroraCanvas />
+        {/* Dynamic Canvas (Aurora or Snow) */}
+        <AuroraCanvas theme={theme} />
 
         {/* Bottom gradient blend */}
         <div style={{

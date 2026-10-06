@@ -27,7 +27,6 @@ const AURORA_COLORS = ['#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#d946ef'];
 
 export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime, onSelectEvent, selectedEvent, onAppendEvent, onUpdateEventLocation, onDeleteEvent, onSeek }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const topScrollRef = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState(800);
 
   const PIXELS_PER_UNIT = 40; // 40px per simulation hour
@@ -125,21 +124,8 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
         </div>
       </div>
 
-      {/* Timeline track container with top scrollbar */}
+      {/* Timeline track container */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        {/* Top dummy scrollbar */}
-        <div
-          ref={topScrollRef}
-          onScroll={(e) => {
-            if (containerRef.current && Math.abs(containerRef.current.scrollLeft - e.currentTarget.scrollLeft) > 1) {
-              containerRef.current.scrollLeft = e.currentTarget.scrollLeft;
-            }
-          }}
-          style={{ overflowX: 'auto', overflowY: 'hidden', height: 16, flexShrink: 0, backgroundColor: 'var(--bg-panel-secondary)', borderBottom: '1px solid var(--border-color)', display: maxTime * PIXELS_PER_UNIT > containerWidth ? 'block' : 'none' }}
-        >
-          <div style={{ width: Math.max(containerWidth, maxTime * PIXELS_PER_UNIT), height: 1 }}></div>
-        </div>
-
         {/* Actual timeline container */}
         <div
           ref={containerRef}
@@ -147,9 +133,6 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
           onDrop={handleDrop}
           onScroll={(e) => {
             e.currentTarget.style.transform = 'translateZ(0)';
-            if (topScrollRef.current && Math.abs(topScrollRef.current.scrollLeft - e.currentTarget.scrollLeft) > 1) {
-              topScrollRef.current.scrollLeft = e.currentTarget.scrollLeft;
-            }
           }}
           style={{ flex: 1, position: 'relative', overflowX: 'auto', overflowY: 'auto' }}
         >
