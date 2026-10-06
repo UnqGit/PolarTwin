@@ -245,7 +245,9 @@ class SimulationEngineCore:
         scenes: list[SceneEvent],
         hierarchy: HierarchyGraph | None = None,
         global_tolerance: float = 10.0,
+        specs: list[dict] | None = None,
     ):
+        self.specs = specs or []
         self.state = state_manager
         # Sort by (at, stable source order) — scene order preserved within same at
         self.scenes: list[SceneEvent] = sorted(scenes, key=lambda s: s.at)
@@ -395,6 +397,15 @@ class SimulationEngineCore:
             # Determine targets
             targets = self._resolve_scene_targets(scene, eff_comps, eff_conns, ext)
 
+            # --- GAP 1: Target Match Strictness ---
+            if scene.selector and not targets:
+                expected_kind = getattr(scene, "event_definition", None)
+                kind_str = expected_kind.target_kind if expected_kind else "unknown"
+                raise ValueError(
+                    f"Event '{scene.event_ref}' targeting '{scene.selector}' "
+                    f"yielded no matching targets (expected kind: {kind_str})."
+                )
+
             for target, node_key_hint in targets:
                 # Track explicitly imposed inactive
                 if scene.payload.get("status") == "inactive":  # noqa: SIM102
@@ -406,7 +417,36 @@ class SimulationEngineCore:
                     if not isinstance(target, (RuntimeComponent, RuntimeConnection)):
                         field_path = field
                     else:
-                        field_path = field if field in ("status",) else f"value.{field}"
+                        if isinstance(target, RuntimeComponent):
+                            if field == "status":
+                                # --- GAP 3: Top-level status validation ---
+                                if value not in ("active", "inactive", "failure"):
+                                    raise ValueError(f"Invalid status '{value}' for component {target.name}")
+                                field_path = "status"
+                            elif field == "is_backup":
+                                raise ValueError("is_backup is immutable and cannot be set")
+                            else:
+                                # --- GAP 2: Field existence validation against spec.json ---
+                                root_field = field.split(".")[0]
+                                comp_spec = next((s for s in self.specs if s.get("type") == target.type), None)
+                                if comp_spec:
+                                    valid_fields = set()
+                                    for section in ("rating@state", "rating@input", "rating@output"):
+                                        if section in comp_spec:
+                                            valid_fields.update(comp_spec[section].keys())
+                                    if root_field not in valid_fields:
+                                        raise ValueError(
+                                            f"Field '{root_field}' is not a valid field for component type '{target.type}' "
+                                            f"(target: {target.name})"
+                                        )
+                                field_path = f"value.{field}"
+                        else:  # RuntimeConnection
+                            if field == "status":
+                                if value not in ("active", "inactive", "failure"):
+                                    raise ValueError(f"Invalid status '{value}' for connection")
+                                field_path = "status"
+                            else:
+                                raise ValueError(f"Connections only support 'status' mutations, got '{field}'")
 
                     if is_inf:
                         self.state.apply_infinite_event(

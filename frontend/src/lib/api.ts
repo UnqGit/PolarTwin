@@ -164,11 +164,11 @@ export const api = {
     }
     return res.json();
   },
-  parseScenarioRaw: async (source: string) => {
+  parseScenarioRaw: async (source: string, stationId?: string) => {
     const res = await fetch(`${API_BASE}/scenarios/parse`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ source })
+      body: JSON.stringify({ source, station_id: stationId })
     });
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));

@@ -134,7 +134,7 @@ export function ScenariosPage() {
     if (editingType === 'scenario' && scenarioSource) {
       const timer = setTimeout(() => {
         const start = performance.now();
-        api.parseScenarioRaw(scenarioSource)
+        api.parseScenarioRaw(scenarioSource, selectedStation)
           .then(events => {
             const end = performance.now();
             setCompileLogs([{ message: `Successfully compiled in ${(end - start).toFixed(1)}ms`, isError: false }]);
@@ -357,7 +357,7 @@ export function ScenariosPage() {
       setScenarioSource(newSource);
       setSourceVersion(v => v + 1);
       // Re-parse and update selectedEvent so the inspector refreshes
-      api.parseScenarioRaw(newSource)
+      api.parseScenarioRaw(newSource, selectedStation)
         .then(events => {
           setScenarioEvents(events);
           // Find the updated event at the same source location

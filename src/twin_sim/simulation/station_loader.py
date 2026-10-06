@@ -127,6 +127,7 @@ class LoadedStation:
             scenes=list(scenes or []),
             hierarchy=self.hierarchy_graph,
             global_tolerance=global_tolerance,
+            specs=self.specs_list,
         )
 
     def to_manifest(self) -> dict[str, Any]:

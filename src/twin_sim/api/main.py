@@ -295,14 +295,83 @@ def get_scenario_events(scenario_id: str):
 
 class ParseScenarioRequest(BaseModel):
     source: str
+    station_id: str | None = None
 
 
 @app.post("/scenarios/parse")
 def parse_scenario_raw(payload: ParseScenarioRequest):
     try:
         from twin_sim.dsl.scene_parser import parse_scene_string
+        from twin_sim.dsl.event_parser import parse_event_string
+        from twin_sim.ingestion.models import RuntimeComponent
 
         events = parse_scene_string(payload.source)
+        
+        if payload.station_id:
+            station = _manager.get_loaded_station(payload.station_id)
+            if station:
+                for ev in events:
+                    try:
+                        ev_def_row = _scenario_manager.get_event(f"{payload.station_id}:{ev.event_ref}")
+                        ev.event_definition = parse_event_string(ev_def_row["source"], name=ev.event_ref)
+                        if ev.selector is None:
+                            specific_external_targets = {
+                                "external.network": "@network",
+                                "external.weather": "@weather",
+                                "external.supplies": "@supplies",
+                            }
+                            synthetic = specific_external_targets.get(ev.event_definition.target_kind)
+                            if synthetic:
+                                ev.selector = synthetic
+                    except:
+                        pass
+                
+                engine = station.build_engine(scenes=events)
+                for scene in list(engine.scenes):
+                    try:
+                        targets = engine._resolve_scene_targets(scene, 
+                            {c.name: c for c in engine.state.get_effective_state_dict()["components"]}, 
+                            list(engine.state.effective_connections.values()), 
+                            engine.state.base_external)
+
+                        if scene.selector and not targets:
+                            expected_kind = getattr(scene, "event_definition", None)
+                            kind_str = expected_kind.target_kind if expected_kind else "unknown"
+                            raise ValueError(
+                                f"Event '{scene.event_ref}' targeting '{scene.selector}' yielded no matching targets (expected kind: {kind_str})."
+                            )
+
+                        for target, _ in targets:
+                            for field, value in scene.payload.items():
+                                if isinstance(target, RuntimeComponent):
+                                    if field == "status" and value not in ("active", "inactive", "failure"):
+                                        raise ValueError(f"Invalid status '{value}' for component {target.name}")
+                                    elif field == "is_backup":
+                                        raise ValueError("is_backup is immutable and cannot be set")
+                                    elif field != "status":
+                                        root_field = field.split(".")[0]
+                                        comp_spec = next((s for s in engine.specs if s.get("type") == target.type), None)
+                                        if comp_spec:
+                                            valid_fields = set()
+                                            for section in ("rating@state", "rating@input", "rating@output"):
+                                                if section in comp_spec:
+                                                    valid_fields.update(comp_spec[section].keys())
+                                            if root_field not in valid_fields:
+                                                raise ValueError(
+                                                    f"Field '{root_field}' is not a valid field for component type '{target.type}' (target: {target.name})"
+                                                )
+                                elif type(target).__name__ == "RuntimeConnection":
+                                    if field == "status" and value not in ("active", "inactive", "failure"):
+                                        raise ValueError(f"Invalid status '{value}' for connection")
+                                    elif field != "status":
+                                        raise ValueError(f"Connections only support 'status' mutations, got '{field}'")
+                    except ValueError as ve:
+                        class ValidationError(Exception):
+                            pass
+                        err = ValidationError(str(ve))
+                        err.line_number = getattr(scene, "source_location", 1)
+                        raise err
+
         return [
             {
                 "event_ref": e.event_ref,
@@ -315,7 +384,7 @@ def parse_scenario_raw(payload: ParseScenarioRequest):
             }
             for e in events
         ]
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         if hasattr(e, "line_number") and e.line_number is not None:
             raise HTTPException(
                 400,
