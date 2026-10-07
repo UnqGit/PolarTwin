@@ -55,7 +55,7 @@ def parse_scene_string(source: str) -> list[SceneEvent]:
                 # This must be an event line that ends with {
                 # e.g. event:set_component @Generator1 at=1.2 for=inf {
                 m = re.match(
-                    r"^event:([A-Za-z_]\w*)(?:\s+(@\S+))?\s+at=([\d\.]+)\s+for=(inf|[\d\.]+)\s*\{$",
+                    r"^event:([A-Za-z_]\w*)(?:\s+(@\S+))?\s+at=((?:\d+(?:\.\d*)?|\.\d+))\s+for=(inf|(?:\d+(?:\.\d*)?|\.\d+))\s*\{$",
                     line,
                 )
                 if not m:
@@ -93,7 +93,7 @@ def parse_scene_string(source: str) -> list[SceneEvent]:
         # Single line event
         # e.g. event:failure @Generator1 at=1.0 for=2.0
         m = re.match(
-            r"^event:([A-Za-z_]\w*)(?:\s+(@\S+))?\s+at=([\d\.]+)\s+for=(inf|[\d\.]+)$",
+            r"^event:([A-Za-z_]\w*)(?:\s+(@\S+))?\s+at=((?:\d+(?:\.\d*)?|\.\d+))\s+for=(inf|(?:\d+(?:\.\d*)?|\.\d+))$",
             line,
         )
         if m:

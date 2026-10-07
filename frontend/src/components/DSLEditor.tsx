@@ -46,7 +46,7 @@ export function DSLEditor({ value, onChange, selectedLine, errorLine, sourceVers
             // Delimiters: = { } :
             [/[={}:]/, 'delimiter'],
             // Numbers (including decimals)
-            [/\b\d+(\.\d+)?\b/, 'number'],
+            [/\d+(?:\.\d*)?|\.\d+/, 'number'],
           ]
         }
       });
@@ -69,7 +69,7 @@ export function DSLEditor({ value, onChange, selectedLine, errorLine, sourceVers
             // Delimiters: = { }
             [/[={}]/, 'delimiter'],
             // Numbers
-            [/\b\d+(\.\d+)?\b/, 'number'],
+            [/\d+(?:\.\d*)?|\.\d+/, 'number'],
           ]
         }
       });
@@ -180,7 +180,7 @@ export function DSLEditor({ value, onChange, selectedLine, errorLine, sourceVers
           minimap: { enabled: false },
           scrollBeyondLastLine: false,
           fontSize: 13,
-          fontFamily: '"JetBrains Mono", "Consolas", monospace',
+          fontFamily: '"Consolas", "Courier New", monospace',
           wordWrap: 'on',
           lineNumbersMinChars: 3,
         }}
