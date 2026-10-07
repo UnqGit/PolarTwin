@@ -389,10 +389,9 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
 
   return (
     <div style={{
-      position: 'absolute', left: 0, top: 0, bottom: bottomOffset,
+      position: 'absolute', left: 0, top: 0, bottom: 0,
       display: 'flex', flexDirection: 'row-reverse', zIndex: 20,
       pointerEvents: 'none',
-      transition: 'bottom 0.3s ease',
     }}>
       {editingTarget && (
         <div style={{
@@ -593,7 +592,7 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
               </div>
             )}
           </div>
-          <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden' }}>
+          <div style={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', paddingBottom: bottomOffset }}>
             {activeView === 'hierarchy' && <TreeNode node={root} depth={0} expandedSet={expandedSet} toggleExpanded={toggleExpanded} isEditingInitials={isEditingInitials} onEditInitials={(name, type) => setEditingTarget({ name, type })} hideSensors={hideSensors} />}
             {activeView === 'connections' && <ConnectionsList connections={connections} isEditingInitials={isEditingInitials} onEditInitials={(name, type) => setEditingTarget({ name, type })} />}
             {activeView === 'interactivity' && (
@@ -697,9 +696,10 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
         background: 'var(--bg-panel-solid)',
         borderRight: '1px solid var(--border-color)',
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        paddingTop: 8, paddingBottom: 8,
+        paddingTop: 8, paddingBottom: 8 + bottomOffset,
         boxSizing: 'border-box', pointerEvents: 'auto',
         backdropFilter: 'blur(12px)',
+        transition: 'padding-bottom 0s',
       }}>
         {customSidebarTopTabs?.map(tab => (
           <IconBtn key={tab.id} icon={tab.icon} active={activeView === tab.id} onClick={tab.onClick ? () => tab.onClick!(toggleView) : () => toggleView(tab.id)} title={tab.title} />

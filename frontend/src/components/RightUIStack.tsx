@@ -49,7 +49,7 @@ export const RightUIStack: React.FC<RightUIStackProps> = ({ children, root, conn
       overflowY: 'auto',
       overflowX: 'hidden',
       maxWidth: `calc(40vw + 40px)`,
-      transition: 'right 0.3s ease, bottom 0.3s ease',
+      transition: 'right 0.3s ease',
     }}>
       {/* 1. HUD / Viewer Info (passed as children) */}
       <div style={{ pointerEvents: 'auto', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>

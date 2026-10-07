@@ -598,6 +598,7 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
             customSidebarTabs={customSidebarTabs}
             lightingMode={internalLightingMode}
             onLightingModeChange={setInternalLightingMode}
+            containerOcclusion={internalOcclusion}
             onContainerOcclusionChange={setInternalOcclusion}
             bottomOffset={bottomOffset}
             hideEditInitials={hideEditInitials}

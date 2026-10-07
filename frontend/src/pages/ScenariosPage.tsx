@@ -42,7 +42,7 @@ export function ScenariosPage() {
   const [editingType, setEditingType] = useState<'scenario' | 'event'>('scenario');
   const [isEditingInitials, setIsEditingInitials] = useState<boolean>(false);
   const [valueOverrides, setValueOverrides] = useState<Record<string, Record<string, number>>>({});
-  const [newFileModal, setNewFileModal] = useState<{ type: 'scenario' | 'event', name: string } | null>(null);
+  const [newFileModal, setNewFileModal] = useState<{ type: 'scenario' | 'event', name: string, startAfter?: boolean } | null>(null);
   const [newFileError, setNewFileError] = useState<string | null>(null);
   const [renameModal, setRenameModal] = useState<{ type: 'scenario' | 'event', id: string, name: string } | null>(null);
   const [renameError, setRenameError] = useState<string | null>(null);
@@ -59,9 +59,33 @@ export function ScenariosPage() {
 
   // UI state
   const [timelineOpen, setTimelineOpen] = useState(true);
+  const [timelineZoom, setTimelineZoom] = useState(100);
   const [bottomOpen, setBottomOpen] = useState(false);
   const [leftOpen, setLeftOpen] = useState(true);
   const [bottomTab, setBottomTab] = useState<'source' | 'log' | 'diagnostics' | 'inspector' | 'monitor'>('source');
+
+  const ZOOM_STEPS = [25, 33, 50, 67, 75, 80, 90, 100, 110, 125, 150, 175, 200, 250, 300, 400, 500];
+
+  const handleZoomOut = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setTimelineZoom(z => {
+      const next = [...ZOOM_STEPS].reverse().find(s => s < z);
+      return next || ZOOM_STEPS[0];
+    });
+  };
+
+  const handleZoomIn = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setTimelineZoom(z => {
+      const next = ZOOM_STEPS.find(s => s > z);
+      return next || ZOOM_STEPS[ZOOM_STEPS.length - 1];
+    });
+  };
+
+  const handleZoomReset = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setTimelineZoom(100);
+  };
 
   const [rightPanelWidth, setRightPanelWidth] = useState(450);
   const [bottomPanelHeight, setBottomPanelHeight] = useState(192);
@@ -102,7 +126,7 @@ export function ScenariosPage() {
       }
     }).catch(console.error);
     if (selectedStation) api.getEventDefinitions(selectedStation).then(setEventDefs).catch(console.error);
-  }, [selectedStation, selectedScenarioId, selectedEventDefId]);
+  }, [selectedStation]); // Run ONLY when selectedStation changes
 
   useEffect(() => {
     if (editingType === 'scenario' && selectedScenarioId) {
@@ -186,20 +210,31 @@ export function ScenariosPage() {
     };
   }, [runId, simStatus]);
 
+  const startSimulationWithScenario = async (targetScenarioId: string) => {
+    if (!selectedStation) return;
+    try {
+      const res = await api.createSimulation(selectedStation, targetScenarioId, 20.0, Object.keys(valueOverrides).length > 0 ? valueOverrides : undefined);
+      setRunId(res.runId);
+      setSimStatus(res.status);
+      if (telemetryEnabled) {
+        await api.setTelemetryPublishing(res.runId, true);
+      }
+    } catch (err: any) {
+      alert("Failed to start simulation: " + (err.message || err.toString()));
+    }
+  };
+
   const handleStartStop = async () => {
     if (!runId) {
-      if (!selectedStation || !selectedScenarioId) return;
-      try {
-        await saveSource();
-        const res = await api.createSimulation(selectedStation, selectedScenarioId, 20.0, Object.keys(valueOverrides).length > 0 ? valueOverrides : undefined);
-        setRunId(res.runId);
-        setSimStatus(res.status);
-        if (telemetryEnabled) {
-          await api.setTelemetryPublishing(res.runId, true);
-        }
-      } catch (err: any) {
-        alert("Failed to start simulation: " + (err.message || err.toString()));
+      if (!selectedStation) return;
+      
+      if (!selectedScenarioId) {
+        setNewFileModal({ type: 'scenario', name: 'new_scenario', startAfter: true });
+        return;
       }
+      
+      await saveSource();
+      startSimulationWithScenario(selectedScenarioId);
     } else {
       if (telemetryEnabled) {
         try {
@@ -1092,7 +1127,7 @@ export function ScenariosPage() {
             />
           )}
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 12px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0 12px', alignItems: 'center', gap: '8px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-panel-secondary)' }}>
             <div
               style={{
                 height: '40px',
@@ -1112,10 +1147,38 @@ export function ScenariosPage() {
                 {timelineOpen ? <ChevronDown size={16} /> : <ChevronUp size={16} />}
               </div>
             </div>
+            
+            {/* Zoom Controls */}
+            {timelineOpen && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <button
+                  onClick={handleZoomOut}
+                  className="btn-glass"
+                  style={{ padding: '2px 8px', fontSize: 14, height: 22 }}
+                  title="Zoom Out"
+                >-</button>
+                <div style={{ fontSize: '11px', color: 'var(--text-secondary)', minWidth: '40px', textAlign: 'center', userSelect: 'none' }}>
+                  {timelineZoom}%
+                </div>
+                <button
+                  onClick={handleZoomIn}
+                  className="btn-glass"
+                  style={{ padding: '2px 8px', fontSize: 14, height: 22 }}
+                  title="Zoom In"
+                >+</button>
+                <button
+                  onClick={handleZoomReset}
+                  className="btn-glass"
+                  style={{ padding: '2px 8px', fontSize: 11, height: 22, marginLeft: '4px' }}
+                  title="Reset Zoom"
+                >Reset</button>
+              </div>
+            )}
+
             {selectedEvent && editingType === 'scenario' && (
               <button
                 onClick={() => handleDeleteEventFromTimeline(selectedEvent)}
-                style={{ fontSize: '10px', padding: '2px 6px', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '4px', cursor: 'pointer', marginRight: '8px' }}
+                style={{ height: '22px', fontSize: '10px', padding: '0 8px', display: 'flex', alignItems: 'center', background: 'rgba(239, 68, 68, 0.2)', border: '1px solid #ef4444', color: '#ef4444', borderRadius: '4px', cursor: 'pointer' }}
               >
                 Delete Instance
               </button>
@@ -1123,7 +1186,7 @@ export function ScenariosPage() {
             {selectedComponentName && (
               <button
                 onClick={() => setSelectedComponentName(null)}
-                style={{ fontSize: '10px', padding: '2px 6px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', borderRadius: '4px', cursor: 'pointer' }}
+                style={{ height: '22px', fontSize: '10px', padding: '0 8px', display: 'flex', alignItems: 'center', background: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', borderRadius: '4px', cursor: 'pointer' }}
               >
                 Clear Filter
               </button>
@@ -1133,6 +1196,7 @@ export function ScenariosPage() {
             <TimelineEditor
               events={scenarioEvents}
               simTime={simTime}
+              zoom={timelineZoom}
               selectedEvent={selectedEvent}
               onSelectEvent={(ev) => {
                 setSelectedEvent(ev);
@@ -1172,6 +1236,11 @@ export function ScenariosPage() {
                   setSelectedScenarioId(res.id);
                   setEditingType('scenario');
                   setSelectedEventDefId(null);
+                  setScenarioSource('');
+                  setSavedScenarioSource('');
+                  if (newFileModal.startAfter) {
+                    startSimulationWithScenario(res.id);
+                  }
                 } else if (newFileModal.type === 'event' && selectedStation) {
                   const res = await api.createEventDefinition(selectedStation, name);
                   if (selectedStation) api.getEventDefinitions(selectedStation).then(setEventDefs);
