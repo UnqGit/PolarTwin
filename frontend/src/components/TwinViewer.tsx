@@ -276,6 +276,7 @@ interface TwinViewerProps {
   children?: ReactNode; // For the HUD overlay
   customSidebarTabs?: { id: string, icon: React.ReactNode, title: string, content: React.ReactNode }[];
   leftPanelOpen?: boolean;
+  setLeftPanelOpen?: (open: boolean) => void;
   rightOffset?: number;
   bottomOffset?: number;
   hideEditInitials?: boolean;
@@ -301,6 +302,7 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
   children,
   customSidebarTabs,
   leftPanelOpen = true,
+  setLeftPanelOpen,
   rightOffset = 20,
   bottomOffset = 20,
   hideEditInitials = false,
@@ -575,37 +577,37 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
           <RightUIStack root={sceneLayout.root} connections={renderedConnections} liveStateRef={liveStateRef} rightOffset={rightOffset} bottomOffset={bottomOffset}>
           </RightUIStack>
 
-          {leftPanelOpen && (
-            <HierarchyPanel 
-              root={sceneLayout.root}
-              connections={renderedConnections}
-              componentsInteractable={activeComponentsInteractable}
-              connectionsInteractable={activeConnectionsInteractable}
-              onComponentsInteractableChange={handleComponentsInteractable}
-              onConnectionsInteractableChange={handleConnectionsInteractable}
-              hideAllComponents={hideAllComponents}
-              hideAllConnections={hideAllConnections}
-              onHideAllComponentsChange={setHideAllComponents}
-              onHideAllConnectionsChange={setHideAllConnections}
-              liveStateRef={liveStateRef}
-              onResetCamera={handleResetCamera}
-              activeLayer={activeLayer}
-              setActiveLayer={setActiveLayer}
-              onShowGraph={() => setIsGraphOpen(true)}
-              customSidebarTabs={customSidebarTabs}
-              lightingMode={internalLightingMode}
-              onLightingModeChange={setInternalLightingMode}
-              onContainerOcclusionChange={setInternalOcclusion}
-              bottomOffset={bottomOffset}
-              hideEditInitials={hideEditInitials}
-              isEditingInitials={isEditingInitials}
-              setIsEditingInitials={setIsEditingInitials}
-              onSetInitials={onSetInitials}
-              onResetInitials={onResetInitials}
-              valueOverrides={valueOverrides}
-              runtime={runtime}
-            />
-          )}
+          <HierarchyPanel 
+            isOpen={leftPanelOpen}
+            onIsOpenChange={setLeftPanelOpen}
+            root={sceneLayout.root}
+            connections={renderedConnections}
+            componentsInteractable={activeComponentsInteractable}
+            connectionsInteractable={activeConnectionsInteractable}
+            onComponentsInteractableChange={handleComponentsInteractable}
+            onConnectionsInteractableChange={handleConnectionsInteractable}
+            hideAllComponents={hideAllComponents}
+            hideAllConnections={hideAllConnections}
+            onHideAllComponentsChange={setHideAllComponents}
+            onHideAllConnectionsChange={setHideAllConnections}
+            liveStateRef={liveStateRef}
+            onResetCamera={handleResetCamera}
+            activeLayer={activeLayer}
+            setActiveLayer={setActiveLayer}
+            onShowGraph={() => setIsGraphOpen(true)}
+            customSidebarTabs={customSidebarTabs}
+            lightingMode={internalLightingMode}
+            onLightingModeChange={setInternalLightingMode}
+            onContainerOcclusionChange={setInternalOcclusion}
+            bottomOffset={bottomOffset}
+            hideEditInitials={hideEditInitials}
+            isEditingInitials={isEditingInitials}
+            setIsEditingInitials={setIsEditingInitials}
+            onSetInitials={onSetInitials}
+            onResetInitials={onResetInitials}
+            valueOverrides={valueOverrides}
+            runtime={runtime}
+          />
 
           {isGraphOpen && (
             <GraphModal 

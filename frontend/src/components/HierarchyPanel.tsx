@@ -166,6 +166,8 @@ export interface HierarchyPanelProps {
   onResetInitials?: (component: string) => void;
   valueOverrides?: Record<string, Record<string, number>>;
   runtime?: any[] | null;
+  isOpen?: boolean;
+  onIsOpenChange?: (isOpen: boolean) => void;
 }
 
 export const UNIT_MULTIPLIERS: Record<string, number> = {
@@ -238,9 +240,15 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
   onSetInitials,
   onResetInitials,
   valueOverrides = {},
-  runtime = null
+  runtime = null,
+  isOpen: externalIsOpen,
+  onIsOpenChange
 }) => {
-  const [activeView, setActiveView] = useState<string | null>('hierarchy');
+  const [activeView, setActiveView] = useState<string>('hierarchy');
+  const [internalIsOpen, setInternalIsOpen] = useState(true);
+  const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
+  const setIsOpen = onIsOpenChange || setInternalIsOpen;
+
   const [internalIsEditingInitials, setInternalIsEditingInitials] = useState(false);
   const isEditingInitials = externalIsEditingInitials !== undefined ? externalIsEditingInitials : internalIsEditingInitials;
   const setIsEditingInitials = externalSetIsEditingInitials || setInternalIsEditingInitials;
@@ -249,7 +257,6 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
 
   const { selectedName } = useSelection();
   const { runId } = useStation();
-  const isOpen = activeView !== null;
 
   // Clear editing state when view changes or another component is selected
   useEffect(() => {
@@ -353,8 +360,12 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
   }, [selectedName, root, activeView, isOpen]);
 
   const toggleView = (view: string) => {
-    if (activeView === view) setActiveView(null);
-    else setActiveView(view);
+    if (activeView === view && isOpen) {
+      setIsOpen(false);
+    } else {
+      setActiveView(view);
+      setIsOpen(true);
+    }
   };
 
   const IconBtn = ({ icon, active, onClick, title }: any) => (

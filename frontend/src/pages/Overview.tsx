@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useStation } from '../components/StationContext';
+import { useTheme } from '../components/ThemeContext';
 import {
   Activity, Thermometer, Zap, Box, Package, Radar,
   Cpu, Server, Radio, Wind, Droplets, BatteryCharging, ShieldCheck,
@@ -179,6 +180,7 @@ function GridCard({ block, fading, onClick }: { block: BlockData; fading: boolea
 }
 
 export function Overview() {
+  const { theme } = useTheme();
   const { selectedStation, hierarchy, liveStateRef, simTime } = useStation();
   const navigate = useNavigate();
 
@@ -324,20 +326,22 @@ export function Overview() {
             {/* Header overlay */}
             <div style={{
               padding: '20px 24px',
-              background: 'linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, transparent 100%)',
+              background: theme === 'dark' 
+                ? 'linear-gradient(to bottom, rgba(0,0,0,0.85) 0%, transparent 100%)'
+                : 'linear-gradient(to bottom, rgba(255,255,255,0.9) 0%, transparent 100%)',
               position: 'relative', zIndex: 2,
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4 }}>
                 <Radar size={18} style={{ color: 'var(--accent-cyan)' }} />
-                <span style={{ fontSize: 15, fontWeight: 700, color: '#fff', letterSpacing: '0.02em' }}>
+                <span style={{ fontSize: 15, fontWeight: 700, color: theme === 'dark' ? '#fff' : 'var(--text-primary)', letterSpacing: '0.02em' }}>
                   Satellite View
                 </span>
                 <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 5 }}>
                   <div style={{ width: 6, height: 6, borderRadius: '50%', background: '#4ade80', animation: 'pulseDot 2s infinite' }} />
-                  <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}>LIVE FEED</span>
+                  <span style={{ fontSize: 11, color: theme === 'dark' ? 'rgba(255,255,255,0.6)' : 'var(--text-secondary)', fontWeight: 600 }}>LIVE FEED</span>
                 </div>
               </div>
-              <p style={{ margin: 0, fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>
+              <p style={{ margin: 0, fontSize: 12, color: theme === 'dark' ? 'rgba(255,255,255,0.55)' : 'var(--text-secondary)' }}>
                 Live spatial telemetry feed
               </p>
             </div>

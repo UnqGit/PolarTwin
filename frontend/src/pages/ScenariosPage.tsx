@@ -7,7 +7,7 @@ import { DSLEditor } from '../components/DSLEditor';
 import type { SceneEventData } from '../components/TimelineEditor';
 import { EventInspector } from '../components/EventInspector';
 import { SimulationMonitor } from '../components/SimulationMonitor';
-import { Play, Pause, RefreshCw, StepForward, Code, List, Activity, Library, ChevronUp, ChevronDown, MousePointer2, LayoutDashboard, Trash2, FileText, FilePlus, PanelLeft, PanelRight, PanelBottom, Edit2 } from 'lucide-react';
+import { Play, Pause, RefreshCw, StepForward, Code, List, Activity, Library, ChevronUp, ChevronDown, MousePointer2, LayoutDashboard, Trash2, FileText, FilePlus, PanelLeft, PanelRight, PanelBottom, Edit2, X, RotateCcw, Radio, Square, PlayCircle } from 'lucide-react';
 import { formatTime } from '../utils';
 import { Dropdown } from '../components/Dropdown';
 
@@ -683,16 +683,7 @@ export function ScenariosPage() {
   return (
     <div className="page-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: 'var(--bg-main)', color: 'var(--text-primary)', overflow: 'hidden' }}>
       <style>{
-        `.glass-btn-sm {
-          transition: all 0.18s ease;
-        }
-        .glass-btn-sm:hover {
-          background: var(--accent-primary) !important;
-          color: #030a0f !important;
-          border-color: var(--accent-primary) !important;
-          box-shadow: 0 0 12px rgba(99, 219, 188, 0.3);
-        }
-        .topbar-select {
+        `.topbar-select {
           transition: border-color 0.2s;
         }
         .topbar-select:hover {
@@ -706,125 +697,129 @@ export function ScenariosPage() {
 
       {/* Top Bar */}
       <div style={{ position: 'relative', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px', backgroundColor: 'var(--bg-panel-secondary)', borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        {/* LEFT: Scenario Management & Component Config */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Dropdown
             value={selectedScenarioId || ''}
             onChange={val => { setSelectedScenarioId(val || null); setEditingType('scenario'); }}
             options={scenarios.map(s => ({ value: s.id, label: s.name }))}
             placeholder="-- Select Scenario --"
-            style={{ minWidth: 200 }}
+            style={{ minWidth: 220, height: 30 }}
           />
-          <button className="glass-btn-sm" onClick={() => { setSelectedScenarioId(null); setScenarioEvents([]); setRunId(null); setSimStatus('Ready'); if (editingType === 'scenario') setScenarioSource(''); }} style={{ fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-input)', color: 'var(--text-secondary)' }}>Deselect</button>
-
-          <button className="glass-btn-sm" onClick={saveSource} style={{ fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', border: '1px solid var(--border-color)', backgroundColor: 'var(--bg-input)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-            <FileText size={14} />
+          {selectedScenarioId && (
+            <button className="btn-glass" onClick={() => { setSelectedScenarioId(null); setScenarioEvents([]); setRunId(null); setSimStatus('Ready'); if (editingType === 'scenario') setScenarioSource(''); }} title="Deselect Scenario" style={{ padding: '0 8px' }}>
+              <X size={15} />
+            </button>
+          )}
+          <button className="btn-glass" onClick={saveSource} title="Save Scenario">
+            <FileText size={15} />
             Save
           </button>
           {scenarioSource !== savedScenarioSource && (
-            <span style={{ fontSize: '12px', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ fontSize: '11px', color: '#f59e0b', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600, padding: '0 4px', height: 30 }}>
               <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#f59e0b' }} />
-              Unsaved changes
+              Unsaved
             </span>
           )}
 
-          <span style={{ fontSize: '12px', padding: '4px 8px', backgroundColor: 'var(--bg-input)', borderRadius: '4px', fontFamily: 'monospace', border: '1px solid var(--border-color)' }}>
-            {simStatus} | T={formatTime(simTime || 0)}
-          </span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--text-secondary)' }}>Tolerance:</span>
-              <input
-                type="number"
-                ref={globalToleranceInputRef}
-                defaultValue={20}
-                onBlur={(e) => { if (runId) api.setGlobalTolerance(runId, parseFloat(e.target.value)); }}
-                style={{
-                  width: '50px', background: 'var(--bg-input)', border: '1px solid var(--border-solid)',
-                  color: 'var(--text-primary)', padding: '2px 6px', borderRadius: '4px', fontSize: '12px'
-                }}
-              />
-            </div>
+          <div style={{ width: 1, height: 16, backgroundColor: 'var(--border-color)', margin: '0 4px' }} />
+
+          {/* Tolerance & Editing Fields */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-tertiary)' }}>TOL:</span>
+            <input
+              type="number"
+              ref={globalToleranceInputRef}
+              defaultValue={20}
+              onBlur={(e) => { if (runId) api.setGlobalTolerance(runId, parseFloat(e.target.value)); }}
+              style={{
+                width: '45px', height: 30, background: 'var(--bg-input)', border: '1px solid var(--border-color)',
+                color: 'var(--text-primary)', padding: '0 6px', borderRadius: 'var(--radius-sm)', fontSize: '12px',
+                textAlign: 'center', outline: 'none'
+              }}
+            />
             <button
               onClick={() => {
                 if (runId) api.setGlobalTolerance(runId, 20);
                 if (globalToleranceInputRef.current) globalToleranceInputRef.current.value = '20';
               }}
-              style={{
-                fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', border: '1px solid var(--border-color)',
-                backgroundColor: 'var(--bg-input)', color: 'var(--text-secondary)'
-              }}
-              title="Reset global tolerance to default (20)"
+              className="btn-glass"
+              style={{ padding: '0 8px' }}
+              title="Reset Tolerance (20)"
             >
-              Set Default
-            </button>
-            <button
-              onClick={() => setIsEditingInitials(!isEditingInitials)}
-              style={{
-                fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', border: '1px solid var(--border-color)',
-                backgroundColor: isEditingInitials ? 'var(--accent-blue)' : 'var(--bg-input)',
-                color: isEditingInitials ? '#fff' : 'var(--text-secondary)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center'
-              }}
-              title="Toggle Edit Initials mode on components"
-            >
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M12 20h9"></path>
-                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-              </svg>
-            </button>
-            <button
-              onClick={() => {
-                setValueOverrides({});
-                if (runId) {
-                  api.resetSimulation(runId);
-                  setSimStatus('Ready');
-                  setSimTime(0);
-                }
-              }}
-              style={{
-                fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', border: '1px solid var(--border-color)',
-                backgroundColor: 'var(--bg-input)', color: 'var(--text-secondary)'
-              }}
-              title="Reset all components to defaults"
-            >
-              Reset All
-            </button>
-            <button
-              onClick={() => {
-                setTelemetryEnabled(!telemetryEnabled);
-              }}
-              style={{
-                fontSize: '12px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', border: '1px solid var(--border-color)',
-                backgroundColor: telemetryEnabled ? 'rgba(239, 68, 68, 0.2)' : 'var(--bg-input)',
-                color: telemetryEnabled ? '#ef4444' : 'var(--text-secondary)'
-              }}
-            >
-              {telemetryEnabled ? 'Telemetry: REC' : 'Telemetry: OFF'}
+              <RotateCcw size={15} />
             </button>
           </div>
+          
+          <button
+            onClick={() => setIsEditingInitials(!isEditingInitials)}
+            className={`btn-glass ${isEditingInitials ? "active" : ""}`}
+            style={{ padding: '0 8px' }}
+            title="Edit Initials"
+          >
+            <Edit2 size={15} />
+          </button>
+
+          <button
+            onClick={() => {
+              setValueOverrides({});
+              if (runId) {
+                api.resetSimulation(runId);
+                setSimStatus('Ready');
+                setSimTime(0);
+              }
+            }}
+            className="btn-glass"
+            style={{ padding: '0 10px' }}
+            title="Reset All Overrides"
+          >
+            <RefreshCw size={15} />
+            Reset All
+          </button>
+          <button
+            onClick={() => setTelemetryEnabled(!telemetryEnabled)}
+            className={`btn-glass ${telemetryEnabled ? 'active' : ''}`}
+            style={telemetryEnabled ? { color: '#ef4444', borderColor: 'rgba(239,68,68,0.5)', background: 'rgba(239,68,68,0.1)', padding: '0 10px' } : { padding: '0 10px' }}
+            title="Toggle Telemetry Recording"
+          >
+            <Radio size={15} /> {telemetryEnabled ? 'REC' : 'OFF'}
+          </button>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button onClick={handleReset} style={{ padding: '6px', background: 'transparent', border: 'none', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-secondary)' }} title="Reset">
-            <RefreshCw size={20} />
-          </button>
-          <button onClick={handleStep} style={{ padding: '6px', background: 'transparent', border: 'none', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-secondary)' }} title="Step Forward">
-            <StepForward size={20} />
-          </button>
+        {/* RIGHT: Playback & View Controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          
+          {/* YouTube-style Status & Time */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', height: 30 }}>
+            {simStatus.toUpperCase() === 'RUNNING' && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#ef4444', fontWeight: 600, fontSize: '11px', letterSpacing: '0.05em' }}>
+                <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#ef4444', boxShadow: '0 0 6px #ef4444' }} />
+                LIVE
+              </div>
+            )}
+            {simStatus.toUpperCase() !== 'RUNNING' && (
+              <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-tertiary)', letterSpacing: '0.05em' }}>
+                {simStatus.toUpperCase()}
+              </span>
+            )}
+            <span style={{ fontSize: '13px', fontFamily: 'var(--font-mono, monospace)', fontWeight: 500, color: 'var(--text-primary)' }}>
+              {formatTime(simTime || 0)}
+            </span>
+          </div>
 
-          {/* Duration Limit Input */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: 8 }}>
-            <span style={{ fontSize: 11, color: 'var(--text-tertiary)' }}>Stop at:</span>
+          <div style={{ width: 1, height: 16, backgroundColor: 'var(--border-color)', margin: '0 2px' }} />
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-tertiary)' }}>STOP:</span>
             <input
               type="number"
               value={simulationDuration || ''}
               onChange={e => setSimulationDuration(Math.max(0, parseInt(e.target.value) || 0))}
               placeholder="∞"
-              style={{ width: 45, background: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: 4, padding: '2px 4px', fontSize: 11 }}
+              style={{ width: 45, height: 30, background: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--text-primary)', borderRadius: 'var(--radius-sm)', padding: '0 6px', fontSize: 12, textAlign: 'center', outline: 'none' }}
             />
           </div>
 
-          {/* Playback Speed Dropdown */}
           <Dropdown
             value={playbackSpeed.toString()}
             onChange={async (val) => {
@@ -842,52 +837,60 @@ export function ScenariosPage() {
               { value: "60", label: "60x Speed" },
               { value: "240", label: "MAX (240x)" },
             ]}
-            style={{ minWidth: 100, marginLeft: 8 }}
+            style={{ minWidth: 100, height: 30 }}
           />
 
-          {/* Start/Stop Button */}
-          <button
-            onClick={handleStartStop}
-            style={{ padding: '8px', backgroundColor: runId ? '#ef4444' : 'var(--accent-blue)', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', boxShadow: 'var(--shadow-sm)', marginLeft: 8 }}
-            title={runId ? "Stop Simulation" : "Start Simulation"}
-          >
-            {runId ? <Pause size={20} style={{ transform: 'rotate(90deg)' }} /> : <Play size={20} />}
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <button className="btn-glass" onClick={handleReset} style={{ padding: '0 8px' }} title="Reset Run">
+              <RotateCcw size={16} />
+            </button>
+            <button className="btn-glass" onClick={handleStep} style={{ padding: '0 8px' }} title="Step Forward">
+              <StepForward size={16} />
+            </button>
+            <button
+              onClick={handlePlayPause}
+              disabled={!runId}
+              className="btn-glass"
+              style={{ padding: '0 8px', opacity: runId ? 1.0 : 0.5, cursor: runId ? 'pointer' : 'not-allowed' }}
+              title="Play/Pause"
+            >
+              {(simStatus === 'RUNNING' || simStatus === 'running') ? <Pause size={16} /> : <Play size={16} />}
+            </button>
+            <button
+              onClick={handleStartStop}
+              className="btn-glass"
+              style={{ padding: '0 12px', background: runId ? 'rgba(239,68,68,0.1)' : 'var(--accent-blue)', color: runId ? '#ef4444' : '#fff', borderColor: runId ? 'rgba(239,68,68,0.5)' : 'var(--accent-blue)' }}
+              title={runId ? "Stop Simulation" : "Start Simulation"}
+            >
+              {runId ? <Square size={16} /> : <PlayCircle size={16} />}
+              <span style={{ marginLeft: 4 }}>{runId ? 'Stop' : 'Start'}</span>
+            </button>
+          </div>
 
-          <button
-            onClick={handlePlayPause}
-            disabled={!runId}
-            style={{
-              padding: '8px', backgroundColor: 'var(--accent-blue)', color: '#fff', border: 'none', borderRadius: '4px',
-              cursor: runId ? 'pointer' : 'not-allowed', boxShadow: 'var(--shadow-sm)', marginLeft: 8,
-              opacity: runId ? 1.0 : 0.5
-            }}
-            title="Play/Pause"
-          >
-            {(simStatus === 'RUNNING' || simStatus === 'running') ? <Pause size={20} /> : <Play size={20} />}
-          </button>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '16px', borderLeft: '1px solid var(--border-color)', paddingLeft: '16px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', marginLeft: '6px', borderLeft: '1px solid var(--border-color)', paddingLeft: '10px' }}>
             <button
               onClick={() => setLeftOpen(!leftOpen)}
-              style={{ padding: '6px', background: 'transparent', border: 'none', borderRadius: '4px', cursor: 'pointer', color: leftOpen ? 'var(--accent-blue)' : 'var(--text-secondary)' }}
+              className={`btn-glass ${leftOpen ? 'active' : ''}`}
+              style={{ padding: '0 8px' }}
               title="Toggle Left Panel"
             >
-              <PanelLeft size={18} />
+              <PanelLeft size={16} />
             </button>
             <button
               onClick={() => setTimelineOpen(!timelineOpen)}
-              style={{ padding: '6px', background: 'transparent', border: 'none', borderRadius: '4px', cursor: 'pointer', color: timelineOpen ? 'var(--accent-blue)' : 'var(--text-secondary)' }}
+              className={`btn-glass ${timelineOpen ? 'active' : ''}`}
+              style={{ padding: '0 8px' }}
               title="Toggle Bottom Panel"
             >
-              <PanelBottom size={18} />
+              <PanelBottom size={16} />
             </button>
             <button
               onClick={() => setBottomOpen(!bottomOpen)}
-              style={{ padding: '6px', background: 'transparent', border: 'none', borderRadius: '4px', cursor: 'pointer', color: bottomOpen ? 'var(--accent-blue)' : 'var(--text-secondary)' }}
+              className={`btn-glass ${bottomOpen ? 'active' : ''}`}
+              style={{ padding: '0 8px' }}
               title="Toggle Right Panel"
             >
-              <PanelRight size={18} />
+              <PanelRight size={16} />
             </button>
           </div>
         </div>
@@ -909,6 +912,7 @@ export function ScenariosPage() {
               rightOffset={(bottomOpen ? rightPanelWidth : 0) + 48}
               bottomOffset={(timelineOpen ? bottomPanelHeight : 40)}
               leftPanelOpen={leftOpen}
+              setLeftPanelOpen={setLeftOpen}
               isEditingInitials={isEditingInitials}
               setIsEditingInitials={setIsEditingInitials}
               onSetInitials={handleSetInitial}

@@ -465,10 +465,10 @@ export function LandingPage() {
               <div key={label} style={{
                 display: 'flex', alignItems: 'center', gap: 7,
                 padding: '8px 16px',
-                background: 'rgba(255,255,255,0.1)',
-                border: '1px solid rgba(255,255,255,0.2)',
+                background: 'rgba(255,255,255,0.2)',
+                border: '2px solid rgba(255,255,255,0.4)',
                 borderRadius: 'var(--radius-full)',
-                fontSize: 13, fontWeight: 500, color: 'rgba(255,255,255,0.9)',
+                fontSize: 13, fontWeight: 700, color: '#ffffff',
                 backdropFilter: 'blur(8px)',
               }}>
                 <Icon size={14} />
