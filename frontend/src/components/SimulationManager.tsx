@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { Server, X, Square, Trash2, ChevronDown } from 'lucide-react';
 import { api } from '../lib/api';
 
@@ -7,6 +8,7 @@ export function SimulationManager() {
   const [simulations, setSimulations] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [deleteModal, setDeleteModal] = useState<string | null>(null);
 
   const fetchSimulations = async () => {
     try {
@@ -189,7 +191,7 @@ export function SimulationManager() {
                           <Square size={11} /> Stop
                         </button>
                         <button
-                          onClick={() => { if (confirm('Delete this simulation run?')) handleDelete(sim.run_id); }}
+                          onClick={() => setDeleteModal(sim.run_id)}
                           className="btn btn-sm btn-ghost"
                           style={{ flex: 1 }}
                         >
@@ -199,7 +201,7 @@ export function SimulationManager() {
                     )}
                     {sim.status !== 'running' && sim.status !== 'paused' && (
                       <button
-                        onClick={() => { if (confirm('Delete this simulation run?')) handleDelete(sim.run_id); }}
+                        onClick={() => setDeleteModal(sim.run_id)}
                         className="btn btn-sm btn-ghost"
                         style={{ alignSelf: 'flex-start' }}
                       >
@@ -212,6 +214,46 @@ export function SimulationManager() {
             )}
           </div>
         </div>
+      )}
+
+      {/* Delete Modal */}
+      {deleteModal && createPortal(
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <form 
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') setDeleteModal(null);
+            }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleDelete(deleteModal);
+              setDeleteModal(null);
+            }}
+            style={{ backgroundColor: 'var(--bg-main)', padding: '24px', borderRadius: '8px', width: '320px', boxShadow: '0 4px 20px rgba(0,0,0,0.3)', border: '1px solid var(--border-color)' }}>
+            <h3 style={{ marginTop: 0, color: 'var(--text-primary)' }}>Confirm Deletion</h3>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '14px', lineHeight: '1.5' }}>
+              Are you sure you want to permanently delete this simulation run?
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '20px' }}>
+              <button
+                type="button"
+                className="modal-btn"
+                onClick={() => setDeleteModal(null)}
+                style={{ padding: '6px 12px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-primary)' }}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                autoFocus
+                className="modal-btn"
+                style={{ padding: '6px 12px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+              >
+                Delete
+              </button>
+            </div>
+          </form>
+        </div>,
+        document.body
       )}
     </div>
   );
