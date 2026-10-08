@@ -433,14 +433,14 @@ export const GraphModal: React.FC<GraphModalProps> = ({ onClose, connections, al
           <button 
             onPointerDown={e => e.stopPropagation()}
             onClick={() => setIsFullscreen(!isFullscreen)}
-            style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: 4 }}
+            className="btn-icon"
           >
             {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
           </button>
           <button 
             onPointerDown={e => e.stopPropagation()}
             onClick={onClose}
-            style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: 4 }}
+            className="btn-icon"
           >
             <X size={16} />
           </button>

@@ -75,15 +75,7 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
         {onUpdateEvent && (
           <button 
             onClick={() => isEditing ? handleSave() : setIsEditing(true)}
-            style={{ 
-              padding: '4px 8px', 
-              backgroundColor: isEditing ? 'var(--accent-primary)' : 'var(--bg-input)', 
-              color: isEditing ? '#030a0f' : 'var(--text-primary)', 
-              fontSize: '12px', 
-              borderRadius: '4px', 
-              border: '1px solid var(--border-color)', 
-              cursor: 'pointer' 
-            }}
+            className={`btn btn-sm ${isEditing ? 'btn-primary' : 'btn-secondary'}`}
           >
             {isEditing ? 'Save' : 'Edit'}
           </button>
@@ -96,7 +88,7 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
           <input 
             value={editSelector}
             onChange={(e) => setEditSelector(e.target.value)}
-            style={{ width: '100%', padding: '6px 8px', background: 'var(--bg-input)', color: 'var(--text-primary)', borderRadius: 4, fontFamily: 'monospace', border: '1px solid var(--border-color)', boxSizing: 'border-box' }}
+            style={{ width: '100%', boxSizing: 'border-box' }}
           />
         ) : (
           <div style={{ padding: '6px 8px', background: 'var(--bg-input)', borderRadius: 4, fontFamily: 'monospace', border: '1px solid var(--border-color)' }}>
@@ -112,7 +104,7 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
             <input 
               value={editAt}
               onChange={(e) => setEditAt(e.target.value)}
-              style={{ width: '100%', padding: '6px 8px', background: 'var(--bg-input)', color: 'var(--text-primary)', borderRadius: 4, fontFamily: 'monospace', border: '1px solid var(--border-color)', boxSizing: 'border-box' }}
+              style={{ width: '100%', boxSizing: 'border-box' }}
             />
           ) : (
             <div style={{ padding: '6px 8px', background: 'var(--bg-input)', borderRadius: 4, fontFamily: 'monospace', border: '1px solid var(--border-color)' }}>
@@ -126,7 +118,7 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
             <input 
               value={editFor}
               onChange={(e) => setEditFor(e.target.value)}
-              style={{ width: '100%', padding: '6px 8px', background: 'var(--bg-input)', color: 'var(--text-primary)', borderRadius: 4, fontFamily: 'monospace', border: '1px solid var(--border-color)', boxSizing: 'border-box' }}
+              style={{ width: '100%', boxSizing: 'border-box' }}
             />
           ) : (
             <div style={{ padding: '6px 8px', background: 'var(--bg-input)', borderRadius: 4, fontFamily: 'monospace', border: '1px solid var(--border-color)' }}>
@@ -145,7 +137,7 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
               onChange={(e) => setEditPayload(e.target.value)}
               placeholder="key=value (one per line)"
               rows={4}
-              style={{ width: '100%', padding: '8px', background: 'var(--bg-input)', color: 'var(--text-primary)', borderRadius: 4, fontFamily: 'monospace', fontSize: 11, border: '1px solid var(--border-color)', resize: 'vertical', boxSizing: 'border-box' }}
+              style={{ width: '100%', fontFamily: 'monospace', resize: 'vertical', boxSizing: 'border-box' }}
             />
           ) : (
             <pre style={{ padding: '8px', background: 'var(--bg-input)', borderRadius: 4, fontFamily: 'monospace', fontSize: 11, margin: 0, border: '1px solid var(--border-color)' }}>

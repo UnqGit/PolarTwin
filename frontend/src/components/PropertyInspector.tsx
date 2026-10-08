@@ -71,19 +71,19 @@ export const PropertyInspector: React.FC<InspectorProps> = ({ node, connections,
 
   // Determine active/inactive/failure status
   let statusStr = "ACTIVE";
-  let statusColor = "#4ade80"; // green
+  let statusColor = "var(--status-success)"; // green
   if (node.type === 'sensor array' && node.groupedSensors) {
      const activeCount = node.groupedSensors.filter((s: any) => {
        const st = liveStateRef?.current?.[s.name] as any;
        return st && st.running;
      }).length;
      statusStr = `${activeCount}/${node.groupedSensors.length} ACTIVE`;
-     statusColor = activeCount > 0 ? "#4ade80" : "#94a3b8";
+     statusColor = activeCount > 0 ? "var(--status-success)" : "var(--status-inactive)";
   } else if (liveState.status) {
     const s = String(liveState.status).toLowerCase();
-    if (s === 'active' || s === 'ok') { statusStr = 'ACTIVE'; statusColor = '#4ade80'; }
-    else if (s === 'inactive' || s === 'off') { statusStr = 'INACTIVE'; statusColor = '#94a3b8'; }
-    else { statusStr = 'FAILURE'; statusColor = '#ef4444'; } // red for failure, error, fault
+    if (s === 'active' || s === 'ok') { statusStr = 'ACTIVE'; statusColor = 'var(--status-success)'; }
+    else if (s === 'inactive' || s === 'off') { statusStr = 'INACTIVE'; statusColor = 'var(--status-inactive)'; }
+    else { statusStr = 'FAILURE'; statusColor = 'var(--status-error)'; } // red for failure, error, fault
   }
 
 
@@ -222,13 +222,13 @@ export const PropertyInspector: React.FC<InspectorProps> = ({ node, connections,
       <div key={k} style={{
         display: 'flex', justifyContent: 'space-between', marginBottom: 6, fontSize: 13,
         padding: '2px 4px', borderRadius: 4,
-        background: isOob ? 'rgba(239, 68, 68, 0.1)' : 'transparent',
+        background: isOob ? 'color-mix(in srgb, var(--status-error) 10%, transparent)' : 'transparent',
       }}>
         <div style={{ color: 'var(--text-secondary)' }}>{k}</div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           {limitStr && <div style={{ color: 'var(--text-tertiary)', fontSize: 11 }}>{limitStr}{unit ? ` ${unit}` : ''}</div>}
           <div style={{ 
-            color: isOob ? '#ef4444' : 'var(--text-primary)', 
+            color: isOob ? 'var(--status-error)' : 'var(--text-primary)', 
             fontWeight: isOob ? 600 : 400 
           }}>{valStr || '—'}</div>
         </div>
@@ -370,7 +370,7 @@ export const PropertyInspector: React.FC<InspectorProps> = ({ node, connections,
                   }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                       <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{s.name}</span>
-                      <span style={{ color: active ? '#4ade80' : '#94a3b8', fontSize: 11, fontWeight: 600 }}>{active ? 'ACTIVE' : 'INACTIVE'}</span>
+                      <span style={{ color: active ? 'var(--status-success)' : 'var(--status-inactive)', fontSize: 11, fontWeight: 600 }}>{active ? 'ACTIVE' : 'INACTIVE'}</span>
                     </div>
                     {/* Render individual sensor data - basic values from live state */}
                     {Object.keys(sLive).filter(k => !['running', 'status', 'id'].includes(k)).map(k => (

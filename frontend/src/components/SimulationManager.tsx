@@ -116,11 +116,11 @@ export function SimulationManager() {
               {activeSims.length > 0 && (
                 <span style={{
                   fontSize: 10, fontWeight: 700,
-                  background: 'rgba(248,113,113,0.15)',
+                  background: 'var(--accent-surface)',
                   color: 'var(--accent-red)',
                   padding: '1px 7px',
                   borderRadius: 'var(--radius-full)',
-                  border: '1px solid rgba(248,113,113,0.3)'
+                  border: '1px solid var(--border-accent)'
                 }}>
                   {activeSims.length} LIVE
                 </span>
@@ -236,17 +236,16 @@ export function SimulationManager() {
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '20px' }}>
               <button
                 type="button"
-                className="modal-btn"
+                className="btn btn-secondary"
                 onClick={() => setDeleteModal(null)}
-                style={{ padding: '6px 12px', background: 'var(--bg-input)', border: '1px solid var(--border-color)', borderRadius: '4px', cursor: 'pointer', color: 'var(--text-primary)' }}
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 autoFocus
-                className="modal-btn"
-                style={{ padding: '6px 12px', background: '#ef4444', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer' }}
+                className="btn btn-primary"
+                style={{ background: 'var(--status-error)', color: 'white', borderColor: 'var(--status-error)' }}
               >
                 Delete
               </button>

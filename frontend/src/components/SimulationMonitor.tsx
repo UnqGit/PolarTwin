@@ -51,17 +51,17 @@ export function SimulationMonitor({ simState }: SimulationMonitorProps) {
         <div style={{ flex: 1 }}>
           <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '8px' }}>Components</h3>
           <div style={{ backgroundColor: 'var(--bg-input)', padding: '12px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}><span>Active</span> <span style={{ color: 'var(--accent-green)', fontWeight: 'bold' }}>{compActive}</span></div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}><span>Active</span> <span style={{ color: 'var(--status-success)', fontWeight: 'bold' }}>{compActive}</span></div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}><span>Inactive</span> <span style={{ color: 'var(--text-secondary)', fontWeight: 'bold' }}>{compInactive}</span></div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Failure</span> <span style={{ color: '#ef4444', fontWeight: 'bold' }}>{compFailure}</span></div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Failure</span> <span style={{ color: 'var(--status-error)', fontWeight: 'bold' }}>{compFailure}</span></div>
           </div>
         </div>
         <div style={{ flex: 1 }}>
           <h3 style={{ fontSize: '14px', fontWeight: 'bold', color: 'var(--text-primary)', marginBottom: '8px' }}>Connections</h3>
           <div style={{ backgroundColor: 'var(--bg-input)', padding: '12px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}><span>Active</span> <span style={{ color: 'var(--accent-green)', fontWeight: 'bold' }}>{connActive}</span></div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}><span>Active</span> <span style={{ color: 'var(--status-success)', fontWeight: 'bold' }}>{connActive}</span></div>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}><span>Inactive</span> <span style={{ color: 'var(--text-secondary)', fontWeight: 'bold' }}>{connInactive}</span></div>
-            <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Failure</span> <span style={{ color: '#ef4444', fontWeight: 'bold' }}>{connFailure}</span></div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Failure</span> <span style={{ color: 'var(--status-error)', fontWeight: 'bold' }}>{connFailure}</span></div>
           </div>
         </div>
       </div>
@@ -81,7 +81,7 @@ export function SimulationMonitor({ simState }: SimulationMonitorProps) {
             <div style={{ color: 'var(--text-secondary)', fontSize: '11px', textTransform: 'uppercase', marginTop: '16px', marginBottom: '8px' }}>Network</div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Bandwidth</span> <span>{external.network.bandwidth} Mbps</span></div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Mainland</span> <span style={{ color: external.network.mainland_connectivity ? 'var(--accent-green)' : '#ef4444' }}>{external.network.mainland_connectivity ? 'Connected' : 'Offline'}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Mainland</span> <span style={{ color: external.network.mainland_connectivity ? 'var(--status-success)' : 'var(--status-error)' }}>{external.network.mainland_connectivity ? 'Connected' : 'Offline'}</span></div>
             </div>
 
             <div style={{ color: 'var(--text-secondary)', fontSize: '11px', textTransform: 'uppercase', marginTop: '16px', marginBottom: '8px' }}>Supplies</div>
@@ -99,7 +99,7 @@ export function SimulationMonitor({ simState }: SimulationMonitorProps) {
           <div style={{ color: 'var(--text-tertiary)', fontStyle: 'italic' }}>No active events</div>
         ) : (
           active_events.map((ev: any, idx: number) => (
-            <div key={idx} style={{ backgroundColor: 'rgba(239, 68, 68, 0.1)', borderLeft: '3px solid #ef4444', padding: '8px', marginBottom: '8px', borderRadius: '0 4px 4px 0' }}>
+            <div key={idx} style={{ backgroundColor: 'color-mix(in srgb, var(--status-error) 10%, transparent)', borderLeft: '3px solid var(--status-error)', padding: '8px', marginBottom: '8px', borderRadius: '0 4px 4px 0' }}>
               <div style={{ fontWeight: 'bold' }}>{ev.event_id}</div>
               <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Target: {ev.node_key}</div>
               <div style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Affects: {ev.field_path} = {JSON.stringify(ev.value)}</div>

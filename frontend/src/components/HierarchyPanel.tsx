@@ -481,7 +481,7 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                           }
                         }
                       }}
-                      style={{ width: '100%', background: 'var(--bg-input)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4 }}
+                      style={{ width: '100%' }}
                     />
                   </div>
                 );
@@ -504,7 +504,7 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                           }
                         }
                       }}
-                      style={{ width: '100%', background: 'var(--bg-input)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4 }}
+                      style={{ width: '100%' }}
                     />
                   </div>
 
@@ -521,7 +521,7 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
             })()}
 
             <div style={{ display: 'flex', gap: 8, marginBottom: 16, marginTop: 16 }}>
-              <button style={{ flex: 1, background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-primary)', padding: '6px', borderRadius: 4, cursor: 'pointer' }} onClick={() => {
+              <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => {
                 if (onResetInitials && editingTarget) {
                   onResetInitials(editingTarget.name);
                 } else if (runId && editingTarget) {
@@ -574,9 +574,9 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                   </button>
                 )}
                 {allHierarchyExpanded ? (
-                  <button onClick={collapseAllHierarchy} style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', transition: 'all 0.15s ease' }}>Collapse All</button>
+                  <button onClick={collapseAllHierarchy} className="btn btn-sm btn-secondary">Collapse All</button>
                 ) : (
-                  <button onClick={expandAllHierarchy} style={{ background: 'var(--bg-input)', border: '1px solid var(--border-color)', color: 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer', transition: 'all 0.15s ease' }}>Expand All</button>
+                  <button onClick={expandAllHierarchy} className="btn btn-sm btn-secondary">Expand All</button>
                 )}
               </div>
             )}
@@ -625,7 +625,7 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                     type="number"
                     value={activeLayer === null ? '' : activeLayer}
                     onChange={(e) => setActiveLayer?.(e.target.value === '' ? null : Number(e.target.value))}
-                    style={{ background: 'var(--bg-panel-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-solid)', borderRadius: 4, padding: '2px 4px', outline: 'none', cursor: 'text', width: 60, textAlign: 'center' }}
+                    style={{ width: 60, textAlign: 'center' }}
                     placeholder="0"
                   />
                 </label>

@@ -173,7 +173,7 @@ const Row: React.FC<{ label: string; value: string }> = ({ label, value }) => (
   <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
     <span style={{ color: 'var(--text-tertiary)' }}>{label}</span>
     <span style={{ color: 'var(--text-secondary)', textAlign: 'right' }}>
-      {value === 'Active' ? <span style={{ color: '#4ade80' }}>Active</span> : value}
+      {value === 'Active' ? <span style={{ color: 'var(--status-success)' }}>Active</span> : value}
     </span>
   </div>
 );

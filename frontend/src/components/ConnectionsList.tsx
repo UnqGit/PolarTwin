@@ -97,13 +97,6 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
           onChange={e => setSearch(e.target.value)}
           style={{
             width: '100%',
-            background: 'var(--bg-input)',
-            border: '1px solid var(--border-solid)',
-            borderRadius: 4,
-            color: 'var(--text-primary)',
-            padding: '6px 10px',
-            fontSize: 12,
-            outline: 'none',
             marginBottom: 8,
             boxSizing: 'border-box',
           }}
@@ -111,17 +104,10 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
         {onShowGraph && (
           <button
             onClick={onShowGraph}
+            className="btn btn-primary"
             style={{
               width: '100%',
               marginBottom: 8,
-              padding: '6px',
-              backgroundColor: 'var(--accent-blue)',
-              color: 'white',
-              border: 'none',
-              borderRadius: 4,
-              cursor: 'pointer',
-              fontWeight: 600,
-              fontSize: 12,
               boxSizing: 'border-box',
             }}
           >
@@ -146,14 +132,14 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
             {sortedKeys.length > 0 && expandedGroups.size > 0 ? (
               <button 
                 onClick={collapseAll}
-                style={{ background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}
+                className="btn btn-sm btn-secondary"
               >
                 Collapse All
               </button>
             ) : (
               <button 
                 onClick={expandAll}
-                style={{ background: 'var(--hover-overlay)', border: '1px solid var(--border-solid)', color: 'var(--text-secondary)', borderRadius: 4, padding: '2px 6px', fontSize: 10, cursor: 'pointer' }}
+                className="btn btn-sm btn-secondary"
               >
                 Expand All
               </button>
@@ -191,8 +177,8 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
                     alignItems: 'center',
                     cursor: 'pointer',
                     userSelect: 'none',
-                    background: hasSelectedChild ? 'rgba(34, 197, 94, 0.08)' : 'transparent',
-                    borderLeft: `3px solid ${hasSelectedChild ? 'rgba(34, 197, 94, 0.4)' : 'transparent'}`,
+                    background: hasSelectedChild ? 'var(--accent-surface)' : 'transparent',
+                    borderLeft: `3px solid ${hasSelectedChild ? 'var(--accent-primary)' : 'transparent'}`,
                     marginLeft: hasSelectedChild ? 0 : 3
                   }}
                   onMouseEnter={e => { if (!hasSelectedChild) (e.currentTarget as HTMLElement).style.background = 'var(--hover-overlay)'; }}
@@ -234,8 +220,8 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
                           style={{
                             padding: '6px 16px 6px 36px',
                             cursor: 'pointer',
-                            background: isSelected ? 'rgba(34, 197, 94, 0.15)' : 'transparent',
-                            borderLeft: `3px solid ${isSelected ? '#22c55e' : 'transparent'}`,
+                            background: isSelected ? 'var(--accent-surface)' : 'transparent',
+                            borderLeft: `3px solid ${isSelected ? 'var(--accent-primary)' : 'transparent'}`,
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'space-between',
