@@ -5,9 +5,10 @@ interface EventInspectorProps {
   event: SceneEventData | null;
   eventDef: any;
   onUpdateEvent?: (newSourceSnippet: string) => void;
+  disabled?: boolean;
 }
 
-export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef, onUpdateEvent }) => {
+export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef, onUpdateEvent, disabled = false }) => {
   const [editSelector, setEditSelector] = useState('');
   const [editAt, setEditAt] = useState('');
   const [editFor, setEditFor] = useState('');
@@ -76,6 +77,7 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
           <button 
             onClick={() => isEditing ? handleSave() : setIsEditing(true)}
             className={`btn btn-sm ${isEditing ? 'btn-primary' : 'btn-secondary'}`}
+            disabled={disabled}
           >
             {isEditing ? 'Save' : 'Edit'}
           </button>

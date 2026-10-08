@@ -256,6 +256,11 @@ input::placeholder, textarea::placeholder {
   border-radius: var(--radius-lg);
 }
 
+input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Glass Buttons */
 .btn-glass {
   display: inline-flex;
@@ -274,10 +279,14 @@ input::placeholder, textarea::placeholder {
   transition: var(--transition-fast);
   user-select: none;
 }
-.btn-glass:hover:not(.active) {
+.btn-glass:hover:not(.active):not(:disabled) {
   background: var(--bg-hover);
   color: var(--text-primary);
   border-color: rgba(255, 255, 255, 0.15);
+}
+.btn-glass:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 .btn-glass.active {
   background: var(--accent-primary);

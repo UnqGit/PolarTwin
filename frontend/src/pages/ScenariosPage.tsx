@@ -235,6 +235,8 @@ export function ScenariosPage() {
       
       await saveSource();
       startSimulationWithScenario(selectedScenarioId);
+      setEditingType('scenario');
+      setSelectedEventDefId(null);
     } else {
       if (telemetryEnabled) {
         try {
@@ -539,11 +541,13 @@ export function ScenariosPage() {
           key={s.id}
           style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center', userSelect: 'none',
-            fontSize: '13px', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', marginBottom: '2px',
+            fontSize: '13px', padding: '4px 8px', borderRadius: '4px', cursor: !!runId ? 'not-allowed' : (isManageMode ? 'pointer' : 'pointer'), marginBottom: '2px',
             backgroundColor: selectedScenarioId === s.id && !isManageMode ? 'var(--bg-input)' : 'transparent',
             color: selectedScenarioId === s.id && !isManageMode ? 'var(--text-primary)' : 'var(--text-secondary)',
+            opacity: !!runId ? 0.5 : 1,
           }}
           onClick={() => {
+            if (!!runId) return;
             if (isManageMode) {
               setSelectedManageScenarios(prev => 
                 prev.includes(s.id) ? prev.filter(id => id !== s.id) : [...prev, s.id]
@@ -580,22 +584,24 @@ export function ScenariosPage() {
           {!isManageMode && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <button
+                disabled={!!runId}
                 onClick={(e) => {
                   e.stopPropagation();
                   setRenameModal({ type: 'scenario', id: s.id, name: s.name });
                   setRenameError(null);
                 }}
-                style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: !!runId ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center' }}
                 title="Rename Scenario"
               >
                 <Edit2 size={12} />
               </button>
               <button
+                disabled={!!runId}
                 onClick={(e) => {
                   e.stopPropagation();
                   setDeleteModal({ type: 'scenario', id: s.id, name: s.name });
                 }}
-                style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: !!runId ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center' }}
                 title="Delete Scenario"
               >
                 <Trash2 size={12} />
@@ -647,6 +653,7 @@ export function ScenariosPage() {
             }
           }}
           onClick={() => {
+            if (!!runId) return;
             if (isManageMode) {
               setSelectedManageEvents(prev => 
                 prev.includes(e.id) ? prev.filter(id => id !== e.id) : [...prev, e.id]
@@ -664,9 +671,10 @@ export function ScenariosPage() {
           }}
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            fontSize: '13px', padding: '4px 8px', borderRadius: '4px', cursor: isManageMode ? 'pointer' : 'grab', marginBottom: '2px',
+            fontSize: '13px', padding: '4px 8px', borderRadius: '4px', cursor: !!runId ? 'not-allowed' : (isManageMode ? 'pointer' : 'grab'), marginBottom: '2px',
             backgroundColor: selectedEventDefId === e.id && !isManageMode ? 'var(--bg-input)' : 'transparent',
             color: selectedEventDefId === e.id && !isManageMode ? 'var(--text-primary)' : 'var(--text-secondary)',
+            opacity: !!runId ? 0.5 : 1,
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexGrow: 1, minWidth: 0 }}>
@@ -684,22 +692,24 @@ export function ScenariosPage() {
           {!isManageMode && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
               <button
+                disabled={!!runId}
                 onClick={(evt) => {
                   evt.stopPropagation();
                   setRenameModal({ type: 'event', id: e.id, name: e.name });
                   setRenameError(null);
                 }}
-                style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: !!runId ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center' }}
                 title="Rename Event Definition"
               >
                 <Edit2 size={12} />
               </button>
               <button
+                disabled={!!runId}
                 onClick={(evt) => {
                   evt.stopPropagation();
                   setDeleteModal({ type: 'event', id: e.id, name: e.name });
                 }}
-                style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                style={{ background: 'transparent', border: 'none', color: '#ef4444', cursor: !!runId ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center' }}
                 title="Delete Event Definition"
               >
                 <Trash2 size={12} />
@@ -735,6 +745,7 @@ export function ScenariosPage() {
         {/* LEFT: Scenario Management & Component Config */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Dropdown
+            disabled={!!runId}
             value={selectedScenarioId || ''}
             onChange={val => { setSelectedScenarioId(val || null); setEditingType('scenario'); }}
             options={scenarios.map(s => ({ value: s.id, label: s.name }))}
@@ -742,7 +753,7 @@ export function ScenariosPage() {
             style={{ minWidth: 220, height: 30 }}
           />
           {selectedScenarioId && (
-            <button className="btn-glass" onClick={() => { setSelectedScenarioId(null); setScenarioEvents([]); setRunId(null); setSimStatus('Ready'); if (editingType === 'scenario') setScenarioSource(''); }} title="Deselect Scenario" style={{ padding: '0 8px' }}>
+            <button disabled={!!runId} className="btn-glass" onClick={() => { setSelectedScenarioId(null); setScenarioEvents([]); setRunId(null); setSimStatus('Ready'); if (editingType === 'scenario') setScenarioSource(''); }} title="Deselect Scenario" style={{ padding: '0 8px' }}>
               <X size={15} />
             </button>
           )}
@@ -764,6 +775,7 @@ export function ScenariosPage() {
             <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-tertiary)' }}>TOL:</span>
             <input
               type="number"
+              disabled={!!runId}
               ref={globalToleranceInputRef}
               defaultValue={20}
               onBlur={(e) => { if (runId) api.setGlobalTolerance(runId, parseFloat(e.target.value)); }}
@@ -774,6 +786,7 @@ export function ScenariosPage() {
               }}
             />
             <button
+              disabled={!!runId}
               onClick={() => {
                 if (runId) api.setGlobalTolerance(runId, 20);
                 if (globalToleranceInputRef.current) globalToleranceInputRef.current.value = '20';
@@ -787,6 +800,7 @@ export function ScenariosPage() {
           </div>
           
           <button
+            disabled={!!runId}
             onClick={() => setIsEditingInitials(!isEditingInitials)}
             className={`btn-glass ${isEditingInitials ? "active" : ""}`}
             style={{ padding: '0 8px' }}
@@ -796,6 +810,7 @@ export function ScenariosPage() {
           </button>
 
           <button
+            disabled={!!runId}
             onClick={() => {
               setValueOverrides({});
               if (runId) {
@@ -848,6 +863,7 @@ export function ScenariosPage() {
             <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-tertiary)' }}>STOP:</span>
             <input
               type="number"
+              disabled={!!runId}
               value={simulationDuration || ''}
               onChange={e => setSimulationDuration(Math.max(0, parseInt(e.target.value) || 0))}
               placeholder="∞"
@@ -1055,6 +1071,7 @@ export function ScenariosPage() {
 
               {bottomTab === 'inspector' && (
                 <EventInspector
+                  disabled={!!runId}
                   event={selectedEvent}
                   eventDef={eventDefs.find(ed => ed.name === selectedEvent?.event_ref)}
                   onUpdateEvent={(snippet) => selectedEvent && handleUpdateEvent(selectedEvent, snippet)}
