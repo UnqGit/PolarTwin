@@ -100,7 +100,7 @@
   --bg-input:           #F8FAFC;
   --bg-control:         #FFFFFF;
   --bg-hover:           #EDF3F8;
-  --bg-selected:        #E3F6F1;
+  --bg-selected:        #E0F2FE;
 
   --text-primary:   #182230;
   --text-secondary: #455468;
@@ -113,15 +113,15 @@
   --border-solid:   #D5DEE8;
   --border-control: #D5DEE8;
   --border-hover:   #BAC7D5;
-  --border-focus:   #168F80;
-  --border-accent:  rgba(8, 127, 112, 0.25);
+  --border-focus:   #0284c7;
+  --border-accent:  rgba(2, 132, 199, 0.25);
 
-  --accent-primary:   #087F70;
-  --accent-blue:      #087F70; /* alias */
-  --accent-hover:     #066B5E;
+  --accent-primary:   #0284c7;
+  --accent-blue:      #0284c7; /* alias */
+  --accent-hover:     #0369a1;
   --accent-foreground: #FFFFFF;
-  --accent-surface:   rgba(8, 127, 112, 0.1);
-  --accent-selected:  #E3F6F1;
+  --accent-surface:   rgba(2, 132, 199, 0.1);
+  --accent-selected:  #e0f2fe;
   --accent-purple:   #7c3aed;
   --accent-cyan:     #0ea5e9;
   --accent-amber:    #d97706;
@@ -134,7 +134,7 @@
   --status-success:  #16a34a;
   --status-warning:  #d97706;
   --status-error:    #dc2626;
-  --focus-ring:      rgba(22, 143, 128, 0.3);
+  --focus-ring:      rgba(2, 132, 199, 0.3);
 
   --icon-color: #64748b;
   --hover-overlay: rgba(15, 23, 42, 0.04);
@@ -144,7 +144,7 @@
   --shadow-md:   0 4px 12px rgba(15,23,42,0.08);
   --shadow-lg:   0 8px 24px rgba(15,23,42,0.1);
   --shadow-xl:   0 20px 40px rgba(15,23,42,0.12);
-  --shadow-glow: 0 0 20px rgba(8, 127, 112, 0.15);
+  --shadow-glow: 0 0 20px rgba(2, 132, 199, 0.15);
   --shadow-glow-purple: 0 0 20px rgba(124, 58, 237, 0.1);
   --shadow-glow-cyan:   0 0 20px rgba(14, 165, 233, 0.1);
 }

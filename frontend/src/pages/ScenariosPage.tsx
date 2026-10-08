@@ -967,7 +967,7 @@ export function ScenariosPage() {
         <div style={{
           position: 'absolute', top: 0, right: 0,
           bottom: timelineOpen ? bottomPanelHeight : 40,
-          transition: isResizingBottom ? 'none' : 'bottom 0.3s ease',
+          transition: 'none',
           display: 'flex', flexDirection: 'row', backgroundColor: 'transparent', zIndex: 10, pointerEvents: 'none'
         }}>
 
@@ -1111,7 +1111,7 @@ export function ScenariosPage() {
         <div style={{
           position: 'absolute', left: 0, right: 0, bottom: 0,
           height: timelineOpen ? `${bottomPanelHeight}px` : '40px',
-          transition: isResizingBottom ? 'none' : 'height 0.3s ease',
+          transition: 'none',
           borderTop: '1px solid var(--border-color)',
           backgroundColor: 'var(--bg-panel-secondary)',
           display: 'flex',
