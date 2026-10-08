@@ -376,6 +376,7 @@ export function LandingPage() {
   const { theme, toggleTheme } = useTheme();
   const [stations, setStations] = useState<StationManifest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [scrollY, setScrollY] = useState(0);
   const isLight = theme === 'light';
 
   useEffect(() => {
@@ -384,14 +385,123 @@ export function LandingPage() {
       .catch(err => { console.error('Failed to fetch stations:', err); setLoading(false); });
   }, []);
 
+  const heroRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const y = e.currentTarget.scrollTop;
+    let p = y / 400; // Animate over 400px scroll (closer to hero height)
+    if (p > 1) p = 1;
+    if (p < 0) p = 0;
+    
+    // Smooth easing
+    const ease = 1 - Math.pow(1 - p, 3);
+    
+    if (heroRef.current) {
+      heroRef.current.style.setProperty('--p', ease.toString());
+      heroRef.current.style.setProperty('--raw-p', p.toString());
+    }
+  };
+
   return (
-    <div style={{
-      display: 'flex', flexDirection: 'column',
-      minHeight: '100vh',
-      backgroundColor: 'var(--bg-main)',
-      overflowY: 'auto',
-      overflowX: 'hidden',
-    }}>
+    <div 
+      ref={heroRef}
+      onScroll={handleScroll}
+      style={{
+        display: 'flex', flexDirection: 'column',
+        height: '100vh',
+        backgroundColor: 'var(--bg-main)',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        // Initialize CSS variables
+        '--p': '0',
+        '--raw-p': '0',
+      } as React.CSSProperties}
+    >
+
+      {/* ─ Animated Fixed Overlay (No Navbar Background) ─ */}
+      <div style={{
+        position: 'fixed',
+        top: 0, left: 0, right: 0, bottom: 0,
+        pointerEvents: 'none',
+        zIndex: 100,
+      }}>
+
+        {/* Animated Icon */}
+        <div style={{
+          position: 'absolute',
+          left: 'calc( (50vw - 44px) * (1 - var(--p)) + 32px * var(--p) )',
+          top: 'calc( (38vh - 165px) * (1 - var(--p)) + 24px * var(--p) )',
+          width: 'calc( 88px * (1 - var(--p)) + 60px * var(--p) )',
+          height: 'calc( 88px * (1 - var(--p)) + 60px * var(--p) )',
+          borderRadius: 'calc( 28px * (1 - var(--p)) + 16px * var(--p) )',
+          background: isLight ? 'rgba(2, 132, 199, 0.1)' : 'rgba(99,219,188,0.15)',
+          border: isLight ? '1px solid rgba(2, 132, 199, 0.2)' : '1px solid rgba(99,219,188,0.3)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: 'var(--accent-primary)',
+          backdropFilter: 'blur(16px)',
+          boxShadow: isLight 
+            ? '0 20px 40px -10px rgba(2,132,199,calc(0.15 * (1 - var(--p)))), 0 0 0 1px rgba(255,255,255,calc(0.5 * (1 - var(--p)))) inset' 
+            : '0 0 40px rgba(99,219,188,calc(0.2 * (1 - var(--p)))), 0 8px 32px rgba(0,0,0,calc(0.3 * (1 - var(--p))))',
+          pointerEvents: 'auto',
+          transform: 'translateY(calc( (1 - var(--p)) * -6px * var(--float, 0) ))',
+          zIndex: 101,
+        }}>
+          <Snowflake style={{
+            width: 'calc( 42px * (1 - var(--p)) + 32px * var(--p) )',
+            height: 'calc( 42px * (1 - var(--p)) + 32px * var(--p) )',
+            strokeWidth: 'calc( 2 * (1 - var(--p)) + 2.5 * var(--p) )'
+          }} />
+        </div>
+
+        {/* Animated Title */}
+        <h1 style={{
+          position: 'absolute',
+          left: 'calc( 50vw * (1 - var(--p)) + 106px * var(--p) )',
+          top: 'calc( (38vh - 53px) * (1 - var(--p)) + 36px * var(--p) )',
+          transform: 'translateX(calc( -50% * (1 - var(--p)) ))',
+          margin: 0,
+          fontSize: 'calc( clamp(48px, 8vw, 84px) * (1 - var(--p)) + 32px * var(--p) )',
+          fontWeight: 900,
+          letterSpacing: 'calc( -0.04em * (1 - var(--p)) - 0.02em * var(--p) )',
+          lineHeight: 1.05,
+          color: isLight ? '#0f172a' : '#fff',
+          textShadow: isLight 
+            ? '0 4px 24px rgba(255,255,255,calc(0.8 * (1 - var(--p))))' 
+            : '0 4px 20px rgba(0,0,0,calc(0.3 * (1 - var(--p))))',
+          pointerEvents: 'auto',
+          zIndex: 101,
+          whiteSpace: 'nowrap',
+        }}>
+          Polar<span style={{ color: 'var(--accent-primary)' }}>Twin</span>
+        </h1>
+
+        {/* Animated Theme Toggle */}
+        <button
+          onClick={toggleTheme}
+          className="btn-icon card-hover"
+          style={{
+            position: 'absolute',
+            top: 'calc( 24px * (1 - var(--p)) + 18px * var(--p) )',
+            right: 'calc( 24px * (1 - var(--p)) + 32px * var(--p) )',
+            background: isLight 
+              ? 'rgba(255,255,255,calc(0.7 * (1 - var(--p)) + 0.04 * var(--p)))' 
+              : 'rgba(255,255,255,calc(0.12 * (1 - var(--p)) + 0.1 * var(--p)))',
+            border: isLight 
+              ? '1px solid rgba(0,0,0,calc(0.1 * (1 - var(--p)) + 0.08 * var(--p)))' 
+              : '1px solid rgba(255,255,255,calc(0.18 * (1 - var(--p)) + 0.15 * var(--p)))',
+            color: isLight ? '#0f172a' : '#fff',
+            borderRadius: 'var(--radius-full)',
+            padding: 'calc( 12px * (1 - var(--p)) + 10px * var(--p) )',
+            backdropFilter: 'blur(12px)',
+            boxShadow: isLight ? '0 4px 12px rgba(0,0,0,calc(0.05 * (1 - var(--p))))' : 'none',
+            pointerEvents: 'auto',
+            zIndex: 101,
+          }}
+          title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+        >
+          {isLight ? <Moon size={20} /> : <Sun size={20} />}
+        </button>
+      </div>
 
       {/* ─ Hero Section ─ */}
       <section style={{
@@ -435,27 +545,7 @@ export function LandingPage() {
           }} />
         )}
 
-        {/* Theme toggle */}
-        <div style={{ position: 'absolute', top: 24, right: 24, zIndex: 10 }}>
-          <button
-            onClick={toggleTheme}
-            className="btn-icon card-hover"
-            style={{
-              background: isLight ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.12)',
-              border: isLight ? '1px solid rgba(0,0,0,0.1)' : '1px solid rgba(255,255,255,0.18)',
-              color: isLight ? '#0f172a' : '#fff',
-              borderRadius: 'var(--radius-full)',
-              backdropFilter: 'blur(12px)',
-              padding: 12,
-              boxShadow: isLight ? '0 4px 12px rgba(0,0,0,0.05)' : 'none',
-            }}
-            title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
-          >
-            {isLight ? <Moon size={20} /> : <Sun size={20} />}
-          </button>
-        </div>
-
-        {/* Hero content */}
+        {/* Hero content (Fading out parts) */}
         <div style={{
           position: 'relative', zIndex: 5,
           textAlign: 'center',
@@ -464,37 +554,20 @@ export function LandingPage() {
           padding: '0 24px',
           animation: 'fadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         }}>
-          {/* Icon */}
-          <div style={{
-            width: 88, height: 88,
-            borderRadius: 28,
-            background: isLight ? 'rgba(255, 255, 255, 0.8)' : 'rgba(99,219,188,0.15)',
-            border: isLight ? '1px solid rgba(2, 132, 199, 0.2)' : '1px solid rgba(99,219,188,0.35)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'var(--accent-primary)',
-            backdropFilter: 'blur(16px)',
-            boxShadow: isLight 
-              ? '0 20px 40px -10px rgba(2,132,199,0.15), 0 0 0 1px rgba(255,255,255,0.5) inset' 
-              : '0 0 40px rgba(99,219,188,0.2), 0 8px 32px rgba(0,0,0,0.3)',
-          }}
-            className="float-y"
-          >
-            <Snowflake size={42} strokeWidth={2} />
-          </div>
+          
+          {/* Invisible Placeholders to preserve flex layout structure */}
+          <div style={{ width: 88, height: 88, opacity: 0, pointerEvents: 'none' }} />
+          <h1 style={{
+            fontSize: 'clamp(48px, 8vw, 84px)',
+            margin: 0, lineHeight: 1.05, opacity: 0, pointerEvents: 'none'
+          }}>
+            PolarTwin
+          </h1>
 
-          {/* Title */}
-          <div>
-            <h1 style={{
-              fontSize: 'clamp(48px, 8vw, 84px)',
-              fontWeight: 900,
-              letterSpacing: '-0.04em',
-              margin: 0,
-              lineHeight: 1.05,
-              color: isLight ? '#0f172a' : '#fff',
-              textShadow: isLight ? '0 4px 24px rgba(255,255,255,0.8)' : '0 4px 20px rgba(0,0,0,0.3)',
-            }}>
-              Polar<span style={{ color: 'var(--accent-primary)' }}>Twin</span>
-            </h1>
+          {/* Subtitle & Stats (Fades out slower and scrolls up naturally) */}
+          <div style={{
+            opacity: 'calc(1 - var(--raw-p))',
+          }}>
             <p style={{
               fontSize: 'clamp(16px, 2vw, 19px)',
               color: isLight ? '#334155' : 'rgba(255,255,255,0.8)',
@@ -507,41 +580,41 @@ export function LandingPage() {
               Advanced digital twin simulation platform for Antarctic research stations.
               Monitor, simulate, and analyze infrastructure in the harshest environments on Earth.
             </p>
-          </div>
 
-          {/* Stats pills */}
-          <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', marginTop: 12 }}>
-            {[
-              { icon: Globe, label: 'Live Telemetry' },
-              { icon: Cpu, label: 'Real-time Digital Twin' },
-              { icon: MonitorPlay, label: 'Scenario Simulation' },
-            ].map(({ icon: Icon, label }) => (
-              <div key={label} style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                padding: '10px 20px',
-                background: isLight ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.15)',
-                border: isLight ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,255,255,0.3)',
-                borderRadius: 'var(--radius-full)',
-                fontSize: 13.5, fontWeight: 700, 
-                color: isLight ? '#1e293b' : '#ffffff',
-                backdropFilter: 'blur(12px)',
-                boxShadow: isLight ? '0 4px 12px rgba(0,0,0,0.03)' : '0 4px 12px rgba(0,0,0,0.1)',
-                transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-                cursor: 'default',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = isLight ? '0 6px 16px rgba(0,0,0,0.06)' : '0 6px 16px rgba(0,0,0,0.15)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = isLight ? '0 4px 12px rgba(0,0,0,0.03)' : '0 4px 12px rgba(0,0,0,0.1)';
-              }}
-              >
-                <Icon size={16} strokeWidth={2.5} style={{ color: 'var(--accent-primary)' }} />
-                {label}
-              </div>
-            ))}
+            {/* Stats pills */}
+            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', marginTop: 36 }}>
+              {[
+                { icon: Globe, label: 'Live Telemetry' },
+                { icon: Cpu, label: 'Real-time Digital Twin' },
+                { icon: MonitorPlay, label: 'Scenario Simulation' },
+              ].map(({ icon: Icon, label }) => (
+                <div key={label} style={{
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  padding: '10px 20px',
+                  background: isLight ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.15)',
+                  border: isLight ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,255,255,0.3)',
+                  borderRadius: 'var(--radius-full)',
+                  fontSize: 13.5, fontWeight: 700, 
+                  color: isLight ? '#1e293b' : '#ffffff',
+                  backdropFilter: 'blur(12px)',
+                  boxShadow: isLight ? '0 4px 12px rgba(0,0,0,0.03)' : '0 4px 12px rgba(0,0,0,0.1)',
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                  cursor: 'default',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = isLight ? '0 6px 16px rgba(0,0,0,0.06)' : '0 6px 16px rgba(0,0,0,0.15)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = isLight ? '0 4px 12px rgba(0,0,0,0.03)' : '0 4px 12px rgba(0,0,0,0.1)';
+                }}
+                >
+                  <Icon size={16} strokeWidth={2.5} style={{ color: 'var(--accent-primary)' }} />
+                  {label}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
