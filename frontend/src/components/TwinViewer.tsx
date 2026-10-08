@@ -301,7 +301,7 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
   onConnectionsInteractableChange,
   children,
   customSidebarTabs,
-  leftPanelOpen = true,
+  leftPanelOpen,
   setLeftPanelOpen,
   rightOffset = 20,
   bottomOffset = 20,

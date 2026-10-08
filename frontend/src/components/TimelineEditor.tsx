@@ -337,7 +337,7 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
               {events.map((ev, i) => {
                 const isSelected = selectedEvent === ev;
                 const isInfinite = ev.duration === Infinity || ev.duration === null || ev.duration === undefined;
-                const isDragged = dragState?.event === ev;
+                const isDragged = dragState?.event === ev && (dragState.currentAt !== dragState.initialAt || dragState.currentDur !== dragState.initialDur);
 
                 const baseColor = AURORA_COLORS[i % AURORA_COLORS.length];
 
@@ -348,8 +348,12 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
                       key={isGhost ? 'ghost' : 'real'}
                       onPointerDown={isGhost ? undefined : (e) => {
                         e.stopPropagation();
-                        onSelectEvent(isSelected ? null : ev);
+                        if (dragState) return; // Prevent multi-grab
+                        if (!isSelected) onSelectEvent(ev);
                         setDragState({ event: ev, type: 'move', initialX: e.clientX, initialScrollLeft: containerRef.current?.scrollLeft || 0, initialAt: ev.at, initialDur: isInfinite ? null : ev.duration, currentAt: ev.at, currentDur: isInfinite ? null : ev.duration });
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
                       }}
                       style={{
                         position: 'absolute',

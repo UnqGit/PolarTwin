@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import cytoscape from 'cytoscape';
 import elk from 'cytoscape-elk';
-import { Target } from 'lucide-react';
+import { Target, PanelLeft } from 'lucide-react';
 import { useStation } from '../components/StationContext';
 import { SelectionProvider, useSelection } from '../components/SelectionContext';
 import { HoverContext } from '../components/HoverContext';
@@ -521,8 +521,6 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
     const observer = new ResizeObserver(() => {
       if (cy) {
         cy.resize();
-        cy.fit();
-        cy.minZoom(cy.zoom() / 3.5);
       }
     });
     observer.observe(containerRef.current);
@@ -616,6 +614,7 @@ export function ConnectionsPage() {
 
   const [leftPanelWidth, setLeftPanelWidth] = useState(300);
   const [isResizingLeft, setIsResizingLeft] = useState(false);
+  const [isLeftPanelOpen, setIsLeftPanelOpen] = useState(true);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -693,14 +692,25 @@ export function ConnectionsPage() {
     }}>
       <SelectionProvider>
         <div style={{ display: 'flex', width: '100%', height: '100%', position: 'relative' }}>
-          <div style={{ width: leftPanelWidth, position: 'absolute', top: 0, left: 0, bottom: 0, borderRight: '1px solid var(--border-color)', backgroundColor: 'var(--bg-panel)', zIndex: 10, display: 'flex', flexDirection: 'column', boxShadow: '4px 0 15px rgba(0,0,0,0.3)' }}>
-            <ConnectionsList connections={renderedConnections} />
+          <div style={{ 
+            width: isLeftPanelOpen ? leftPanelWidth : 44, 
+            position: 'absolute', top: 0, left: 0, bottom: 0, 
+            borderRight: '1px solid var(--border-color)', 
+            backgroundColor: 'var(--bg-panel)', zIndex: 10, display: 'flex', flexDirection: 'column', 
+            boxShadow: '4px 0 15px rgba(0,0,0,0.3)',
+            overflow: 'hidden'
+          }}>
+            <ConnectionsList 
+              connections={renderedConnections} 
+              isSidebarOpen={isLeftPanelOpen} 
+              onToggleSidebar={() => setIsLeftPanelOpen(!isLeftPanelOpen)} 
+            />
             <div 
-              style={{ position: 'absolute', top: 0, right: -2, bottom: 0, width: '4px', cursor: 'ew-resize', zIndex: 50 }}
+              style={{ position: 'absolute', top: 0, right: -2, bottom: 0, width: '4px', cursor: 'ew-resize', zIndex: 50, display: isLeftPanelOpen ? 'block' : 'none' }}
               onMouseDown={(e) => { e.preventDefault(); setIsResizingLeft(true); }}
             />
           </div>
-          <GraphContainer root={sceneLayout.root} connections={renderedConnections} leftOffset={leftPanelWidth} />
+          <GraphContainer root={sceneLayout.root} connections={renderedConnections} leftOffset={isLeftPanelOpen ? leftPanelWidth : 44} />
         </div>
       </SelectionProvider>
     </HoverContext.Provider>

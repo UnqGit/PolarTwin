@@ -14,9 +14,10 @@ interface DropdownProps {
   disabled?: boolean;
   style?: React.CSSProperties;
   onManage?: () => void;
+  onOpen?: () => void;
 }
 
-export function Dropdown({ value, onChange, options, placeholder = 'Select...', disabled = false, style, onManage }: DropdownProps) {
+export function Dropdown({ value, onChange, options, placeholder = 'Select...', disabled = false, style, onManage, onOpen }: DropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -45,7 +46,13 @@ export function Dropdown({ value, onChange, options, placeholder = 'Select...', 
     >
       {/* Trigger */}
       <div
-        onClick={() => !disabled && setIsOpen(!isOpen)}
+        onClick={() => {
+          if (!disabled) {
+            const willOpen = !isOpen;
+            setIsOpen(willOpen);
+            if (willOpen && onOpen) onOpen();
+          }
+        }}
         style={{
           background: 'var(--bg-input)',
           color: 'var(--text-primary)',

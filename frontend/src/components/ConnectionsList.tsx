@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Edit2, Eye, EyeOff } from 'lucide-react';
+import { Edit2, Eye, EyeOff, PanelLeft } from 'lucide-react';
 import type { ConnectionLayout } from '../lib/layout';
 import { useSelection } from './SelectionContext';
 import { Dropdown } from './Dropdown';
@@ -9,15 +9,16 @@ interface ConnectionsListProps {
   onShowGraph?: () => void;
   isEditingInitials?: boolean;
   onEditInitials?: (name: string, type: 'component' | 'connection') => void;
+  isSidebarOpen?: boolean;
+  onToggleSidebar?: () => void;
 }
 
-export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, onShowGraph, isEditingInitials, onEditInitials }) => {
+export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, onShowGraph, isEditingInitials, onEditInitials, isSidebarOpen = true, onToggleSidebar }) => {
   const { selectedName, setSelectedName, hiddenSet, toggleVisibility } = useSelection();
   const [search, setSearch] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map());
-
-  const [sortBy, setSortBy] = useState<'source' | 'target' | 'type'>('source');
+  const [sortBy, setSortBy] = useState<'source' | 'target' | 'type'>('type');
 
   const { filtered, grouped, sortedKeys } = React.useMemo(() => {
     // Filter
@@ -89,19 +90,66 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%', fontFamily: 'system-ui, sans-serif' }}>
-      <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
-        <input 
-          type="text" 
-          placeholder="Search connections..." 
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          style={{
-            width: '100%',
-            marginBottom: 8,
-            boxSizing: 'border-box',
-          }}
-        />
-        {onShowGraph && (
+      <div style={{ padding: '8px 12px', borderBottom: isSidebarOpen ? '1px solid var(--border-color)' : 'none', flexShrink: 0 }}>
+        {isSidebarOpen ? (
+          <div style={{ display: 'flex', gap: '8px', marginBottom: 8 }}>
+            <input 
+              type="text" 
+              placeholder="Search connections..." 
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              style={{
+                flex: 1,
+                minWidth: 0,
+                boxSizing: 'border-box',
+              }}
+            />
+            {onToggleSidebar && (
+              <button
+                onClick={onToggleSidebar}
+                style={{
+                  background: 'var(--bg-input)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-secondary)',
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '0 8px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                title="Collapse sidebar"
+              >
+                <PanelLeft size={16} />
+              </button>
+            )}
+          </div>
+        ) : (
+          <div style={{ display: 'flex', justifyContent: 'center' }}>
+            {onToggleSidebar && (
+              <button
+                onClick={onToggleSidebar}
+                style={{
+                  background: 'var(--bg-input)',
+                  border: '1px solid var(--border-color)',
+                  color: 'var(--text-primary)',
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '6px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+                title="Expand sidebar"
+              >
+                <PanelLeft size={16} />
+              </button>
+            )}
+          </div>
+        )}
+        {isSidebarOpen && (
+          <>
+            {onShowGraph && (
           <button
             onClick={onShowGraph}
             className="btn btn-primary"
@@ -146,10 +194,12 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
             )}
           </div>
         </div>
+          </>
+        )}
       </div>
-
-      <div ref={containerRef} style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
-        {sortedKeys.length === 0 ? (
+      {isSidebarOpen && (
+        <div ref={containerRef} style={{ flex: 1, overflowY: 'auto', padding: '8px 0' }}>
+          {sortedKeys.length === 0 ? (
           <div style={{ padding: 16, color: 'var(--text-tertiary)', fontSize: 12 }}>No connections match search.</div>
         ) : (
           sortedKeys.map((groupKey, idx) => {
@@ -280,7 +330,8 @@ export const ConnectionsList: React.FC<ConnectionsListProps> = ({ connections, o
             );
           })
         )}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -20,7 +20,7 @@ export function ScenariosPage() {
     runId, setRunId,
     simStatus, setSimStatus,
     simTime, setSimTime,
-    simLog,
+    simLog, setSimLog,
     simState, setSimState
   } = useStation();
 
@@ -237,6 +237,7 @@ export function ScenariosPage() {
       startSimulationWithScenario(selectedScenarioId);
       setEditingType('scenario');
       setSelectedEventDefId(null);
+      setIsEditingInitials(false);
     } else {
       if (telemetryEnabled) {
         try {
@@ -254,6 +255,7 @@ export function ScenariosPage() {
       setSimStatus('Ready');
       setSimTime(0);
       setSimState(null);
+      setSimLog([]);
     }
   };
 
@@ -339,6 +341,7 @@ export function ScenariosPage() {
     setSimStatus('Ready');
     setSimTime(0);
     setSimState(null);
+    setSimLog([]);
   };
 
   const saveSource = async () => {
@@ -725,6 +728,25 @@ export function ScenariosPage() {
     { id: 'library', icon: <Library size={20} />, title: 'Scenario Library', content: libraryTabContent }
   ], [libraryTabContent]);
 
+  const RightIconBtn = ({ icon, active, onClick, title }: any) => (
+    <div
+      onClick={onClick}
+      title={title}
+      style={{
+        width: '100%', height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        cursor: 'pointer',
+        color: active ? 'var(--accent-primary)' : 'var(--text-tertiary)',
+        borderRight: active ? '2px solid var(--accent-primary)' : '2px solid transparent',
+        background: active ? 'rgba(99,219,188,0.08)' : 'transparent',
+        transition: 'all 0.15s ease',
+      }}
+      onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'; (e.currentTarget as HTMLElement).style.background = active ? 'rgba(99,219,188,0.08)' : 'var(--hover-overlay)'; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = active ? 'var(--accent-primary)' : 'var(--text-tertiary)'; (e.currentTarget as HTMLElement).style.background = active ? 'rgba(99,219,188,0.08)' : 'transparent'; }}
+    >
+      {icon}
+    </div>
+  );
+
   return (
     <div className="page-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: 'var(--bg-main)', color: 'var(--text-primary)', overflow: 'hidden' }}>
       <style>{
@@ -1062,7 +1084,7 @@ export function ScenariosPage() {
                   ) : (
                     simLog.map((log, i) => (
                       <div key={`sim-${i}`} style={{ marginBottom: '4px', color: log.level === 'ERROR' ? '#ef4444' : log.level === 'WARN' ? '#f59e0b' : 'var(--text-primary)' }}>
-                        <span style={{ color: 'var(--text-tertiary)' }}>[{log.time?.toFixed(1) || '0.0'}h]</span> {log.message || JSON.stringify(log)}
+                        <span style={{ color: 'var(--text-tertiary)' }}>[{formatTime(log.time || 0)}]</span> {log.message || JSON.stringify(log)}
                       </div>
                     ))
                   )}
@@ -1085,42 +1107,12 @@ export function ScenariosPage() {
           )}
 
           {/* Vertical Strip of Tabs */}
-          <div style={{ width: '48px', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '12px 0', gap: '16px', backgroundColor: 'var(--bg-panel-solid)', borderLeft: '1px solid var(--border-color)', pointerEvents: 'auto', boxShadow: '-4px 0 15px rgba(0,0,0,0.1)' }}>
-            <button
-              onClick={() => toggleBottomTab('source')}
-              title="DSL Source"
-              style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: bottomOpen && bottomTab === 'source' ? 'var(--accent-blue)' : 'var(--text-secondary)' }}
-            >
-              <Code size={20} />
-            </button>
-            <button
-              onClick={() => toggleBottomTab('log')}
-              title="Log"
-              style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: bottomOpen && bottomTab === 'log' ? 'var(--accent-blue)' : 'var(--text-secondary)' }}
-            >
-              <List size={20} />
-            </button>
-            <button
-              onClick={() => toggleBottomTab('diagnostics')}
-              title="Diagnostics"
-              style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: bottomOpen && bottomTab === 'diagnostics' ? 'var(--accent-blue)' : 'var(--text-secondary)' }}
-            >
-              <Activity size={20} />
-            </button>
-            <button
-              onClick={() => toggleBottomTab('inspector')}
-              title="Inspector"
-              style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: bottomOpen && bottomTab === 'inspector' ? 'var(--accent-blue)' : 'var(--text-secondary)' }}
-            >
-              <MousePointer2 size={20} />
-            </button>
-            <button
-              onClick={() => toggleBottomTab('monitor')}
-              title="Simulation Monitor"
-              style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: bottomOpen && bottomTab === 'monitor' ? 'var(--accent-blue)' : 'var(--text-secondary)' }}
-            >
-              <LayoutDashboard size={20} />
-            </button>
+          <div style={{ width: '48px', flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', paddingTop: '8px', paddingBottom: '8px', backgroundColor: 'var(--bg-panel-solid)', borderLeft: '1px solid var(--border-color)', pointerEvents: 'auto', boxShadow: '-4px 0 15px rgba(0,0,0,0.1)' }}>
+            <RightIconBtn icon={<Code size={20} />} active={bottomOpen && bottomTab === 'source'} onClick={() => toggleBottomTab('source')} title="DSL Source" />
+            <RightIconBtn icon={<List size={20} />} active={bottomOpen && bottomTab === 'log'} onClick={() => toggleBottomTab('log')} title="Log" />
+            <RightIconBtn icon={<Activity size={20} />} active={bottomOpen && bottomTab === 'diagnostics'} onClick={() => toggleBottomTab('diagnostics')} title="Diagnostics" />
+            <RightIconBtn icon={<MousePointer2 size={20} />} active={bottomOpen && bottomTab === 'inspector'} onClick={() => toggleBottomTab('inspector')} title="Inspector" />
+            <RightIconBtn icon={<LayoutDashboard size={20} />} active={bottomOpen && bottomTab === 'monitor'} onClick={() => toggleBottomTab('monitor')} title="Simulation Monitor" />
           </div>
         </div>
 

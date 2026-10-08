@@ -55,10 +55,14 @@ export function DiagnosticsPage() {
   }, [selectedName]);
 
   // Load runs
-  useEffect(() => {
+  const fetchRuns = () => {
     api.getTelemetryRuns().then(r => {
       setRuns(r.filter((run: any) => run.status !== 'RUNNING'));
     }).catch(console.error);
+  };
+
+  useEffect(() => {
+    fetchRuns();
   }, []);
 
   // Filter runs by selected station and scenario
@@ -180,6 +184,7 @@ export function DiagnosticsPage() {
               setSelectedManageScenarios([]);
               setShowManageScenarios(true);
             }}
+            onOpen={fetchRuns}
           />
           {selectedScenarioFilter && (
             <button
@@ -221,6 +226,7 @@ export function DiagnosticsPage() {
               setSelectedManageRuns([]);
               setShowManageRuns(true);
             }}
+            onOpen={fetchRuns}
           />
           {selectedRunId && (
             <button
