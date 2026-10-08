@@ -88,3 +88,5 @@ class SceneEvent(BaseModel):
 
     source_location: int = 0
     source_order: int = 0
+    
+    event_definition: EventDefinition | None = Field(default=None, exclude=True)

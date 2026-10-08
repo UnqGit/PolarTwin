@@ -323,6 +323,11 @@ def parse_scenario_raw(payload: ParseScenarioRequest):
                             synthetic = specific_external_targets.get(ev.event_definition.target_kind)
                             if synthetic:
                                 ev.selector = synthetic
+                                
+                        # Merge fixed fields from the definition into the payload
+                        for k, v in ev.event_definition.set_fixed.items():
+                            if k not in ev.payload:
+                                ev.payload[k] = v
                     except:
                         pass
                 

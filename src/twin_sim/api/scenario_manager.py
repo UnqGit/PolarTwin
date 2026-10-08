@@ -233,6 +233,12 @@ class ScenarioManager:
                     synthetic = specific_external_targets.get(parsed_def.target_kind)
                     if synthetic:
                         ev.selector = synthetic
+                        
+                # Merge fixed fields from the definition into the payload
+                for k, v in parsed_def.set_fixed.items():
+                    if k not in ev.payload:
+                        ev.payload[k] = v
+
             except (FileNotFoundError, Exception):  # noqa: BLE001
                 # Event definition not found or invalid – leave as-is so the
                 # scene can still be previewed even with missing definitions.
