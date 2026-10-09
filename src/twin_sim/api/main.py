@@ -358,9 +358,10 @@ def parse_scenario_raw(payload: ParseScenarioRequest):
                                         comp_spec = next((s for s in engine.specs if s.get("type") == target.type), None)
                                         if comp_spec:
                                             valid_fields = set()
-                                            for section in ("rating@state", "rating@input", "rating@output"):
-                                                if section in comp_spec:
-                                                    valid_fields.update(comp_spec[section].keys())
+                                            rating = comp_spec.get("rating", {})
+                                            for section in ("state", "input", "output"):
+                                                if section in rating:
+                                                    valid_fields.update(rating[section].keys())
                                             if root_field not in valid_fields:
                                                 raise ValueError(
                                                     f"Field '{root_field}' is not a valid field for component type '{target.type}' (target: {target.name})"

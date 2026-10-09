@@ -15,7 +15,7 @@ export interface SceneEventData {
 interface TimelineEditorProps {
   events: SceneEventData[];
   simTime: number;
-  onSelectEvent: (event: SceneEventData | null) => void;
+  onSelectEvent: (event: SceneEventData | null, isCtrlKey?: boolean) => void;
   selectedEvent: SceneEventData | null;
   onAppendEvent?: (eventRef: string, at: number) => void;
   onUpdateEventLocation?: (event: SceneEventData, newAt: number, newDuration: number | null) => void;
@@ -349,7 +349,7 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
                       onPointerDown={isGhost ? undefined : (e) => {
                         e.stopPropagation();
                         if (dragState) return; // Prevent multi-grab
-                        if (!isSelected) onSelectEvent(ev);
+                        if (!isSelected || e.ctrlKey) onSelectEvent(ev, e.ctrlKey);
                         setDragState({ event: ev, type: 'move', initialX: e.clientX, initialScrollLeft: containerRef.current?.scrollLeft || 0, initialAt: ev.at, initialDur: isInfinite ? null : ev.duration, currentAt: ev.at, currentDur: isInfinite ? null : ev.duration });
                       }}
                       onClick={(e) => {

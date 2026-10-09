@@ -43,7 +43,11 @@ def parse_scene_string(source: str) -> list[SceneEvent]:
             if not block_stack:
                 # We finished the outermost block (which should be the scene payload)
                 assert current_event is not None
-                current_event.payload = completed_dict.get("set", {})
+                # Support both { set { ... } } and { ... } or set { ... }
+                if "set" in completed_dict and isinstance(completed_dict["set"], dict):
+                    current_event.payload = completed_dict["set"]
+                else:
+                    current_event.payload = completed_dict
                 events.append(current_event)
                 current_event = None
             continue
@@ -54,8 +58,9 @@ def parse_scene_string(source: str) -> list[SceneEvent]:
             if current_event is None:
                 # This must be an event line that ends with {
                 # e.g. event:set_component @Generator1 at=1.2 for=inf {
+                # or event:set_component @Generator1 at=1.2 for=inf set {
                 m = re.match(
-                    r"^event\s*:\s*([A-Za-z_]\w*)(?:\s+(@\S+))?\s+at\s*=\s*((?:\d+(?:\.\d*)?|\.\d+))\s+for\s*=\s*(inf|(?:\d+(?:\.\d*)?|\.\d+))\s*\{$",
+                    r"^event\s*:\s*([A-Za-z_]\w*)(?:\s+(@\S+))?\s+at\s*=\s*((?:\d+(?:\.\d*)?|\.\d+))\s+for\s*=\s*(inf|(?:\d+(?:\.\d*)?|\.\d+))\s*(?:set\s*)?\{$",
                     line,
                 )
                 if not m:

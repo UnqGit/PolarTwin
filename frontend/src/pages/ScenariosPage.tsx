@@ -352,6 +352,7 @@ export function ScenariosPage() {
     } else if (editingType === 'event' && selectedEventDefId) {
       await api.updateEventDefinitionSource(selectedEventDefId, cleanSource);
       setScenarioSource(cleanSource); setSavedScenarioSource(cleanSource);
+      if (selectedStation) api.getEventDefinitions(selectedStation).then(setEventDefs).catch(console.error);
     }
   };
 
@@ -376,9 +377,18 @@ export function ScenariosPage() {
     }
   };
 
-  const handleUpdateEvent = (event: SceneEventData, newSourceSnippet: string) => {
-    if (!event.source_location) return;
-    const lines = scenarioSource.split('\n');
+  const handleUpdateEvent = async (event: SceneEventData, newSourceSnippet: string) => {
+    if (!event.source_location || !selectedScenarioId) return;
+    
+    let currentSceneSource = scenarioSource;
+    if (editingType !== 'scenario') {
+      try {
+        const res = await api.getScenarioSource(selectedScenarioId);
+        currentSceneSource = res.source;
+      } catch (e) { console.error(e); return; }
+    }
+
+    const lines = currentSceneSource.split('\n');
     const idx = event.source_location - 1; // source_location is 1-indexed
     if (idx >= 0 && idx < lines.length) {
       // If the event had a multi-line block, replace all lines
@@ -394,13 +404,18 @@ export function ScenariosPage() {
       }
       lines.splice(idx, endIdx - idx + 1, ...newSourceSnippet.split('\n'));
       const newSource = lines.join('\n');
-      setScenarioSource(newSource);
-      setSourceVersion(v => v + 1);
+      
+      if (editingType === 'scenario') {
+        setScenarioSource(newSource);
+        setSourceVersion(v => v + 1);
+      } else {
+        await api.updateScenarioSource(selectedScenarioId, newSource);
+      }
+
       // Re-parse and update selectedEvent so the inspector refreshes
       api.parseScenarioRaw(newSource, selectedStation)
         .then(events => {
           setScenarioEvents(events);
-          // Find the updated event at the same source location
           const updated = events.find((ev: SceneEventData) => ev.source_location === event.source_location);
           if (updated) setSelectedEvent(updated);
         })
@@ -408,9 +423,18 @@ export function ScenariosPage() {
     }
   };
 
-  const handleUpdateEventLocation = (event: SceneEventData, newAt: number, newDuration: number | null) => {
-    if (!event.source_location) return;
-    const lines = scenarioSource.split('\n');
+  const handleUpdateEventLocation = async (event: SceneEventData, newAt: number, newDuration: number | null) => {
+    if (!event.source_location || !selectedScenarioId) return;
+    
+    let currentSceneSource = scenarioSource;
+    if (editingType !== 'scenario') {
+      try {
+        const res = await api.getScenarioSource(selectedScenarioId);
+        currentSceneSource = res.source;
+      } catch (e) { console.error(e); return; }
+    }
+
+    const lines = currentSceneSource.split('\n');
     const idx = event.source_location - 1;
     if (idx >= 0 && idx < lines.length) {
       let line = lines[idx];
@@ -421,14 +445,31 @@ export function ScenariosPage() {
         line = line.replace(/for=([\d\.]+|inf)/, `for=${newDuration}`);
       }
       lines[idx] = line;
-      setScenarioSource(lines.join('\n'));
-      setSourceVersion(v => v + 1);
+      const newSource = lines.join('\n');
+      
+      if (editingType === 'scenario') {
+        setScenarioSource(newSource);
+        setSourceVersion(v => v + 1);
+      } else {
+        await api.updateScenarioSource(selectedScenarioId, newSource);
+      }
+      
+      api.parseScenarioRaw(newSource, selectedStation).then(setScenarioEvents).catch(console.error);
     }
   };
 
-  const handleDeleteEventFromTimeline = (event: SceneEventData) => {
-    if (!event.source_location) return;
-    const lines = scenarioSource.split('\n');
+  const handleDeleteEventFromTimeline = async (event: SceneEventData) => {
+    if (!event.source_location || !selectedScenarioId) return;
+    
+    let currentSceneSource = scenarioSource;
+    if (editingType !== 'scenario') {
+      try {
+        const res = await api.getScenarioSource(selectedScenarioId);
+        currentSceneSource = res.source;
+      } catch (e) { console.error(e); return; }
+    }
+
+    const lines = currentSceneSource.split('\n');
     const idx = event.source_location - 1;
     if (idx >= 0 && idx < lines.length) {
       let endIdx = idx;
@@ -442,9 +483,17 @@ export function ScenariosPage() {
         }
       }
       lines.splice(idx, endIdx - idx + 1);
-      setScenarioSource(lines.join('\n'));
-      setSourceVersion(v => v + 1);
+      const newSource = lines.join('\n');
+      
+      if (editingType === 'scenario') {
+        setScenarioSource(newSource);
+        setSourceVersion(v => v + 1);
+      } else {
+        await api.updateScenarioSource(selectedScenarioId, newSource);
+      }
+
       if (selectedEvent === event) setSelectedEvent(null);
+      api.parseScenarioRaw(newSource, selectedStation).then(setScenarioEvents).catch(console.error);
     }
   };
 
@@ -1207,20 +1256,31 @@ export function ScenariosPage() {
               simTime={simTime}
               zoom={timelineZoom}
               selectedEvent={selectedEvent}
-              onSelectEvent={(ev) => {
+              onSelectEvent={(ev, isCtrlKey) => {
                 setSelectedEvent(ev);
                 if (ev && ev.selector) {
-                  setSelectedComponentName(ev.selector.startsWith('@') ? ev.selector.slice(1) : ev.selector);
+                  if (!ev.selector.startsWith('@') || isCtrlKey) {
+                    setSelectedComponentName(ev.selector.startsWith('@') ? ev.selector.slice(1) : ev.selector);
+                  }
                 }
                 if (ev && !bottomOpen) setBottomOpen(true);
                 if (ev) setBottomTab('inspector');
               }}
-              onAppendEvent={editingType === 'scenario' ? ((eventRef, at) => {
+              onAppendEvent={async (eventRef, at) => {
                 const newLine = `\nevent:${eventRef} at=${at} for=1.0`;
-                setScenarioSource(prev => prev + newLine);
-              }) : undefined}
-              onUpdateEventLocation={editingType === 'scenario' ? handleUpdateEventLocation : undefined}
-              onDeleteEvent={editingType === 'scenario' ? handleDeleteEventFromTimeline : undefined}
+                if (editingType === 'scenario') {
+                  setScenarioSource(prev => prev + newLine);
+                } else if (selectedScenarioId) {
+                  try {
+                    const res = await api.getScenarioSource(selectedScenarioId);
+                    const newSource = res.source + newLine;
+                    await api.updateScenarioSource(selectedScenarioId, newSource);
+                    api.parseScenarioRaw(newSource, selectedStation).then(setScenarioEvents).catch(console.error);
+                  } catch (e) { console.error(e); }
+                }
+              }}
+              onUpdateEventLocation={handleUpdateEventLocation}
+              onDeleteEvent={handleDeleteEventFromTimeline}
               onSeek={handleSeek}
             />
           )}

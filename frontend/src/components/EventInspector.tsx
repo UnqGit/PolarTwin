@@ -12,8 +12,86 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
   const [editSelector, setEditSelector] = useState('');
   const [editAt, setEditAt] = useState('');
   const [editFor, setEditFor] = useState('');
-  const [editPayload, setEditPayload] = useState('');
+  const [editPayloadObj, setEditPayloadObj] = useState<Record<string, string>>({});
   const [isEditing, setIsEditing] = useState(false);
+
+  const { declared, initiated } = React.useMemo(() => {
+    const d: string[] = [];
+    const i: { key: string, value: string }[] = [];
+    if (eventDef && eventDef.source) {
+      const lines = eventDef.source.split('\n');
+      let inSetBlock = false;
+      
+      for (let line of lines) {
+        line = line.trim();
+        if (!line || line.startsWith('//')) continue;
+        
+        if (inSetBlock) {
+          if (line.includes('}')) {
+            inSetBlock = false;
+            line = line.substring(0, line.indexOf('}')).trim();
+            if (!line) continue;
+          }
+          const eqIdx = line.indexOf('=');
+          if (eqIdx === -1) {
+            d.push(line);
+          } else {
+            i.push({ key: line.substring(0, eqIdx).trim(), value: line.substring(eqIdx + 1).trim() });
+          }
+        } else if (line.startsWith('set ') || line === 'set' || line.startsWith('set{')) {
+          let remainder = '';
+          if (line.startsWith('set ')) remainder = line.substring(4).trim();
+          else if (line.startsWith('set{')) remainder = line.substring(3).trim();
+          
+          if (remainder.startsWith('fields {')) {
+             remainder = remainder.substring(8).trim();
+             inSetBlock = true;
+          } else if (remainder.startsWith('{')) {
+             remainder = remainder.substring(1).trim();
+             inSetBlock = true;
+          } else if (remainder === 'fields') {
+             continue;
+          } else if (line === 'set') {
+             // Just 'set', next line might be '{'
+             continue;
+          }
+          
+          if (remainder) {
+             if (remainder.includes('}')) {
+                 inSetBlock = false;
+                 remainder = remainder.substring(0, remainder.indexOf('}')).trim();
+             }
+             if (remainder) {
+                 const eqIdx = remainder.indexOf('=');
+                 if (eqIdx === -1) {
+                    d.push(remainder);
+                 } else {
+                    i.push({ key: remainder.substring(0, eqIdx).trim(), value: remainder.substring(eqIdx + 1).trim() });
+                 }
+             }
+          }
+        } else if (line.startsWith('{') && !inSetBlock) {
+          inSetBlock = true;
+          let remainder = line.substring(1).trim();
+          if (remainder) {
+             if (remainder.includes('}')) {
+                 inSetBlock = false;
+                 remainder = remainder.substring(0, remainder.indexOf('}')).trim();
+             }
+             if (remainder) {
+                 const eqIdx = remainder.indexOf('=');
+                 if (eqIdx === -1) {
+                    d.push(remainder);
+                 } else {
+                    i.push({ key: remainder.substring(0, eqIdx).trim(), value: remainder.substring(eqIdx + 1).trim() });
+                 }
+             }
+          }
+        }
+      }
+    }
+    return { declared: d, initiated: i };
+  }, [eventDef]);
 
   useEffect(() => {
     if (event) {
@@ -22,11 +100,13 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
       setEditFor(event.duration === Infinity || event.duration === null ? 'inf' : event.duration.toString());
       
       if (event.payload && Object.keys(event.payload).length > 0) {
-        // Simple serialization of payload for editing
-        const pairs = Object.entries(event.payload).map(([k, v]) => `${k}=${v}`);
-        setEditPayload(pairs.join('\n'));
+        const obj: Record<string, string> = {};
+        Object.entries(event.payload).forEach(([k, v]) => {
+          obj[k] = String(v);
+        });
+        setEditPayloadObj(obj);
       } else {
-        setEditPayload('');
+        setEditPayloadObj({});
       }
       setIsEditing(false);
     }
@@ -54,15 +134,20 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
     }
     snippet += ` at=${editAt.trim()} for=${editFor.trim()}`;
     
-    if (editPayload.trim()) {
-      snippet += ` {\n`;
-      const lines = editPayload.split('\n');
-      for (const line of lines) {
-        if (line.trim()) {
-          snippet += `    ${line.trim()}\n`;
-        }
+    if (Object.keys(editPayloadObj).length > 0) {
+      const initiatedKeys = initiated.map(i => i.key);
+      const keys = Object.keys(editPayloadObj).filter(k => 
+        editPayloadObj[k] !== undefined && 
+        editPayloadObj[k] !== '' &&
+        !initiatedKeys.includes(k)
+      );
+      if (keys.length > 0) {
+        snippet += ` set {\n`;
+        keys.forEach(k => {
+          snippet += `    ${k}=${editPayloadObj[k]}\n`;
+        });
+        snippet += `}`;
       }
-      snippet += `}`;
     }
     
     onUpdateEvent(snippet);
@@ -130,22 +215,61 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
         </div>
       </div>
       
-      {(isEditing || (event.payload && Object.keys(event.payload).length > 0)) && (
+      {(isEditing || declared.length > 0 || initiated.length > 0 || (event.payload && Object.keys(event.payload).length > 0)) && (
         <div style={{ marginBottom: 16 }}>
-          <div style={{ color: 'var(--text-secondary)', marginBottom: 4, fontSize: 11, textTransform: 'uppercase' }}>Set Payload</div>
-          {isEditing ? (
-            <textarea
-              value={editPayload}
-              onChange={(e) => setEditPayload(e.target.value)}
-              placeholder="key=value (one per line)"
-              rows={4}
-              style={{ width: '100%', fontFamily: 'monospace', resize: 'vertical', boxSizing: 'border-box' }}
-            />
-          ) : (
-            <pre style={{ padding: '8px', background: 'var(--bg-input)', borderRadius: 4, fontFamily: 'monospace', fontSize: 11, margin: 0, border: '1px solid var(--border-color)' }}>
-              {JSON.stringify(event.payload, null, 2)}
-            </pre>
-          )}
+          <div style={{ color: 'var(--text-secondary)', marginBottom: 8, fontSize: 11, textTransform: 'uppercase' }}>Set Payload</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {declared.map(key => (
+              <div key={key} style={{ display: 'flex', alignItems: 'center' }}>
+                <div style={{ width: 120, fontFamily: 'monospace', fontSize: 12 }}>{key}</div>
+                <div style={{ flex: 1 }}>
+                  {isEditing ? (
+                    <input
+                      value={editPayloadObj[key] || ''}
+                      onChange={e => setEditPayloadObj(prev => ({ ...prev, [key]: e.target.value }))}
+                      placeholder="value"
+                      style={{ width: '100%', boxSizing: 'border-box' }}
+                    />
+                  ) : (
+                    <div style={{ padding: '4px 8px', background: 'var(--bg-input)', borderRadius: 4, fontFamily: 'monospace', fontSize: 12, border: '1px solid var(--border-color)', minHeight: 24, display: 'flex', alignItems: 'center' }}>
+                      {event.payload && event.payload[key] !== undefined ? String(event.payload[key]) : <span style={{ color: 'var(--text-tertiary)', fontStyle: 'italic' }}>(not set)</span>}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+            {Object.keys(editPayloadObj).filter(k => !declared.includes(k) && !initiated.find(i => i.key === k)).map(key => (
+              <div key={key} style={{ display: 'flex', alignItems: 'center' }}>
+                <div style={{ width: 120, fontFamily: 'monospace', fontSize: 12, color: 'var(--text-secondary)' }}>{key}</div>
+                <div style={{ flex: 1 }}>
+                  {isEditing ? (
+                    <input
+                      value={editPayloadObj[key] || ''}
+                      onChange={e => setEditPayloadObj(prev => ({ ...prev, [key]: e.target.value }))}
+                      style={{ width: '100%', boxSizing: 'border-box' }}
+                    />
+                  ) : (
+                    <div style={{ padding: '4px 8px', background: 'var(--bg-input)', borderRadius: 4, fontFamily: 'monospace', fontSize: 12, border: '1px solid var(--border-color)', minHeight: 24, display: 'flex', alignItems: 'center' }}>
+                      {editPayloadObj[key]}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+            {initiated.map(({ key, value }) => (
+              <div key={key} style={{ display: 'flex', alignItems: 'center', opacity: 0.5 }}>
+                <div style={{ width: 120, fontFamily: 'monospace', fontSize: 12 }}>{key}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ padding: '4px 8px', background: 'transparent', borderRadius: 4, fontFamily: 'monospace', fontSize: 12, border: '1px solid var(--border-color)', minHeight: 24, display: 'flex', alignItems: 'center' }} title="Initiated by event definition (read-only)">
+                    {value}
+                  </div>
+                </div>
+              </div>
+            ))}
+            {declared.length === 0 && initiated.length === 0 && Object.keys(editPayloadObj).length === 0 && (
+              <div style={{ color: 'var(--text-tertiary)', fontSize: 12, fontStyle: 'italic' }}>No payload fields</div>
+            )}
+          </div>
         </div>
       )}
 

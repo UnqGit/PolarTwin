@@ -275,6 +275,7 @@ class ScenarioManager:
                     "id": row["id"],
                     "station_id": row["station_id"],
                     "name": row["name"],
+                    "source": row["source"],
                     "created_at": row["created_at"],
                     "updated_at": row["updated_at"],
                 }
