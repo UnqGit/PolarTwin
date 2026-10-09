@@ -93,3 +93,5 @@ class SceneEvent(BaseModel):
     source_order: int = 0
     
     event_definition: EventDefinition | None = Field(default=None, exclude=True)
+    user_provided_keys: set[str] = Field(default_factory=set, exclude=True)
+    payload_line_numbers: dict[str, int] = Field(default_factory=dict, exclude=True)

@@ -324,14 +324,16 @@ def parse_scenario_raw(payload: ParseScenarioRequest):
                             if synthetic:
                                 ev.selector = synthetic
                                 
+                        ev.user_provided_keys = set(ev.payload.keys())
                         # Merge fixed fields from the definition into the payload
                         for k, v in ev.event_definition.set_fixed.items():
                             if k not in ev.payload:
                                 ev.payload[k] = v
                     except:
                         pass
-                
                 engine = station.build_engine(scenes=events)
+                compilation_errors = []
+                
                 for scene in list(engine.scenes):
                     try:
                         targets = engine._resolve_scene_targets(scene, 
@@ -352,54 +354,105 @@ def parse_scenario_raw(payload: ParseScenarioRequest):
                                     f"Event '{scene.event_ref}' targeting '{scene.selector}' yielded no matching targets (expected kind: {kind_str})."
                                 )
 
-                        if scene.event_definition:
-                            for req_field in scene.event_definition.set_required:
-                                if req_field not in scene.payload:
-                                    # Fallback to bare field matching if unambiguous
-                                    base_req = req_field.split(".")[-1]
-                                    if base_req not in scene.payload:
-                                        raise ValueError(f"Missing required field '{req_field}' for event '{scene.event_ref}'")
-
-                        for target, _ in targets:
-                            for field, value in scene.payload.items():
-                                if isinstance(target, RuntimeComponent):
-                                    if field == "status" and value not in ("active", "inactive", "failure"):
-                                        raise ValueError(f"Invalid status '{value}' for component {target.name}")
-                                    elif field == "is_backup":
-                                        raise ValueError("is_backup is immutable and cannot be set")
-                                    elif field != "status":
-                                        comp_spec = next((s for s in engine.specs if s.get("type") == target.type), None)
-                                        if comp_spec:
-                                            rating = comp_spec.get("rating", {})
-                                            field_scopes = {}
-                                            for section in ("state", "input", "output"):
-                                                if section in rating:
-                                                    for k in rating[section].keys():
-                                                        field_scopes.setdefault(k, []).append(section)
-                                            
-                                            parts = field.split(".")
-                                            if len(parts) == 1:
-                                                base_f = parts[0]
-                                                if base_f not in field_scopes:
-                                                    raise ValueError(f"Field '{base_f}' is not a valid field for component type '{target.type}' (target: {target.name})")
-                                                if len(field_scopes[base_f]) > 1:
-                                                    raise ValueError(f"Ambiguous field '{base_f}' for component type '{target.type}'. It exists in scopes: {', '.join(field_scopes[base_f])}. Please specify the scope (e.g., {field_scopes[base_f][0]}.{base_f}).")
-                                            else:
-                                                scope, base_f = parts[0], parts[1]
-                                                if base_f not in field_scopes or scope not in field_scopes[base_f]:
-                                                    raise ValueError(f"Field '{field}' is not a valid field for component type '{target.type}' (target: {target.name})")
-                                elif type(target).__name__ == "RuntimeConnection":
-                                    if field == "status" and value not in ("active", "inactive", "failure"):
-                                        raise ValueError(f"Invalid status '{value}' for connection")
-                                    elif field != "status":
-                                        raise ValueError(f"Connections only support 'status' mutations, got '{field}'")
                     except ValueError as ve:
-                        class ValidationError(Exception):
-                            pass
-                        err = ValidationError(str(ve))
-                        err.line_number = getattr(scene, "source_location", 1)
-                        err.events = events
-                        raise err
+                        compilation_errors.append({
+                            "message": str(ve),
+                            "line_number": getattr(scene, "source_location", 1) - 1,
+                        })
+                        continue
+
+                    scene_errors = []
+                    def add_err(msg, field=None):
+                        line_num = getattr(scene, "source_location", 1) - 1
+                        if field and hasattr(scene, "payload_line_numbers") and field in scene.payload_line_numbers:
+                            line_num = scene.payload_line_numbers[field] - 1
+                        scene_errors.append({"message": msg, "line_number": line_num})
+
+                    if targets:
+                        target, _ = targets[0]
+                        new_payload = {}
+                        for field, value in scene.payload.items():
+                            canonical = field
+                            schema = None
+                            if isinstance(target, RuntimeComponent):
+                                if field == "status":
+                                    if value not in ("active", "inactive", "failure"):
+                                        add_err(f"Invalid status '{value}' for component {target.name}", field)
+                                    canonical = "status"
+                                elif field == "is_backup":
+                                    add_err("is_backup is immutable and cannot be set", field)
+                                else:
+                                    comp_spec = next((s for s in engine.specs if s.get("type") == target.type), None)
+                                    if comp_spec:
+                                        rating = comp_spec.get("rating", {})
+                                        field_scopes = {}
+                                        for section in ("state", "input", "output"):
+                                            if section in rating:
+                                                for k in rating[section].keys():
+                                                    field_scopes.setdefault(k, []).append(section)
+                                        
+                                        parts = field.split(".")
+                                        if len(parts) == 1:
+                                            base_f = parts[0]
+                                            if base_f not in field_scopes:
+                                                add_err(f"Field '{base_f}' is not a valid field for component type '{target.type}' (target: {target.name})", field)
+                                            elif len(field_scopes[base_f]) > 1:
+                                                add_err(f"Ambiguous field '{base_f}' for component type '{target.type}'. It exists in scopes: {', '.join(field_scopes[base_f])}. Please specify the scope.", field)
+                                            else:
+                                                canonical = f"{field_scopes[base_f][0]}.{base_f}"
+                                                schema = rating[field_scopes[base_f][0]][base_f]
+                                        else:
+                                            scope, base_f = parts[0], parts[1]
+                                            if base_f not in field_scopes or scope not in field_scopes[base_f]:
+                                                add_err(f"Field '{field}' is not a valid field for component type '{target.type}' (target: {target.name})", field)
+                                            else:
+                                                canonical = field
+                                                schema = rating[scope][base_f]
+
+                                        # Enforce type constraints
+                                        if schema is not None:
+                                            if isinstance(schema, dict) and any(k in schema for k in ("min", "max", "unit", "value")):
+                                                if not isinstance(value, (int, float)) or isinstance(value, bool):
+                                                    add_err(f"Value for field '{field}' must be a number, got '{type(value).__name__}'", field)
+                                            elif isinstance(schema, bool):
+                                                if not isinstance(value, bool):
+                                                    add_err(f"Value for field '{field}' must be a boolean, got '{type(value).__name__}'", field)
+                                            elif isinstance(schema, str):
+                                                if not isinstance(value, str):
+                                                    add_err(f"Value for field '{field}' must be a string, got '{type(value).__name__}'", field)
+                            elif type(target).__name__ == "RuntimeConnection":
+                                if field == "status" and value not in ("active", "inactive", "failure"):
+                                    add_err(f"Invalid status '{value}' for connection", field)
+                                elif field != "status":
+                                    add_err(f"Connections only support 'status' mutations, got '{field}'", field)
+                                
+                            if canonical in new_payload:
+                                add_err(f"Duplicate assignment for field '{canonical}' (provided multiple times ambiguously)", field)
+                            
+                            if hasattr(scene, 'user_provided_keys') and field in scene.user_provided_keys:
+                                if scene.event_definition and canonical in scene.event_definition.set_fixed:
+                                    add_err(f"Field '{canonical}' is already fixed by the event definition and cannot be overridden", field)
+                                    # Override back to the fixed value to maintain invariant
+                                    value = scene.event_definition.set_fixed[canonical]
+                                    
+                            new_payload[canonical] = value
+                        
+                        scene.payload = new_payload
+
+                    if scene.event_definition:
+                        for req_field in scene.event_definition.set_required:
+                            if req_field not in scene.payload:
+                                add_err(f"Missing required field '{req_field}' for event '{scene.event_ref}'")
+                                
+                    compilation_errors.extend(scene_errors)
+                
+                if compilation_errors:
+                    class ValidationErrors(Exception):
+                        pass
+                    err = ValidationErrors("Multiple validation errors")
+                    err.errors = compilation_errors
+                    err.events = events
+                    raise err
 
         return [
             {
@@ -418,6 +471,24 @@ def parse_scenario_raw(payload: ParseScenarioRequest):
             err_detail = {
                 "message": str(e),
                 "line_number": e.line_number - 1,
+            }
+            if hasattr(e, "events"):
+                err_detail["events"] = [
+                    {
+                        "event_ref": e_obj.event_ref,
+                        "selector": e_obj.selector,
+                        "at": e_obj.at,
+                        "duration": None if e_obj.duration == float("inf") else e_obj.duration,
+                        "payload": e_obj.payload,
+                        "source_location": getattr(e_obj, "source_location", 0),
+                        "source_order": getattr(e_obj, "source_order", 0),
+                    }
+                    for e_obj in e.events
+                ]
+            raise HTTPException(400, detail=err_detail)
+        elif hasattr(e, "errors"):
+            err_detail = {
+                "errors": e.errors,
             }
             if hasattr(e, "events"):
                 err_detail["events"] = [

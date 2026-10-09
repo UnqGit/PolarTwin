@@ -91,7 +91,9 @@ def parse_scene_string(source: str) -> list[SceneEvent]:
             # We are inside a block, this should be key=value
             if "=" in line:
                 key, val = line.split("=", 1)
-                block_stack[-1][key.strip()] = parse_value(val)
+                k_strip = key.strip()
+                block_stack[-1][k_strip] = parse_value(val)
+                current_event.payload_line_numbers[k_strip] = i
             else:
                 raise SceneParseError("Expected key=value assignment in block", i, line, events)
             continue

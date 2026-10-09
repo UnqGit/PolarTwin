@@ -4,16 +4,64 @@ import type { SceneEventData } from './TimelineEditor';
 interface EventInspectorProps {
   event: SceneEventData | null;
   eventDef: any;
+  specs?: any[];
   onUpdateEvent?: (newSourceSnippet: string) => void;
   disabled?: boolean;
 }
 
-export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef, onUpdateEvent, disabled = false }) => {
+export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef, specs, onUpdateEvent, disabled = false }) => {
   const [editSelector, setEditSelector] = useState('');
   const [editAt, setEditAt] = useState('');
   const [editFor, setEditFor] = useState('');
   const [editPayloadObj, setEditPayloadObj] = useState<Record<string, string>>({});
   const [isEditing, setIsEditing] = useState(false);
+
+  const getSchemaForField = (key: string) => {
+    if (!specs) return null;
+    let parts = key.split('.');
+    let base = parts.length > 1 ? parts[1] : parts[0];
+    for (const spec of specs) {
+      if (!spec.rating) continue;
+      for (const scope of ['state', 'input', 'output']) {
+         if (spec.rating[scope] && spec.rating[scope][base] !== undefined) {
+             return spec.rating[scope][base];
+         }
+      }
+    }
+    return null;
+  };
+
+  const renderInput = (key: string, value: any, onChange: (v: string) => void) => {
+    if (key === 'status') {
+      return (
+        <select value={value || ''} onChange={e => onChange(e.target.value)} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--bg-input)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', padding: '4px' }}>
+          <option value="">-- select --</option>
+          <option value="active">active</option>
+          <option value="inactive">inactive</option>
+          <option value="failure">failure</option>
+        </select>
+      );
+    }
+    const schema = getSchemaForField(key);
+    if (!schema) {
+      return <input value={value || ''} onChange={e => onChange(e.target.value)} placeholder="value" style={{ width: '100%', boxSizing: 'border-box' }} />;
+    }
+    
+    if (typeof schema === 'boolean') {
+      return (
+        <select value={value || ''} onChange={e => onChange(e.target.value)} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--bg-input)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', padding: '4px' }}>
+          <option value="">-- select --</option>
+          <option value="true">true</option>
+          <option value="false">false</option>
+        </select>
+      );
+    } else if (typeof schema === 'string') {
+      return <input type="text" value={value || ''} onChange={e => onChange(e.target.value)} placeholder="string value" style={{ width: '100%', boxSizing: 'border-box' }} />;
+    } else if (typeof schema === 'object' && (schema.min !== undefined || schema.max !== undefined || schema.unit !== undefined || schema.value !== undefined)) {
+      return <input type="number" step="any" value={value || ''} onChange={e => onChange(e.target.value)} placeholder="numeric value" style={{ width: '100%', boxSizing: 'border-box' }} />;
+    }
+    return <input value={value || ''} onChange={e => onChange(e.target.value)} placeholder="value" style={{ width: '100%', boxSizing: 'border-box' }} />;
+  };
 
   const { declared, initiated } = React.useMemo(() => {
     const d: string[] = [];
@@ -224,12 +272,7 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
                 <div style={{ width: 120, fontFamily: 'monospace', fontSize: 12 }}>{key}</div>
                 <div style={{ flex: 1 }}>
                   {isEditing ? (
-                    <input
-                      value={editPayloadObj[key] || ''}
-                      onChange={e => setEditPayloadObj(prev => ({ ...prev, [key]: e.target.value }))}
-                      placeholder="value"
-                      style={{ width: '100%', boxSizing: 'border-box' }}
-                    />
+                    renderInput(key, editPayloadObj[key], v => setEditPayloadObj(prev => ({ ...prev, [key]: v })))
                   ) : (
                     <div style={{ padding: '4px 8px', background: 'var(--bg-input)', borderRadius: 4, fontFamily: 'monospace', fontSize: 12, border: '1px solid var(--border-color)', minHeight: 24, display: 'flex', alignItems: 'center' }}>
                       {event.payload && event.payload[key] !== undefined ? String(event.payload[key]) : <span style={{ color: 'var(--text-tertiary)', fontStyle: 'italic' }}>(not set)</span>}
@@ -243,11 +286,7 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
                 <div style={{ width: 120, fontFamily: 'monospace', fontSize: 12, color: 'var(--text-secondary)' }}>{key}</div>
                 <div style={{ flex: 1 }}>
                   {isEditing ? (
-                    <input
-                      value={editPayloadObj[key] || ''}
-                      onChange={e => setEditPayloadObj(prev => ({ ...prev, [key]: e.target.value }))}
-                      style={{ width: '100%', boxSizing: 'border-box' }}
-                    />
+                    renderInput(key, editPayloadObj[key], v => setEditPayloadObj(prev => ({ ...prev, [key]: v })))
                   ) : (
                     <div style={{ padding: '4px 8px', background: 'var(--bg-input)', borderRadius: 4, fontFamily: 'monospace', fontSize: 12, border: '1px solid var(--border-color)', minHeight: 24, display: 'flex', alignItems: 'center' }}>
                       {editPayloadObj[key]}

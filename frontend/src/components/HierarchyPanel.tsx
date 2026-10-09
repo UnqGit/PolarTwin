@@ -263,11 +263,7 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
     setEditingTarget(null);
   }, [activeView, isEditingInitials]);
 
-  useEffect(() => {
-    if (editingTarget && selectedName && selectedName !== editingTarget.name) {
-      setEditingTarget(null);
-    }
-  }, [selectedName, editingTarget]);
+
 
   const [panelWidth, setPanelWidth] = useState(300);
   const isResizing = React.useRef(false);

@@ -32,7 +32,7 @@ export function ScenariosPage() {
   const [scenarioEvents, setScenarioEvents] = useState<SceneEventData[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<SceneEventData | null>(null);
   const [selectedComponentName, setSelectedComponentName] = useState<string | null>(null);
-  const [errorLine, setErrorLine] = useState<number | undefined>(undefined);
+  const [errorLines, setErrorLines] = useState<number[]>([]);
   const [validationErrors, setValidationErrors] = useState<{ message: string; line_number?: number }[]>([]);
   const [compileLogs, setCompileLogs] = useState<{ message: string, isError: boolean }[]>([]);
 
@@ -163,7 +163,7 @@ export function ScenariosPage() {
             const end = performance.now();
             setCompileLogs([{ message: `Successfully compiled in ${(end - start).toFixed(1)}ms`, isError: false }]);
             setScenarioEvents(events);
-            setErrorLine(undefined);
+            setErrorLines([]);
             setValidationErrors([]);
           })
           .catch(err => {
@@ -173,11 +173,14 @@ export function ScenariosPage() {
             if (err.events) {
               setScenarioEvents(err.events);
             }
-            if (err.line_number !== undefined) {
-              setErrorLine(err.line_number);
+            if (err.errors) {
+              setErrorLines(err.errors.map((e: any) => e.line_number).filter((n: any) => n !== undefined));
+              setValidationErrors(err.errors);
+            } else if (err.line_number !== undefined) {
+              setErrorLines([err.line_number]);
               setValidationErrors([{ message: err.message, line_number: err.line_number }]);
             } else {
-              setErrorLine(undefined);
+              setErrorLines([]);
               setValidationErrors([{ message: err.message || err.toString() }]);
             }
           });
@@ -185,7 +188,7 @@ export function ScenariosPage() {
       return () => clearTimeout(timer);
     } else if (editingType === 'scenario' && !scenarioSource) {
       setScenarioEvents([]);
-      setErrorLine(undefined);
+      setErrorLines([]);
       setValidationErrors([]);
       setCompileLogs([]);
     }
@@ -608,19 +611,11 @@ export function ScenariosPage() {
                 prev.includes(s.id) ? prev.filter(id => id !== s.id) : [...prev, s.id]
               );
             } else {
-              if (selectedScenarioId === s.id) {
-                setSelectedScenarioId(null);
-                setScenarioEvents([]);
-                setRunId(null);
-                setSimStatus('Ready');
-                if (editingType === 'scenario') setScenarioSource('');
-              } else {
-                setEditingType('scenario');
-                setSelectedScenarioId(s.id);
-                setSelectedEventDefId(null);
-                setBottomTab('source');
-                setBottomOpen(true);
-              }
+              setEditingType('scenario');
+              setSelectedScenarioId(s.id);
+              setSelectedEventDefId(null);
+              setBottomTab('source');
+              setBottomOpen(true);
             }
           }}
         >
@@ -714,14 +709,10 @@ export function ScenariosPage() {
                 prev.includes(e.id) ? prev.filter(id => id !== e.id) : [...prev, e.id]
               );
             } else {
-              if (selectedEventDefId === e.id) {
-                setSelectedEventDefId(null);
-              } else {
-                setEditingType('event');
-                setSelectedEventDefId(e.id);
-                setBottomTab('source');
-                setBottomOpen(true);
-              }
+              setEditingType('event');
+              setSelectedEventDefId(e.id);
+              setBottomTab('source');
+              setBottomOpen(true);
             }
           }}
           style={{
@@ -1100,7 +1091,7 @@ export function ScenariosPage() {
                     onChange={setScenarioSource}
                     fileType={editingType}
                     selectedLine={selectedEvent?.source_location ? selectedEvent.source_location - 1 : undefined}
-                    errorLine={errorLine}
+                    errorLines={errorLines}
                     sourceVersion={sourceVersion}
                   />
                 </div>
@@ -1148,6 +1139,7 @@ export function ScenariosPage() {
                   disabled={!!runId}
                   event={selectedEvent}
                   eventDef={eventDefs.find(ed => ed.name === selectedEvent?.event_ref)}
+                  specs={spec}
                   onUpdateEvent={(snippet) => selectedEvent && handleUpdateEvent(selectedEvent, snippet)}
                 />
               )}
@@ -1259,7 +1251,7 @@ export function ScenariosPage() {
               simTime={simTime}
               zoom={timelineZoom}
               selectedEvent={selectedEvent}
-              errorLine={errorLine}
+              errorLines={errorLines}
               onSelectEvent={(ev, isCtrlKey) => {
                 setSelectedEvent(ev);
                 if (ev && ev.selector) {

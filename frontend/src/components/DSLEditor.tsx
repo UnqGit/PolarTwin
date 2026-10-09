@@ -5,15 +5,16 @@ interface DSLEditorProps {
   value: string;
   onChange: (val: string) => void;
   selectedLine?: number; // 0-indexed
-  errorLine?: number;    // 0-indexed
+  errorLines?: number[];    // 0-indexed
   sourceVersion?: number; // optional, when changed, forces an editor update
   fileType?: 'scenario' | 'event';
 }
 
-export function DSLEditor({ value, onChange, selectedLine, errorLine, sourceVersion, fileType = 'scenario' }: DSLEditorProps) {
+export function DSLEditor({ value, onChange, selectedLine, errorLines, sourceVersion, fileType = 'scenario' }: DSLEditorProps) {
   const monaco = useMonaco();
   const editorRef = useRef<any>(null);
   const [currentTheme, setCurrentTheme] = React.useState('twin-dark');
+  const [isEditorReady, setIsEditorReady] = React.useState(false);
 
   useEffect(() => {
     const updateTheme = () => {
@@ -129,6 +130,7 @@ export function DSLEditor({ value, onChange, selectedLine, errorLine, sourceVers
     // A tiny nudge to the value forces Monaco's tokenizer to wake up for existing text
     const currentVal = editor.getValue();
     editor.setValue(currentVal);
+    setIsEditorReady(true);
   };
 
   // Dynamically change language if fileType changes without unmounting
@@ -144,10 +146,12 @@ export function DSLEditor({ value, onChange, selectedLine, errorLine, sourceVers
   useEffect(() => {
     if (editorRef.current) {
       const decorations: any[] = [];
-      if (errorLine !== undefined && errorLine >= 0) {
-        decorations.push({
-          range: new monaco!.Range(errorLine + 1, 1, errorLine + 1, 1),
-          options: { isWholeLine: true, className: 'error-line-highlight' }
+      if (errorLines && errorLines.length > 0) {
+        Array.from(new Set(errorLines)).forEach(line => {
+          decorations.push({
+            range: new monaco!.Range(line + 1, 1, line + 1, 1),
+            options: { isWholeLine: true, className: 'error-line-highlight' }
+          });
         });
       } else if (selectedLine !== undefined && selectedLine >= 0) {
         decorations.push({
@@ -158,7 +162,7 @@ export function DSLEditor({ value, onChange, selectedLine, errorLine, sourceVers
       }
       editorRef.current.decorations = editorRef.current.deltaDecorations(editorRef.current.decorations || [], decorations);
     }
-  }, [selectedLine, errorLine, monaco]);
+  }, [selectedLine, errorLines, monaco, isEditorReady]);
 
 
   // Sync external changes using sourceVersion

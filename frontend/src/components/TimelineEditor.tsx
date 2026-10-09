@@ -22,12 +22,12 @@ interface TimelineEditorProps {
   onDeleteEvent?: (event: SceneEventData) => void;
   onSeek?: (time: number) => void;
   zoom?: number;
-  errorLine?: number;
+  errorLines?: number[];
 }
 
 const AURORA_COLORS = ['#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#d946ef'];
 
-export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime, onSelectEvent, selectedEvent, onAppendEvent, onUpdateEventLocation, onDeleteEvent, onSeek, zoom = 100, errorLine }) => {
+export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime, onSelectEvent, selectedEvent, onAppendEvent, onUpdateEventLocation, onDeleteEvent, onSeek, zoom = 100, errorLines }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const isSyncing = useRef<'left' | 'right' | null>(null);
@@ -261,7 +261,16 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
             </div>
             {/* Events */}
             <div style={{ position: 'absolute', top: 30, left: 0, right: 0 }}>
-              {events.map((ev, i) => (
+              {events.map((ev, i) => {
+                const eventHasError = () => {
+                  if (!errorLines || errorLines.length === 0 || ev.source_location === undefined) return false;
+                  const sortedBySource = [...events].sort((a, b) => (a.source_location || 0) - (b.source_location || 0));
+                  const currentIndex = sortedBySource.findIndex(e => e === ev);
+                  const startLine = ev.source_location - 1;
+                  const endLine = currentIndex < sortedBySource.length - 1 ? (sortedBySource[currentIndex + 1].source_location || 0) - 1 : Infinity;
+                  return errorLines.some(line => line >= startLine && line < endLine);
+                };
+                return (
                 <div 
                   key={i} 
                   onClick={(e) => {
@@ -273,11 +282,11 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
                       containerRef.current.scrollTo({ left: Math.max(0, targetX - centerOffset), behavior: 'smooth' });
                     }
                   }}
-                  style={{ height: ROW_HEIGHT, display: 'flex', alignItems: 'center', padding: '0 8px', borderBottom: '1px solid var(--border-color)', color: selectedEvent === ev ? 'var(--accent-primary)' : 'var(--text-secondary)', fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', backgroundColor: selectedEvent === ev ? 'rgba(99,219,188,0.08)' : 'transparent', cursor: 'pointer', outline: errorLine !== undefined && ev.source_location !== undefined && errorLine === ev.source_location - 1 ? '1px solid red' : 'none', outlineOffset: '-1px' }}
+                  style={{ height: ROW_HEIGHT, display: 'flex', alignItems: 'center', padding: '0 8px', borderBottom: '1px solid var(--border-color)', color: selectedEvent === ev ? 'var(--accent-primary)' : 'var(--text-secondary)', fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', backgroundColor: selectedEvent === ev ? 'rgba(99,219,188,0.08)' : 'transparent', cursor: 'pointer', outline: eventHasError() ? '1px solid red' : 'none', outlineOffset: '-1px' }}
                 >
                   {ev.event_ref}
                 </div>
-              ))}
+              )})}
             </div>
           </div>
         </div>
