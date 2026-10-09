@@ -168,8 +168,31 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
     );
   }
 
+  const validateField = (key: string, value: string | undefined): 'valid' | 'empty' | 'invalid' => {
+    if (value === undefined || value === '') return 'empty';
+    if (key === 'status') {
+       if (!['active', 'inactive', 'failure'].includes(value)) return 'invalid';
+       return 'valid';
+    }
+    const schema = getSchemaForField(key);
+    if (!schema) return 'valid';
+    if (typeof schema === 'boolean') {
+      return (value === 'true' || value === 'false') ? 'valid' : 'invalid';
+    }
+    if (typeof schema === 'object' && (schema.min !== undefined || schema.max !== undefined || schema.unit !== undefined || schema.value !== undefined)) {
+      return isNaN(Number(value)) ? 'invalid' : 'valid';
+    }
+    return 'valid';
+  };
+
+  const missingRequired = declared.filter(key => {
+    const status = validateField(key, editPayloadObj[key]);
+    return status === 'empty' || status === 'invalid';
+  });
+
   const handleSave = () => {
     if (!onUpdateEvent) return;
+    if (missingRequired.length > 0) return;
     
     // Construct DSL string
     let snippet = `event:${event.event_ref}`;
@@ -208,9 +231,26 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
         <h3 style={{ fontSize: 14, fontWeight: 'bold', color: 'var(--accent-primary)', margin: 0 }}>{event.event_ref}</h3>
         {onUpdateEvent && (
           <button 
-            onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+            onClick={() => {
+              if (isEditing) {
+                if (missingRequired.length > 0) return;
+                handleSave();
+              } else {
+                setEditPayloadObj(prev => {
+                  const next = { ...prev };
+                  Object.keys(next).forEach(k => {
+                    if (validateField(k, next[k]) === 'invalid') {
+                       next[k] = '';
+                    }
+                  });
+                  return next;
+                });
+                setIsEditing(true);
+              }
+            }}
             className={`btn btn-sm ${isEditing ? 'btn-primary' : 'btn-secondary'}`}
-            disabled={disabled}
+            disabled={disabled || (isEditing && missingRequired.length > 0)}
+            title={isEditing && missingRequired.length > 0 ? "Fill required fields to save" : ""}
           >
             {isEditing ? 'Save' : 'Edit'}
           </button>
@@ -267,20 +307,35 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
         <div style={{ marginBottom: 16 }}>
           <div style={{ color: 'var(--text-secondary)', marginBottom: 8, fontSize: 11, textTransform: 'uppercase' }}>Set Payload</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {declared.map(key => (
-              <div key={key} style={{ display: 'flex', alignItems: 'center' }}>
-                <div style={{ width: 120, fontFamily: 'monospace', fontSize: 12 }}>{key}</div>
-                <div style={{ flex: 1 }}>
-                  {isEditing ? (
-                    renderInput(key, editPayloadObj[key], v => setEditPayloadObj(prev => ({ ...prev, [key]: v })))
-                  ) : (
-                    <div style={{ padding: '4px 8px', background: 'var(--bg-input)', borderRadius: 4, fontFamily: 'monospace', fontSize: 12, border: '1px solid var(--border-color)', minHeight: 24, display: 'flex', alignItems: 'center' }}>
-                      {event.payload && event.payload[key] !== undefined ? String(event.payload[key]) : <span style={{ color: 'var(--text-tertiary)', fontStyle: 'italic' }}>(not set)</span>}
-                    </div>
-                  )}
+            {declared.map(key => {
+              const validationStatus = validateField(key, editPayloadObj[key]);
+              const isMissing = validationStatus === 'empty';
+              const isInvalid = validationStatus === 'invalid';
+              const showAsterisk = (isMissing && isEditing) || isInvalid;
+              const asteriskColor = isMissing ? '#ef4444' : '#f59e0b';
+              const helperText = isMissing ? '* this is a required field' : '* invalid data type';
+
+              return (
+              <div key={key} style={{ display: 'flex', flexDirection: 'column', marginBottom: 8 }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                  <div style={{ width: 120, fontFamily: 'monospace', fontSize: 12, display: 'flex', alignItems: 'center', whiteSpace: 'nowrap' }}>
+                    {key}
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    {isEditing ? (
+                      renderInput(key, editPayloadObj[key], v => setEditPayloadObj(prev => ({ ...prev, [key]: v })))
+                    ) : (
+                      <div style={{ padding: '4px 8px', background: 'var(--bg-input)', borderRadius: 4, fontFamily: 'monospace', fontSize: 12, border: '1px solid var(--border-color)', minHeight: 24, display: 'flex', alignItems: 'center' }}>
+                        {event.payload && event.payload[key] !== undefined ? String(event.payload[key]) : <span style={{ color: '#ef4444', fontStyle: 'italic' }}>(not set)</span>}
+                      </div>
+                    )}
+                  </div>
                 </div>
+                {showAsterisk && (
+                  <div style={{ paddingLeft: 120, color: asteriskColor, fontSize: 11, marginTop: 4 }}>{helperText}</div>
+                )}
               </div>
-            ))}
+            )})}
             {Object.keys(editPayloadObj).filter(k => !declared.includes(k) && !initiated.find(i => i.key === k)).map(key => (
               <div key={key} style={{ display: 'flex', alignItems: 'center' }}>
                 <div style={{ width: 120, fontFamily: 'monospace', fontSize: 12, color: 'var(--text-secondary)' }}>{key}</div>

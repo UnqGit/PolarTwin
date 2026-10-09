@@ -233,6 +233,7 @@ export function ScenariosPage() {
   const handleStartStop = async () => {
     if (!runId) {
       if (!selectedStation) return;
+      if (errorLines.length > 0 || validationErrors.length > 0 || compileLogs.some(log => log.isError)) return;
       
       if (!selectedScenarioId) {
         setNewFileModal({ type: 'scenario', name: 'new_scenario', startAfter: true });
@@ -790,6 +791,8 @@ export function ScenariosPage() {
     </div>
   );
 
+  const hasCompilationErrors = errorLines.length > 0 || validationErrors.length > 0 || compileLogs.some(log => log.isError);
+
   return (
     <div className="page-container" style={{ display: 'flex', flexDirection: 'column', height: '100%', backgroundColor: 'var(--bg-main)', color: 'var(--text-primary)', overflow: 'hidden' }}>
       <style>{
@@ -974,9 +977,10 @@ export function ScenariosPage() {
             </button>
             <button
               onClick={handleStartStop}
+              disabled={!runId && hasCompilationErrors}
               className="btn-glass"
               style={{ padding: '0 12px', background: runId ? 'rgba(239,68,68,0.1)' : 'var(--accent-blue)', color: runId ? '#ef4444' : '#fff', borderColor: runId ? 'rgba(239,68,68,0.5)' : 'var(--accent-blue)' }}
-              title={runId ? "Stop Simulation" : "Start Simulation"}
+              title={runId ? "Stop Simulation" : (!runId && hasCompilationErrors ? "Fix compilation errors to start" : "Start Simulation")}
             >
               {runId ? <Square size={16} /> : <PlayCircle size={16} />}
               <span style={{ marginLeft: 4 }}>{runId ? 'Stop' : 'Start'}</span>
