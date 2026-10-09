@@ -22,11 +22,12 @@ interface TimelineEditorProps {
   onDeleteEvent?: (event: SceneEventData) => void;
   onSeek?: (time: number) => void;
   zoom?: number;
+  errorLine?: number;
 }
 
 const AURORA_COLORS = ['#10b981', '#06b6d4', '#3b82f6', '#8b5cf6', '#d946ef'];
 
-export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime, onSelectEvent, selectedEvent, onAppendEvent, onUpdateEventLocation, onDeleteEvent, onSeek, zoom = 100 }) => {
+export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime, onSelectEvent, selectedEvent, onAppendEvent, onUpdateEventLocation, onDeleteEvent, onSeek, zoom = 100, errorLine }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const isSyncing = useRef<'left' | 'right' | null>(null);
@@ -272,7 +273,7 @@ export const TimelineEditor: React.FC<TimelineEditorProps> = ({ events, simTime,
                       containerRef.current.scrollTo({ left: Math.max(0, targetX - centerOffset), behavior: 'smooth' });
                     }
                   }}
-                  style={{ height: ROW_HEIGHT, display: 'flex', alignItems: 'center', padding: '0 8px', borderBottom: '1px solid var(--border-color)', color: selectedEvent === ev ? 'var(--accent-primary)' : 'var(--text-secondary)', fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', backgroundColor: selectedEvent === ev ? 'rgba(99,219,188,0.08)' : 'transparent', cursor: 'pointer' }}
+                  style={{ height: ROW_HEIGHT, display: 'flex', alignItems: 'center', padding: '0 8px', borderBottom: '1px solid var(--border-color)', color: selectedEvent === ev ? 'var(--accent-primary)' : 'var(--text-secondary)', fontSize: 12, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', backgroundColor: selectedEvent === ev ? 'rgba(99,219,188,0.08)' : 'transparent', cursor: 'pointer', outline: errorLine !== undefined && ev.source_location !== undefined && errorLine === ev.source_location - 1 ? '1px solid red' : 'none', outlineOffset: '-1px' }}
                 >
                   {ev.event_ref}
                 </div>

@@ -398,13 +398,19 @@ class SimulationEngineCore:
             targets = self._resolve_scene_targets(scene, eff_comps, eff_conns, ext)
 
             # --- GAP 1: Target Match Strictness ---
-            if scene.selector and not targets:
+            if not targets:
                 expected_kind = getattr(scene, "event_definition", None)
                 kind_str = expected_kind.target_kind if expected_kind else "unknown"
-                raise ValueError(
-                    f"Event '{scene.event_ref}' targeting '{scene.selector}' "
-                    f"yielded no matching targets (expected kind: {kind_str})."
-                )
+                if not scene.selector:
+                    if kind_str not in ("external.network", "external.weather", "external.supplies"):
+                        raise ValueError(f"Event '{scene.event_ref}' requires a target selector (expected kind: {kind_str}).")
+                    else:
+                        raise ValueError(f"Event '{scene.event_ref}' yielded no matching targets for '{kind_str}'.")
+                else:
+                    raise ValueError(
+                        f"Event '{scene.event_ref}' targeting '{scene.selector}' "
+                        f"yielded no matching targets (expected kind: {kind_str})."
+                    )
 
             for target, node_key_hint in targets:
                 # Track explicitly imposed inactive
@@ -427,19 +433,32 @@ class SimulationEngineCore:
                                 raise ValueError("is_backup is immutable and cannot be set")
                             else:
                                 # --- GAP 2: Field existence validation against spec.json ---
-                                root_field = field.split(".")[0]
                                 comp_spec = next((s for s in self.specs if s.get("type") == target.type), None)
                                 if comp_spec:
-                                    valid_fields = set()
                                     rating = comp_spec.get("rating", {})
+                                    field_scopes = {}
                                     for section in ("state", "input", "output"):
                                         if section in rating:
-                                            valid_fields.update(rating[section].keys())
-                                    if root_field not in valid_fields:
-                                        raise ValueError(
-                                            f"Field '{root_field}' is not a valid field for component type '{target.type}' "
-                                            f"(target: {target.name})"
-                                        )
+                                            for k in rating[section].keys():
+                                                field_scopes.setdefault(k, []).append(section)
+                                    
+                                    parts = field.split(".")
+                                    if len(parts) == 1:
+                                        base_f = parts[0]
+                                        if base_f not in field_scopes:
+                                            raise ValueError(f"Field '{base_f}' is not a valid field for component type '{target.type}' (target: {target.name})")
+                                        if len(field_scopes[base_f]) > 1:
+                                            raise ValueError(f"Ambiguous field '{base_f}'. It exists in scopes: {', '.join(field_scopes[base_f])}. Please specify the scope (e.g., {field_scopes[base_f][0]}.{base_f}).")
+                                    else:
+                                        scope, base_f = parts[0], parts[1]
+                                        if base_f not in field_scopes or scope not in field_scopes[base_f]:
+                                            raise ValueError(f"Field '{field}' is not a valid field for component type '{target.type}' (target: {target.name})")
+                                        
+                                        # If the field only exists in ONE scope, loaders.py flattened it!
+                                        # So we must map `state.flowrate` -> `flowrate` for the engine.
+                                        if len(field_scopes[base_f]) == 1:
+                                            field = base_f
+
                                 field_path = f"value.{field}"
                         else:  # RuntimeConnection
                             if field == "status":
@@ -1511,7 +1530,7 @@ class SimulationEngineCore:
                             and base_comps[ac_name].type == "air_conditioner"
                         ):
                             ac_t_obj = base_comps[ac_name].value.get("temperature", {})
-                            t_ac_out = _v(ac_t_obj, "value", 20.0)
+                            t_ac_out = _v(ac_t_obj, "output", 20.0)
                             ac_vent_data.append(
                                 {"t_out": t_ac_out, "a_curr": a_curr, "a_max": a_max}
                             )

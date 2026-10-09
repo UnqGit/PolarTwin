@@ -7,7 +7,7 @@ from twin_sim.dsl.models import SceneEvent
 
 
 class SceneParseError(ParseError):
-    def __init__(self, message, line_number=None, line=None):
+    def __init__(self, message, line_number=None, line=None, events=None):
         error = message
         if line_number is not None:
             error = f"Line {line_number}: {message}"
@@ -15,6 +15,7 @@ class SceneParseError(ParseError):
                 error += f"\n    {line}"
         super().__init__(error)
         self.line_number = line_number
+        self.events = events or []
 
 
 def parse_scene_string(source: str) -> list[SceneEvent]:
@@ -35,7 +36,7 @@ def parse_scene_string(source: str) -> list[SceneEvent]:
 
         if line == "}":
             if not block_stack:
-                raise SceneParseError("Unexpected '}'", i, line)
+                raise SceneParseError("Unexpected '}'", i, line, events)
 
             # Pop the current dict
             completed_dict = block_stack.pop()
@@ -65,7 +66,7 @@ def parse_scene_string(source: str) -> list[SceneEvent]:
                 )
                 if not m:
                     raise SceneParseError(
-                        "Invalid scene event declaration with block", i, line
+                        "Invalid scene event declaration with block", i, line, events
                     )
 
                 e_ref, sel, at_str, for_str = m.groups()
@@ -92,7 +93,7 @@ def parse_scene_string(source: str) -> list[SceneEvent]:
                 key, val = line.split("=", 1)
                 block_stack[-1][key.strip()] = parse_value(val)
             else:
-                raise SceneParseError("Expected key=value assignment in block", i, line)
+                raise SceneParseError("Expected key=value assignment in block", i, line, events)
             continue
 
         # Single line event
@@ -116,10 +117,10 @@ def parse_scene_string(source: str) -> list[SceneEvent]:
             )
             continue
 
-        raise SceneParseError("Unrecognized scene line format", i, line)
+        raise SceneParseError("Unrecognized scene line format", i, line, events)
 
     if current_event is not None or block_stack:
-        raise SceneParseError("Unclosed event block at end of file", None, None)
+        raise SceneParseError("Unclosed event block at end of file", None, None, events)
 
     # Sort events by 'at' time (stable sort based on source_order)
     return sorted(events, key=lambda e: (e.at, e.source_order))

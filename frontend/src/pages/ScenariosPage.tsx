@@ -170,6 +170,9 @@ export function ScenariosPage() {
             const end = performance.now();
             setCompileLogs([{ message: `Failed to compile after ${(end - start).toFixed(1)}ms`, isError: true }]);
             console.error(err);
+            if (err.events) {
+              setScenarioEvents(err.events);
+            }
             if (err.line_number !== undefined) {
               setErrorLine(err.line_number);
               setValidationErrors([{ message: err.message, line_number: err.line_number }]);
@@ -1256,6 +1259,7 @@ export function ScenariosPage() {
               simTime={simTime}
               zoom={timelineZoom}
               selectedEvent={selectedEvent}
+              errorLine={errorLine}
               onSelectEvent={(ev, isCtrlKey) => {
                 setSelectedEvent(ev);
                 if (ev && ev.selector) {

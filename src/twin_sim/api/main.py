@@ -339,12 +339,26 @@ def parse_scenario_raw(payload: ParseScenarioRequest):
                             list(engine.state.effective_connections.values()), 
                             engine.state.base_external)
 
-                        if scene.selector and not targets:
+                        if not targets:
                             expected_kind = getattr(scene, "event_definition", None)
                             kind_str = expected_kind.target_kind if expected_kind else "unknown"
-                            raise ValueError(
-                                f"Event '{scene.event_ref}' targeting '{scene.selector}' yielded no matching targets (expected kind: {kind_str})."
-                            )
+                            if not scene.selector:
+                                if kind_str not in ("external.network", "external.weather", "external.supplies"):
+                                    raise ValueError(f"Event '{scene.event_ref}' requires a target selector (expected kind: {kind_str}).")
+                                else:
+                                    raise ValueError(f"Event '{scene.event_ref}' yielded no matching targets for '{kind_str}'.")
+                            else:
+                                raise ValueError(
+                                    f"Event '{scene.event_ref}' targeting '{scene.selector}' yielded no matching targets (expected kind: {kind_str})."
+                                )
+
+                        if scene.event_definition:
+                            for req_field in scene.event_definition.set_required:
+                                if req_field not in scene.payload:
+                                    # Fallback to bare field matching if unambiguous
+                                    base_req = req_field.split(".")[-1]
+                                    if base_req not in scene.payload:
+                                        raise ValueError(f"Missing required field '{req_field}' for event '{scene.event_ref}'")
 
                         for target, _ in targets:
                             for field, value in scene.payload.items():
@@ -354,18 +368,26 @@ def parse_scenario_raw(payload: ParseScenarioRequest):
                                     elif field == "is_backup":
                                         raise ValueError("is_backup is immutable and cannot be set")
                                     elif field != "status":
-                                        root_field = field.split(".")[0]
                                         comp_spec = next((s for s in engine.specs if s.get("type") == target.type), None)
                                         if comp_spec:
-                                            valid_fields = set()
                                             rating = comp_spec.get("rating", {})
+                                            field_scopes = {}
                                             for section in ("state", "input", "output"):
                                                 if section in rating:
-                                                    valid_fields.update(rating[section].keys())
-                                            if root_field not in valid_fields:
-                                                raise ValueError(
-                                                    f"Field '{root_field}' is not a valid field for component type '{target.type}' (target: {target.name})"
-                                                )
+                                                    for k in rating[section].keys():
+                                                        field_scopes.setdefault(k, []).append(section)
+                                            
+                                            parts = field.split(".")
+                                            if len(parts) == 1:
+                                                base_f = parts[0]
+                                                if base_f not in field_scopes:
+                                                    raise ValueError(f"Field '{base_f}' is not a valid field for component type '{target.type}' (target: {target.name})")
+                                                if len(field_scopes[base_f]) > 1:
+                                                    raise ValueError(f"Ambiguous field '{base_f}' for component type '{target.type}'. It exists in scopes: {', '.join(field_scopes[base_f])}. Please specify the scope (e.g., {field_scopes[base_f][0]}.{base_f}).")
+                                            else:
+                                                scope, base_f = parts[0], parts[1]
+                                                if base_f not in field_scopes or scope not in field_scopes[base_f]:
+                                                    raise ValueError(f"Field '{field}' is not a valid field for component type '{target.type}' (target: {target.name})")
                                 elif type(target).__name__ == "RuntimeConnection":
                                     if field == "status" and value not in ("active", "inactive", "failure"):
                                         raise ValueError(f"Invalid status '{value}' for connection")
@@ -376,6 +398,7 @@ def parse_scenario_raw(payload: ParseScenarioRequest):
                             pass
                         err = ValidationError(str(ve))
                         err.line_number = getattr(scene, "source_location", 1)
+                        err.events = events
                         raise err
 
         return [
@@ -392,13 +415,24 @@ def parse_scenario_raw(payload: ParseScenarioRequest):
         ]
     except Exception as e:
         if hasattr(e, "line_number") and e.line_number is not None:
-            raise HTTPException(
-                400,
-                detail={
-                    "message": str(e),
-                    "line_number": e.line_number - 1,
-                },
-            )
+            err_detail = {
+                "message": str(e),
+                "line_number": e.line_number - 1,
+            }
+            if hasattr(e, "events"):
+                err_detail["events"] = [
+                    {
+                        "event_ref": e_obj.event_ref,
+                        "selector": e_obj.selector,
+                        "at": e_obj.at,
+                        "duration": None if e_obj.duration == float("inf") else e_obj.duration,
+                        "payload": e_obj.payload,
+                        "source_location": getattr(e_obj, "source_location", 0),
+                        "source_order": getattr(e_obj, "source_order", 0),
+                    }
+                    for e_obj in e.events
+                ]
+            raise HTTPException(400, detail=err_detail)
         raise HTTPException(400, detail={"message": f"Error parsing scenario: {e}"})
 
 

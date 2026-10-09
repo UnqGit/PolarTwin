@@ -71,6 +71,9 @@ class EventDefinition(BaseModel):
     # e.g., ["value", "values.temperature"]
     set_allowed: list[str] = Field(default_factory=list)
 
+    # Fields that are strictly required (no '?')
+    set_required: list[str] = Field(default_factory=list)
+
     # e.g., {"status": "failure", "values.voltage.output": 120}
     set_fixed: dict[str, Any] = Field(default_factory=dict)
 

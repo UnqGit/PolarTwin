@@ -50,6 +50,11 @@ export function DSLEditor({ value, onChange, selectedLine, errorLine, sourceVers
           ]
         }
       });
+      monaco.languages.setLanguageConfiguration('twin-scenario-dsl', {
+        comments: {
+          lineComment: '#'
+        }
+      });
 
       // ── Event file tokenizer (.event) ─────────────────────────────────
       monaco.languages.register({ id: 'twin-event-dsl' });
@@ -71,6 +76,11 @@ export function DSLEditor({ value, onChange, selectedLine, errorLine, sourceVers
             // Numbers
             [/\d+(?:\.\d*)?|\.\d+/, 'number'],
           ]
+        }
+      });
+      monaco.languages.setLanguageConfiguration('twin-event-dsl', {
+        comments: {
+          lineComment: '#'
         }
       });
 

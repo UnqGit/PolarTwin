@@ -163,6 +163,7 @@ def parse_event_string(source: str, name: str = "<anonymous>") -> EventDefinitio
     wheres: list[str] = []
     set_fields_allowed = False
     set_allowed: list[str] = []
+    set_required: list[str] = []
     set_fixed: dict[str, Any] = {}
 
     lines = source.splitlines()
@@ -188,10 +189,18 @@ def parse_event_string(source: str, name: str = "<anonymous>") -> EventDefinitio
                 set_fields_allowed = True
             elif "=" in line:
                 key, val = line.split("=", 1)
-                set_fixed[key.strip()] = parse_value(val)
+                key = key.strip()
+                if key.startswith("?"):
+                    raise EventParseError("Initiated fields cannot be optional (cannot start with '?')", i, line)
+                set_fixed[key] = parse_value(val)
             else:
                 # Editable field name (e.g. "value", "values.temperature")
-                set_allowed.append(line)
+                field = line.strip()
+                if field.startswith("?"):
+                    set_allowed.append(field[1:])
+                else:
+                    set_allowed.append(field)
+                    set_required.append(field)
             continue
 
         if line.startswith("target "):
@@ -226,7 +235,11 @@ def parse_event_string(source: str, name: str = "<anonymous>") -> EventDefinitio
                     for field in inner.replace(",", " ").split():
                         field = field.strip()
                         if field:
-                            set_allowed.append(field)
+                            if field.startswith("?"):
+                                set_allowed.append(field[1:])
+                            else:
+                                set_allowed.append(field)
+                                set_required.append(field)
 
             elif remainder.startswith("{") and remainder.endswith("}"):
                 # set { value }  (Spec §11.2 single-line inline block)
@@ -240,14 +253,24 @@ def parse_event_string(source: str, name: str = "<anonymous>") -> EventDefinitio
                             set_fields_allowed = True
                         elif "=" in field:
                             key, val = field.split("=", 1)
-                            set_fixed[key.strip()] = parse_value(val)
+                            key = key.strip()
+                            if key.startswith("?"):
+                                raise EventParseError("Initiated fields cannot be optional (cannot start with '?')", i, line)
+                            set_fixed[key] = parse_value(val)
                         else:
-                            set_allowed.append(field)
+                            if field.startswith("?"):
+                                set_allowed.append(field[1:])
+                            else:
+                                set_allowed.append(field)
+                                set_required.append(field)
 
             elif "=" in remainder:
                 # set field=value  (Spec §11.3)
                 key, val = remainder.split("=", 1)
-                set_fixed[key.strip()] = parse_value(val)
+                key = key.strip()
+                if key.startswith("?"):
+                    raise EventParseError("Initiated fields cannot be optional (cannot start with '?')", i, line)
+                set_fixed[key] = parse_value(val)
 
             else:
                 raise EventParseError(
@@ -280,6 +303,7 @@ def parse_event_string(source: str, name: str = "<anonymous>") -> EventDefinitio
         where=wheres,
         set_fields_allowed=set_fields_allowed,
         set_allowed=set_allowed,
+        set_required=set_required,
         set_fixed=set_fixed,
     )
 
