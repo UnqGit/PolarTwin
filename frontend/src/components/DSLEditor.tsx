@@ -11,6 +11,13 @@ interface DSLEditorProps {
   readOnly?: boolean;
 }
 
+export const DSLEditorContext = {
+  eventNames: [] as string[],
+  componentNames: [] as string[],
+  componentTypes: [] as string[],
+  connectionNames: [] as string[],
+};
+
 let hasRegisteredMonaco = false;
 
 export function DSLEditor({ value, onChange, selectedLine, errorLines, sourceVersion, fileType = 'scenario', readOnly = false }: DSLEditorProps) {
@@ -145,80 +152,212 @@ export function DSLEditor({ value, onChange, selectedLine, errorLines, sourceVer
       }
     });
     monaco.languages.registerCompletionItemProvider('twin-event-dsl', {
-      provideCompletionItems: (model, position) => {
+      provideCompletionItems: (model: any, position: any) => {
         const textUntilPosition = model.getValueInRange({
           startLineNumber: position.lineNumber,
           startColumn: 1,
           endLineNumber: position.lineNumber,
           endColumn: position.column
         });
-        const match = textUntilPosition.match(/^\s*\S*$/);
-        if (!match) return { suggestions: [] };
-        return {
-          suggestions: [
-            {
-              label: 'target',
-              kind: monaco.languages.CompletionItemKind.Keyword,
-              insertText: 'target ',
-              documentation: 'Target component or connection',
-              range: undefined as any
-            },
-            {
-              label: 'where',
-              kind: monaco.languages.CompletionItemKind.Keyword,
-              insertText: 'where ',
-              documentation: 'Condition for target matching',
-              range: undefined as any
-            },
-            {
-              label: 'set { ... }',
-              kind: monaco.languages.CompletionItemKind.Snippet,
-              insertText: 'set {\n    $0\n}',
-              insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-              documentation: 'Payload fields required by this event',
-              range: undefined as any
-            },
-            {
-              label: 'fields',
-              kind: monaco.languages.CompletionItemKind.Keyword,
-              insertText: 'fields',
-              documentation: 'Allow arbitrary payload fields',
-              range: undefined as any
-            }
-          ]
+        
+        const word = model.getWordUntilPosition(position);
+        const range = {
+          startLineNumber: position.lineNumber,
+          endLineNumber: position.lineNumber,
+          startColumn: word.startColumn,
+          endColumn: word.endColumn
         };
+
+        const suggestions: any[] = [];
+        const isStartOfLine = textUntilPosition.trim() === '' || textUntilPosition.trim() === word.word;
+
+        const fullText = model.getValue();
+        const textBefore = fullText.substring(0, model.getOffsetAt(position));
+        const setMatches = [...textBefore.matchAll(/set\s*\{/g)];
+        const closeMatches = [...textBefore.matchAll(/\}/g)];
+        const inSetBlock = setMatches.length > closeMatches.length;
+
+        if (inSetBlock) {
+            suggestions.push({
+                label: 'fields',
+                kind: monaco.languages.CompletionItemKind.Keyword,
+                insertText: 'fields',
+                documentation: 'Allow arbitrary payload fields (disables strict checking)',
+                range
+            });
+        } else if (isStartOfLine) {
+            suggestions.push(
+                {
+                  label: 'target',
+                  kind: monaco.languages.CompletionItemKind.Keyword,
+                  insertText: 'target ',
+                  documentation: 'Target component or connection',
+                  range
+                },
+                {
+                  label: 'where',
+                  kind: monaco.languages.CompletionItemKind.Keyword,
+                  insertText: 'where ',
+                  documentation: 'Condition for target matching (e.g. status == "active")',
+                  range
+                },
+                {
+                  label: 'set { ... }',
+                  kind: monaco.languages.CompletionItemKind.Snippet,
+                  insertText: 'set {\n    $0\n}',
+                  insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                  documentation: 'Payload fields required by this event',
+                  range
+                }
+            );
+        }
+
+        if (textUntilPosition.match(/target\s+[\w.|]*$/)) {
+            const targets = [
+                '@component.name', '@component.type', '@connection', 
+                '@connection.source', '@connection.target', '@connection.type',
+                '@external', '@external.network', '@external.weather', '@external.supplies'
+            ];
+            targets.forEach(t => {
+                suggestions.push({
+                    label: t,
+                    kind: monaco.languages.CompletionItemKind.Constant,
+                    insertText: t,
+                    documentation: 'Target selector type',
+                    range
+                });
+            });
+        }
+        
+        return { suggestions };
       }
     });
 
     monaco.languages.registerCompletionItemProvider('twin-scenario-dsl', {
-      provideCompletionItems: (model, position) => {
+      provideCompletionItems: (model: any, position: any) => {
         const textUntilPosition = model.getValueInRange({
           startLineNumber: position.lineNumber,
           startColumn: 1,
           endLineNumber: position.lineNumber,
           endColumn: position.column
         });
-        const match = textUntilPosition.match(/^\s*\S*$/);
-        if (!match) return { suggestions: [] };
-        return {
-          suggestions: [
-            {
-              label: 'event',
+        
+        const word = model.getWordUntilPosition(position);
+        const range = {
+          startLineNumber: position.lineNumber,
+          endLineNumber: position.lineNumber,
+          startColumn: word.startColumn,
+          endColumn: word.endColumn
+        };
+
+        const suggestions: any[] = [];
+        const isStartOfLine = textUntilPosition.trim() === '' || textUntilPosition.trim() === word.word;
+        
+        if (isStartOfLine) {
+            DSLEditorContext.eventNames.forEach(ev => {
+                suggestions.push({
+                    label: `event:${ev}`,
+                    kind: monaco.languages.CompletionItemKind.Event,
+                    insertText: `event:${ev} @\${1:selector} at=\${2:0.0} for=\${3:inf}`,
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: `Declare event '${ev}'`,
+                    range
+                });
+                suggestions.push({
+                    label: `event:${ev} (with block)`,
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: `event:${ev} @\${1:selector} at=\${2:0.0} for=\${3:inf} set {\n    $0\n}`,
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: `Declare event '${ev}' with payload block`,
+                    range
+                });
+            });
+            // Fallback for custom events
+            suggestions.push({
+              label: 'event:',
               kind: monaco.languages.CompletionItemKind.Keyword,
               insertText: 'event:',
               documentation: 'Declare a new event',
-              range: undefined as any
-            },
-            {
-              label: 'event (with block)',
-              kind: monaco.languages.CompletionItemKind.Snippet,
-              insertText: 'event:${1:name} @${2:selector} at=${3:0.0} for=${4:inf} set {\n    $0\n}',
-              insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-              documentation: 'Declare a new event with a payload block',
-              range: undefined as any
+              range
+            });
+        } else if (textUntilPosition.includes('event:')) {
+            // Suggest targets when '@' is typed or space after event
+            if (textUntilPosition.match(/event:\w+\s+@[\w.]*$/) || textUntilPosition.match(/event:\w+\s+$/)) {
+                const prefix = textUntilPosition.endsWith('@') ? '' : '@';
+                
+                DSLEditorContext.componentNames.forEach(c => {
+                    suggestions.push({
+                        label: `@${c}`,
+                        kind: monaco.languages.CompletionItemKind.Class,
+                        insertText: `${prefix}${c}`,
+                        documentation: 'Target Component',
+                        range
+                    });
+                });
+                DSLEditorContext.componentTypes.forEach(t => {
+                    suggestions.push({
+                        label: `@${t}`,
+                        kind: monaco.languages.CompletionItemKind.Interface,
+                        insertText: `${prefix}${t}`,
+                        documentation: 'Target Component Type',
+                        range
+                    });
+                });
+                DSLEditorContext.connectionNames.forEach(c => {
+                    suggestions.push({
+                        label: `@${c}`,
+                        kind: monaco.languages.CompletionItemKind.Reference,
+                        insertText: `${prefix}${c}`,
+                        documentation: 'Target Connection',
+                        range
+                    });
+                });
+                
+                const externalTargets = ['@network', '@weather', '@supplies'];
+                externalTargets.forEach(t => {
+                    suggestions.push({
+                        label: t,
+                        kind: monaco.languages.CompletionItemKind.Constant,
+                        insertText: textUntilPosition.endsWith('@') ? t.substring(1) : t,
+                        documentation: 'External Target',
+                        range
+                    });
+                });
             }
-          ]
-        };
+
+            if (!textUntilPosition.includes('at=')) {
+                suggestions.push({
+                    label: 'at=',
+                    kind: monaco.languages.CompletionItemKind.Property,
+                    insertText: 'at=${1:0.0}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Start time in hours (e.g. at=1.5)',
+                    range
+                });
+            }
+            if (!textUntilPosition.includes('for=')) {
+                suggestions.push({
+                    label: 'for=',
+                    kind: monaco.languages.CompletionItemKind.Property,
+                    insertText: 'for=${1:inf}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Duration in hours (use inf for infinite)',
+                    range
+                });
+            }
+            if (!textUntilPosition.includes('set {')) {
+                suggestions.push({
+                    label: 'set { ... }',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'set {\n    $0\n}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Start the payload block',
+                    range
+                });
+            }
+        }
+        
+        return { suggestions };
       }
     });
 

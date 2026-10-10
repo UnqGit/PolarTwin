@@ -3,7 +3,7 @@ import { api } from '../lib/api';
 import { useStation } from '../components/StationContext';
 import { TwinViewer } from '../components/TwinViewer';
 import { TimelineEditor } from '../components/TimelineEditor';
-import { DSLEditor } from '../components/DSLEditor';
+import { DSLEditor, DSLEditorContext } from '../components/DSLEditor';
 import type { SceneEventData } from '../components/TimelineEditor';
 import { EventInspector } from '../components/EventInspector';
 import { SimulationMonitor } from '../components/SimulationMonitor';
@@ -138,8 +138,27 @@ export function ScenariosPage() {
         setSelectedScenarioId(res[0].id);
       }
     }).catch(console.error);
-    if (selectedStation) api.getEventDefinitions(selectedStation).then(setEventDefs).catch(console.error);
+    if (selectedStation) api.getEventDefinitions(selectedStation).then(defs => {
+      setEventDefs(defs);
+      DSLEditorContext.eventNames = defs.map((d: any) => d.name);
+    }).catch(console.error);
   }, [selectedStation]); // Run ONLY when selectedStation changes
+
+  useEffect(() => {
+    if (hierarchy && connections) {
+      const cNames: string[] = [];
+      const cTypes = new Set<string>();
+      const traverse = (node: any) => {
+        if (node.name) cNames.push(node.name);
+        if (node.type) cTypes.add(node.type);
+        if (node.children) node.children.forEach(traverse);
+      };
+      if (hierarchy.children) hierarchy.children.forEach(traverse);
+      DSLEditorContext.componentNames = cNames;
+      DSLEditorContext.componentTypes = Array.from(cTypes);
+      DSLEditorContext.connectionNames = connections.map((c: any) => c.name || `${c.source}_${c.type}_${c.target}`);
+    }
+  }, [hierarchy, connections]);
 
   useEffect(() => {
     if (editingType === 'scenario' && selectedScenarioId) {
