@@ -50,6 +50,7 @@ class RunRecord:
         self.station_id = station_id
         self.scenario_id = scenario_id
         self.status: RunStatus = RunStatus.IDLE
+        self.tick_interval = 1.0
         self._db_created = False
 
         self._thread: threading.Thread | None = None
@@ -63,6 +64,7 @@ class RunRecord:
 
     def play(self, tick_interval: float = 1.0, on_tick=None):
         """Start continuous simulation in a background thread."""
+        self.tick_interval = tick_interval
         if self.status == RunStatus.RUNNING:
             return
         self._stop_event.clear()
@@ -78,7 +80,7 @@ class RunRecord:
                     self.engine.run_tick()
                     if on_tick:
                         on_tick()
-                    time.sleep(tick_interval)
+                    time.sleep(self.tick_interval)
                 self.status = RunStatus.FINISHED
             except Exception as e:  # noqa: BLE001
                 import traceback
@@ -428,6 +430,11 @@ class SimulationManager:
             self._telemetry_db.insert_simulation_logs(run_id, logs)
             rec.engine.logs.clear()
 
+        diag_logs = getattr(rec.engine, "diag_logs", [])[:]
+        if diag_logs:
+            self._telemetry_db.insert_diagnostics_logs(run_id, diag_logs)
+            rec.engine.diag_logs.clear()
+
         return len(records)
 
     # ------------------------------------------------------------------
@@ -440,15 +447,25 @@ class SimulationManager:
             return rec.state_snapshot()
         return None
 
-    def get_log(self, run_id: str) -> list[dict[str, Any]] | None:
+    def get_log(self, run_id: str) -> dict[str, list[dict[str, Any]]] | None:
         """Return persisted logs and any un-flushed logs."""
-        logs = []
+        sim_logs = []
+        diag_logs = []
         if self._telemetry_db:
-            logs.extend(self._telemetry_db.get_simulation_logs(run_id))
+            sim_logs.extend(self._telemetry_db.get_simulation_logs(run_id))
+            diag_logs.extend(self._telemetry_db.get_diagnostics_logs(run_id))
         rec = self.get_run(run_id)
-        if rec and hasattr(rec.engine, "logs"):
-            logs.extend(rec.engine.logs)
-        return logs
+        if rec:
+            if hasattr(rec.engine, "logs"):
+                sim_logs.extend(rec.engine.logs)
+            if hasattr(rec.engine, "diag_logs"):
+                diag_logs.extend(rec.engine.diag_logs)
+        
+        # If no DB and no active run, we might want to return None
+        if not rec and not self._telemetry_db:
+            return None
+            
+        return {"simLog": sim_logs, "diagLog": diag_logs}
 
     def get_persisted_telemetry(self, run_id: str) -> dict[str, Any] | None:
         """Get the latest persisted telemetry record from DB."""

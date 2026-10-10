@@ -267,6 +267,7 @@ class SimulationEngineCore:
 
         # Simulation event logs
         self.logs: list[dict[str, Any]] = []
+        self.diag_logs: list[dict[str, Any]] = []
 
         # Build connection graph from initial base connections
         self._conn_graph = ConnectionGraph(
@@ -283,6 +284,9 @@ class SimulationEngineCore:
     def run_tick(self):
         """Execute one deterministic simulation tick (15 simulation seconds)."""
         dt = 15.0 / 3600.0  # hours per tick
+        
+        # Capture effective status BEFORE any changes
+        prev_eff_status = {c.name: c.status for c in self.state.get_effective_state_dict()["components"]}
 
         # ── Step 1: Advance simulation time ─────────────────────────────
         self.time += dt
@@ -291,7 +295,16 @@ class SimulationEngineCore:
         self._instantiate_events()
 
         # ── Step 4: Expire finite event layers ───────────────────────────
-        self.state.expire_events(self.time)
+        expired_events = self.state.expire_events(self.time)
+        expired_event_ids = set(layer.event_id for layer in expired_events)
+        for event_id in expired_event_ids:
+            self.logs.append(
+                {
+                    "time": self.time,
+                    "level": "INFO",
+                    "message": f"Event '{event_id}' ended",
+                }
+            )
 
         # ── Refresh connection graph from current base connections ────────
         self._conn_graph.update(list(self.state.base_connections.values()))
@@ -300,8 +313,6 @@ class SimulationEngineCore:
         base_comps = self.state.base_components
         base_conns = self.state.base_connections
         external = self.state.base_external
-
-        prev_statuses = {name: c.status for name, c in base_comps.items()}
 
         # Build effective status map (considers event layers) for hierarchical checks
         eff = self.state.get_effective_state_dict()
@@ -340,25 +351,26 @@ class SimulationEngineCore:
         # ── Step 14-15: Write runtime state ──────────────────────────────
         # (base_comps and base_conns are already the runtime state; we mutate in-place)
 
-        # Log status changes
-        for name, c in base_comps.items():
-            prev = prev_statuses.get(name)
-            if prev and c.status != prev:
+        # ── Recalculate effective state with new physics base ─────────────
+        self.state.recalculate_effective_state()
+
+        # Log status changes based on effective state
+        new_eff_status = {c.name: c.status for c in self.state.get_effective_state_dict()["components"]}
+        for name, new_status in new_eff_status.items():
+            prev_status = prev_eff_status.get(name)
+            if prev_status and new_status != prev_status:
                 level = (
                     "ERROR"
-                    if c.status == "failure"
-                    else ("WARN" if c.status == "inactive" else "INFO")
+                    if new_status == "failure"
+                    else ("WARN" if new_status == "inactive" else "INFO")
                 )
-                self.logs.append(
+                self.diag_logs.append(
                     {
                         "time": self.time,
                         "level": level,
-                        "message": f"Component '{name}' status changed from {prev.upper()} to {c.status.upper()}",
+                        "message": f"Component '{name}' status changed from {prev_status.upper()} to {new_status.upper()}",
                     }
                 )
-
-        # ── Recalculate effective state with new physics base ─────────────
-        self.state.recalculate_effective_state()
 
         # ── Steps 17-18: Telemetry ───────────────────────────────────────
         # if self.telemetry_publishing:

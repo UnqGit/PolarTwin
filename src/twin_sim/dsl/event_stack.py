@@ -168,15 +168,18 @@ class TimelineStateManager:
         self.active_layers.append(layer)
         self.recalculate_effective_state()
 
-    def expire_events(self, current_time: float):
-        """Removes events whose end_time <= current_time."""
+    def expire_events(self, current_time: float) -> list[EventLayer]:
+        """Removes events whose end_time <= current_time and returns the expired ones."""
         initial_count = len(self.active_layers)
+        expired = [layer for layer in self.active_layers if layer.end_time <= current_time]
         self.active_layers = [
             layer for layer in self.active_layers if layer.end_time > current_time
         ]
 
         if len(self.active_layers) != initial_count:
             self.recalculate_effective_state()
+            
+        return expired
 
     def recalculate_effective_state(self):
         """

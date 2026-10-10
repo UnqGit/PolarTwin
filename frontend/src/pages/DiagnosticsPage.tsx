@@ -1,8 +1,8 @@
-import { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useStation } from '../components/StationContext';
 import { api } from '../lib/api';
 import {
-  ChevronDown, ChevronRight, Activity, Cloud, Signal, Droplets, History, Box, Globe, Trash2
+  ChevronDown, ChevronRight, Activity, Cloud, Signal, Droplets, History, Box, Globe, Trash2, Maximize2, Minimize2, AlignLeft, WrapText
 } from 'lucide-react';
 import { buildSceneLayout, type NodeLayout } from '../lib/layout';
 import { SelectionProvider } from '../components/SelectionContext';
@@ -16,7 +16,11 @@ export function DiagnosticsPage() {
   const [selectedScenarioFilter, setSelectedScenarioFilter] = useState<string>('');
   const [runMeta, setRunMeta] = useState<any>(null);
   const [runEvents, setRunEvents] = useState<any[]>([]);
-  const [runLogs, setRunLogs] = useState<any[]>([]);
+  const [runSimLogs, setRunSimLogs] = useState<any[]>([]);
+  const [runDiagLogs, setRunDiagLogs] = useState<any[]>([]);
+  
+  const [simLogsExpanded, setSimLogsExpanded] = useState(false);
+  const [diagLogsExpanded, setDiagLogsExpanded] = useState(false);
 
   const [deleteRunModal, setDeleteRunModal] = useState<string | null>(null);
   const [deleteScenarioModal, setDeleteScenarioModal] = useState<string | null>(null);
@@ -84,12 +88,22 @@ export function DiagnosticsPage() {
     if (!selectedRunId) {
       setRunMeta(null);
       setRunEvents([]);
+      setRunSimLogs([]);
+      setRunDiagLogs([]);
       setHistoryData([]);
       return;
     }
     api.getRunMetadata(selectedRunId).then(setRunMeta).catch(console.error);
     api.getRunEvents(selectedRunId).then(setRunEvents).catch(console.error);
-    api.getSimulationLog(selectedRunId).then(setRunLogs).catch(console.error);
+    api.getSimulationLog(selectedRunId).then(logs => {
+      if (Array.isArray(logs)) {
+        setRunSimLogs(logs);
+        setRunDiagLogs([]);
+      } else {
+        setRunSimLogs(logs.simLog || []);
+        setRunDiagLogs(logs.diagLog || []);
+      }
+    }).catch(console.error);
 
     // Clear selected category/item to show overview for new run
     setSelectedCategory(null);
@@ -342,16 +356,8 @@ export function DiagnosticsPage() {
                 {runEvents.length === 0 && <div style={{ fontSize: 13, color: 'var(--text-tertiary)' }}>No events recorded for this run.</div>}
               </div>
 
-              <h3 style={{ fontSize: 14 }}>Logs</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, fontFamily: 'monospace', fontSize: 13, background: 'var(--bg-input)', padding: 12, borderRadius: 6, maxHeight: 400, overflowY: 'auto' }}>
-                {runLogs.map((log, i) => (
-                  <div key={i} style={{ display: 'flex', gap: 16, color: log.level === 'ERROR' ? '#ef4444' : log.level === 'WARN' ? '#f59e0b' : 'var(--text-primary)' }}>
-                    <div style={{ width: 80, color: 'var(--text-tertiary)' }}>{formatTime(log.time || 0)}</div>
-                    <div>[{log.level}] {log.message}</div>
-                  </div>
-                ))}
-                {runLogs.length === 0 && <div style={{ color: 'var(--text-tertiary)' }}>No logs recorded for this run.</div>}
-              </div>
+              <ScrollableLogBox title="Logs" logs={runSimLogs} expanded={simLogsExpanded} setExpanded={setSimLogsExpanded} />
+              <ScrollableLogBox title="Diagnostics" logs={runDiagLogs} expanded={diagLogsExpanded} setExpanded={setDiagLogsExpanded} />
             </div>
           ) : (
             <div>
@@ -692,3 +698,85 @@ function MetricChart({ metric, data, category, itemId }: { metric: string; data:
   );
 }
 
+function ScrollableLogBox({ title, logs, expanded, setExpanded }: { title: string, logs: any[], expanded: boolean, setExpanded: (v: boolean) => void }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const topShadowRef = useRef<HTMLDivElement>(null);
+  const bottomShadowRef = useRef<HTMLDivElement>(null);
+  const leftShadowRef = useRef<HTMLDivElement>(null);
+  const rightShadowRef = useRef<HTMLDivElement>(null);
+  const [wrap, setWrap] = useState(false);
+
+  const checkScrollState = () => {
+    if (!containerRef.current) return;
+    const el = containerRef.current;
+    if (topShadowRef.current) {
+      topShadowRef.current.style.opacity = el.scrollTop > 2 ? '1' : '0';
+    }
+    if (bottomShadowRef.current) {
+      bottomShadowRef.current.style.opacity = el.scrollHeight - Math.ceil(el.scrollTop) - el.clientHeight > 2 ? '1' : '0';
+    }
+    if (leftShadowRef.current) {
+      leftShadowRef.current.style.opacity = el.scrollLeft > 2 ? '1' : '0';
+    }
+    if (rightShadowRef.current) {
+      rightShadowRef.current.style.opacity = el.scrollWidth - Math.ceil(el.scrollLeft) - el.clientWidth > 2 ? '1' : '0';
+    }
+  };
+
+  useEffect(() => {
+    checkScrollState();
+    window.addEventListener('resize', checkScrollState);
+    return () => window.removeEventListener('resize', checkScrollState);
+  }, [logs, expanded, wrap]);
+
+  return (
+    <div style={{ marginBottom: 24 }}>
+      <h3 style={{ fontSize: 14, margin: '0 0 12px 0' }}>{title}</h3>
+      <div style={{ position: 'relative' }}>
+        
+        {/* Toolbar */}
+        <div style={{ position: 'absolute', top: 8, right: 16, display: 'flex', gap: 4, zIndex: 10 }}>
+          <button 
+            onClick={() => setWrap(!wrap)}
+            style={{ background: 'var(--bg-input)', border: 'none', color: wrap ? 'var(--accent-blue)' : 'var(--text-tertiary)', cursor: 'pointer', padding: 4, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            title={wrap ? "Disable Wrap" : "Enable Wrap"}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-panel)'; e.currentTarget.style.color = wrap ? 'var(--accent-blue)' : 'var(--text-primary)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--bg-input)'; e.currentTarget.style.color = wrap ? 'var(--accent-blue)' : 'var(--text-tertiary)'; }}
+          >
+            <WrapText size={14} />
+          </button>
+          <button 
+            onClick={() => setExpanded(!expanded)}
+            style={{ background: 'var(--bg-input)', border: 'none', color: 'var(--text-tertiary)', cursor: 'pointer', padding: 4, borderRadius: 4, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+            title={expanded ? "Shrink" : "Expand"}
+            onMouseEnter={(e) => { e.currentTarget.style.background = 'var(--bg-panel)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--bg-input)'; e.currentTarget.style.color = 'var(--text-tertiary)'; }}
+          >
+            {expanded ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
+          </button>
+        </div>
+
+        {/* Shadows */}
+        <div ref={topShadowRef} style={{ position: 'absolute', top: 0, left: 0, right: 0, height: 20, background: 'linear-gradient(to bottom, var(--bg-input), transparent)', pointerEvents: 'none', zIndex: 5, opacity: 0, transition: 'opacity 0.2s', borderRadius: '6px 6px 0 0' }} />
+        <div ref={bottomShadowRef} style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 20, background: 'linear-gradient(to top, var(--bg-input), transparent)', pointerEvents: 'none', zIndex: 5, opacity: 0, transition: 'opacity 0.2s', borderRadius: '0 0 6px 6px' }} />
+        <div ref={leftShadowRef} style={{ position: 'absolute', top: 0, bottom: 0, left: 0, width: 20, background: 'linear-gradient(to right, var(--bg-input), transparent)', pointerEvents: 'none', zIndex: 5, opacity: 0, transition: 'opacity 0.2s', borderRadius: '6px 0 0 6px' }} />
+        <div ref={rightShadowRef} style={{ position: 'absolute', top: 0, bottom: 0, right: 0, width: 60, background: 'linear-gradient(to left, var(--bg-input) 30%, transparent)', pointerEvents: 'none', zIndex: 5, opacity: 0, transition: 'opacity 0.2s', borderRadius: '0 6px 6px 0' }} />
+
+        {/* Content */}
+        <div 
+          ref={containerRef}
+          onScroll={checkScrollState}
+          style={{ display: 'flex', flexDirection: 'column', gap: 4, fontFamily: 'monospace', fontSize: 13, background: 'var(--bg-input)', padding: 12, paddingRight: 64, borderRadius: 6, maxHeight: expanded ? 'none' : 200, overflow: 'auto' }}
+        >
+          {logs.map((log, i) => (
+            <div key={i} style={{ display: 'flex', gap: 16, color: log.level === 'ERROR' ? '#ef4444' : log.level === 'WARN' ? '#f59e0b' : 'var(--text-primary)', whiteSpace: wrap ? 'normal' : 'pre', wordBreak: wrap ? 'break-all' : 'normal', width: wrap ? '100%' : 'max-content' }}>
+              <div style={{ width: 80, color: 'var(--text-tertiary)', flexShrink: 0 }}>{formatTime(log.time || 0)}</div>
+              <div>[{log.level}] {log.message}</div>
+            </div>
+          ))}
+          {logs.length === 0 && <div style={{ color: 'var(--text-tertiary)' }}>No {title.toLowerCase()} recorded for this run.</div>}
+        </div>
+      </div>
+    </div>
+  );
+}

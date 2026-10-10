@@ -163,6 +163,16 @@ class TelemetryDatabase:
                     FOREIGN KEY(run_id) REFERENCES simulation_runs(id)
                 )
             """)
+            self.conn.execute("""
+                CREATE TABLE IF NOT EXISTS diagnostics_logs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    run_id TEXT,
+                    simulation_time REAL,
+                    level TEXT,
+                    message TEXT,
+                    FOREIGN KEY(run_id) REFERENCES simulation_runs(id)
+                )
+            """)
 
             # Indexes
             self.conn.execute(
@@ -489,6 +499,7 @@ class TelemetryDatabase:
         self.conn.execute("DELETE FROM telemetry_component_states WHERE record_id IN (SELECT id FROM telemetry_records WHERE run_id = ?)", (run_id,))
         self.conn.execute("DELETE FROM telemetry_records WHERE run_id = ?", (run_id,))
         self.conn.execute("DELETE FROM simulation_logs WHERE run_id = ?", (run_id,))
+        self.conn.execute("DELETE FROM diagnostics_logs WHERE run_id = ?", (run_id,))
         self.conn.execute("DELETE FROM simulation_runs WHERE id = ?", (run_id,))
         self.conn.commit()
         return True
@@ -511,6 +522,26 @@ class TelemetryDatabase:
         cursor = self.conn.cursor()
         cursor.execute(
             "SELECT simulation_time, level, message FROM simulation_logs WHERE run_id = ? ORDER BY id ASC",
+            (run_id,),
+        )
+        return [
+            {"time": row[0], "level": row[1], "message": row[2]}
+            for row in cursor.fetchall()
+        ]
+
+    def insert_diagnostics_logs(self, run_id: str, logs: list[dict[str, Any]]) -> None:
+        if not logs:
+            return
+        with self.conn:
+            self.conn.executemany(
+                "INSERT INTO diagnostics_logs (run_id, simulation_time, level, message) VALUES (?, ?, ?, ?)",
+                [(run_id, log["time"], log["level"], log["message"]) for log in logs],
+            )
+
+    def get_diagnostics_logs(self, run_id: str) -> list[dict[str, Any]]:
+        cursor = self.conn.cursor()
+        cursor.execute(
+            "SELECT simulation_time, level, message FROM diagnostics_logs WHERE run_id = ? ORDER BY id ASC",
             (run_id,),
         )
         return [

@@ -21,6 +21,7 @@ export function ScenariosPage() {
     simStatus, setSimStatus,
     simTime, setSimTime,
     simLog, setSimLog,
+    diagLog, setDiagLog,
     simState, setSimState
   } = useStation();
 
@@ -275,6 +276,7 @@ export function ScenariosPage() {
       setSimTime(0);
       setSimState(null);
       setSimLog([]);
+      setDiagLog([]);
     }
   };
 
@@ -361,6 +363,7 @@ export function ScenariosPage() {
     setSimTime(0);
     setSimState(null);
     setSimLog([]);
+    setDiagLog([]);
   };
 
   const saveSource = async () => {
@@ -1154,11 +1157,11 @@ export function ScenariosPage() {
 
               {bottomTab === 'diagnostics' && (
                 <div style={{ padding: '16px', height: '100%', overflowY: 'auto', fontFamily: 'monospace', fontSize: '13px' }}>
-                  {simLog.length === 0 ? (
+                  {diagLog.length === 0 ? (
                     <div style={{ color: 'var(--text-tertiary)' }}>No simulation diagnostics recorded yet.</div>
                   ) : (
-                    simLog.map((log, i) => (
-                      <div key={`sim-${i}`} style={{ marginBottom: '4px', color: log.level === 'ERROR' ? '#ef4444' : log.level === 'WARN' ? '#f59e0b' : 'var(--text-primary)' }}>
+                    diagLog.map((log, i) => (
+                      <div key={`diag-${i}`} style={{ marginBottom: '4px', color: log.level === 'ERROR' ? '#ef4444' : log.level === 'WARN' ? '#f59e0b' : 'var(--text-primary)' }}>
                         <span style={{ color: 'var(--text-tertiary)' }}>[{formatTime(log.time || 0)}]</span> {log.message || JSON.stringify(log)}
                       </div>
                     ))

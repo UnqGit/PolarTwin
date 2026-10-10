@@ -27,6 +27,8 @@ interface StationContextType {
   setSimTime: React.Dispatch<React.SetStateAction<number>>;
   simLog: any[];
   setSimLog: React.Dispatch<React.SetStateAction<any[]>>;
+  diagLog: any[];
+  setDiagLog: React.Dispatch<React.SetStateAction<any[]>>;
   simState: any | null;
   setSimState: React.Dispatch<React.SetStateAction<any | null>>;
 }
@@ -55,6 +57,8 @@ export const StationContext = createContext<StationContextType>({
   setSimTime: () => {},
   simLog: [],
   setSimLog: () => {},
+  diagLog: [],
+  setDiagLog: () => {},
   simState: null,
   setSimState: () => {},
 });
@@ -81,6 +85,7 @@ export const StationProvider: React.FC<{ children: ReactNode, stationId?: string
   const [simStatus, setSimStatus] = useState<string>('Ready');
   const [simTime, setSimTime] = useState<number>(0);
   const [simLog, setSimLog] = useState<any[]>([]);
+  const [diagLog, setDiagLog] = useState<any[]>([]);
   const [simState, setSimState] = useState<any | null>(null);
 
   // Fetch available stations on mount
@@ -151,7 +156,14 @@ export const StationProvider: React.FC<{ children: ReactNode, stationId?: string
         });
 
         api.getSimulationLog(runId).then(logs => {
-          setSimLog(logs);
+          if (Array.isArray(logs)) {
+             // Fallback just in case backend hasn't restarted yet
+             setSimLog(logs);
+             setDiagLog([]);
+          } else {
+             setSimLog(logs.simLog || []);
+             setDiagLog(logs.diagLog || []);
+          }
         }).catch(err => console.error("Error polling sim log:", err));
       }, 1000);
       return () => clearInterval(interval);
@@ -181,6 +193,8 @@ export const StationProvider: React.FC<{ children: ReactNode, stationId?: string
       setSimTime,
       simLog,
       setSimLog,
+      diagLog,
+      setDiagLog,
       simState,
       setSimState,
     }}>
