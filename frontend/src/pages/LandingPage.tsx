@@ -4,7 +4,7 @@ import { api, type StationManifest } from '../lib/api';
 import {
   Snowflake, Activity, Box, MapPin, Radio,
   MonitorPlay, Zap, Sun, Moon, ArrowRight,
-  Globe, Cpu
+  Globe, Cpu, FileCode, Clock, Layers
 } from 'lucide-react';
 import { useTheme } from '../components/ThemeContext';
 
@@ -376,7 +376,7 @@ export function LandingPage() {
   const { theme, toggleTheme } = useTheme();
   const [stations, setStations] = useState<StationManifest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [scrollY, setScrollY] = useState(0);
+  // We removed scrollY state to improve performance and use CSS variables instead
   const isLight = theme === 'light';
 
   useEffect(() => {
@@ -432,7 +432,9 @@ export function LandingPage() {
         backgroundColor: 'var(--bg-main)',
         overflowY: 'auto',
         overflowX: 'hidden',
-        // Initialize CSS variables
+        // Initialize CSS variables so the calc() animations don't break before scrolling
+        '--p-up': '0',
+        '--p-left': '0',
         '--p': '0',
         '--raw-p': '0',
       } as React.CSSProperties}
@@ -446,42 +448,14 @@ export function LandingPage() {
         zIndex: 100,
       }}>
 
-        {/* Animated Icon */}
-        <div style={{
-          position: 'absolute',
-          transition: 'all 0.15s ease-out',
-          left: 'calc( (50vw - 44px) * (1 - var(--p-up)) + (50vw - 56px - 2.4 * clamp(48px, 8vw, 84px)) * var(--p-up) * (1 - var(--p-left)) + 32px * var(--p-left) )',
-          top: 'calc( (38vh - 165px) * (1 - var(--p-up)) + 36px * var(--p-up) * (1 - var(--p-left)) + 24px * var(--p-left) )',
-          width: 'calc( 88px * (1 - var(--p-left)) + 60px * var(--p-left) )',
-          height: 'calc( 88px * (1 - var(--p-left)) + 60px * var(--p-left) )',
-          borderRadius: 'calc( 28px * (1 - var(--p-left)) + 16px * var(--p-left) )',
-          background: isLight ? 'rgba(2, 132, 199, 0.1)' : 'rgba(99,219,188,0.15)',
-          border: isLight ? '1px solid rgba(2, 132, 199, 0.2)' : '1px solid rgba(99,219,188,0.3)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: 'var(--accent-primary)',
-          backdropFilter: 'blur(16px)',
-          boxShadow: isLight 
-            ? '0 20px 40px -10px rgba(2,132,199,calc(0.15 * (1 - var(--p-left)))), 0 0 0 1px rgba(255,255,255,calc(0.5 * (1 - var(--p-left)))) inset' 
-            : '0 0 40px rgba(99,219,188,calc(0.2 * (1 - var(--p-left)))), 0 8px 32px rgba(0,0,0,calc(0.3 * (1 - var(--p-left))))',
-          pointerEvents: 'auto',
-          transform: 'translateY(calc( (1 - var(--p-left)) * -6px * var(--float, 0) ))',
-          zIndex: 101,
-        }}>
-          <Snowflake style={{
-            transition: 'all 0.15s ease-out',
-            width: 'calc( 42px * (1 - var(--p-left)) + 32px * var(--p-left) )',
-            height: 'calc( 42px * (1 - var(--p-left)) + 32px * var(--p-left) )',
-            strokeWidth: 'calc( 2 * (1 - var(--p-left)) + 2.5 * var(--p-left) )'
-          }} />
-        </div>
-
+        {/* Animated Icon has been moved to standard DOM flow */}
         {/* Animated Title */}
         <h1 style={{
           position: 'absolute',
           transition: 'all 0.15s ease-out',
-          left: 'calc( 50vw * (1 - var(--p-up)) + (50vw + 56px - 2.4 * clamp(48px, 8vw, 84px)) * var(--p-up) * (1 - var(--p-left)) + 106px * var(--p-left) )',
-          top: 'calc( (38vh - 53px) * (1 - var(--p-up)) + 36px * var(--p-up) )',
-          transform: 'translateX(calc( -50% * (1 - var(--p-up)) ))',
+          left: 'calc( 50vw * (1 - var(--p-left, 0)) + 32px * var(--p-left, 0) )',
+          top: 'calc( (38vh - 53px) * (1 - var(--p-up, 0)) + 36px * var(--p-up, 0) )',
+          transform: 'translateX(calc( -50% * (1 - var(--p-left, 0)) ))',
           margin: 0,
           fontSize: 'calc( clamp(48px, 8vw, 84px) * (1 - var(--p-left)) + 32px * var(--p-left) )',
           fontWeight: 900,
@@ -579,8 +553,24 @@ export function LandingPage() {
           animation: 'fadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         }}>
           
-          {/* Invisible Placeholders to preserve flex layout structure */}
-          <div style={{ width: 88, height: 88, opacity: 0, pointerEvents: 'none' }} />
+          {/* Static Icon (Scrolls up naturally and fades out) */}
+          <div style={{
+            width: '88px', height: '88px', borderRadius: '28px',
+            background: isLight ? 'rgba(2, 132, 199, 0.1)' : 'rgba(99,219,188,0.15)',
+            border: isLight ? '1px solid rgba(2, 132, 199, 0.2)' : '1px solid rgba(99,219,188,0.3)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            color: 'var(--accent-primary)',
+            backdropFilter: 'blur(16px)',
+            boxShadow: isLight 
+              ? '0 20px 40px -10px rgba(2,132,199,0.15), 0 0 0 1px rgba(255,255,255,0.5) inset' 
+              : '0 0 40px rgba(99,219,188,0.2), 0 8px 32px rgba(0,0,0,0.3)',
+            transform: 'translateY(calc( -6px * var(--float, 0) ))',
+            opacity: 'calc(1 - var(--raw-p, 0))',
+          }}>
+            <Snowflake style={{ width: '42px', height: '42px', strokeWidth: 2 }} />
+          </div>
+          
+          {/* Title Placeholder to preserve exact height/layout for fixed title */}
           <h1 style={{
             fontSize: 'clamp(48px, 8vw, 84px)',
             margin: 0, lineHeight: 1.05, opacity: 0, pointerEvents: 'none'
@@ -590,7 +580,7 @@ export function LandingPage() {
 
           {/* Subtitle & Stats (Fades out slower and scrolls up naturally) */}
           <div style={{
-            opacity: 'calc(1 - var(--raw-p))',
+            opacity: 'calc(1 - var(--raw-p, 0))',
           }}>
             <p style={{
               fontSize: 'clamp(16px, 2vw, 19px)',
@@ -758,6 +748,166 @@ export function LandingPage() {
               color="var(--accent-cyan)"
               glowColor="rgba(56,217,245,0.15)"
             />
+          </div>
+        </div>
+      </section>
+
+      {/* ─ Scripting Section ─ */}
+      <section style={{
+        padding: '100px 24px',
+        background: 'var(--bg-main)',
+        position: 'relative',
+      }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: 64 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+              <div style={{ height: 2, width: 40, background: 'linear-gradient(to right, transparent, var(--accent-cyan))', borderRadius: 2 }} />
+              <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--accent-cyan)' }}>
+                Deterministic Engine
+              </span>
+              <div style={{ height: 2, width: 40, background: 'linear-gradient(to left, transparent, var(--accent-cyan))', borderRadius: 2 }} />
+            </div>
+            <h2 style={{ fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 900, color: 'var(--text-primary)', margin: '0 0 16px 0', letterSpacing: '-0.03em' }}>
+              Scenario Scripting DSL
+            </h2>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '16px', margin: '0 auto', maxWidth: 640, lineHeight: 1.6 }}>
+              Control runtime behavior and inject faults with absolute precision using our custom Domain-Specific Language. Scripts compile into an AST and execute deterministically on the simulation engine.
+            </p>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '32px' }}>
+            
+            {/* --- EVENT FILES SECTION --- */}
+            <div style={{ gridColumn: '1 / -1', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, borderBottom: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid var(--border-color)', paddingBottom: '16px' }}>
+                <FileCode size={28} style={{ color: 'var(--accent-primary)' }} />
+                <h3 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: 'var(--text-primary)' }}>Event Definitions (*.event)</h3>
+              </div>
+              <p style={{ margin: '16px 0 0 0', color: 'var(--text-secondary)', fontSize: 16, lineHeight: 1.6 }}>
+                Event files act as reusable, typed functions that encapsulate fault injections or state overrides. They consist of three primary blocks: <strong>Target</strong>, <strong>Where</strong>, and <strong>Set</strong>.
+              </p>
+            </div>
+
+            {/* Event: Target Card */}
+            <div className="glass-panel" style={{ gridColumn: 'span 4', borderRadius: 'var(--radius-xl)', padding: '24px', background: isLight ? '#fff' : 'var(--bg-panel)', border: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid var(--border-color)', boxShadow: isLight ? '0 8px 24px rgba(0,0,0,0.04)' : 'var(--shadow-md)' }}>
+              <h4 style={{ margin: '0 0 16px 0', fontSize: 18, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: 8 }}><Box size={18}/> Target Mechanism</h4>
+              <p style={{ margin: '0 0 16px 0', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5 }}>Defines the scope of the event. Supports components, connections, and external systems.</p>
+              <ul style={{ margin: 0, paddingLeft: 20, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                <li><code>@component.name</code> / <code>@component.type</code></li>
+                <li>Combined: <code>@component.type | @component.name</code></li>
+                <li>Connections: <code>@connection.source</code></li>
+                <li>Multi-field: <code>@connection.(source & target)</code></li>
+                <li>External: <code>@external.weather</code></li>
+              </ul>
+            </div>
+
+            {/* Event: Where Card */}
+            <div className="glass-panel" style={{ gridColumn: 'span 4', borderRadius: 'var(--radius-xl)', padding: '24px', background: isLight ? '#fff' : 'var(--bg-panel)', border: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid var(--border-color)', boxShadow: isLight ? '0 8px 24px rgba(0,0,0,0.04)' : 'var(--shadow-md)' }}>
+              <h4 style={{ margin: '0 0 16px 0', fontSize: 18, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: 8 }}><Activity size={18}/> Where Filters</h4>
+              <p style={{ margin: '0 0 16px 0', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5 }}>Filters the target scope based on runtime or static attributes. Complex queries can be chained.</p>
+              <div style={{ background: isLight ? '#f1f5f9' : '#0f172a', padding: '12px', borderRadius: 'var(--radius-sm)', fontFamily: 'monospace', fontSize: 13, color: isLight ? '#334155' : '#cbd5e1' }}>
+                <span style={{ color: '#c678dd' }}>where</span> type=<span style={{ color: '#98c379' }}>"battery"</span><br/>
+                <span style={{ color: '#c678dd' }}>&</span> status=<span style={{ color: '#98c379' }}>"online"</span><br/>
+                <span style={{ color: '#c678dd' }}>&</span> charge &lt; <span style={{ color: '#d19a66' }}>20</span>
+              </div>
+            </div>
+
+            {/* Event: Set Card */}
+            <div className="glass-panel" style={{ gridColumn: 'span 4', borderRadius: 'var(--radius-xl)', padding: '24px', background: isLight ? '#fff' : 'var(--bg-panel)', border: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid var(--border-color)', boxShadow: isLight ? '0 8px 24px rgba(0,0,0,0.04)' : 'var(--shadow-md)' }}>
+              <h4 style={{ margin: '0 0 16px 0', fontSize: 18, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: 8 }}><FileCode size={18}/> Set Declarations</h4>
+              <p style={{ margin: '0 0 12px 0', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5 }}>Declares the payload schema that scenes can override.</p>
+              <ul style={{ margin: 0, paddingLeft: 20, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                <li><strong>Fixed:</strong> <code>status=failure</code> (hardcoded)</li>
+                <li><strong>Required:</strong> <code>values.temp</code> (scene must provide)</li>
+                <li><strong>Optional:</strong> <code>?values.voltage</code> (scene can omit)</li>
+                <li><strong>Open:</strong> <code>fields</code> keyword allows arbitrary keys</li>
+              </ul>
+            </div>
+
+            {/* --- SCENE FILES SECTION --- */}
+            <div style={{ gridColumn: '1 / -1', marginTop: '32px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, borderBottom: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid var(--border-color)', paddingBottom: '16px' }}>
+                <Clock size={28} style={{ color: 'var(--accent-cyan)' }} />
+                <h3 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: 'var(--text-primary)' }}>Timeline Sequencing (*.scene)</h3>
+              </div>
+              <p style={{ margin: '16px 0 0 0', color: 'var(--text-secondary)', fontSize: 16, lineHeight: 1.6 }}>
+                Scene files orchestrate the simulation. They invoke events like functions, passing arguments and scheduling them on a global timeline.
+              </p>
+            </div>
+
+            {/* Scene: Invocation Card */}
+            <div className="glass-panel" style={{ gridColumn: 'span 6', borderRadius: 'var(--radius-xl)', padding: '24px', background: isLight ? '#fff' : 'var(--bg-panel)', border: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid var(--border-color)', boxShadow: isLight ? '0 8px 24px rgba(0,0,0,0.04)' : 'var(--shadow-md)' }}>
+              <h4 style={{ margin: '0 0 16px 0', fontSize: 18, color: 'var(--accent-cyan)' }}>Invokable Events & Selectors</h4>
+              <p style={{ margin: '0 0 16px 0', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                Events are invoked via <code>event:&lt;name&gt;</code>. Selectors (e.g. <code>@Generator1</code>) resolve against the event's <code>where</code> filters to target specific components or connections. 
+              </p>
+              <div style={{ background: isLight ? '#0f172a' : '#020617', padding: '16px', borderRadius: 'var(--radius-md)', fontFamily: 'monospace', fontSize: 13, color: '#e2e8f0', overflowX: 'auto', whiteSpace: 'pre' }}>
+                <span style={{ color: '#5c6370', fontStyle: 'italic' }}># Target component by name</span>{'\n'}
+                <span style={{ color: '#c678dd' }}>event:</span><span style={{ color: '#e5c07b' }}>fail</span> <span style={{ color: '#61afef' }}>@Generator1</span> <span style={{ color: '#c678dd' }}>at=</span><span style={{ color: '#d19a66' }}>0.0</span> <span style={{ color: '#c678dd' }}>for=</span><span style={{ color: '#d19a66' }}>2.5</span>{'\n\n'}
+                <span style={{ color: '#5c6370', fontStyle: 'italic' }}># Target connection by name</span>{'\n'}
+                <span style={{ color: '#c678dd' }}>event:</span><span style={{ color: '#e5c07b' }}>cut_power</span> <span style={{ color: '#61afef' }}>@Gen1_to_Grid</span> <span style={{ color: '#c678dd' }}>at=</span><span style={{ color: '#d19a66' }}>1.0</span> <span style={{ color: '#c678dd' }}>for=</span><span style={{ color: '#d19a66' }}>inf</span>
+              </div>
+            </div>
+
+            {/* Scene: Set & Inf Card */}
+            <div className="glass-panel" style={{ gridColumn: 'span 6', borderRadius: 'var(--radius-xl)', padding: '24px', background: isLight ? '#fff' : 'var(--bg-panel)', border: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid var(--border-color)', boxShadow: isLight ? '0 8px 24px rgba(0,0,0,0.04)' : 'var(--shadow-md)' }}>
+              <h4 style={{ margin: '0 0 16px 0', fontSize: 18, color: 'var(--accent-cyan)' }}>Overrides & Duration</h4>
+              <p style={{ margin: '0 0 16px 0', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+                Use a <code>set {'{ ... }'}</code> block to satisfy required fields defined in the event. The <code>inf</code> keyword creates a permanent baseline override.
+              </p>
+              <div style={{ background: isLight ? '#0f172a' : '#020617', padding: '16px', borderRadius: 'var(--radius-md)', fontFamily: 'monospace', fontSize: 13, color: '#e2e8f0', overflowX: 'auto', whiteSpace: 'pre' }}>
+                <span style={{ color: '#5c6370', fontStyle: 'italic' }}># 'inf' duration permanently overrides</span>{'\n'}
+                <span style={{ color: '#c678dd' }}>event:</span><span style={{ color: '#e5c07b' }}>set_comp</span> <span style={{ color: '#61afef' }}>@Heater</span> <span style={{ color: '#c678dd' }}>at=</span><span style={{ color: '#d19a66' }}>2.0</span> <span style={{ color: '#c678dd' }}>for=</span><span style={{ color: '#d19a66' }}>inf</span> <span style={{ color: '#c678dd' }}>set</span> {'{'}{'\n'}
+                {'    '}values.temperature=<span style={{ color: '#d19a66' }}>-40.5</span>{'\n'}
+                {'    '}custom_prop=<span style={{ color: '#98c379' }}>"allowed via 'fields'"</span>{'\n'}
+                {'}'}
+              </div>
+            </div>
+
+            {/* --- EXECUTION SECTION --- */}
+            <div style={{ gridColumn: '1 / -1', marginTop: '32px', marginBottom: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, borderBottom: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid var(--border-color)', paddingBottom: '16px' }}>
+                <Cpu size={28} style={{ color: 'var(--accent-purple)' }} />
+                <h3 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: 'var(--text-primary)' }}>Execution & The Inspector</h3>
+              </div>
+            </div>
+
+            {/* Execution: LIFO */}
+            <div className="glass-panel" style={{ gridColumn: 'span 7', display: 'flex', flexDirection: 'column', borderRadius: 'var(--radius-xl)', padding: '32px', background: isLight ? '#fff' : 'var(--bg-panel)', border: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid var(--border-color)', boxShadow: isLight ? '0 8px 24px rgba(0,0,0,0.04)' : 'var(--shadow-md)' }}>
+              <h4 style={{ margin: '0 0 16px 0', fontSize: 20, color: 'var(--accent-purple)', display: 'flex', alignItems: 'center', gap: 10 }}><Layers size={22}/> LIFO Unwinding</h4>
+              <p style={{ margin: '0 0 24px 0', color: 'var(--text-secondary)', fontSize: 15, lineHeight: 1.6 }}>
+                The engine utilizes a strict <strong>Last-In-First-Out (LIFO)</strong> state stack. When an event fires for a set duration (e.g., <code>for=1.5h</code>), it pushes to the top of the stack. When the duration expires, the stack automatically pops, <strong>unwinding</strong> the simulation back to the state directly underneath it, seamlessly restoring nominal operations. Infinite events never pop.
+              </p>
+              
+              <div style={{ background: isLight ? 'rgba(167,139,250,0.05)' : 'rgba(167,139,250,0.1)', padding: '24px', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: isLight ? '1px solid rgba(167,139,250,0.2)' : '1px solid rgba(167,139,250,0.2)' }}>
+                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%', maxWidth: 320 }}>
+                   <div style={{ background: 'var(--accent-purple)', padding: '12px 20px', borderRadius: 'var(--radius-md)', color: '#fff', fontSize: 13, fontWeight: 700, textAlign: 'center', boxShadow: '0 4px 12px rgba(167,139,250,0.3)', transform: 'translateY(10px)', zIndex: 3, position: 'relative' }}>
+                     [Active] Temporary Event (Popping in 1h)
+                   </div>
+                   <div style={{ background: isLight ? '#e2e8f0' : '#334155', padding: '12px 20px', borderRadius: 'var(--radius-md)', color: isLight ? '#475569' : '#cbd5e1', fontSize: 13, fontWeight: 600, textAlign: 'center', opacity: 0.8, transform: 'scale(0.95)', zIndex: 2, position: 'relative' }}>
+                     [Hidden] Infinite Event (Override)
+                   </div>
+                   <div style={{ background: isLight ? '#cbd5e1' : '#1e293b', padding: '12px 20px', borderRadius: 'var(--radius-md)', color: isLight ? '#64748b' : '#94a3b8', fontSize: 13, fontWeight: 600, textAlign: 'center', opacity: 0.5, transform: 'scale(0.9) translateY(-10px)', zIndex: 1, position: 'relative' }}>
+                     Baseline Initial State
+                   </div>
+                 </div>
+              </div>
+            </div>
+
+            {/* Execution: Inspector */}
+            <div className="glass-panel" style={{ gridColumn: 'span 5', display: 'flex', flexDirection: 'column', borderRadius: 'var(--radius-xl)', padding: '32px', background: isLight ? '#fff' : 'var(--bg-panel)', border: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid var(--border-color)', boxShadow: isLight ? '0 8px 24px rgba(0,0,0,0.04)' : 'var(--shadow-md)' }}>
+              <h4 style={{ margin: '0 0 16px 0', fontSize: 20, color: 'var(--accent-purple)', display: 'flex', alignItems: 'center', gap: 10 }}><Radio size={22}/> Ad-hoc Inspector</h4>
+              <p style={{ margin: '0 0 24px 0', color: 'var(--text-secondary)', fontSize: 15, lineHeight: 1.6 }}>
+                You aren't limited to writing DSL text files. The <strong>UI Inspector</strong> integrates directly with the engine's LIFO stack in real-time.
+              </p>
+              <ul style={{ margin: 0, paddingLeft: 20, fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+                <li>Pause the simulation at any timeline frame.</li>
+                <li>Manually inject an event or override component parameters.</li>
+                <li>The engine instantly parses the injection as an AST payload.</li>
+                <li>The ad-hoc event is pushed to the LIFO stack and evaluates dynamically, allowing interactive disaster testing.</li>
+              </ul>
+            </div>
+
           </div>
         </div>
       </section>
