@@ -282,15 +282,16 @@ def get_scenario_events(scenario_id: str):
     except FileNotFoundError as e:
         raise HTTPException(404, str(e))
     except Exception as e:  # noqa: BLE001
+        pure_msg = getattr(e, "raw_message", getattr(e, "message", str(e)))
         if hasattr(e, "line_number") and e.line_number is not None:
             raise HTTPException(
                 400,
                 detail={
-                    "message": str(e),
+                    "message": pure_msg,
                     "line_number": e.line_number - 1,
                 },
             )
-        raise HTTPException(400, detail={"message": f"Error parsing scenario: {e}"})
+        raise HTTPException(400, detail={"message": f"Error parsing scenario: {pure_msg}"})
 
 
 class ParseEventRequest(BaseModel):
@@ -474,10 +475,13 @@ def parse_scenario_raw(payload: ParseScenarioRequest):
                                 add_err(f"Duplicate assignment for field '{canonical}' (provided multiple times ambiguously)", field)
                             
                             if hasattr(scene, 'user_provided_keys') and field in scene.user_provided_keys:
-                                if scene.event_definition and canonical in scene.event_definition.set_fixed:
-                                    add_err(f"Field '{canonical}' is already fixed by the event definition and cannot be overridden", field)
-                                    # Override back to the fixed value to maintain invariant
-                                    value = scene.event_definition.set_fixed[canonical]
+                                if scene.event_definition:
+                                    if canonical in scene.event_definition.set_fixed:
+                                        add_err(f"Field '{canonical}' is already fixed by the event definition and cannot be overridden", field)
+                                        # Override back to the fixed value to maintain invariant
+                                        value = scene.event_definition.set_fixed[canonical]
+                                    elif not scene.event_definition.set_fields_allowed and canonical not in scene.event_definition.set_allowed:
+                                        add_err(f"Field '{canonical}' is not allowed by event '{scene.event_ref}' definition", field)
                                     
                             new_payload[canonical] = value
                         
@@ -511,9 +515,10 @@ def parse_scenario_raw(payload: ParseScenarioRequest):
             for e in events
         ]
     except Exception as e:
+        pure_msg = getattr(e, "raw_message", getattr(e, "message", str(e)))
         if hasattr(e, "line_number") and e.line_number is not None:
             err_detail = {
-                "message": str(e),
+                "message": pure_msg,
                 "line_number": e.line_number - 1,
             }
             if hasattr(e, "events"):

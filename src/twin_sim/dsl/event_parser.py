@@ -237,29 +237,9 @@ def parse_event_string(source: str, name: str = "<anonymous>") -> EventDefinitio
         elif line.startswith("set "):
             remainder = line[len("set "):].strip()
 
-            if remainder == "fields":
-                # set fields  (Spec §11.1)
-                set_fields_allowed = True
-
-            elif remainder == "{":
+            if remainder == "{":
                 # set {  (Spec §11.4 multi-line block)
                 in_set_block = True
-
-            elif remainder.startswith("fields {") and remainder.endswith("}"):
-                # set fields { value }  (Spec §11.2 inline block)
-                # Extract the field list between { and }
-                inner = remainder[len("fields {"):-1].strip()
-                set_fields_allowed = True
-                if inner:
-                    # Could be multiple comma or space separated field names
-                    for field in inner.replace(",", " ").split():
-                        field = field.strip()
-                        if field:
-                            if field.startswith("?"):
-                                set_allowed.append(field[1:])
-                            else:
-                                set_allowed.append(field)
-                                set_required.append(field)
 
             elif remainder.startswith("{") and remainder.endswith("}"):
                 # set { value }  (Spec §11.2 single-line inline block)
@@ -297,7 +277,7 @@ def parse_event_string(source: str, name: str = "<anonymous>") -> EventDefinitio
                     "Invalid set clause.",
                     i,
                     line,
-                    expected="'fields', '{', 'fields { ... }', '{ ... }', or 'field=value'."
+                    expected="'{', '{ ... }', or 'field=value'."
                 )
 
         else:

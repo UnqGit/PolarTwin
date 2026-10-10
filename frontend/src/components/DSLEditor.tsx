@@ -56,8 +56,17 @@ export function DSLEditor({ value, onChange, selectedLine, errorLines, sourceVer
           [/@\([^)]*\)/, 'selector'],
           // Standard @-selectors: @Generator1, @network, @external.network, etc.
           [/@[A-Za-z0-9_.]+/, 'selector'],
-          // Keywords: event keyword prefix, timing attrs, inf value
-          [/\b(event|at|for|inf)\b/, 'keyword'],
+          // Keywords and Identifiers
+          [/[a-zA-Z_]\w*/, {
+            cases: {
+              'event': 'keyword',
+              'at': 'keyword',
+              'for': 'keyword',
+              'inf': 'keyword',
+              'set': 'keyword',
+              '@default': 'identifier'
+            }
+          }],
           // Pipe and ampersand operators (used in connection selectors)
           [/[|&]/, 'operator'],
           // Delimiters: = { } :
@@ -100,8 +109,17 @@ export function DSLEditor({ value, onChange, selectedLine, errorLines, sourceVer
           [/@[A-Za-z0-9_.]*\([^)]*\)(?:\.[A-Za-z0-9_.]*)?/, 'selector'],
           // Standard @-selectors: @component.type, @external.network, @connection, etc.
           [/@[A-Za-z0-9_.]+/, 'selector'],
-          // Keywords: clause keywords + 'fields' (Spec §11) + 'inf' (Spec §7.2)
-          [/\b(set|where|target|fields|inf)\b/, 'keyword'],
+          // Keywords and Identifiers
+          [/[a-zA-Z_]\w*/, {
+            cases: {
+              'set': 'keyword',
+              'where': 'keyword',
+              'target': 'keyword',
+              'fields': 'keyword',
+              'inf': 'keyword',
+              '@default': 'identifier'
+            }
+          }],
           // Pipe and ampersand operators (combined target selectors, where continuations)
           [/[|&]/, 'operator'],
           // Delimiters: = { }
@@ -124,6 +142,83 @@ export function DSLEditor({ value, onChange, selectedLine, errorLines, sourceVer
     monaco.languages.setLanguageConfiguration('twin-event-dsl', {
       comments: {
         lineComment: '#'
+      }
+    });
+    monaco.languages.registerCompletionItemProvider('twin-event-dsl', {
+      provideCompletionItems: (model, position) => {
+        const textUntilPosition = model.getValueInRange({
+          startLineNumber: position.lineNumber,
+          startColumn: 1,
+          endLineNumber: position.lineNumber,
+          endColumn: position.column
+        });
+        const match = textUntilPosition.match(/^\s*\S*$/);
+        if (!match) return { suggestions: [] };
+        return {
+          suggestions: [
+            {
+              label: 'target',
+              kind: monaco.languages.CompletionItemKind.Keyword,
+              insertText: 'target ',
+              documentation: 'Target component or connection',
+              range: undefined as any
+            },
+            {
+              label: 'where',
+              kind: monaco.languages.CompletionItemKind.Keyword,
+              insertText: 'where ',
+              documentation: 'Condition for target matching',
+              range: undefined as any
+            },
+            {
+              label: 'set { ... }',
+              kind: monaco.languages.CompletionItemKind.Snippet,
+              insertText: 'set {\n    $0\n}',
+              insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+              documentation: 'Payload fields required by this event',
+              range: undefined as any
+            },
+            {
+              label: 'fields',
+              kind: monaco.languages.CompletionItemKind.Keyword,
+              insertText: 'fields',
+              documentation: 'Allow arbitrary payload fields',
+              range: undefined as any
+            }
+          ]
+        };
+      }
+    });
+
+    monaco.languages.registerCompletionItemProvider('twin-scenario-dsl', {
+      provideCompletionItems: (model, position) => {
+        const textUntilPosition = model.getValueInRange({
+          startLineNumber: position.lineNumber,
+          startColumn: 1,
+          endLineNumber: position.lineNumber,
+          endColumn: position.column
+        });
+        const match = textUntilPosition.match(/^\s*\S*$/);
+        if (!match) return { suggestions: [] };
+        return {
+          suggestions: [
+            {
+              label: 'event',
+              kind: monaco.languages.CompletionItemKind.Keyword,
+              insertText: 'event:',
+              documentation: 'Declare a new event',
+              range: undefined as any
+            },
+            {
+              label: 'event (with block)',
+              kind: monaco.languages.CompletionItemKind.Snippet,
+              insertText: 'event:${1:name} @${2:selector} at=${3:0.0} for=${4:inf} set {\n    $0\n}',
+              insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+              documentation: 'Declare a new event with a payload block',
+              range: undefined as any
+            }
+          ]
+        };
       }
     });
 

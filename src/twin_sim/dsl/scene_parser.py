@@ -7,13 +7,19 @@ from twin_sim.dsl.models import SceneEvent
 
 
 class SceneParseError(ParseError):
-    def __init__(self, message, line_number=None, line=None, events=None):
-        error = message
+    def __init__(self, message, line_number=None, line=None, events=None, expected=None):
+        raw_msg = message
+        if line is not None:
+            raw_msg += f"\n    {line}"
+        if expected is not None:
+            raw_msg += f"\nExpected: {expected}"
+            
+        error = raw_msg
         if line_number is not None:
-            error = f"Line {line_number}: {message}"
-            if line is not None:
-                error += f"\n    {line}"
+            error = f"Line {line_number}: {error}"
+            
         super().__init__(error)
+        self.raw_message = raw_msg
         self.line_number = line_number
         self.events = events or []
 
@@ -61,12 +67,13 @@ def parse_scene_string(source: str) -> list[SceneEvent]:
                 # e.g. event:set_component @Generator1 at=1.2 for=inf {
                 # or event:set_component @Generator1 at=1.2 for=inf set {
                 m = re.match(
-                    r"^event\s*:\s*([A-Za-z_]\w*)(?:\s+(@\S+))?\s+at\s*=\s*((?:\d+(?:\.\d*)?|\.\d+))\s+for\s*=\s*(inf|(?:\d+(?:\.\d*)?|\.\d+))\s*(?:set\s*)?\{$",
+                    r"^event\s*:\s*([A-Za-z_]\w*)(?:\s+(@\S+))?\s+at\s*=\s*((?:\d+(?:\.\d*)?|\.\d+))\s+for\s*=\s*(inf|(?:\d+(?:\.\d*)?|\.\d+))\s*set\s*\{$",
                     line,
                 )
                 if not m:
                     raise SceneParseError(
-                        "Invalid scene event declaration with block", i, line, events
+                        "Invalid scene event declaration. If you are setting payload fields, use 'set {'. If this event takes no fields, remove the '{'.", i, line, events,
+                        expected="'event:<name> [@selector] at=<time> for=<duration> set {' OR 'event:<name> [@selector] at=<time> for=<duration>'"
                     )
 
                 e_ref, sel, at_str, for_str = m.groups()
@@ -95,7 +102,7 @@ def parse_scene_string(source: str) -> list[SceneEvent]:
                 block_stack[-1][k_strip] = parse_value(val)
                 current_event.payload_line_numbers[k_strip] = i
             else:
-                raise SceneParseError("Expected key=value assignment in block", i, line, events)
+                raise SceneParseError("Expected key=value assignment in block", i, line, events, expected="'key=value'")
             continue
 
         # Single line event
@@ -119,7 +126,10 @@ def parse_scene_string(source: str) -> list[SceneEvent]:
             )
             continue
 
-        raise SceneParseError("Unrecognized scene line format", i, line, events)
+        raise SceneParseError(
+            "Unrecognized scene line format", i, line, events, 
+            expected="'event:<name> [@selector] at=<time> for=<duration> [set {]'"
+        )
 
     if current_event is not None or block_stack:
         raise SceneParseError("Unclosed event block at end of file", None, None, events)
