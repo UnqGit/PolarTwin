@@ -415,15 +415,64 @@ def parse_scenario_raw(payload: ParseScenarioRequest):
 
                     if targets:
                         target, _ = targets[0]
+                        
+                        def get_canonical_field(f_name):
+                            if isinstance(target, RuntimeComponent):
+                                if f_name in ("status", "is_backup"):
+                                    return f_name
+                                comp_spec = next((s for s in engine.specs if s.get("type") == target.type), None)
+                                if comp_spec:
+                                    rating = comp_spec.get("rating", {})
+                                    field_scopes = {}
+                                    for section in ("state", "input", "output"):
+                                        if section in rating:
+                                            for k in rating[section].keys():
+                                                field_scopes.setdefault(k, []).append(section)
+                                    parts = f_name.split(".")
+                                    if len(parts) == 1:
+                                        base_f = parts[0]
+                                        if base_f in field_scopes and len(field_scopes[base_f]) == 1:
+                                            return f"{field_scopes[base_f][0]}.{base_f}"
+                            return f_name
+                            
+                        def is_field_valid_for_target(f_name):
+                            if isinstance(target, RuntimeComponent):
+                                if f_name in ("status", "is_backup"):
+                                    return True
+                                comp_spec = next((s for s in engine.specs if s.get("type") == target.type), None)
+                                if comp_spec:
+                                    rating = comp_spec.get("rating", {})
+                                    field_scopes = {}
+                                    for section in ("state", "input", "output"):
+                                        if section in rating:
+                                            for k in rating[section].keys():
+                                                field_scopes.setdefault(k, []).append(section)
+                                    parts = f_name.split(".")
+                                    if len(parts) == 1:
+                                        return parts[0] in field_scopes
+                                    else:
+                                        return parts[1] in field_scopes and parts[0] in field_scopes[parts[1]]
+                                return False
+                            elif type(target).__name__ == "RuntimeConnection":
+                                return f_name == "status"
+                            return True # Assume valid for external targets to avoid false positives
+
+                        canonical_allowed = set()
+                        canonical_required = set()
+                        canonical_fixed = {}
+                        if scene.event_definition:
+                            canonical_allowed = {get_canonical_field(f) for f in scene.event_definition.set_allowed}
+                            canonical_required = {get_canonical_field(f) for f in scene.event_definition.set_required}
+                            canonical_fixed = {get_canonical_field(k): v for k, v in scene.event_definition.set_fixed.items()}
+
                         new_payload = {}
                         for field, value in scene.payload.items():
-                            canonical = field
+                            canonical = get_canonical_field(field)
                             schema = None
                             if isinstance(target, RuntimeComponent):
                                 if field == "status":
                                     if value not in ("active", "inactive", "failure"):
                                         add_err(f"Invalid status '{value}' for component {target.name}", field)
-                                    canonical = "status"
                                 elif field == "is_backup":
                                     add_err("is_backup is immutable and cannot be set", field)
                                 else:
@@ -440,18 +489,22 @@ def parse_scenario_raw(payload: ParseScenarioRequest):
                                         if len(parts) == 1:
                                             base_f = parts[0]
                                             if base_f not in field_scopes:
-                                                add_err(f"Field '{base_f}' is not a valid field for component type '{target.type}' (target: {target.name})", field)
+                                                if scene.event_definition and field in canonical_fixed:
+                                                    add_err(f"Event '{scene.event_ref}' attempts to set field '{base_f}', which is not a valid field for component type '{target.type}'", field)
+                                                else:
+                                                    add_err(f"Field '{base_f}' is not a valid field for component type '{target.type}' (target: {target.name})", field)
                                             elif len(field_scopes[base_f]) > 1:
                                                 add_err(f"Ambiguous field '{base_f}' for component type '{target.type}'. It exists in scopes: {', '.join(field_scopes[base_f])}. Please specify the scope.", field)
                                             else:
-                                                canonical = f"{field_scopes[base_f][0]}.{base_f}"
                                                 schema = rating[field_scopes[base_f][0]][base_f]
                                         else:
                                             scope, base_f = parts[0], parts[1]
                                             if base_f not in field_scopes or scope not in field_scopes[base_f]:
-                                                add_err(f"Field '{field}' is not a valid field for component type '{target.type}' (target: {target.name})", field)
+                                                if scene.event_definition and field in canonical_fixed:
+                                                    add_err(f"Event '{scene.event_ref}' attempts to set field '{field}', which is not a valid field for component type '{target.type}'", field)
+                                                else:
+                                                    add_err(f"Field '{field}' is not a valid field for component type '{target.type}' (target: {target.name})", field)
                                             else:
-                                                canonical = field
                                                 schema = rating[scope][base_f]
 
                                         # Enforce type constraints
@@ -476,21 +529,25 @@ def parse_scenario_raw(payload: ParseScenarioRequest):
                             
                             if hasattr(scene, 'user_provided_keys') and field in scene.user_provided_keys:
                                 if scene.event_definition:
-                                    if canonical in scene.event_definition.set_fixed:
+                                    if canonical in canonical_fixed:
                                         add_err(f"Field '{canonical}' is already fixed by the event definition and cannot be overridden", field)
-                                        # Override back to the fixed value to maintain invariant
-                                        value = scene.event_definition.set_fixed[canonical]
-                                    elif not scene.event_definition.set_fields_allowed and canonical not in scene.event_definition.set_allowed:
-                                        add_err(f"Field '{canonical}' is not allowed by event '{scene.event_ref}' definition", field)
+                                        value = canonical_fixed[canonical]
+                                    elif not scene.event_definition.set_fields_allowed and canonical not in canonical_allowed:
+                                        add_err(f"Field '{field}' is not allowed by event '{scene.event_ref}' definition", field)
                                     
                             new_payload[canonical] = value
                         
-                        scene.payload = new_payload
+                        # We intentionally DO NOT assign scene.payload = new_payload
+                        # to preserve the user's original uncanonicalized syntax for the frontend inspector.
 
                     if scene.event_definition:
-                        for req_field in scene.event_definition.set_required:
-                            if req_field not in scene.payload:
-                                add_err(f"Missing required field '{req_field}' for event '{scene.event_ref}'")
+                        for original_req_field in scene.event_definition.set_required:
+                            mapped_req_field = get_canonical_field(original_req_field)
+                            if mapped_req_field not in new_payload:
+                                if not is_field_valid_for_target(original_req_field):
+                                    add_err(f"Event '{scene.event_ref}' is incompatible: requires field '{original_req_field}', but component type '{getattr(target, 'type', type(target).__name__)}' does not support it")
+                                else:
+                                    add_err(f"Missing required field '{original_req_field}' for event '{scene.event_ref}'")
                                 
                     compilation_errors.extend(scene_errors)
                 
