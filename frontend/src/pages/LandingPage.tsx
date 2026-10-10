@@ -389,16 +389,36 @@ export function LandingPage() {
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const y = e.currentTarget.scrollTop;
-    let p = y / 400; // Animate over 400px scroll (closer to hero height)
-    if (p > 1) p = 1;
-    if (p < 0) p = 0;
     
-    // Smooth easing
-    const ease = 1 - Math.pow(1 - p, 3);
+    // Phase 1: Move up to the top center (over the first 300px of scroll)
+    let pUp = y / 300;
+    if (pUp > 1) pUp = 1;
+    if (pUp < 0) pUp = 0;
+    const easeUp = 1 - Math.pow(1 - pUp, 3);
+    
+    // Phase 2: Shrink and move left as we leave the hero section
+    const vh = window.innerHeight;
+    const heroBottom = vh * 0.76;
+    // Start moving left 400px before the hero section ends
+    const startLeft = Math.max(300, heroBottom - 400);
+    const endLeft = heroBottom;
+    
+    let pLeft = 0;
+    if (y >= startLeft) {
+      pLeft = (y - startLeft) / (endLeft - startLeft);
+      if (pLeft > 1) pLeft = 1;
+    }
+    const easeLeft = 1 - Math.pow(1 - pLeft, 3);
+    
+    let rawP = y / 400;
+    if (rawP > 1) rawP = 1;
+    if (rawP < 0) rawP = 0;
     
     if (heroRef.current) {
-      heroRef.current.style.setProperty('--p', ease.toString());
-      heroRef.current.style.setProperty('--raw-p', p.toString());
+      heroRef.current.style.setProperty('--p-up', easeUp.toString());
+      heroRef.current.style.setProperty('--p-left', easeLeft.toString());
+      heroRef.current.style.setProperty('--p', easeLeft.toString()); // For safety
+      heroRef.current.style.setProperty('--raw-p', rawP.toString());
     }
   };
 
@@ -429,45 +449,48 @@ export function LandingPage() {
         {/* Animated Icon */}
         <div style={{
           position: 'absolute',
-          left: 'calc( (50vw - 44px) * (1 - var(--p)) + 32px * var(--p) )',
-          top: 'calc( (38vh - 165px) * (1 - var(--p)) + 24px * var(--p) )',
-          width: 'calc( 88px * (1 - var(--p)) + 60px * var(--p) )',
-          height: 'calc( 88px * (1 - var(--p)) + 60px * var(--p) )',
-          borderRadius: 'calc( 28px * (1 - var(--p)) + 16px * var(--p) )',
+          transition: 'all 0.15s ease-out',
+          left: 'calc( (50vw - 44px) * (1 - var(--p-up)) + (50vw - 56px - 2.4 * clamp(48px, 8vw, 84px)) * var(--p-up) * (1 - var(--p-left)) + 32px * var(--p-left) )',
+          top: 'calc( (38vh - 165px) * (1 - var(--p-up)) + 36px * var(--p-up) * (1 - var(--p-left)) + 24px * var(--p-left) )',
+          width: 'calc( 88px * (1 - var(--p-left)) + 60px * var(--p-left) )',
+          height: 'calc( 88px * (1 - var(--p-left)) + 60px * var(--p-left) )',
+          borderRadius: 'calc( 28px * (1 - var(--p-left)) + 16px * var(--p-left) )',
           background: isLight ? 'rgba(2, 132, 199, 0.1)' : 'rgba(99,219,188,0.15)',
           border: isLight ? '1px solid rgba(2, 132, 199, 0.2)' : '1px solid rgba(99,219,188,0.3)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           color: 'var(--accent-primary)',
           backdropFilter: 'blur(16px)',
           boxShadow: isLight 
-            ? '0 20px 40px -10px rgba(2,132,199,calc(0.15 * (1 - var(--p)))), 0 0 0 1px rgba(255,255,255,calc(0.5 * (1 - var(--p)))) inset' 
-            : '0 0 40px rgba(99,219,188,calc(0.2 * (1 - var(--p)))), 0 8px 32px rgba(0,0,0,calc(0.3 * (1 - var(--p))))',
+            ? '0 20px 40px -10px rgba(2,132,199,calc(0.15 * (1 - var(--p-left)))), 0 0 0 1px rgba(255,255,255,calc(0.5 * (1 - var(--p-left)))) inset' 
+            : '0 0 40px rgba(99,219,188,calc(0.2 * (1 - var(--p-left)))), 0 8px 32px rgba(0,0,0,calc(0.3 * (1 - var(--p-left))))',
           pointerEvents: 'auto',
-          transform: 'translateY(calc( (1 - var(--p)) * -6px * var(--float, 0) ))',
+          transform: 'translateY(calc( (1 - var(--p-left)) * -6px * var(--float, 0) ))',
           zIndex: 101,
         }}>
           <Snowflake style={{
-            width: 'calc( 42px * (1 - var(--p)) + 32px * var(--p) )',
-            height: 'calc( 42px * (1 - var(--p)) + 32px * var(--p) )',
-            strokeWidth: 'calc( 2 * (1 - var(--p)) + 2.5 * var(--p) )'
+            transition: 'all 0.15s ease-out',
+            width: 'calc( 42px * (1 - var(--p-left)) + 32px * var(--p-left) )',
+            height: 'calc( 42px * (1 - var(--p-left)) + 32px * var(--p-left) )',
+            strokeWidth: 'calc( 2 * (1 - var(--p-left)) + 2.5 * var(--p-left) )'
           }} />
         </div>
 
         {/* Animated Title */}
         <h1 style={{
           position: 'absolute',
-          left: 'calc( 50vw * (1 - var(--p)) + 106px * var(--p) )',
-          top: 'calc( (38vh - 53px) * (1 - var(--p)) + 36px * var(--p) )',
-          transform: 'translateX(calc( -50% * (1 - var(--p)) ))',
+          transition: 'all 0.15s ease-out',
+          left: 'calc( 50vw * (1 - var(--p-up)) + (50vw + 56px - 2.4 * clamp(48px, 8vw, 84px)) * var(--p-up) * (1 - var(--p-left)) + 106px * var(--p-left) )',
+          top: 'calc( (38vh - 53px) * (1 - var(--p-up)) + 36px * var(--p-up) )',
+          transform: 'translateX(calc( -50% * (1 - var(--p-up)) ))',
           margin: 0,
-          fontSize: 'calc( clamp(48px, 8vw, 84px) * (1 - var(--p)) + 32px * var(--p) )',
+          fontSize: 'calc( clamp(48px, 8vw, 84px) * (1 - var(--p-left)) + 32px * var(--p-left) )',
           fontWeight: 900,
-          letterSpacing: 'calc( -0.04em * (1 - var(--p)) - 0.02em * var(--p) )',
+          letterSpacing: 'calc( -0.04em * (1 - var(--p-left)) - 0.02em * var(--p-left) )',
           lineHeight: 1.05,
           color: isLight ? '#0f172a' : '#fff',
           textShadow: isLight 
-            ? '0 4px 24px rgba(255,255,255,calc(0.8 * (1 - var(--p))))' 
-            : '0 4px 20px rgba(0,0,0,calc(0.3 * (1 - var(--p))))',
+            ? '0 4px 24px rgba(255,255,255,calc(0.8 * (1 - var(--p-left))))' 
+            : '0 4px 20px rgba(0,0,0,calc(0.3 * (1 - var(--p-left))))',
           pointerEvents: 'auto',
           zIndex: 101,
           whiteSpace: 'nowrap',
@@ -481,19 +504,20 @@ export function LandingPage() {
           className="btn-icon card-hover"
           style={{
             position: 'absolute',
-            top: 'calc( 24px * (1 - var(--p)) + 18px * var(--p) )',
-            right: 'calc( 24px * (1 - var(--p)) + 32px * var(--p) )',
+            transition: 'all 0.15s ease-out',
+            top: 'calc( 24px * (1 - var(--p-up)) + 18px * var(--p-up) )',
+            right: 'calc( 24px * (1 - var(--p-left)) + 32px * var(--p-left) )',
             background: isLight 
-              ? 'rgba(255,255,255,calc(0.7 * (1 - var(--p)) + 0.04 * var(--p)))' 
-              : 'rgba(255,255,255,calc(0.12 * (1 - var(--p)) + 0.1 * var(--p)))',
+              ? 'rgba(255,255,255,calc(0.7 * (1 - var(--p-left)) + 0.04 * var(--p-left)))' 
+              : 'rgba(255,255,255,calc(0.12 * (1 - var(--p-left)) + 0.1 * var(--p-left)))',
             border: isLight 
-              ? '1px solid rgba(0,0,0,calc(0.1 * (1 - var(--p)) + 0.08 * var(--p)))' 
-              : '1px solid rgba(255,255,255,calc(0.18 * (1 - var(--p)) + 0.15 * var(--p)))',
+              ? '1px solid rgba(0,0,0,calc(0.1 * (1 - var(--p-left)) + 0.08 * var(--p-left)))' 
+              : '1px solid rgba(255,255,255,calc(0.18 * (1 - var(--p-left)) + 0.15 * var(--p-left)))',
             color: isLight ? '#0f172a' : '#fff',
             borderRadius: 'var(--radius-full)',
-            padding: 'calc( 12px * (1 - var(--p)) + 10px * var(--p) )',
+            padding: 'calc( 12px * (1 - var(--p-left)) + 10px * var(--p-left) )',
             backdropFilter: 'blur(12px)',
-            boxShadow: isLight ? '0 4px 12px rgba(0,0,0,calc(0.05 * (1 - var(--p))))' : 'none',
+            boxShadow: isLight ? '0 4px 12px rgba(0,0,0,calc(0.05 * (1 - var(--p-left))))' : 'none',
             pointerEvents: 'auto',
             zIndex: 101,
           }}
