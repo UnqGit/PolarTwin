@@ -371,7 +371,10 @@ class SimulationManager:
         if rec:
             station = self.get_loaded_station(rec.station_id)
             if station:
+                if self._telemetry_db:
+                    self._telemetry_db.delete_run(run_id)
                 rec.reset(station, scenes=scenes)
+                rec._db_created = False
                 return True
         return False
 

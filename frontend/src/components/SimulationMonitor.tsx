@@ -3,9 +3,10 @@ import { formatTime } from '../utils';
 
 interface SimulationMonitorProps {
   simState: any;
+  simulationDuration?: number;
 }
 
-export function SimulationMonitor({ simState }: SimulationMonitorProps) {
+export function SimulationMonitor({ simState, simulationDuration }: SimulationMonitorProps) {
   if (!simState) {
     return (
       <div style={{ padding: '16px', color: 'var(--text-tertiary)', fontSize: '14px' }}>
@@ -14,7 +15,13 @@ export function SimulationMonitor({ simState }: SimulationMonitorProps) {
     );
   }
 
-  const { components = [], connections = [], external = {}, active_events = [], upcoming_events = [] } = simState;
+  const { components = [], connections = [], external = {}, active_events = [] } = simState;
+  
+  // Filter upcoming events if simulationDuration is provided
+  const upcoming_events = (simState.upcoming_events || []).filter((ev: any) => {
+    if (!simulationDuration) return true; // Show all if no limit
+    return ev.at <= simulationDuration;
+  });
 
   // Component Summary
   const compActive = components.filter((c: any) => c.status === 'active').length;

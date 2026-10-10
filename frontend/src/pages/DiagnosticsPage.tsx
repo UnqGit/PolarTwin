@@ -36,6 +36,8 @@ export function DiagnosticsPage() {
   const [historyData, setHistoryData] = useState<any[]>([]);
 
   const [selectedName, setSelectedName] = useState<string | null>(null);
+  const [activeView, setActiveView] = useState<string>('overview');
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const sceneLayout = useMemo(() => {
     if (!hierarchy || !spec) return null;
@@ -274,15 +276,20 @@ export function DiagnosticsPage() {
               hideEditInitials={true}
               hideSettings={true}
               hideSensors={true}
+              activeView={activeView}
+              setActiveView={setActiveView}
+              isOpen={isSidebarOpen}
+              onIsOpenChange={setIsSidebarOpen}
               customSidebarTopTabs={[
                 {
                   id: 'overview',
                   title: 'Overview',
                   icon: <Activity size={20} />,
-                  onClick: () => {
+                  onClick: (toggleView) => {
                     setSelectedCategory(null);
                     setSelectedItemId(null);
                     setSelectedName(null);
+                    toggleView('overview');
                   }
                 }
               ]}
@@ -320,14 +327,14 @@ export function DiagnosticsPage() {
         )}
 
         {/* RIGHT MAIN AREA */}
-        <div style={{ flex: 1, padding: 24, paddingLeft: 400, overflowY: 'auto' }}>
+        <div style={{ flex: 1, padding: 24, paddingLeft: isSidebarOpen ? 400 : 72, overflowY: 'auto', transition: 'padding-left 0.2s ease' }}>
 
 
           {!selectedRunId ? (
             <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>
               Select a simulation run to view historical data.
             </div>
-          ) : !selectedCategory ? (
+          ) : !selectedCategory && activeView === 'overview' ? (
             <div>
               <h2 style={{ marginTop: 0 }}>Simulation Report</h2>
               <div style={{ background: 'var(--bg-panel)', padding: 16, borderRadius: 8, border: '1px solid var(--border-color)', marginBottom: 24 }}>
@@ -358,6 +365,10 @@ export function DiagnosticsPage() {
 
               <ScrollableLogBox title="Logs" logs={runSimLogs} expanded={simLogsExpanded} setExpanded={setSimLogsExpanded} />
               <ScrollableLogBox title="Diagnostics" logs={runDiagLogs} expanded={diagLogsExpanded} setExpanded={setDiagLogsExpanded} />
+            </div>
+          ) : !selectedCategory ? (
+            <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>
+              Please select a component to inspect.
             </div>
           ) : (
             <div>
@@ -594,7 +605,48 @@ function MultiMetricCharts({ data, category, itemId }: { data: any[]; category: 
 }
 
 import { formatTime } from '../utils';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, usePlotArea } from 'recharts';
+
+const AxisColorOverlay = (props: any) => {
+  const { fullPoints: points } = props;
+  const plotArea = usePlotArea();
+
+  if (!plotArea || !points || points.length === 0) return null;
+
+  if (!points.some((p: any) => p.status)) {
+    return <rect x={plotArea.x} y={plotArea.y + plotArea.height + 6} width={plotArea.width} height={4} fill="#facc15" />;
+  }
+
+  const rects: any[] = [];
+  let currentX = plotArea.x;
+  const totalWidth = plotArea.width;
+  const totalDuration = points[points.length - 1].time - points[0].time || 1;
+
+  points.forEach((p: any, i: number) => {
+    const nextP = points[i + 1];
+    const duration = nextP ? nextP.time - p.time : 0;
+    const widthPct = duration / totalDuration;
+    const rectWidth = widthPct * totalWidth;
+    
+    let bg = '#94a3b8'; // inactive
+    if (p.status === 'active' || p.status === 'ACTIVE') bg = '#4ade80';
+    if (p.status === 'failure' || p.status === 'FAILURE') bg = '#ef4444';
+
+    rects.push(
+      <rect 
+        key={i} 
+        x={currentX} 
+        y={plotArea.y + plotArea.height + 6}
+        width={rectWidth + 0.5} 
+        height={4} 
+        fill={bg} 
+      />
+    );
+    currentX += rectWidth;
+  });
+
+  return <g>{rects}</g>;
+};
 
 function MetricChart({ metric, data, category, itemId }: { metric: string; data: any[]; category: string; itemId: string }) {
   const points = useMemo(() => {
@@ -618,7 +670,11 @@ function MetricChart({ metric, data, category, itemId }: { metric: string; data:
     }).filter(p => p.value !== null && typeof p.value === 'number');
   }, [data, metric, category, itemId]);
 
-  if (points.length === 0) return null;
+  const fullPoints = useMemo(() => {
+    return data.map(row => ({ time: row.time, status: row.status }));
+  }, [data]);
+
+  if (points.length === 0 || data.length === 0) return null;
 
   const unit = points[0]?.unit || '';
 
@@ -630,16 +686,17 @@ function MetricChart({ metric, data, category, itemId }: { metric: string; data:
 
       <div style={{ width: '100%', height: 260 }}>
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={points} margin={{ top: 10, right: 20, left: -20, bottom: 20 }}>
+          <LineChart data={points} margin={{ top: 10, right: 20, left: -20, bottom: 20 }} style={{ overflow: 'visible' }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" vertical={false} />
             <XAxis
               dataKey="time"
               type="number"
-              domain={['dataMin', 'dataMax']}
+              domain={[data[0].time, data[data.length - 1].time]}
               tickFormatter={(v) => formatTime(v)}
               stroke="var(--text-tertiary)"
               tick={{ fontSize: 11 }}
               dy={10}
+              axisLine={{ stroke: 'var(--border-color)' }}
             />
             <YAxis
               stroke="var(--text-tertiary)"
@@ -663,36 +720,17 @@ function MetricChart({ metric, data, category, itemId }: { metric: string; data:
               activeDot={{ r: 5 }}
               isAnimationActive={false}
             />
+            <AxisColorOverlay fullPoints={fullPoints} />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
-      {points.some(p => p.status) && (
-        <>
-          <div style={{ position: 'relative', height: 6, margin: '0 20px 16px 20px', display: 'flex', borderRadius: 3, overflow: 'hidden', border: '1px solid var(--border-color)' }}>
-            {points.map((p, i) => {
-              const nextP = points[i + 1];
-              const duration = nextP ? nextP.time - p.time : (points.length > 1 ? p.time - points[i - 1].time : 1);
-              const totalDuration = points[points.length - 1].time - points[0].time || 1;
-              const widthPct = (duration / totalDuration) * 100;
-              let bg = '#94a3b8'; // inactive
-              if (p.status === 'active' || p.status === 'ACTIVE') bg = '#4ade80';
-              if (p.status === 'failure' || p.status === 'FAILURE') bg = '#ef4444';
-              return (
-                <div
-                  key={i}
-                  style={{ width: `${widthPct}%`, height: '100%', backgroundColor: bg }}
-                  title={`Time: ${p.time.toFixed(2)}h - Status: ${p.status}`}
-                />
-              );
-            })}
-          </div>
-          <div style={{ display: 'flex', gap: 12, fontSize: 11, color: 'var(--text-secondary)', paddingLeft: 20 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 8, height: 8, background: '#4ade80', borderRadius: '50%' }}></div> Active</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 8, height: 8, background: '#94a3b8', borderRadius: '50%' }}></div> Inactive</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 8, height: 8, background: '#ef4444', borderRadius: '50%' }}></div> Failure</div>
-          </div>
-        </>
+      {fullPoints.some(p => p.status) && (
+        <div style={{ display: 'flex', gap: 12, fontSize: 11, color: 'var(--text-secondary)', paddingLeft: 20, justifyContent: 'center', marginTop: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 8, height: 8, background: '#4ade80', borderRadius: '50%' }}></div> Active</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 8, height: 8, background: '#94a3b8', borderRadius: '50%' }}></div> Inactive</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}><div style={{ width: 8, height: 8, background: '#ef4444', borderRadius: '50%' }}></div> Failure</div>
+        </div>
       )}
     </div>
   );

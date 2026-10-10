@@ -1180,7 +1180,7 @@ export function ScenariosPage() {
               )}
 
               {bottomTab === 'monitor' && (
-                <SimulationMonitor simState={simState} />
+                <SimulationMonitor simState={simState} simulationDuration={simulationDuration} />
               )}
             </div>
           )}

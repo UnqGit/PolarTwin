@@ -237,7 +237,7 @@ class TelemetryDatabase:
                         station_id,
                         rec["time"],
                         rec.get("persistence_time", 0.0),
-                        source,
+                        rec.get("source", source),
                     ),
                 )
                 rec_id = cur.lastrowid

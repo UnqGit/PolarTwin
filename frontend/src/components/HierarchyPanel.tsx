@@ -168,6 +168,8 @@ export interface HierarchyPanelProps {
   runtime?: any[] | null;
   isOpen?: boolean;
   onIsOpenChange?: (isOpen: boolean) => void;
+  activeView?: string;
+  setActiveView?: (view: string) => void;
 }
 
 export const UNIT_MULTIPLIERS: Record<string, number> = {
@@ -242,9 +244,14 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
   valueOverrides = {},
   runtime = null,
   isOpen: externalIsOpen,
-  onIsOpenChange
+  onIsOpenChange,
+  activeView: externalActiveView,
+  setActiveView: externalSetActiveView
 }) => {
-  const [activeView, setActiveView] = useState<string>('hierarchy');
+  const [internalActiveView, setInternalActiveView] = useState<string>('hierarchy');
+  const activeView = externalActiveView !== undefined ? externalActiveView : internalActiveView;
+  const setActiveView = externalSetActiveView || setInternalActiveView;
+
   const [internalIsOpen, setInternalIsOpen] = useState(true);
   const isOpen = externalIsOpen !== undefined ? externalIsOpen : internalIsOpen;
   const setIsOpen = onIsOpenChange || setInternalIsOpen;
@@ -556,7 +563,8 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
               {activeView === 'hierarchy' ? 'Hierarchy Tree' :
                 activeView === 'connections' ? 'Connections List' :
                   activeView === 'interactivity' ? 'Settings' :
-                    customSidebarTabs?.find(t => t.id === activeView)?.title || 'Settings'}
+                    customSidebarTabs?.find(t => t.id === activeView)?.title ||
+                    customSidebarTopTabs?.find(t => t.id === activeView)?.title || 'Settings'}
             </span>
             {activeView === 'hierarchy' && (
               <div style={{ display: 'flex', gap: 4, textTransform: 'none', letterSpacing: 'normal', fontWeight: 500 }}>
@@ -681,6 +689,14 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
 
             {customSidebarTabs?.map(tab => (
               activeView === tab.id && <React.Fragment key={tab.id}>{tab.content}</React.Fragment>
+            ))}
+            {customSidebarTopTabs?.map(tab => (
+              activeView === tab.id && (
+                <div key={tab.id} style={{ padding: '32px 16px', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 13, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+                  {tab.icon}
+                  <span>{tab.title} is displayed in the main window.</span>
+                </div>
+              )
             ))}
           </div>
         </div>
