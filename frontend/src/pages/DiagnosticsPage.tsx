@@ -57,7 +57,7 @@ export function DiagnosticsPage() {
   // Load runs
   const fetchRuns = () => {
     api.getTelemetryRuns().then(r => {
-      setRuns(r.filter((run: any) => run.status !== 'RUNNING'));
+      setRuns(r);
     }).catch(console.error);
   };
 

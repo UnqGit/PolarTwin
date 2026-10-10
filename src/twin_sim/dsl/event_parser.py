@@ -35,6 +35,19 @@ def parse_value(v: str) -> Any:
         return v
 
 
+def strip_comment(line: str) -> str:
+    """Safely strip '#' comments, ignoring '#' inside strings."""
+    in_double = False
+    in_single = False
+    for i, c in enumerate(line):
+        if c == '"' and not in_single:
+            in_double = not in_double
+        elif c == "'" and not in_double:
+            in_single = not in_single
+        elif c == '#' and not in_double and not in_single:
+            return line[:i]
+    return line
+
 # ---------------------------------------------------------------------------
 # Target clause validation helpers (Spec §9)
 # ---------------------------------------------------------------------------
@@ -172,7 +185,7 @@ def parse_event_string(source: str, name: str = "<anonymous>") -> EventDefinitio
     in_set_block = False
     while i < len(lines):
         raw = lines[i]
-        line = raw.split("#", 1)[0].strip()
+        line = strip_comment(raw).strip()
         i += 1
 
         if not line:

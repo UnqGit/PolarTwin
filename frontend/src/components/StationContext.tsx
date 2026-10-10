@@ -141,7 +141,14 @@ export const StationProvider: React.FC<{ children: ReactNode, stationId?: string
             });
             liveStateRef.current = newState;
           }
-        }).catch(err => console.error("Error polling sim state:", err));
+        }).catch(err => {
+          console.error("Error polling sim state:", err);
+          setRunId(null);
+          setSimStatus('Ready');
+          setSimTime(0);
+          setSimState(null);
+          liveStateRef.current = {};
+        });
 
         api.getSimulationLog(runId).then(logs => {
           setSimLog(logs);

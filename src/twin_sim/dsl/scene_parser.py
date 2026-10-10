@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 
 from packages.shared_models.errors import ParseError
-from twin_sim.dsl.event_parser import parse_value
+from twin_sim.dsl.event_parser import parse_value, strip_comment
 from twin_sim.dsl.models import SceneEvent
 
 
@@ -28,7 +28,7 @@ def parse_scene_string(source: str) -> list[SceneEvent]:
     block_stack = []
 
     while i < len(lines):
-        line = lines[i].split("#", 1)[0].strip()
+        line = strip_comment(lines[i]).strip()
         i += 1
 
         if not line:

@@ -36,6 +36,18 @@ export function ScenariosPage() {
   const [validationErrors, setValidationErrors] = useState<{ message: string; line_number?: number }[]>([]);
   const [compileLogs, setCompileLogs] = useState<{ message: string, isError: boolean }[]>([]);
 
+  useEffect(() => {
+    setSelectedEvent(prev => {
+      if (!prev) return null;
+      if (scenarioEvents.includes(prev)) return prev;
+
+      // Match strictly by exact location and ref
+      let match = scenarioEvents.find(e => e.source_location === prev.source_location && e.event_ref === prev.event_ref);
+      
+      return match || null;
+    });
+  }, [scenarioEvents]);
+
   // Events library
   const [eventDefs, setEventDefs] = useState<any[]>([]);
   const [selectedEventDefId, setSelectedEventDefId] = useState<string | null>(null);
@@ -533,7 +545,17 @@ export function ScenariosPage() {
               setSelectedManageScenarios([]);
               setSelectedManageEvents([]);
             }}
-            style={{ background: 'transparent', border: '1px solid var(--border-color)', color: isManageMode ? 'var(--accent-blue)' : 'var(--text-secondary)', cursor: 'pointer', fontSize: '11px', padding: '4px 8px', borderRadius: '4px' }}
+            disabled={!!runId}
+            style={{ 
+              background: 'transparent', 
+              border: '1px solid var(--border-color)', 
+              color: isManageMode ? 'var(--accent-blue)' : 'var(--text-secondary)', 
+              cursor: !!runId ? 'not-allowed' : 'pointer', 
+              fontSize: '11px', 
+              padding: '4px 8px', 
+              borderRadius: '4px',
+              opacity: !!runId ? 0.5 : 1
+            }}
           >
             {isManageMode ? 'Cancel' : 'Manage'}
           </button>
@@ -600,13 +622,13 @@ export function ScenariosPage() {
           key={s.id}
           style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'center', userSelect: 'none',
-            fontSize: '13px', padding: '4px 8px', borderRadius: '4px', cursor: !!runId ? 'not-allowed' : (isManageMode ? 'pointer' : 'pointer'), marginBottom: '2px',
+            fontSize: '13px', padding: '4px 8px', borderRadius: '4px', cursor: (!!runId && s.id !== selectedScenarioId) ? 'not-allowed' : 'pointer', marginBottom: '2px',
             backgroundColor: selectedScenarioId === s.id && !isManageMode ? 'var(--bg-input)' : 'transparent',
             color: selectedScenarioId === s.id && !isManageMode ? 'var(--text-primary)' : 'var(--text-secondary)',
-            opacity: !!runId ? 0.5 : 1,
+            opacity: (!!runId && s.id !== selectedScenarioId) ? 0.5 : 1,
           }}
           onClick={() => {
-            if (!!runId) return;
+            if (!!runId && s.id !== selectedScenarioId) return;
             if (isManageMode) {
               setSelectedManageScenarios(prev => 
                 prev.includes(s.id) ? prev.filter(id => id !== s.id) : [...prev, s.id]
@@ -704,7 +726,6 @@ export function ScenariosPage() {
             }
           }}
           onClick={() => {
-            if (!!runId) return;
             if (isManageMode) {
               setSelectedManageEvents(prev => 
                 prev.includes(e.id) ? prev.filter(id => id !== e.id) : [...prev, e.id]
@@ -718,10 +739,9 @@ export function ScenariosPage() {
           }}
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            fontSize: '13px', padding: '4px 8px', borderRadius: '4px', cursor: !!runId ? 'not-allowed' : (isManageMode ? 'pointer' : 'grab'), marginBottom: '2px',
+            fontSize: '13px', padding: '4px 8px', borderRadius: '4px', cursor: isManageMode ? 'pointer' : 'grab', marginBottom: '2px',
             backgroundColor: selectedEventDefId === e.id && !isManageMode ? 'var(--bg-input)' : 'transparent',
-            color: selectedEventDefId === e.id && !isManageMode ? 'var(--text-primary)' : 'var(--text-secondary)',
-            opacity: !!runId ? 0.5 : 1,
+            color: selectedEventDefId === e.id && !isManageMode ? 'var(--text-primary)' : 'var(--text-secondary)'
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexGrow: 1, minWidth: 0 }}>
@@ -963,7 +983,13 @@ export function ScenariosPage() {
             <button className="btn-glass" onClick={handleReset} style={{ padding: '0 8px' }} title="Reset Run">
               <RotateCcw size={16} />
             </button>
-            <button className="btn-glass" onClick={handleStep} style={{ padding: '0 8px' }} title="Step Forward">
+            <button 
+              className="btn-glass" 
+              onClick={handleStep} 
+              disabled={!runId}
+              style={{ padding: '0 8px', opacity: runId ? 1.0 : 0.5, cursor: runId ? 'pointer' : 'not-allowed' }} 
+              title="Step Forward"
+            >
               <StepForward size={16} />
             </button>
             <button
@@ -1075,6 +1101,7 @@ export function ScenariosPage() {
                           ? (selectedScenarioId ? `${scenarios.find(s => s.id === selectedScenarioId)?.name || 'untitled'}.scene` : 'untitled.scene')
                           : (selectedEventDefId ? `${selectedEventDefId}.event` : 'untitled.event')}
                         {scenarioSource !== savedScenarioSource ? '*' : ''}
+                        {runId ? <span style={{ color: 'var(--text-tertiary)', fontSize: '11px', fontStyle: 'italic', marginLeft: '6px' }}>(Read-Only)</span> : null}
                       </span>
                     </div>
                   ) : (
@@ -1097,6 +1124,7 @@ export function ScenariosPage() {
                     selectedLine={selectedEvent?.source_location ? selectedEvent.source_location - 1 : undefined}
                     errorLines={errorLines}
                     sourceVersion={sourceVersion}
+                    readOnly={!!runId}
                   />
                 </div>
               )}

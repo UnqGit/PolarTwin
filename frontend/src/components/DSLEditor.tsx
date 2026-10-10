@@ -8,9 +8,12 @@ interface DSLEditorProps {
   errorLines?: number[];    // 0-indexed
   sourceVersion?: number; // optional, when changed, forces an editor update
   fileType?: 'scenario' | 'event';
+  readOnly?: boolean;
 }
 
-export function DSLEditor({ value, onChange, selectedLine, errorLines, sourceVersion, fileType = 'scenario' }: DSLEditorProps) {
+let hasRegisteredMonaco = false;
+
+export function DSLEditor({ value, onChange, selectedLine, errorLines, sourceVersion, fileType = 'scenario', readOnly = false }: DSLEditorProps) {
   const monaco = useMonaco();
   const editorRef = useRef<any>(null);
   const [currentTheme, setCurrentTheme] = React.useState('twin-dark');
@@ -27,96 +30,136 @@ export function DSLEditor({ value, onChange, selectedLine, errorLines, sourceVer
   }, []);
 
   const handleEditorWillMount = (monaco: any) => {
+    if (hasRegisteredMonaco) return;
+    hasRegisteredMonaco = true;
+
     const isRegistered = monaco.languages.getLanguages().some((lang: any) => lang.id === 'twin-scenario-dsl' || lang.id === 'twin-event-dsl');
     if (!isRegistered) {
-      // ── Scene file tokenizer (.scene) ─────────────────────────────────
       monaco.languages.register({ id: 'twin-scenario-dsl' });
-      monaco.languages.setMonarchTokensProvider('twin-scenario-dsl', {
-        tokenizer: {
-          root: [
-            // Comments
-            [/#.*/, 'comment'],
-            // Connection selectors with parens: @(source|type|target)
-            [/@\([^)]*\)/, 'selector'],
-            // Standard @-selectors: @Generator1, @network, @external.network, etc.
-            [/@[A-Za-z0-9_.]+/, 'selector'],
-            // Keywords: event keyword prefix, timing attrs, inf value
-            [/\b(event|at|for|inf)\b/, 'keyword'],
-            // Pipe and ampersand operators (used in connection selectors)
-            [/[|&]/, 'operator'],
-            // Delimiters: = { } :
-            [/[={}:]/, 'delimiter'],
-            // Numbers (including decimals)
-            [/\d+(?:\.\d*)?|\.\d+/, 'number'],
-          ]
-        }
-      });
-      monaco.languages.setLanguageConfiguration('twin-scenario-dsl', {
-        comments: {
-          lineComment: '#'
-        }
-      });
-
-      // ── Event file tokenizer (.event) ─────────────────────────────────
       monaco.languages.register({ id: 'twin-event-dsl' });
-      monaco.languages.setMonarchTokensProvider('twin-event-dsl', {
-        tokenizer: {
-          root: [
-            // Comments
-            [/#.*/, 'comment'],
-            // Selectors with parens: @connection(@node|data|), @connection.(f1 & f2)
-            [/@[A-Za-z0-9_.]*\([^)]*\)(?:\.[A-Za-z0-9_.]*)?/, 'selector'],
-            // Standard @-selectors: @component.type, @external.network, @connection, etc.
-            [/@[A-Za-z0-9_.]+/, 'selector'],
-            // Keywords: clause keywords + 'fields' (Spec §11) + 'inf' (Spec §7.2)
-            [/\b(set|where|target|fields|inf)\b/, 'keyword'],
-            // Pipe and ampersand operators (combined target selectors, where continuations)
-            [/[|&]/, 'operator'],
-            // Delimiters: = { }
-            [/[={}]/, 'delimiter'],
-            // Numbers
-            [/\d+(?:\.\d*)?|\.\d+/, 'number'],
-          ]
-        }
-      });
-      monaco.languages.setLanguageConfiguration('twin-event-dsl', {
-        comments: {
-          lineComment: '#'
-        }
-      });
+    }
 
+    // ── Scene file tokenizer (.scene) ─────────────────────────────────
+    monaco.languages.setMonarchTokensProvider('twin-scenario-dsl', {
+      defaultToken: 'source',
+      ignoreCase: false,
+      tokenizer: {
+        root: [
+          // Whitespace
+          [/[ \t\r\n]+/, 'white'],
+          // Comments (no $ anchor to avoid \r\n bugs on Windows)
+          [/#.*/, 'comment'],
+          // Strings
+          [/"/, { token: 'string', next: '@string_double' }],
+          [/'/, { token: 'string', next: '@string_single' }],
+          // Connection selectors with parens: @(source|type|target)
+          [/@\([^)]*\)/, 'selector'],
+          // Standard @-selectors: @Generator1, @network, @external.network, etc.
+          [/@[A-Za-z0-9_.]+/, 'selector'],
+          // Keywords: event keyword prefix, timing attrs, inf value
+          [/\b(event|at|for|inf)\b/, 'keyword'],
+          // Pipe and ampersand operators (used in connection selectors)
+          [/[|&]/, 'operator'],
+          // Delimiters: = { } :
+          [/[={}:]/, 'delimiter'],
+          // Numbers (including decimals)
+          [/\d+(?:\.\d*)?|\.\d+/, 'number'],
+        ],
+        string_double: [
+          [/[^\\"]+/, 'string'],
+          [/\\./, 'string.escape'],
+          [/"/, { token: 'string', next: '@pop' }]
+        ],
+        string_single: [
+          [/[^\\']+/, 'string'],
+          [/\\./, 'string.escape'],
+          [/'/, { token: 'string', next: '@pop' }]
+        ]
+      }
+    });
+    monaco.languages.setLanguageConfiguration('twin-scenario-dsl', {
+      comments: {
+        lineComment: '#'
+      }
+    });
+
+    // ── Event file tokenizer (.event) ─────────────────────────────────
+    monaco.languages.setMonarchTokensProvider('twin-event-dsl', {
+      defaultToken: 'source',
+      ignoreCase: false,
+      tokenizer: {
+        root: [
+          // Whitespace
+          [/[ \t\r\n]+/, 'white'],
+          // Comments
+          [/#.*/, 'comment'],
+          // Strings
+          [/"/, { token: 'string', next: '@string_double' }],
+          [/'/, { token: 'string', next: '@string_single' }],
+          // Selectors with parens: @connection(@node|data|), @connection.(f1 & f2)
+          [/@[A-Za-z0-9_.]*\([^)]*\)(?:\.[A-Za-z0-9_.]*)?/, 'selector'],
+          // Standard @-selectors: @component.type, @external.network, @connection, etc.
+          [/@[A-Za-z0-9_.]+/, 'selector'],
+          // Keywords: clause keywords + 'fields' (Spec §11) + 'inf' (Spec §7.2)
+          [/\b(set|where|target|fields|inf)\b/, 'keyword'],
+          // Pipe and ampersand operators (combined target selectors, where continuations)
+          [/[|&]/, 'operator'],
+          // Delimiters: = { }
+          [/[={}]/, 'delimiter'],
+          // Numbers
+          [/\d+(?:\.\d*)?|\.\d+/, 'number'],
+        ],
+        string_double: [
+          [/[^\\"]+/, 'string'],
+          [/\\./, 'string.escape'],
+          [/"/, { token: 'string', next: '@pop' }]
+        ],
+        string_single: [
+          [/[^\\']+/, 'string'],
+          [/\\./, 'string.escape'],
+          [/'/, { token: 'string', next: '@pop' }]
+        ]
+      }
+    });
+    monaco.languages.setLanguageConfiguration('twin-event-dsl', {
+      comments: {
+        lineComment: '#'
+      }
+    });
+
+    if (!isRegistered) {
       monaco.editor.defineTheme('twin-dark', {
         base: 'vs-dark',
-        inherit: true,
-        rules: [
-          { token: 'comment', foreground: '64748b' },
-          { token: 'selector', foreground: '63dbbc' }, // accent-primary
-          { token: 'keyword', foreground: 'b566ff', fontStyle: 'bold' }, // aurora purple
-          { token: 'operator', foreground: '0ea5e9' }, // aurora blue
-          { token: 'delimiter', foreground: '0ea5e9' }, // aurora blue
-          { token: 'number', foreground: 'fbbf24' },
-        ],
-        colors: {
-          'editor.background': '#060812', // Matches --bg-main
-          'editor.lineHighlightBackground': '#0b1221', // Matches --bg-panel-secondary
-        }
-      });
-      monaco.editor.defineTheme('twin-light', {
-        base: 'vs',
-        inherit: true,
-        rules: [
-          { token: 'comment', foreground: '94a3b8' },
-          { token: 'selector', foreground: '0ea5e9' }, // Icy blue
-          { token: 'keyword', foreground: '38bdf8', fontStyle: 'bold' }, // Light icy blue
-          { token: 'operator', foreground: '475569' },
-          { token: 'delimiter', foreground: '475569' },
-          { token: 'number', foreground: 'd97706' },
-        ],
-        colors: {
-          'editor.background': '#f0f4f8', // Matches var(--bg-main) in light mode
-          'editor.lineHighlightBackground': '#e2e8f0', // Matches var(--bg-panel-secondary)
-        }
-      });
+      inherit: true,
+      rules: [
+        { token: 'comment', foreground: '64748b' },
+        { token: 'selector', foreground: '63dbbc' }, // accent-primary
+        { token: 'keyword', foreground: 'b566ff', fontStyle: 'bold' }, // aurora purple
+        { token: 'operator', foreground: '0ea5e9' }, // aurora blue
+        { token: 'delimiter', foreground: '0ea5e9' }, // aurora blue
+        { token: 'number', foreground: 'fbbf24' },
+      ],
+      colors: {
+        'editor.background': '#060812', // Matches --bg-main
+        'editor.lineHighlightBackground': '#0b1221', // Matches --bg-panel-secondary
+      }
+    });
+    monaco.editor.defineTheme('twin-light', {
+      base: 'vs',
+      inherit: true,
+      rules: [
+        { token: 'comment', foreground: '94a3b8' },
+        { token: 'selector', foreground: '0ea5e9' }, // Icy blue
+        { token: 'keyword', foreground: '38bdf8', fontStyle: 'bold' }, // Light icy blue
+        { token: 'operator', foreground: '475569' },
+        { token: 'delimiter', foreground: '475569' },
+        { token: 'number', foreground: 'd97706' },
+      ],
+      colors: {
+        'editor.background': '#f0f4f8', // Matches var(--bg-main) in light mode
+        'editor.lineHighlightBackground': '#e2e8f0', // Matches var(--bg-panel-secondary)
+      }
+    });
     }
   };
 
@@ -197,6 +240,7 @@ export function DSLEditor({ value, onChange, selectedLine, errorLines, sourceVer
           fontFamily: '"Consolas", "Courier New", monospace',
           wordWrap: 'on',
           lineNumbersMinChars: 3,
+          readOnly: readOnly,
         }}
       />
     </div>

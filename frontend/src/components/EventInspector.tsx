@@ -31,7 +31,10 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
     return null;
   };
 
-  const renderInput = (key: string, value: any, onChange: (v: string) => void) => {
+  const renderInput = (key: string, value: any, onChange: (v: string) => void, forceText: boolean = false) => {
+    if (forceText) {
+      return <input type="text" value={value || ''} onChange={e => onChange(e.target.value)} placeholder="value" style={{ width: '100%', boxSizing: 'border-box', border: '1px solid #f59e0b', outline: 'none' }} />;
+    }
     if (key === 'status') {
       return (
         <select value={value || ''} onChange={e => onChange(e.target.value)} style={{ width: '100%', boxSizing: 'border-box', background: 'var(--bg-input)', color: 'var(--text-primary)', border: '1px solid var(--border-color)', padding: '4px' }}>
@@ -64,7 +67,7 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
   };
 
   const { declared, initiated } = React.useMemo(() => {
-    const d: string[] = [];
+    const d: { key: string, required: boolean }[] = [];
     const i: { key: string, value: string }[] = [];
     if (eventDef && eventDef.source) {
       const lines = eventDef.source.split('\n');
@@ -82,7 +85,10 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
           }
           const eqIdx = line.indexOf('=');
           if (eqIdx === -1) {
-            d.push(line);
+            let k = line;
+            let req = true;
+            if (k.startsWith('?')) { k = k.substring(1).trim(); req = false; }
+            d.push({ key: k, required: req });
           } else {
             i.push({ key: line.substring(0, eqIdx).trim(), value: line.substring(eqIdx + 1).trim() });
           }
@@ -112,7 +118,10 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
              if (remainder) {
                  const eqIdx = remainder.indexOf('=');
                  if (eqIdx === -1) {
-                    d.push(remainder);
+                    let k = remainder;
+                    let req = true;
+                    if (k.startsWith('?')) { k = k.substring(1).trim(); req = false; }
+                    d.push({ key: k, required: req });
                  } else {
                     i.push({ key: remainder.substring(0, eqIdx).trim(), value: remainder.substring(eqIdx + 1).trim() });
                  }
@@ -129,7 +138,10 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
              if (remainder) {
                  const eqIdx = remainder.indexOf('=');
                  if (eqIdx === -1) {
-                    d.push(remainder);
+                    let k = remainder;
+                    let req = true;
+                    if (k.startsWith('?')) { k = k.substring(1).trim(); req = false; }
+                    d.push({ key: k, required: req });
                  } else {
                     i.push({ key: remainder.substring(0, eqIdx).trim(), value: remainder.substring(eqIdx + 1).trim() });
                  }
@@ -185,14 +197,17 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
     return 'valid';
   };
 
-  const missingRequired = declared.filter(key => {
-    const status = validateField(key, editPayloadObj[key]);
+  const missingRequired = declared.filter(item => {
+    if (!item.required) return false;
+    const status = validateField(item.key, editPayloadObj[item.key]);
     return status === 'empty' || status === 'invalid';
   });
 
+  const invalidFields = declared.filter(item => validateField(item.key, editPayloadObj[item.key]) === 'invalid');
+
   const handleSave = () => {
     if (!onUpdateEvent) return;
-    if (missingRequired.length > 0) return;
+    if (missingRequired.length > 0 || invalidFields.length > 0) return;
     
     // Construct DSL string
     let snippet = `event:${event.event_ref}`;
@@ -233,24 +248,15 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
           <button 
             onClick={() => {
               if (isEditing) {
-                if (missingRequired.length > 0) return;
+                if (missingRequired.length > 0 || invalidFields.length > 0) return;
                 handleSave();
               } else {
-                setEditPayloadObj(prev => {
-                  const next = { ...prev };
-                  Object.keys(next).forEach(k => {
-                    if (validateField(k, next[k]) === 'invalid') {
-                       next[k] = '';
-                    }
-                  });
-                  return next;
-                });
                 setIsEditing(true);
               }
             }}
             className={`btn btn-sm ${isEditing ? 'btn-primary' : 'btn-secondary'}`}
-            disabled={disabled || (isEditing && missingRequired.length > 0)}
-            title={isEditing && missingRequired.length > 0 ? "Fill required fields to save" : ""}
+            disabled={disabled || (isEditing && (missingRequired.length > 0 || invalidFields.length > 0))}
+            title={isEditing && missingRequired.length > 0 ? "Fill required fields to save" : (isEditing && invalidFields.length > 0 ? "Fix invalid fields to save" : "")}
           >
             {isEditing ? 'Save' : 'Edit'}
           </button>
@@ -307,11 +313,11 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
         <div style={{ marginBottom: 16 }}>
           <div style={{ color: 'var(--text-secondary)', marginBottom: 8, fontSize: 11, textTransform: 'uppercase' }}>Set Payload</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {declared.map(key => {
+            {declared.map(({ key, required }) => {
               const validationStatus = validateField(key, editPayloadObj[key]);
               const isMissing = validationStatus === 'empty';
               const isInvalid = validationStatus === 'invalid';
-              const showAsterisk = (isMissing && isEditing) || isInvalid;
+              const showAsterisk = (required && isMissing && isEditing) || isInvalid;
               const asteriskColor = isMissing ? '#ef4444' : '#f59e0b';
               const helperText = isMissing ? '* this is a required field' : '* invalid data type';
 
@@ -323,10 +329,10 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
                   </div>
                   <div style={{ flex: 1 }}>
                     {isEditing ? (
-                      renderInput(key, editPayloadObj[key], v => setEditPayloadObj(prev => ({ ...prev, [key]: v })))
+                      renderInput(key, editPayloadObj[key], v => setEditPayloadObj(prev => ({ ...prev, [key]: v })), isInvalid)
                     ) : (
                       <div style={{ padding: '4px 8px', background: 'var(--bg-input)', borderRadius: 4, fontFamily: 'monospace', fontSize: 12, border: '1px solid var(--border-color)', minHeight: 24, display: 'flex', alignItems: 'center' }}>
-                        {event.payload && event.payload[key] !== undefined ? String(event.payload[key]) : <span style={{ color: '#ef4444', fontStyle: 'italic' }}>(not set)</span>}
+                        {event.payload && event.payload[key] !== undefined ? String(event.payload[key]) : (required ? <span style={{ color: '#ef4444', fontStyle: 'italic' }}>(not set)</span> : <span style={{ color: 'var(--text-tertiary)', fontStyle: 'italic' }}>(not set)</span>)}
                       </div>
                     )}
                   </div>
@@ -336,12 +342,12 @@ export const EventInspector: React.FC<EventInspectorProps> = ({ event, eventDef,
                 )}
               </div>
             )})}
-            {Object.keys(editPayloadObj).filter(k => !declared.includes(k) && !initiated.find(i => i.key === k)).map(key => (
+            {Object.keys(editPayloadObj).filter(k => !declared.find(d => d.key === k) && !initiated.find(i => i.key === k)).map(key => (
               <div key={key} style={{ display: 'flex', alignItems: 'center' }}>
                 <div style={{ width: 120, fontFamily: 'monospace', fontSize: 12, color: 'var(--text-secondary)' }}>{key}</div>
                 <div style={{ flex: 1 }}>
                   {isEditing ? (
-                    renderInput(key, editPayloadObj[key], v => setEditPayloadObj(prev => ({ ...prev, [key]: v })))
+                    renderInput(key, editPayloadObj[key], v => setEditPayloadObj(prev => ({ ...prev, [key]: v })), validateField(key, editPayloadObj[key]) === 'invalid')
                   ) : (
                     <div style={{ padding: '4px 8px', background: 'var(--bg-input)', borderRadius: 4, fontFamily: 'monospace', fontSize: 12, border: '1px solid var(--border-color)', minHeight: 24, display: 'flex', alignItems: 'center' }}>
                       {editPayloadObj[key]}
