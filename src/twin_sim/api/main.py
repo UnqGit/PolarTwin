@@ -293,6 +293,29 @@ def get_scenario_events(scenario_id: str):
         raise HTTPException(400, detail={"message": f"Error parsing scenario: {e}"})
 
 
+class ParseEventRequest(BaseModel):
+    source: str
+    filename: str | None = None
+
+@app.post("/events/parse")
+def parse_event_raw(payload: ParseEventRequest):
+    fname = payload.filename or "event file"
+    try:
+        from twin_sim.dsl.event_parser import parse_event_string
+        parse_event_string(payload.source)
+        return {"valid": True, "errors": [], "message": f"Successfully parsed {fname}."}
+    except Exception as e:
+        pure_msg = getattr(e, "raw_message", getattr(e, "message", str(e)))
+        line_num = getattr(e, "line_number", 1) - 1 if getattr(e, "line_number", None) is not None else 0
+        return {
+            "valid": False, 
+            "errors": [{
+                "message": pure_msg, 
+                "line_number": line_num
+            }],
+            "message": f"Failed to parse {fname}."
+        }
+
 class ParseScenarioRequest(BaseModel):
     source: str
     station_id: str | None = None
@@ -310,10 +333,27 @@ def parse_scenario_raw(payload: ParseScenarioRequest):
         if payload.station_id:
             station = _manager.get_loaded_station(payload.station_id)
             if station:
+                compilation_errors = []
+                parsed_events_cache = {}
                 for ev in events:
+                    if ev.event_ref in parsed_events_cache:
+                        cached = parsed_events_cache[ev.event_ref]
+                        if isinstance(cached, Exception):
+                            pass # We already reported this error
+                        else:
+                            ev.event_definition = cached
+                            if ev.selector is None:
+                                synthetic = {"external.network": "@network", "external.weather": "@weather", "external.supplies": "@supplies"}.get(ev.event_definition.target_kind)
+                                if synthetic: ev.selector = synthetic
+                            ev.user_provided_keys = set(ev.payload.keys())
+                            for k, v in ev.event_definition.set_fixed.items():
+                                if k not in ev.payload: ev.payload[k] = v
+                        continue
+
                     try:
                         ev_def_row = _scenario_manager.get_event(f"{payload.station_id}:{ev.event_ref}")
                         ev.event_definition = parse_event_string(ev_def_row["source"], name=ev.event_ref)
+                        parsed_events_cache[ev.event_ref] = ev.event_definition
                         if ev.selector is None:
                             specific_external_targets = {
                                 "external.network": "@network",
@@ -329,10 +369,14 @@ def parse_scenario_raw(payload: ParseScenarioRequest):
                         for k, v in ev.event_definition.set_fixed.items():
                             if k not in ev.payload:
                                 ev.payload[k] = v
-                    except:
-                        pass
+                    except Exception as e:
+                        parsed_events_cache[ev.event_ref] = e
+                        pure_msg = getattr(e, "message", str(e))
+                        compilation_errors.append({
+                            "message": f"Event '{ev.event_ref}' definition error: {pure_msg}"
+                        })
+                
                 engine = station.build_engine(scenes=events)
-                compilation_errors = []
                 
                 for scene in list(engine.scenes):
                     try:

@@ -10,6 +10,7 @@ Storage Layout:
 
 from __future__ import annotations
 
+import logging
 import time
 from typing import Any
 
@@ -17,6 +18,8 @@ from twin_sim.dsl.event_parser import parse_event_string
 from twin_sim.dsl.models import SceneEvent
 from twin_sim.dsl.scene_parser import SceneParseError, parse_scene_string
 from twin_sim.telemetry.database import TelemetryDatabase
+
+logger = logging.getLogger(__name__)
 
 
 class ScenarioManager:
@@ -239,10 +242,10 @@ class ScenarioManager:
                     if k not in ev.payload:
                         ev.payload[k] = v
 
-            except (FileNotFoundError, Exception):  # noqa: BLE001
+            except (FileNotFoundError, Exception) as e:  # noqa: BLE001
                 # Event definition not found or invalid – leave as-is so the
                 # scene can still be previewed even with missing definitions.
-                pass
+                logger.error(f"Failed to parse event definition '{ev.event_ref}': {e}")
         return events
 
     def validate(self, scenario_id: str) -> dict[str, Any]:

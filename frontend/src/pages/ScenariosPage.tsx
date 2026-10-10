@@ -378,6 +378,32 @@ export function ScenariosPage() {
     }
   };
 
+  const handleTestEventDefinition = async () => {
+    try {
+      const fname = selectedEventDefId ? `${selectedEventDefId}.event` : 'untitled.event';
+      const resp = await fetch('http://localhost:8000/events/parse', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ source: scenarioSource, filename: fname })
+      });
+      const data = await resp.json();
+      if (data.valid) {
+        setCompileLogs([{ message: data.message || `Successfully parsed ${fname}.`, isError: false }]);
+        setValidationErrors([]);
+        setErrorLines([]);
+      } else {
+        setCompileLogs([{ message: data.message || `Failed to parse ${fname}.`, isError: true }]);
+        setValidationErrors(data.errors);
+        if (data.errors) {
+          setErrorLines(data.errors.map((e: any) => e.line_number).filter((n: any) => n !== undefined));
+        }
+      }
+      setBottomTab('log');
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   // Ctrl+S handler using latest saveSource
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -1113,9 +1139,19 @@ export function ScenariosPage() {
                     </div>
                   )}
                 </div>
-                {bottomTab === 'source' && scenarioSource !== savedScenarioSource && (
-                  <span style={{ fontSize: 11, color: 'var(--text-tertiary)', paddingRight: 8 }}>Unsaved (Ctrl+S)</span>
-                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {editingType === 'event' && bottomTab === 'source' && !runId && (
+                    <button 
+                      onClick={handleTestEventDefinition}
+                      style={{ padding: '2px 8px', fontSize: '11px', backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '4px', color: 'var(--text-primary)', cursor: 'pointer' }}
+                    >
+                      Test
+                    </button>
+                  )}
+                  {bottomTab === 'source' && scenarioSource !== savedScenarioSource && (
+                    <span style={{ fontSize: 11, color: 'var(--text-tertiary)', paddingRight: 8 }}>Unsaved (Ctrl+S)</span>
+                  )}
+                </div>
               </div>
 
               {bottomTab === 'source' && (
@@ -1140,7 +1176,7 @@ export function ScenariosPage() {
                     </div>
                   ))}
                   {validationErrors.map((err, i) => (
-                    <div key={`err-${i}`} style={{ color: '#ef4444', marginBottom: '8px' }}>
+                    <div key={`err-${i}`} style={{ color: '#ef4444', marginBottom: '8px', whiteSpace: 'pre-wrap' }}>
                       [Parse Error] {err.line_number !== undefined ? `Line ${err.line_number + 1}: ` : ''}{err.message}
                     </div>
                   ))}

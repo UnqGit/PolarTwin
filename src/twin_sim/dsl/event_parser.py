@@ -6,13 +6,20 @@ from twin_sim.dsl.models import EventDefinition, derive_target_kind
 
 
 class EventParseError(ParseError):
-    def __init__(self, message, line_number=None, line=None):
-        error = message
+    def __init__(self, message, line_number=None, line=None, expected=None):
+        raw_msg = message
+        if line is not None:
+            raw_msg += f"\n    {line}"
+        if expected is not None:
+            raw_msg += f"\nExpected: {expected}"
+            
+        error = raw_msg
         if line_number is not None:
-            error = f"Line {line_number}: {message}"
-            if line is not None:
-                error += f"\n    {line}"
+            error = f"Line {line_number}: {error}"
+                
         super().__init__(error)
+        self.raw_message = raw_msg
+        self.line_number = line_number
 
 
 def parse_value(v: str) -> Any:
@@ -287,13 +294,19 @@ def parse_event_string(source: str, name: str = "<anonymous>") -> EventDefinitio
 
             else:
                 raise EventParseError(
-                    "Invalid set clause. Expected: 'fields', '{', 'fields { ... }', '{ ... }', or 'field=value'.",
+                    "Invalid set clause.",
                     i,
                     line,
+                    expected="'fields', '{', 'fields { ... }', '{ ... }', or 'field=value'."
                 )
 
         else:
-            raise EventParseError("Unrecognized line", i, line)
+            raise EventParseError(
+                "Unrecognized line.", 
+                i, 
+                line,
+                expected="a clause starting with 'target ', 'where ', '& ', or 'set '."
+            )
 
     if not target:
         raise EventParseError("Missing 'target' clause", None, None)
