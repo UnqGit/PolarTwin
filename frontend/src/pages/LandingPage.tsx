@@ -7,10 +7,13 @@ import {
   Globe, Cpu, FileCode, Clock, Layers,
   Play, Pause, RotateCcw, Check, Copy,
   AlertTriangle, ShieldCheck, Terminal, Code2,
-  Sparkles, Filter, Database, Sliders, ChevronRight,
+  Sparkles, Filter, Database, Sliders, ChevronRight, ChevronDown,
   Network, Thermometer, Wind, Droplets, Flame, Workflow, Gauge
 } from 'lucide-react';
 import { useTheme } from '../components/ThemeContext';
+import { StationHologram3D } from '../components/StationHologram3D';
+import { TopologyMiniVisualizer } from '../components/TopologyMiniVisualizer';
+import { CommandCenterTour } from '../components/CommandCenterTour';
 
 /* ── Aurora & Snow particle canvas ───────────────────────────── */
 function AuroraCanvas({ theme }: { theme: 'light' | 'dark' }) {
@@ -154,10 +157,14 @@ function AuroraCanvas({ theme }: { theme: 'light' | 'dark' }) {
   );
 }
 
-/* ── Station Card ─────────────────────────────────────── */
+/* ── Station Card (Live Antarctic Deployment) ────────────────── */
 function StationCard({ station }: { station: StationManifest }) {
   const { theme } = useTheme();
   const isLight = theme === 'light';
+
+  // Geographic coordinates & oasis info
+  const isMaitri = station.station_id.toLowerCase().includes('maitri');
+  const coords = isMaitri ? '70°46′S, 11°44′E · Schirmacher Oasis' : 'Antarctica Base Node';
 
   return (
     <Link
@@ -181,7 +188,7 @@ function StationCard({ station }: { station: StationManifest }) {
           boxShadow: isLight
             ? '0 10px 30px -10px rgba(2, 132, 199, 0.15), 0 4px 6px -4px rgba(0, 0, 0, 0.05)'
             : 'var(--shadow-md)',
-          border: isLight ? '1px solid rgba(2, 132, 199, 0.1)' : '1px solid var(--border-color)',
+          border: isLight ? '1px solid rgba(2, 132, 199, 0.18)' : '1px solid var(--border-color)',
         }}
       >
         {/* Accent glow corner */}
@@ -191,8 +198,8 @@ function StationCard({ station }: { station: StationManifest }) {
           width: 140, height: 140,
           borderRadius: '50%',
           background: isLight
-            ? 'radial-gradient(circle, rgba(2,132,199,0.08) 0%, transparent 70%)'
-            : 'radial-gradient(circle, rgba(99,219,188,0.12) 0%, transparent 70%)',
+            ? 'radial-gradient(circle, rgba(2,132,199,0.12) 0%, transparent 70%)'
+            : 'radial-gradient(circle, rgba(99,219,188,0.15) 0%, transparent 70%)',
           pointerEvents: 'none',
         }} />
 
@@ -200,64 +207,98 @@ function StationCard({ station }: { station: StationManifest }) {
           <div style={{
             width: 52, height: 52,
             borderRadius: 'var(--radius-md)',
-            background: isLight ? 'rgba(2, 132, 199, 0.08)' : 'rgba(99,219,188,0.1)',
-            border: isLight ? '1px solid rgba(2, 132, 199, 0.15)' : '1px solid rgba(99,219,188,0.25)',
+            background: isLight ? 'rgba(2, 132, 199, 0.08)' : 'rgba(99,219,188,0.12)',
+            border: isLight ? '1.5px solid rgba(2, 132, 199, 0.25)' : '1.5px solid rgba(99,219,188,0.3)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             color: 'var(--accent-primary)',
             flexShrink: 0,
             boxShadow: isLight ? 'none' : 'var(--shadow-glow)',
           }}>
-            <MapPin size={24} strokeWidth={2.2} />
+            <MapPin size={24} strokeWidth={2.4} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <h3 style={{
-              margin: 0, fontSize: '19px', fontWeight: 800,
-              color: 'var(--text-primary)', letterSpacing: '-0.02em',
-              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
-            }}>
-              {station.station_id}
-            </h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <h3 style={{
+                margin: 0, fontSize: '20px', fontWeight: 900,
+                color: 'var(--text-primary)', letterSpacing: '-0.02em',
+                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+              }}>
+                {station.station_id} Station
+              </h3>
+              <span style={{
+                fontSize: 10, fontWeight: 800, padding: '2px 8px', borderRadius: 'var(--radius-full)',
+                background: 'rgba(74, 222, 128, 0.15)', color: '#4ade80', border: '1px solid rgba(74, 222, 128, 0.3)'
+              }}>
+                ONLINE
+              </span>
+            </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 4 }}>
-              <div style={{
-                width: 8, height: 8, borderRadius: '50%',
-                background: 'var(--status-active)',
-                boxShadow: isLight ? '0 0 8px rgba(22, 163, 74, 0.4)' : '0 0 8px var(--status-active)',
-                animation: 'pulseDot 2.5s infinite'
-              }} />
-              <span style={{ fontSize: '12.5px', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                Active Deployment
+              <span style={{ fontSize: '11.5px', color: 'var(--text-tertiary)', fontFamily: 'monospace' }}>
+                {coords}
               </span>
             </div>
           </div>
-          <ArrowRight size={20} style={{ color: 'var(--text-tertiary)', flexShrink: 0 }} />
+          <ArrowRight size={20} style={{ color: 'var(--accent-primary)', flexShrink: 0 }} />
+        </div>
+
+        {/* Live Polar Telemetry Strip */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: 8,
+          padding: '10px 12px',
+          borderRadius: 'var(--radius-md)',
+          background: isLight ? '#f1f5f9' : 'rgba(0, 0, 0, 0.35)',
+          border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.06)',
+          fontSize: 11,
+          fontFamily: 'monospace',
+        }}>
+          <div>
+            <div style={{ color: 'var(--text-tertiary)', fontSize: 9.5 }}>AMBIENT TEMP</div>
+            <div style={{ fontWeight: 800, color: 'var(--accent-cyan)', marginTop: 2 }}>-38.2°C</div>
+          </div>
+          <div>
+            <div style={{ color: 'var(--text-tertiary)', fontSize: 9.5 }}>GRID LOAD</div>
+            <div style={{ fontWeight: 800, color: 'var(--accent-primary)', marginTop: 2 }}>86.4 kW</div>
+          </div>
+          <div>
+            <div style={{ color: 'var(--text-tertiary)', fontSize: 9.5 }}>AUTONOMY</div>
+            <div style={{ fontWeight: 800, color: '#4ade80', marginTop: 2 }}>148 Days</div>
+          </div>
         </div>
 
         <div style={{ height: 1, background: isLight ? 'rgba(0,0,0,0.06)' : 'var(--border-color)' }} />
 
-        <div style={{ display: 'flex', gap: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '13.5px' }}>
-            <Box size={16} style={{ color: 'var(--accent-primary)', flexShrink: 0 }} />
-            <span><strong style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{station.component_count}</strong> Components</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '12.5px' }}>
+              <Box size={15} style={{ color: 'var(--accent-primary)', flexShrink: 0 }} />
+              <span><strong style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{station.component_count}</strong> Units</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '12.5px' }}>
+              <Activity size={15} style={{ color: 'var(--accent-cyan)', flexShrink: 0 }} />
+              <span><strong style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{station.connection_count}</strong> Links</span>
+            </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-secondary)', fontSize: '13.5px' }}>
-            <Activity size={16} style={{ color: 'var(--accent-cyan)', flexShrink: 0 }} />
-            <span><strong style={{ color: 'var(--text-primary)', fontWeight: 700 }}>{station.connection_count}</strong> Connections</span>
-          </div>
+
+          <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: 4 }}>
+            Enter Command Center →
+          </span>
         </div>
       </div>
     </Link>
   );
 }
 
-/* ── Mock (locked) Station Card ───────────────────────── */
+/* ── Mock (locked) Station Card (Bharati Base) ────────── */
 function MockStationCard() {
   const { theme } = useTheme();
   const isLight = theme === 'light';
 
   return (
     <div
-      style={{ display: 'block', opacity: isLight ? 0.8 : 0.6, cursor: 'not-allowed' }}
-      title="Compilation pending / Invalid twin format"
+      style={{ display: 'block', opacity: isLight ? 0.9 : 0.75 }}
+      title="Phase 2 Deployment: Compilation pass verified, staging for production telemetry"
     >
       <div
         className="glass-panel"
@@ -269,21 +310,21 @@ function MockStationCard() {
           gap: '16px',
           position: 'relative',
           overflow: 'hidden',
-          background: isLight ? 'rgba(255,255,255,0.6)' : 'var(--bg-panel)',
-          border: isLight ? '1px dashed rgba(0,0,0,0.1)' : '1px solid var(--border-color)',
+          background: isLight ? 'rgba(255,255,255,0.75)' : 'var(--bg-panel)',
+          border: isLight ? '1px dashed rgba(2, 132, 199, 0.3)' : '1px dashed rgba(255,255,255,0.2)',
         }}
       >
         <div style={{
           position: 'absolute',
-          top: 12, right: 16,
+          top: 14, right: 16,
           fontSize: 10, fontWeight: 800, letterSpacing: '0.08em',
-          background: isLight ? 'rgba(217, 119, 6, 0.1)' : 'rgba(248,213,126,0.1)',
+          background: isLight ? 'rgba(217, 119, 6, 0.12)' : 'rgba(248,213,126,0.12)',
           color: 'var(--accent-amber)',
-          border: isLight ? '1px solid rgba(217, 119, 6, 0.2)' : '1px solid rgba(248,213,126,0.25)',
+          border: isLight ? '1px solid rgba(217, 119, 6, 0.25)' : '1px solid rgba(248,213,126,0.3)',
           padding: '3px 10px',
           borderRadius: 'var(--radius-full)',
         }}>
-          PENDING
+          STAGED · PHASE 2
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -291,30 +332,53 @@ function MockStationCard() {
             width: 52, height: 52,
             borderRadius: 'var(--radius-md)',
             background: isLight ? 'rgba(0,0,0,0.03)' : 'var(--bg-input)',
-            border: isLight ? '1px solid rgba(0,0,0,0.05)' : '1px solid var(--border-color)',
+            border: isLight ? '1px solid rgba(0,0,0,0.08)' : '1px solid var(--border-color)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'var(--text-tertiary)',
+            color: 'var(--accent-amber)',
             flexShrink: 0,
           }}>
             <MapPin size={24} />
           </div>
           <div>
-            <h3 style={{ margin: 0, fontSize: '19px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
-              Bharati
+            <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 900, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>
+              Bharati Station
             </h3>
-            <span style={{ fontSize: '12.5px', color: 'var(--text-secondary)', fontWeight: 600 }}>Mock Deployment</span>
+            <span style={{ fontSize: '11.5px', color: 'var(--text-tertiary)', fontFamily: 'monospace' }}>
+              69°24′S, 76°11′E · Larsmann Hills
+            </span>
           </div>
+        </div>
+
+        {/* Spec Staging Strip */}
+        <div style={{
+          padding: '10px 12px',
+          borderRadius: 'var(--radius-md)',
+          background: isLight ? '#f8fafc' : 'rgba(0, 0, 0, 0.25)',
+          border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.04)',
+          fontSize: 11,
+          fontFamily: 'monospace',
+          color: 'var(--text-secondary)',
+          display: 'flex',
+          justifyContent: 'space-between',
+        }}>
+          <span>Aerodynamic 3-Deck Pod</span>
+          <span style={{ color: 'var(--accent-amber)', fontWeight: 700 }}>AST Compiled Valid</span>
         </div>
 
         <div style={{ height: 1, background: isLight ? 'rgba(0,0,0,0.06)' : 'var(--border-color)' }} />
 
-        <div style={{ display: 'flex', gap: '20px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-tertiary)', fontSize: '13.5px' }}>
-            <Box size={16} /> <span>278 Components</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-tertiary)', fontSize: '12.5px' }}>
+              <Box size={15} /> <span><strong>278</strong> Components</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-tertiary)', fontSize: '12.5px' }}>
+              <Activity size={15} /> <span><strong>433</strong> Connections</span>
+            </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--text-tertiary)', fontSize: '13.5px' }}>
-            <Activity size={16} /> <span>433 Connections</span>
-          </div>
+          <span style={{ fontSize: 11, color: 'var(--text-tertiary)', fontStyle: 'italic' }}>
+            Awaiting Telemetry Stream
+          </span>
         </div>
       </div>
     </div>
@@ -685,51 +749,9 @@ function PlatformCapabilitiesSection({ isLight }: { isLight: boolean }) {
               ))}
             </div>
 
-            {/* Graph Node-Link Pipeline */}
-            <div style={{
-              marginTop: 'auto',
-              background: innerBg,
-              border: innerBorder,
-              borderRadius: 'var(--radius-lg)',
-              padding: '12px 14px',
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 8,
-              fontSize: 12,
-              fontFamily: 'monospace',
-            }}>
-              <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '6px 10px', borderRadius: 6,
-                background: (activeMedium === 'all' || activeMedium === 'power') ? (isLight ? '#e6fffa' : 'rgba(80, 219, 192, 0.1)') : 'transparent',
-                border: (activeMedium === 'all' || activeMedium === 'power') ? '1px solid rgba(80, 219, 192, 0.3)' : '1px solid transparent',
-              }}>
-                <span style={{ color: 'var(--accent-primary)', fontWeight: 700 }}>⚡ Generator_1</span>
-                <span style={{ color: 'var(--text-tertiary)' }}>──[400V AC]──►</span>
-                <span style={{ color: 'var(--text-primary)' }}>Main Switchboard</span>
-              </div>
-
-              <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '6px 10px', borderRadius: 6,
-                background: (activeMedium === 'all' || activeMedium === 'fluid') ? (isLight ? '#e0f2fe' : 'rgba(56, 217, 245, 0.1)') : 'transparent',
-                border: (activeMedium === 'all' || activeMedium === 'fluid') ? '1px solid rgba(56, 217, 245, 0.3)' : '1px solid transparent',
-              }}>
-                <span style={{ color: 'var(--accent-cyan)', fontWeight: 700 }}>💧 Chiller Loop</span>
-                <span style={{ color: 'var(--text-tertiary)' }}>──[Ethylene Glycol]──►</span>
-                <span style={{ color: 'var(--text-primary)' }}>Battery Enclosure</span>
-              </div>
-
-              <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '6px 10px', borderRadius: 6,
-                background: (activeMedium === 'all' || activeMedium === 'data') ? (isLight ? '#f3e8ff' : 'rgba(167, 139, 250, 0.1)') : 'transparent',
-                border: (activeMedium === 'all' || activeMedium === 'data') ? '1px solid rgba(167, 139, 250, 0.3)' : '1px solid transparent',
-              }}>
-                <span style={{ color: 'var(--accent-purple)', fontWeight: 700 }}>📡 SCADA RTU</span>
-                <span style={{ color: 'var(--text-tertiary)' }}>──[Modbus RS-485]──►</span>
-                <span style={{ color: 'var(--text-primary)' }}>Telemetry Gateway</span>
-              </div>
+            {/* Interactive Topological Graph Visualizer */}
+            <div style={{ marginTop: 'auto' }}>
+              <TopologyMiniVisualizer activeMedium={activeMedium} isLight={isLight} />
             </div>
           </div>
 
@@ -2812,7 +2834,7 @@ export function LandingPage() {
 
     // Phase 2: Shrink and move left as we leave the hero section
     const vh = window.innerHeight;
-    const heroBottom = vh * 0.76;
+    const heroBottom = vh;
     // Start moving left 400px before the hero section ends
     const startLeft = Math.max(300, heroBottom - 400);
     const endLeft = heroBottom;
@@ -2871,22 +2893,27 @@ export function LandingPage() {
           position: 'absolute',
           transition: 'all 0.15s ease-out',
           left: 'calc( 50vw * (1 - var(--p-left, 0)) + 32px * var(--p-left, 0) )',
-          top: 'calc( (38vh - 53px) * (1 - var(--p-up, 0)) + 36px * var(--p-up, 0) )',
+          top: 'calc( clamp(220px, 30vh, 340px) * (1 - var(--p-up, 0)) + 36px * var(--p-up, 0) )',
           transform: 'translateX(calc( -50% * (1 - var(--p-left, 0)) ))',
           margin: 0,
           fontSize: 'calc( clamp(48px, 8vw, 84px) * (1 - var(--p-left)) + 32px * var(--p-left) )',
           fontWeight: 900,
           letterSpacing: 'calc( -0.04em * (1 - var(--p-left)) - 0.02em * var(--p-left) )',
           lineHeight: 1.05,
-          color: isLight ? '#0f172a' : '#fff',
+          color: isLight ? '#09111e' : '#fff',
           textShadow: isLight
-            ? '0 4px 24px rgba(255,255,255,calc(0.3 * (1 - var(--p-left))))'
+            ? '0 0 28px rgba(255,255,255,0.98), 0 2px 10px rgba(255,255,255,0.9)'
             : '0 4px 20px rgba(0,0,0,calc(0.3 * (1 - var(--p-left))))',
           pointerEvents: 'auto',
           zIndex: 101,
           whiteSpace: 'nowrap',
         }}>
-          Polar<span style={{ color: 'var(--accent-primary)' }}>Twin</span>
+          Polar<span style={{
+            color: isLight ? '#0284c7' : 'var(--accent-primary)',
+            textShadow: isLight
+              ? '0 0 24px #ffffff, 0 0 100px #ffffff, 0 1px 15px rgba(2, 132, 199, 0.4)'
+              : '0 0 25px rgba(80, 219, 192, 0.45)',
+          }}>Twin</span>
         </h1>
 
         {/* Animated Theme Toggle */}
@@ -2921,7 +2948,8 @@ export function LandingPage() {
       {/* ─ Hero Section ─ */}
       <section style={{
         position: 'relative',
-        minHeight: '76vh',
+        minHeight: '100vh',
+        boxSizing: 'border-box',
         display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start',
         overflow: 'hidden',
       }}>
@@ -2930,7 +2958,7 @@ export function LandingPage() {
           position: 'absolute', inset: 0,
           backgroundImage: 'url(/hero.jpg)',
           backgroundSize: 'cover', backgroundPosition: 'center',
-          filter: isLight ? 'brightness(0.95) contrast(1.05) saturate(1.1)' : 'brightness(0.4) saturate(1.1)',
+          filter: isLight ? 'brightness(1.04) contrast(0.90) saturate(1.05)' : 'brightness(0.4) saturate(1.1)',
           zIndex: 0,
           transition: 'filter 0.5s ease',
         }} />
@@ -2939,9 +2967,10 @@ export function LandingPage() {
         {isLight && (
           <div style={{
             position: 'absolute', inset: 0,
-            background: 'linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.05) 10%, rgba(243,246,250,0.4) 25%, rgba(243,246,250,0.85) 80%, rgba(243,246,250,1) 100%)',
+            background: 'linear-gradient(to bottom, rgba(255,255,255,0.2) 0%, rgba(243,246,250,0.5) 25%, rgba(243,246,250,0.82) 65%, rgba(243,246,250,1) 100%)',
             zIndex: 1,
             transition: 'opacity 0.5s ease',
+            pointerEvents: 'none',
           }} />
         )}
 
@@ -2954,9 +2983,43 @@ export function LandingPage() {
         {!isLight && (
           <div style={{
             position: 'absolute', bottom: 0, left: 0, right: 0,
-            height: '50%',
+            height: '40%',
             background: 'linear-gradient(to bottom, transparent 0%, var(--bg-main) 100%)',
             zIndex: 3,
+            pointerEvents: 'none',
+          }} />
+        )}
+
+        {/* Soft Contrast Backdrop for Light Mode Text Legibility */}
+        {isLight && (
+          <div style={{
+            position: 'absolute',
+            top: '44%',
+            left: '50%',
+            transform: 'translate(-50%, -44%)',
+            width: 'min(1180px, 96vw)',
+            height: '560px',
+            borderRadius: '50%',
+            pointerEvents: 'none',
+            zIndex: 2,
+            filter: 'blur(30px)',
+          }} />
+        )}
+
+        {/* Soft Contrast Backdrop for Dark Mode Text Legibility */}
+        {!isLight && (
+          <div style={{
+            position: 'absolute',
+            top: '44%',
+            left: '50%',
+            transform: 'translate(-50%, -44%)',
+            width: 'min(1100px, 96vw)',
+            height: '520px',
+            borderRadius: '50%',
+            background: 'radial-gradient(ellipse at center, rgba(8, 11, 19, 0.78) 0%, rgba(8, 11, 19, 0.48) 55%, transparent 75%)',
+            pointerEvents: 'none',
+            zIndex: 2,
+            filter: 'blur(35px)',
           }} />
         )}
 
@@ -2965,9 +3028,12 @@ export function LandingPage() {
           position: 'relative', zIndex: 5,
           textAlign: 'center',
           display: 'flex', flexDirection: 'column',
-          alignItems: 'center', gap: '24px',
-          padding: 'calc( 38vh - 165px ) 24px 60px',
+          alignItems: 'center',
+          padding: 'calc( clamp(220px, 30vh, 340px) - 124px ) 24px 80px',
           animation: 'fadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+          maxWidth: 1240,
+          margin: '0 auto',
+          width: '100%',
         }}>
 
           {/* Hero Icon with Idle Hovering Animation */}
@@ -2975,6 +3041,7 @@ export function LandingPage() {
             className="hero-icon-wrapper"
             style={{
               opacity: 'calc(1 - var(--raw-p, 0))',
+              marginBottom: '36px',
             }}
           >
             {/* Ambient Backdrop Glow */}
@@ -3015,69 +3082,191 @@ export function LandingPage() {
           {/* Title Placeholder to preserve exact height/layout for fixed title */}
           <h1 style={{
             fontSize: 'clamp(48px, 8vw, 84px)',
-            margin: 0, lineHeight: 1.05, opacity: 0, pointerEvents: 'none'
+            margin: 0, lineHeight: 1.05, opacity: 0, pointerEvents: 'none',
+            whiteSpace: 'nowrap',
           }}>
             PolarTwin
           </h1>
 
-          {/* Subtitle & Stats (Fades out slower and scrolls up naturally) */}
+          {/* Subtitle & Mission Framing */}
           <div style={{
             opacity: 'calc(1 - var(--raw-p, 0))',
+            marginTop: '38px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
           }}>
-            <p style={{
-              fontSize: 'clamp(16px, 2vw, 19px)',
-              color: isLight ? '#0f172a' : 'rgba(255,255,255,0.8)',
-              fontWeight: isLight ? 600 : 500,
-              maxWidth: 640,
-              margin: '20px auto 0',
-              lineHeight: 1.7,
-              textShadow: isLight ? '0 2px 14px rgba(240,250,255,0.8), 0 0 4px rgba(255,255,255,0.8)' : 'none',
+            {/* Mission Badge with Frosted Glass Pill */}
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 9,
+              fontSize: 12.5,
+              fontWeight: 800,
+              letterSpacing: '0.14em',
+              textTransform: 'uppercase',
+              color: isLight ? '#0369a1' : 'var(--accent-primary)',
+              padding: '8px 22px',
+              borderRadius: 'var(--radius-full)',
+              background: isLight ? 'rgba(255, 255, 255, 0.96)' : 'rgba(12, 16, 27, 0.85)',
+              border: isLight ? '1.5px solid rgba(2, 132, 199, 0.38)' : '1px solid rgba(80, 219, 192, 0.3)',
+              backdropFilter: 'blur(16px)',
+              boxShadow: isLight
+                ? '0 4px 18px rgba(2, 132, 199, 0.12), 0 2px 6px rgba(15, 23, 42, 0.05)'
+                : '0 0 16px rgba(80, 219, 192, 0.12)',
+              marginBottom: 22,
             }}>
-              Advanced digital twin simulation platform for Antarctic research stations.
-              Monitor, simulate, and analyze infrastructure in the harshest environments on Earth.
+              <span style={{
+                width: 7, height: 7, borderRadius: '50%',
+                background: isLight ? '#0284c7' : '#4ade80',
+                boxShadow: isLight ? '0 0 8px #0284c7' : '0 0 8px #4ade80',
+                display: 'inline-block'
+              }} />
+              <span>Remote Facility Management · Indian Antarctic Program</span>
+            </div>
+
+            <p style={{
+              fontSize: 'clamp(16.5px, 1.8vw, 20px)',
+              color: isLight ? '#09111e' : '#f8fafc',
+              fontWeight: isLight ? 650 : 450,
+              maxWidth: 760,
+              margin: '0 auto',
+              lineHeight: 1.75,
+              letterSpacing: '-0.01em',
+              textShadow: isLight
+                ? '0 0 16px rgba(255,255,255,0.98), 0 1px 3px rgba(255,255,255,0.95)'
+                : '0 2px 14px rgba(0,0,0,0.85), 0 0 35px rgba(0,0,0,0.9)',
+            }}>
+              Deterministic Digital Twin & Multi-Physics Simulation Platform for Antarctic research stations.
+              Safeguard mission-critical power, thermal envelopes, and fluid loops under 8 months of polar isolation and -60°C katabatic blizzards.
             </p>
 
             {/* Stats pills */}
-            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', justifyContent: 'center', marginTop: 36 }}>
+            <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center', marginTop: 38 }}>
               {[
-                { icon: Globe, label: 'Live Telemetry' },
-                { icon: Cpu, label: 'Real-time Digital Twin' },
-                { icon: MonitorPlay, label: 'Scenario Simulation' },
+                { icon: Globe, label: '10Hz Live SCADA Telemetry' },
+                { icon: Cpu, label: 'Deterministic 15s/Tick Solver' },
+                { icon: Network, label: '4-Domain Topology Routing' },
+                { icon: MonitorPlay, label: 'Reversible LIFO Scenario Drills' },
               ].map(({ icon: Icon, label }) => (
                 <div key={label} style={{
-                  display: 'flex', alignItems: 'center', gap: 8,
-                  padding: '10px 20px',
-                  background: isLight ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.15)',
-                  border: isLight ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,255,255,0.3)',
+                  display: 'flex', alignItems: 'center', gap: 9,
+                  padding: '11px 22px',
+                  background: isLight ? 'rgba(255, 255, 255, 0.96)' : 'rgba(12, 16, 27, 0.75)',
+                  border: isLight ? '1.5px solid rgba(2, 132, 199, 0.3)' : '1px solid rgba(255, 255, 255, 0.2)',
                   borderRadius: 'var(--radius-full)',
-                  fontSize: 13.5, fontWeight: 700,
-                  color: isLight ? '#1e293b' : '#ffffff',
-                  backdropFilter: 'blur(12px)',
-                  boxShadow: isLight ? '0 4px 12px rgba(0,0,0,0.03)' : '0 4px 12px rgba(0,0,0,0.1)',
-                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                  fontSize: 13.5, fontWeight: 750,
+                  color: isLight ? '#09111e' : '#ffffff',
+                  backdropFilter: 'blur(16px)',
+                  boxShadow: isLight
+                    ? '0 4px 18px rgba(2, 132, 199, 0.12), 0 2px 6px rgba(15, 23, 42, 0.05)'
+                    : '0 4px 16px rgba(0,0,0,0.25)',
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease',
                   cursor: 'default',
                 }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = isLight ? '0 6px 16px rgba(0,0,0,0.06)' : '0 6px 16px rgba(0,0,0,0.15)';
+                    e.currentTarget.style.borderColor = isLight ? 'rgba(2, 132, 199, 0.6)' : 'var(--accent-primary)';
+                    e.currentTarget.style.boxShadow = isLight ? '0 8px 24px rgba(2, 132, 199, 0.2), 0 4px 10px rgba(0,0,0,0.08)' : '0 6px 20px rgba(0,0,0,0.35)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.transform = 'translateY(0)';
-                    e.currentTarget.style.boxShadow = isLight ? '0 4px 12px rgba(0,0,0,0.03)' : '0 4px 12px rgba(0,0,0,0.1)';
+                    e.currentTarget.style.borderColor = isLight ? 'rgba(2, 132, 199, 0.3)' : 'rgba(255, 255, 255, 0.2)';
+                    e.currentTarget.style.boxShadow = isLight ? '0 4px 18px rgba(2, 132, 199, 0.12), 0 2px 6px rgba(15, 23, 42, 0.05)' : '0 4px 16px rgba(0,0,0,0.25)';
                   }}
                 >
-                  <Icon size={16} strokeWidth={2.5} style={{ color: 'var(--accent-primary)' }} />
-                  {label}
+                  <Icon size={16} strokeWidth={2.4} style={{ color: isLight ? '#0284c7' : 'var(--accent-primary)', flexShrink: 0 }} />
+                  <span>{label}</span>
                 </div>
               ))}
             </div>
           </div>
         </div>
+
+        {/* Sleek Scroll Indicator at bottom of the full-screen hero */}
+        <div
+          onClick={() => {
+            const el = document.getElementById('interactive-3d-hologram');
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }}
+          style={{
+            position: 'absolute',
+            bottom: '24px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 6,
+            cursor: 'pointer',
+            zIndex: 10,
+            opacity: 'calc(1 - var(--raw-p, 0))',
+            transition: 'opacity 0.2s ease, transform 0.2s ease',
+            userSelect: 'none',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateX(-50%) translateY(2px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateX(-50%) translateY(0)';
+          }}
+        >
+          <span style={{
+            fontSize: '11px',
+            fontWeight: 800,
+            letterSpacing: '0.16em',
+            textTransform: 'uppercase',
+            color: isLight ? '#1e293b' : 'rgba(255, 255, 255, 0.6)',
+            textShadow: isLight ? '0 0 10px #ffffff' : 'none',
+          }}>
+            Explore Station Hologram
+          </span>
+          <ChevronDown
+            size={18}
+            className="float-y"
+            style={{
+              color: 'var(--accent-primary)',
+              filter: isLight ? 'drop-shadow(0 1px 2px rgba(2,132,199,0.3))' : 'drop-shadow(0 0 6px rgba(80,219,192,0.5))',
+            }}
+          />
+        </div>
+      </section>
+
+      {/* ─ 3D Spatial Digital Twin Holographic Centerpiece ─ */}
+      <section
+        id="interactive-3d-hologram"
+        style={{
+          maxWidth: 1240,
+          margin: '0 auto',
+          width: '100%',
+          padding: '40px 24px 60px',
+          boxSizing: 'border-box',
+          position: 'relative',
+          zIndex: 10,
+        }}
+      >
+        <div style={{ marginBottom: 20, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 12 }}>
+          <div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, color: 'var(--accent-primary)', fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+              <Box size={14} />
+              <span>Interactive Spatial Architecture</span>
+            </div>
+            <h2 style={{ fontSize: 'clamp(24px, 3.5vw, 36px)', fontWeight: 900, color: 'var(--text-primary)', margin: '4px 0 0 0', letterSpacing: '-0.02em' }}>
+              Antarctic Research Base Hologram
+            </h2>
+          </div>
+          <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: 13.5, maxWidth: 480 }}>
+            Inspect modular stilt habitats, communications radomes, katabatic wind turbines, and power hubs. Toggle blizzard stress or generator faults to preview telemetry cascades.
+          </p>
+        </div>
+
+        {/* The 3D Canvas */}
+        <StationHologram3D isLight={isLight} />
       </section>
 
       {/* ─ Stations Section ─ */}
       <section style={{
-        padding: '80px 24px',
+        padding: '70px 24px',
         maxWidth: 1200,
         margin: '0 auto',
         width: '100%',
@@ -3085,15 +3274,15 @@ export function LandingPage() {
         position: 'relative',
         zIndex: 10,
       }}>
-        <div style={{ marginBottom: '48px', textAlign: 'center', animation: 'fadeIn 0.6s 0.2s ease both' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+        <div style={{ marginBottom: '40px', textAlign: 'center', animation: 'fadeIn 0.6s 0.2s ease both' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
             <div style={{
               height: 2, width: 40,
               background: 'linear-gradient(to right, transparent, var(--accent-primary))',
               borderRadius: 2,
             }} />
             <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--accent-primary)' }}>
-              Deployments
+              Active Deployments
             </span>
             <div style={{
               height: 2, width: 40,
@@ -3101,11 +3290,11 @@ export function LandingPage() {
               borderRadius: 2,
             }} />
           </div>
-          <h2 style={{ fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 900, color: 'var(--text-primary)', margin: '0 0 16px 0', letterSpacing: '-0.03em' }}>
-            Select a Station
+          <h2 style={{ fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 900, color: 'var(--text-primary)', margin: '0 0 14px 0', letterSpacing: '-0.03em' }}>
+            Select Station Deployment
           </h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '16px', margin: 0, maxWidth: 540, marginInline: 'auto', lineHeight: 1.6 }}>
-            Choose an active deployment to access its digital twin, component hierarchy, and scenario simulations.
+          <p style={{ color: 'var(--text-secondary)', fontSize: '16px', margin: 0, maxWidth: 580, marginInline: 'auto', lineHeight: 1.6 }}>
+            Connect to live operational digital twins. View compiled component topologies, telemetry records, and inject deterministic scenarios.
           </p>
         </div>
 
@@ -3132,6 +3321,12 @@ export function LandingPage() {
           </div>
         )}
       </section>
+
+      {/* ─ Mission Operations Suite (6 Dedicated Workspaces) ─ */}
+      <CommandCenterTour
+        stationId={stations[0]?.station_id || 'Maitri'}
+        isLight={isLight}
+      />
 
       {/* ─ Platform Capabilities & Engine Suite (Bento Architecture) ─ */}
       <PlatformCapabilitiesSection isLight={isLight} />
