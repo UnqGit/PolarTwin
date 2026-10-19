@@ -8,7 +8,7 @@ import {
   Play, Pause, RotateCcw, Check, Copy,
   AlertTriangle, ShieldCheck, Terminal, Code2,
   Sparkles, Filter, Database, Sliders, ChevronRight,
-  Network
+  Network, Thermometer, Wind, Droplets, Flame, Workflow, Gauge
 } from 'lucide-react';
 import { useTheme } from '../components/ThemeContext';
 
@@ -321,57 +321,909 @@ function MockStationCard() {
   );
 }
 
-/* ── Feature Card ─────────────────────────────────────── */
-function FeatureCard({ icon: Icon, title, desc, color, glowColor }: { icon: any; title: string; desc: string; color: string, glowColor: string }) {
-  const { theme } = useTheme();
-  const isLight = theme === 'light';
+/* ═══════════════════════════════════════════════════════
+   PLATFORM CAPABILITIES BENTO ARCHITECTURE
+   ═══════════════════════════════════════════════════════ */
+function PlatformCapabilitiesSection({ isLight }: { isLight: boolean }) {
+  // 1. Multi-physics engine state
+  const [physicsMode, setPhysicsMode] = useState<'nominal' | 'peak' | 'critical'>('nominal');
+
+  // 2. Multi-medium graph state
+  const [activeMedium, setActiveMedium] = useState<'all' | 'power' | 'fluid' | 'data' | 'signal'>('all');
+
+  // 3. Reversible LIFO stack state
+  const [stackPushed, setStackPushed] = useState(false);
+
+  // 4. Cascade anomaly state
+  const [faultScenario, setFaultScenario] = useState<'gen' | 'bus' | 'pump'>('gen');
+
+  // 5. Antarctic climate state
+  const [climatePreset, setClimatePreset] = useState<'calm' | 'storm' | 'blizzard'>('blizzard');
+
+  // 6. Comparative A/B scrub state
+  const [scrubTime, setScrubTime] = useState(14.0);
+
+  // Card background and border helpers
+  const cardBg = isLight ? '#ffffff' : 'rgba(12, 16, 27, 0.75)';
+  const cardBorder = isLight ? '1px solid #e2e8f0' : '1px solid var(--border-color)';
+  const innerBg = isLight ? '#f8fafc' : 'rgba(0, 0, 0, 0.35)';
+  const innerBorder = isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.08)';
+
+  // Physics dynamic metrics
+  const physicsData = {
+    nominal: {
+      voltage: '48.2 V',
+      current: '310 A',
+      power: '14.9 kW',
+      powerPercent: 42,
+      temp: '64.5 °C',
+      tempPercent: 48,
+      coolant: '18.2 L/min',
+      status: 'OPTIMAL BALANCE',
+      statusColor: '#4ade80',
+    },
+    peak: {
+      voltage: '46.8 V',
+      current: '645 A',
+      power: '30.2 kW',
+      powerPercent: 78,
+      temp: '79.2 °C',
+      tempPercent: 72,
+      coolant: '26.4 L/min',
+      status: 'HIGH UTILIZATION',
+      statusColor: '#fbbf24',
+    },
+    critical: {
+      voltage: '39.4 V',
+      current: '920 A',
+      power: '36.2 kW',
+      powerPercent: 96,
+      temp: '98.5 °C',
+      tempPercent: 95,
+      coolant: '32.0 L/min',
+      status: 'THERMAL LIMIT SURGE',
+      statusColor: '#f87171',
+    },
+  }[physicsMode];
+
+  // Climate dynamic metrics
+  const climateData = {
+    calm: {
+      temp: '-18.0 °C',
+      wind: '12 m/s',
+      windLabel: 'Moderate Breeze',
+      solar: '8.4 kW',
+      heatDemand: '100% (Baseline)',
+      badgeColor: '#38d9f5',
+    },
+    storm: {
+      temp: '-42.5 °C',
+      wind: '36 m/s',
+      windLabel: 'Polar Gale',
+      solar: '1.4 kW',
+      heatDemand: '168% (+68%)',
+      badgeColor: '#fbbf24',
+    },
+    blizzard: {
+      temp: '-58.5 °C',
+      wind: '52 m/s',
+      windLabel: 'Katabatic Whiteout',
+      solar: '0.0 kW',
+      heatDemand: '242% (+142%)',
+      badgeColor: '#f87171',
+    },
+  }[climatePreset];
+
+  // Cascade breadcrumbs
+  const cascadeData = {
+    gen: {
+      root: 'Generator 1 Mechanical Seizure at T=0.0h',
+      cascade1: 'Bus A under-voltage sag (<36V threshold tripped)',
+      mitigation: 'Automated load-shedding isolated Non-Critical Labs · Essential Life Support preserved on Bus B',
+      confidence: '99.8%',
+      latency: '12ms',
+    },
+    bus: {
+      root: 'Transformer T1 Phase Imbalance at T=0.0h',
+      cascade1: 'Bus B Primary Breaker tripped to prevent fire risk',
+      mitigation: 'Battery Bank 2 engaged in 14ms · Heating pumps seamlessly sustained without thermal drop',
+      confidence: '99.4%',
+      latency: '14ms',
+    },
+    pump: {
+      root: 'Coolant Circulation Pump 2 Flow Failure at T=0.0h',
+      cascade1: 'Heat exchanger core temperature spiked above 92°C',
+      mitigation: 'Dynamic engine governor automatically throttled diesel generators to 40% until standby loop online',
+      confidence: '98.9%',
+      latency: '24ms',
+    },
+  }[faultScenario];
+
+  // A/B branch dynamic calculations based on scrubTime (0 to 48 hours)
+  const isBranchFaultActive = scrubTime >= 8.0;
+  const branchAFuel = Math.max(15, +(95 - scrubTime * 1.25).toFixed(1));
+  const branchBFuel = isBranchFaultActive
+    ? Math.max(4, +(95 - 8.0 * 1.25 - (scrubTime - 8.0) * 2.6).toFixed(1))
+    : branchAFuel;
+  const branchATemp = 21.5;
+  const branchBTemp = isBranchFaultActive
+    ? +(21.5 - Math.min(16.5, (scrubTime - 8.0) * 0.45)).toFixed(1)
+    : 21.5;
+  const branchAPower = 100;
+  const branchBPower = isBranchFaultActive ? 52 : 100;
 
   return (
-    <div
-      className="glass-panel card-hover"
-      style={{
-        flex: '1 1 280px', maxWidth: 340,
-        padding: '36px 32px',
-        borderRadius: 'var(--radius-xl)',
-        display: 'flex', flexDirection: 'column',
-        alignItems: 'flex-start',
-        gap: '20px',
-        position: 'relative',
-        overflow: 'hidden',
+    <section style={{
+      padding: '100px 24px',
+      background: isLight ? '#FFFFFF' : 'var(--bg-panel-secondary)',
+      borderTop: '1px solid var(--border-color)',
+      borderBottom: '1px solid var(--border-color)',
+      boxShadow: isLight ? '0 -10px 40px rgba(0,0,0,0.02)' : 'none',
+      position: 'relative',
+    }}>
+      {/* Subtle background glow */}
+      <div style={{
+        position: 'absolute', inset: 0,
         background: isLight
-          ? 'linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(248,250,252,0.8) 100%)'
-          : 'var(--bg-panel)',
-        border: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid var(--border-color)',
-        boxShadow: isLight ? '0 12px 32px -12px rgba(0,0,0,0.06)' : 'var(--shadow-md)',
-      }}
-    >
-      <div style={{
-        position: 'absolute', top: -50, right: -50,
-        width: 150, height: 150, borderRadius: '50%',
-        background: `radial-gradient(circle, ${glowColor} 0%, transparent 70%)`,
+          ? 'radial-gradient(circle at 10% 10%, rgba(2, 132, 199, 0.03) 0%, transparent 50%), radial-gradient(circle at 90% 90%, rgba(124, 58, 237, 0.03) 0%, transparent 50%)'
+          : 'radial-gradient(circle at 20% 0%, rgba(80, 219, 192, 0.05) 0%, transparent 60%), radial-gradient(circle at 80% 100%, rgba(167, 139, 250, 0.05) 0%, transparent 60%)',
         pointerEvents: 'none',
-        opacity: isLight ? 0.5 : 1,
       }} />
-      <div style={{
-        width: 56, height: 56,
-        borderRadius: 'var(--radius-lg)',
-        background: isLight ? `${color}15` : `${color}14`,
-        border: isLight ? `1px solid ${color}25` : `1px solid ${color}30`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color,
-        boxShadow: isLight ? `0 8px 24px -8px ${color}60` : `0 0 20px ${color}18`,
-      }}>
-        <Icon size={28} strokeWidth={2.2} />
+
+      <div style={{ maxWidth: 1240, margin: '0 auto', position: 'relative' }}>
+        {/* Section Header */}
+        <div style={{ textAlign: 'center', marginBottom: 56 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+            <div style={{ height: 2, width: 44, background: 'linear-gradient(to right, transparent, var(--accent-purple))', borderRadius: 2 }} />
+            <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--accent-purple)' }}>
+              Core Infrastructure Architecture
+            </span>
+            <div style={{ height: 2, width: 44, background: 'linear-gradient(to left, transparent, var(--accent-purple))', borderRadius: 2 }} />
+          </div>
+          <h2 style={{ fontSize: 'clamp(28px, 4vw, 42px)', fontWeight: 900, color: 'var(--text-primary)', margin: '0 0 16px 0', letterSpacing: '-0.03em' }}>
+            Platform Capabilities & Engine Suite
+          </h2>
+          <p style={{ color: 'var(--text-secondary)', fontSize: 16, margin: '0 auto', maxWidth: 660, lineHeight: 1.65 }}>
+            Engineered for mission-critical Antarctic facilities. Explore the multi-physics differential solver, multi-medium topology graph, reversible LIFO execution, and autonomous diagnostics.
+          </p>
+        </div>
+
+        {/* Bento Grid */}
+        <div className="bento-grid">
+
+          {/* ── CARD 1: Multi-Physics Deterministic Engine (Span 7) ── */}
+          <div className="bento-card bento-card-7 glass-panel" style={{
+            background: cardBg,
+            border: cardBorder,
+            boxShadow: isLight ? '0 8px 30px rgba(0,0,0,0.04)' : 'var(--shadow-md)',
+          }}>
+            {/* Top row */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 14, marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{
+                  width: 48, height: 48, borderRadius: 'var(--radius-lg)',
+                  background: isLight ? 'rgba(80, 219, 192, 0.15)' : 'rgba(80, 219, 192, 0.12)',
+                  border: isLight ? '1px solid rgba(80, 219, 192, 0.3)' : '1px solid rgba(80, 219, 192, 0.25)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: 'var(--accent-primary)',
+                }}>
+                  <Zap size={24} strokeWidth={2.4} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--accent-primary)' }}>
+                    Physics Kernel · ODE Dynamics
+                  </div>
+                  <h3 style={{ margin: '2px 0 0 0', fontSize: 20, fontWeight: 800, color: 'var(--text-primary)' }}>
+                    Multi-Physics Deterministic Engine
+                  </h3>
+                </div>
+              </div>
+
+              {/* Interactive Mode Pills */}
+              <div style={{ display: 'flex', gap: 6 }}>
+                {[
+                  { id: 'nominal', label: 'Nominal (48V)' },
+                  { id: 'peak', label: 'Peak Load' },
+                  { id: 'critical', label: 'Thermal Surge' },
+                ].map(m => (
+                  <button
+                    key={m.id}
+                    onClick={() => setPhysicsMode(m.id as any)}
+                    style={{
+                      padding: '5px 12px',
+                      borderRadius: 'var(--radius-full)',
+                      border: physicsMode === m.id
+                        ? (isLight ? '1.5px solid #0284c7' : '1.5px solid var(--accent-primary)')
+                        : (isLight ? '1px solid #cbd5e1' : '1px solid rgba(255,255,255,0.1)'),
+                      background: physicsMode === m.id
+                        ? (isLight ? '#e0f2fe' : 'rgba(80, 219, 192, 0.15)')
+                        : 'transparent',
+                      color: physicsMode === m.id ? 'var(--text-primary)' : 'var(--text-secondary)',
+                      fontSize: 11.5,
+                      fontWeight: physicsMode === m.id ? 700 : 500,
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                    }}
+                  >
+                    {m.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <p style={{ margin: '0 0 20px 0', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+              Simulates coupled electrical power distribution, heat exchanger dissipation, and fuel combustion dynamics using 4th-order Runge-Kutta numerical integration in strict lock-step synchronization.
+            </p>
+
+            {/* Interactive Live Telemetry HUD */}
+            <div style={{
+              background: innerBg,
+              border: innerBorder,
+              borderRadius: 'var(--radius-lg)',
+              padding: '16px 20px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 14,
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-tertiary)' }}>
+                  Live Bus State
+                </span>
+                <span style={{
+                  fontSize: 11,
+                  fontWeight: 800,
+                  padding: '2px 8px',
+                  borderRadius: 'var(--radius-full)',
+                  background: `${physicsData.statusColor}20`,
+                  color: physicsData.statusColor,
+                  border: `1px solid ${physicsData.statusColor}40`,
+                }}>
+                  {physicsData.status}
+                </span>
+              </div>
+
+              {/* 4 Metric Tiles */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))', gap: 12 }}>
+                <div style={{ padding: '10px 12px', background: isLight ? '#ffffff' : 'rgba(255,255,255,0.03)', borderRadius: 8, border: innerBorder }}>
+                  <div style={{ fontSize: 10.5, color: 'var(--text-tertiary)', fontWeight: 700, textTransform: 'uppercase' }}>Bus Voltage</div>
+                  <div style={{ fontSize: 17, fontWeight: 900, fontFamily: 'monospace', color: physicsData.statusColor, marginTop: 2 }}>{physicsData.voltage}</div>
+                  <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', marginTop: 2 }}>I: {physicsData.current}</div>
+                </div>
+
+                <div style={{ padding: '10px 12px', background: isLight ? '#ffffff' : 'rgba(255,255,255,0.03)', borderRadius: 8, border: innerBorder }}>
+                  <div style={{ fontSize: 10.5, color: 'var(--text-tertiary)', fontWeight: 700, textTransform: 'uppercase' }}>Total Power</div>
+                  <div style={{ fontSize: 17, fontWeight: 900, fontFamily: 'monospace', color: 'var(--accent-primary)', marginTop: 2 }}>{physicsData.power}</div>
+                  <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', marginTop: 2 }}>Cap: {physicsData.powerPercent}%</div>
+                </div>
+
+                <div style={{ padding: '10px 12px', background: isLight ? '#ffffff' : 'rgba(255,255,255,0.03)', borderRadius: 8, border: innerBorder }}>
+                  <div style={{ fontSize: 10.5, color: 'var(--text-tertiary)', fontWeight: 700, textTransform: 'uppercase' }}>Core Thermal</div>
+                  <div style={{ fontSize: 17, fontWeight: 900, fontFamily: 'monospace', color: physicsData.tempPercent > 80 ? 'var(--status-failure)' : 'var(--accent-cyan)', marginTop: 2 }}>{physicsData.temp}</div>
+                  <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', marginTop: 2 }}>Load: {physicsData.tempPercent}%</div>
+                </div>
+
+                <div style={{ padding: '10px 12px', background: isLight ? '#ffffff' : 'rgba(255,255,255,0.03)', borderRadius: 8, border: innerBorder }}>
+                  <div style={{ fontSize: 10.5, color: 'var(--text-tertiary)', fontWeight: 700, textTransform: 'uppercase' }}>Coolant Flow</div>
+                  <div style={{ fontSize: 17, fontWeight: 900, fontFamily: 'monospace', color: 'var(--accent-cyan)', marginTop: 2 }}>{physicsData.coolant}</div>
+                  <div style={{ fontSize: 10.5, color: 'var(--text-secondary)', marginTop: 2 }}>Loop Active</div>
+                </div>
+              </div>
+
+              {/* Formula & Spec Banner */}
+              <div style={{
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8,
+                padding: '6px 12px', borderRadius: 6,
+                background: isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.03)',
+                fontSize: 11, fontFamily: 'monospace', color: 'var(--text-tertiary)'
+              }}>
+                <span>dx/dt = f(x, u, t) · Runge-Kutta 4th-Order Solver</span>
+                <span style={{ color: 'var(--accent-primary)' }}>Lockstep Synchronized · 0.05h Step</span>
+              </div>
+            </div>
+          </div>
+
+          {/* ── CARD 2: Multi-Medium Edge Routing (Span 5) ── */}
+          <div className="bento-card bento-card-5 glass-panel" style={{
+            background: cardBg,
+            border: cardBorder,
+            boxShadow: isLight ? '0 8px 30px rgba(0,0,0,0.04)' : 'var(--shadow-md)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+              <div style={{
+                width: 48, height: 48, borderRadius: 'var(--radius-lg)',
+                background: isLight ? 'rgba(56, 217, 245, 0.15)' : 'rgba(56, 217, 245, 0.12)',
+                border: isLight ? '1px solid rgba(56, 217, 245, 0.3)' : '1px solid rgba(56, 217, 245, 0.25)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'var(--accent-cyan)',
+              }}>
+                <Network size={24} strokeWidth={2.4} />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--accent-cyan)' }}>
+                  Multi-Medium Graph · Spec §8
+                </div>
+                <h3 style={{ margin: '2px 0 0 0', fontSize: 20, fontWeight: 800, color: 'var(--text-primary)' }}>
+                  Multi-Medium Edge Routing
+                </h3>
+              </div>
+            </div>
+
+            <p style={{ margin: '0 0 16px 0', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.55 }}>
+              Models facility topology across 4 distinct physical and logical domains, ensuring upstream power supplies, coolant loops, and SCADA telemetry don't cross-contaminate.
+            </p>
+
+            {/* Medium Selector Pills */}
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 14 }}>
+              {[
+                { id: 'all', label: 'All 48 Links', color: 'var(--text-primary)' },
+                { id: 'power', label: '⚡ Power (16)', color: 'var(--accent-primary)' },
+                { id: 'fluid', label: '💧 Fluid (12)', color: 'var(--accent-cyan)' },
+                { id: 'data', label: '📡 Data (14)', color: 'var(--accent-purple)' },
+                { id: 'signal', label: '🛰️ Signal (6)', color: 'var(--accent-amber)' },
+              ].map(med => (
+                <button
+                  key={med.id}
+                  onClick={() => setActiveMedium(med.id as any)}
+                  style={{
+                    padding: '4px 10px',
+                    borderRadius: 'var(--radius-full)',
+                    border: activeMedium === med.id
+                      ? `1.5px solid ${med.color}`
+                      : (isLight ? '1px solid #cbd5e1' : '1px solid rgba(255,255,255,0.1)'),
+                    background: activeMedium === med.id
+                      ? (isLight ? '#f0fdfa' : 'rgba(255,255,255,0.08)')
+                      : 'transparent',
+                    color: activeMedium === med.id ? 'var(--text-primary)' : 'var(--text-secondary)',
+                    fontSize: 11,
+                    fontWeight: activeMedium === med.id ? 700 : 500,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  {med.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Graph Node-Link Pipeline */}
+            <div style={{
+              marginTop: 'auto',
+              background: innerBg,
+              border: innerBorder,
+              borderRadius: 'var(--radius-lg)',
+              padding: '12px 14px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+              fontSize: 12,
+              fontFamily: 'monospace',
+            }}>
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '6px 10px', borderRadius: 6,
+                background: (activeMedium === 'all' || activeMedium === 'power') ? (isLight ? '#e6fffa' : 'rgba(80, 219, 192, 0.1)') : 'transparent',
+                border: (activeMedium === 'all' || activeMedium === 'power') ? '1px solid rgba(80, 219, 192, 0.3)' : '1px solid transparent',
+              }}>
+                <span style={{ color: 'var(--accent-primary)', fontWeight: 700 }}>⚡ Generator_1</span>
+                <span style={{ color: 'var(--text-tertiary)' }}>──[400V AC]──►</span>
+                <span style={{ color: 'var(--text-primary)' }}>Main Switchboard</span>
+              </div>
+
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '6px 10px', borderRadius: 6,
+                background: (activeMedium === 'all' || activeMedium === 'fluid') ? (isLight ? '#e0f2fe' : 'rgba(56, 217, 245, 0.1)') : 'transparent',
+                border: (activeMedium === 'all' || activeMedium === 'fluid') ? '1px solid rgba(56, 217, 245, 0.3)' : '1px solid transparent',
+              }}>
+                <span style={{ color: 'var(--accent-cyan)', fontWeight: 700 }}>💧 Chiller Loop</span>
+                <span style={{ color: 'var(--text-tertiary)' }}>──[Ethylene Glycol]──►</span>
+                <span style={{ color: 'var(--text-primary)' }}>Battery Enclosure</span>
+              </div>
+
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                padding: '6px 10px', borderRadius: 6,
+                background: (activeMedium === 'all' || activeMedium === 'data') ? (isLight ? '#f3e8ff' : 'rgba(167, 139, 250, 0.1)') : 'transparent',
+                border: (activeMedium === 'all' || activeMedium === 'data') ? '1px solid rgba(167, 139, 250, 0.3)' : '1px solid transparent',
+              }}>
+                <span style={{ color: 'var(--accent-purple)', fontWeight: 700 }}>📡 SCADA RTU</span>
+                <span style={{ color: 'var(--text-tertiary)' }}>──[Modbus RS-485]──►</span>
+                <span style={{ color: 'var(--text-primary)' }}>Telemetry Gateway</span>
+              </div>
+            </div>
+          </div>
+
+          {/* ── CARD 3: Reversible LIFO State Stack (Span 4) ── */}
+          <div className="bento-card bento-card-4 glass-panel" style={{
+            background: cardBg,
+            border: cardBorder,
+            boxShadow: isLight ? '0 8px 30px rgba(0,0,0,0.04)' : 'var(--shadow-md)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: 'var(--radius-lg)',
+                background: isLight ? 'rgba(167, 139, 250, 0.15)' : 'rgba(167, 139, 250, 0.12)',
+                border: isLight ? '1px solid rgba(167, 139, 250, 0.3)' : '1px solid rgba(167, 139, 250, 0.25)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'var(--accent-purple)',
+              }}>
+                <RotateCcw size={22} strokeWidth={2.4} />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--accent-purple)' }}>
+                  Temporal Runtime
+                </div>
+                <h3 style={{ margin: '2px 0 0 0', fontSize: 18, fontWeight: 800, color: 'var(--text-primary)' }}>
+                  Reversible LIFO Stack
+                </h3>
+              </div>
+            </div>
+
+            <p style={{ margin: '0 0 16px 0', fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.55 }}>
+              Injected failures reside in transient LIFO stack layers. When event durations expire, the engine automatically unwinds the stack to baseline without memory corruption.
+            </p>
+
+            {/* Interactive Stack Action */}
+            <div style={{ marginBottom: 14 }}>
+              <button
+                onClick={() => setStackPushed(!stackPushed)}
+                style={{
+                  width: '100%',
+                  padding: '8px 14px',
+                  borderRadius: 'var(--radius-md)',
+                  background: stackPushed
+                    ? (isLight ? '#fee2e2' : 'rgba(248, 113, 113, 0.15)')
+                    : (isLight ? '#f0fdf4' : 'rgba(74, 222, 128, 0.15)'),
+                  border: stackPushed
+                    ? '1.5px solid var(--accent-red)'
+                    : '1.5px solid var(--status-success)',
+                  color: stackPushed
+                    ? (isLight ? '#991b1b' : '#fca5a5')
+                    : (isLight ? '#166534' : '#86efac'),
+                  fontSize: 12,
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                {stackPushed ? <RotateCcw size={14} /> : <AlertTriangle size={14} />}
+                <span>{stackPushed ? 'Pop & Unwind Layer' : 'Inject Overheat Fault Layer'}</span>
+              </button>
+            </div>
+
+            {/* Visual LIFO Layers */}
+            <div style={{
+              marginTop: 'auto',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+              fontSize: 12,
+            }}>
+              {stackPushed ? (
+                <div
+                  className="stack-active-pulse"
+                  style={{
+                    padding: '10px 12px',
+                    borderRadius: 8,
+                    background: isLight ? '#fee2e2' : 'rgba(248, 113, 113, 0.18)',
+                    border: '1.5px solid var(--accent-red)',
+                    color: isLight ? '#991b1b' : '#fca5a5',
+                    fontWeight: 700,
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                  }}
+                >
+                  <span>[Top Layer] event:overheat (142.5°C)</span>
+                  <span style={{ fontSize: 10, fontFamily: 'monospace' }}>Expires T+2.0h</span>
+                </div>
+              ) : (
+                <div style={{
+                  padding: '8px 12px',
+                  borderRadius: 8,
+                  background: isLight ? '#dcfce7' : 'rgba(74, 222, 128, 0.12)',
+                  border: '1px solid var(--status-success)',
+                  color: isLight ? '#166534' : '#86efac',
+                  fontSize: 11.5,
+                  fontWeight: 600,
+                  display: 'flex', alignItems: 'center', gap: 6,
+                }}>
+                  <ShieldCheck size={14} />
+                  <span>Baseline Restored (Zero Corruption)</span>
+                </div>
+              )}
+
+              {/* Base Layer */}
+              <div style={{
+                padding: '10px 12px',
+                borderRadius: 8,
+                background: innerBg,
+                border: innerBorder,
+                color: 'var(--text-secondary)',
+                fontSize: 12,
+                fontWeight: 600,
+                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              }}>
+                <span>[Base Layer] Station Twin Baseline</span>
+                <span style={{ fontSize: 10, color: 'var(--accent-primary)', fontWeight: 700 }}>65.0°C Nominal</span>
+              </div>
+            </div>
+          </div>
+
+          {/* ── CARD 4: Cascading Failure Diagnostics (Span 4) ── */}
+          <div className="bento-card bento-card-4 glass-panel" style={{
+            background: cardBg,
+            border: cardBorder,
+            boxShadow: isLight ? '0 8px 30px rgba(0,0,0,0.04)' : 'var(--shadow-md)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: 'var(--radius-lg)',
+                background: isLight ? 'rgba(248, 113, 113, 0.15)' : 'rgba(248, 113, 113, 0.12)',
+                border: isLight ? '1px solid rgba(248, 113, 113, 0.3)' : '1px solid rgba(248, 113, 113, 0.25)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'var(--status-failure)',
+              }}>
+                <AlertTriangle size={22} strokeWidth={2.4} />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--status-failure)' }}>
+                  Anomaly Detection
+                </div>
+                <h3 style={{ margin: '2px 0 0 0', fontSize: 18, fontWeight: 800, color: 'var(--text-primary)' }}>
+                  Cascade Failure Tracer
+                </h3>
+              </div>
+            </div>
+
+            <p style={{ margin: '0 0 14px 0', fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.55 }}>
+              Traces topological propagation when critical equipment faults, distinguishing initial root causes from secondary alarms to prevent catastrophic blackout.
+            </p>
+
+            {/* Scenario Buttons */}
+            <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
+              {[
+                { id: 'gen', label: 'Gen Trip' },
+                { id: 'bus', label: 'Bus Short' },
+                { id: 'pump', label: 'Pump Cut' },
+              ].map(f => (
+                <button
+                  key={f.id}
+                  onClick={() => setFaultScenario(f.id as any)}
+                  style={{
+                    flex: 1,
+                    padding: '4px 6px',
+                    borderRadius: 'var(--radius-sm)',
+                    border: faultScenario === f.id
+                      ? '1.5px solid var(--status-failure)'
+                      : (isLight ? '1px solid #cbd5e1' : '1px solid rgba(255,255,255,0.1)'),
+                    background: faultScenario === f.id
+                      ? (isLight ? '#fee2e2' : 'rgba(248, 113, 113, 0.15)')
+                      : 'transparent',
+                    color: faultScenario === f.id ? 'var(--status-failure)' : 'var(--text-secondary)',
+                    fontSize: 11,
+                    fontWeight: faultScenario === f.id ? 700 : 500,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Breadcrumb Cascade Trace */}
+            <div style={{
+              marginTop: 'auto',
+              background: innerBg,
+              border: innerBorder,
+              borderRadius: 'var(--radius-lg)',
+              padding: '12px 14px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 8,
+              fontSize: 11.5,
+              lineHeight: 1.45,
+            }}>
+              <div style={{ color: 'var(--status-failure)', fontWeight: 700 }}>
+                1. ROOT: {cascadeData.root}
+              </div>
+              <div style={{ color: 'var(--accent-amber)', fontWeight: 600, paddingLeft: 8 }}>
+                ↳ 2. CASCADE: {cascadeData.cascade1}
+              </div>
+              <div style={{ color: 'var(--status-success)', fontWeight: 600, paddingLeft: 16 }}>
+                ↳ 3. MITIGATION: {cascadeData.mitigation}
+              </div>
+              <div style={{
+                marginTop: 4, paddingTop: 6, borderTop: innerBorder,
+                display: 'flex', justifyContent: 'space-between',
+                fontSize: 10.5, color: 'var(--text-tertiary)', fontFamily: 'monospace'
+              }}>
+                <span>Accuracy: {cascadeData.confidence}</span>
+                <span>Latency: {cascadeData.latency}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* ── CARD 5: Extreme Antarctic Climate Modeling (Span 4) ── */}
+          <div className="bento-card bento-card-4 glass-panel" style={{
+            background: cardBg,
+            border: cardBorder,
+            boxShadow: isLight ? '0 8px 30px rgba(0,0,0,0.04)' : 'var(--shadow-md)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 14 }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: 'var(--radius-lg)',
+                background: isLight ? 'rgba(248, 213, 126, 0.15)' : 'rgba(248, 213, 126, 0.12)',
+                border: isLight ? '1px solid rgba(248, 213, 126, 0.3)' : '1px solid rgba(248, 213, 126, 0.25)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'var(--accent-amber)',
+              }}>
+                <Snowflake size={22} strokeWidth={2.4} />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--accent-amber)' }}>
+                  Climate Subsystems · Spec §12
+                </div>
+                <h3 style={{ margin: '2px 0 0 0', fontSize: 18, fontWeight: 800, color: 'var(--text-primary)' }}>
+                  Extreme Polar Climate
+                </h3>
+              </div>
+            </div>
+
+            <p style={{ margin: '0 0 14px 0', fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.55 }}>
+              Models subzero thermal dissipation down to -60°C, katabatic wind shear, and polar night solar array blackouts, stressing building insulation to the limit.
+            </p>
+
+            {/* Climate Presets */}
+            <div style={{ display: 'flex', gap: 6, marginBottom: 14 }}>
+              {[
+                { id: 'calm', label: 'Calm (-18°C)' },
+                { id: 'storm', label: 'Gale (-42°C)' },
+                { id: 'blizzard', label: 'Blizzard (-58°C)' },
+              ].map(c => (
+                <button
+                  key={c.id}
+                  onClick={() => setClimatePreset(c.id as any)}
+                  style={{
+                    flex: 1,
+                    padding: '4px 6px',
+                    borderRadius: 'var(--radius-sm)',
+                    border: climatePreset === c.id
+                      ? '1.5px solid var(--accent-amber)'
+                      : (isLight ? '1px solid #cbd5e1' : '1px solid rgba(255,255,255,0.1)'),
+                    background: climatePreset === c.id
+                      ? (isLight ? '#fef3c7' : 'rgba(248, 213, 126, 0.15)')
+                      : 'transparent',
+                    color: climatePreset === c.id ? (isLight ? '#92400e' : 'var(--accent-amber)') : 'var(--text-secondary)',
+                    fontSize: 11,
+                    fontWeight: climatePreset === c.id ? 700 : 500,
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  {c.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Climate Telemetry Readout */}
+            <div style={{
+              marginTop: 'auto',
+              background: innerBg,
+              border: innerBorder,
+              borderRadius: 'var(--radius-lg)',
+              padding: '12px 14px',
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: 10,
+              fontSize: 12,
+            }}>
+              <div>
+                <div style={{ fontSize: 10.5, color: 'var(--text-tertiary)', fontWeight: 700, textTransform: 'uppercase' }}>Ambient Temp</div>
+                <div style={{ fontSize: 16, fontWeight: 900, fontFamily: 'monospace', color: 'var(--accent-cyan)', marginTop: 2 }}>{climateData.temp}</div>
+              </div>
+
+              <div>
+                <div style={{ fontSize: 10.5, color: 'var(--text-tertiary)', fontWeight: 700, textTransform: 'uppercase' }}>Katabatic Winds</div>
+                <div style={{ fontSize: 16, fontWeight: 900, fontFamily: 'monospace', color: 'var(--accent-amber)', marginTop: 2 }}>{climateData.wind}</div>
+                <div style={{ fontSize: 10, color: 'var(--text-tertiary)' }}>{climateData.windLabel}</div>
+              </div>
+
+              <div>
+                <div style={{ fontSize: 10.5, color: 'var(--text-tertiary)', fontWeight: 700, textTransform: 'uppercase' }}>Solar Irradiance</div>
+                <div style={{ fontSize: 16, fontWeight: 900, fontFamily: 'monospace', color: climateData.solar === '0.0 kW' ? 'var(--status-failure)' : 'var(--status-success)', marginTop: 2 }}>{climateData.solar}</div>
+              </div>
+
+              <div>
+                <div style={{ fontSize: 10.5, color: 'var(--text-tertiary)', fontWeight: 700, textTransform: 'uppercase' }}>Heating Demand</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: 'var(--text-primary)', marginTop: 4 }}>{climateData.heatDemand}</div>
+              </div>
+            </div>
+          </div>
+
+          {/* ── CARD 6: Multi-Scenario Comparative Analysis & Timeline Scrubbing (Span 12) ── */}
+          <div className="bento-card bento-card-12 glass-panel" style={{
+            background: cardBg,
+            border: cardBorder,
+            boxShadow: isLight ? '0 10px 36px rgba(0,0,0,0.05)' : 'var(--shadow-lg)',
+          }}>
+            {/* Top row */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 14, marginBottom: 16 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <div style={{
+                  width: 48, height: 48, borderRadius: 'var(--radius-lg)',
+                  background: 'linear-gradient(135deg, rgba(80, 219, 192, 0.2) 0%, rgba(167, 139, 250, 0.2) 100%)',
+                  border: isLight ? '1px solid rgba(124, 58, 237, 0.3)' : '1px solid rgba(167, 139, 250, 0.35)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: isLight ? '#7c3aed' : 'var(--accent-purple)',
+                }}>
+                  <Sliders size={24} strokeWidth={2.4} />
+                </div>
+                <div>
+                  <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--accent-purple)' }}>
+                    Scenario Diff & Benchmarking · Spec §13-14
+                  </div>
+                  <h3 style={{ margin: '2px 0 0 0', fontSize: 20, fontWeight: 800, color: 'var(--text-primary)' }}>
+                    Comparative Scenario A/B Analysis & Mission Timeline
+                  </h3>
+                </div>
+              </div>
+
+              {/* Scrubber Clock Badge */}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '6px 14px', borderRadius: 'var(--radius-full)',
+                background: isLight ? '#f1f5f9' : 'rgba(255,255,255,0.06)',
+                border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255,255,255,0.1)',
+                fontSize: 13, fontWeight: 800, fontFamily: 'monospace', color: 'var(--accent-cyan)'
+              }}>
+                <Clock size={16} />
+                <span>Mission Time: T + {scrubTime.toFixed(1)}h / 48.0h</span>
+              </div>
+            </div>
+
+            <p style={{ margin: '0 0 20px 0', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.6, maxWidth: 900 }}>
+              Simultaneously scrub two diverging scenario branches to evaluate station survivability. Observe the exact moment when environmental shock forces generator failure and quantify remaining critical reserve margins.
+            </p>
+
+            {/* Timeline Range Slider */}
+            <div style={{
+              background: innerBg,
+              border: innerBorder,
+              borderRadius: 'var(--radius-lg)',
+              padding: '16px 20px',
+              marginBottom: 18,
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)' }}>Timeline Scrub Control (0h → 48h)</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: isBranchFaultActive ? 'var(--status-failure)' : 'var(--status-success)' }}>
+                  {isBranchFaultActive ? '● BRANCH B OVERLOAD ACTIVE (Fault injected at T+8.0h)' : '○ NOMINAL PARALLEL (Pre-fault)'}
+                </span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="48"
+                step="0.5"
+                value={scrubTime}
+                onChange={e => setScrubTime(parseFloat(e.target.value))}
+                className="dsl-slider"
+                style={{ width: '100%' }}
+              />
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: 11, color: 'var(--text-tertiary)', fontFamily: 'monospace' }}>
+                <span>T+0.0h (Mission Start)</span>
+                <span style={{ color: 'var(--status-failure)', fontWeight: 700 }}>▼ T+8.0h (Severe Blizzard + Generator Trip)</span>
+                <span>T+48.0h (End of Horizon)</span>
+              </div>
+            </div>
+
+            {/* Dual A/B Comparison Columns */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
+              {/* Branch A */}
+              <div style={{
+                padding: '16px 20px',
+                borderRadius: 'var(--radius-lg)',
+                background: isLight ? '#f0fdf4' : 'rgba(74, 222, 128, 0.05)',
+                border: '1px solid rgba(74, 222, 128, 0.3)',
+                display: 'flex', flexDirection: 'column', gap: 10,
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: 'var(--status-success)', display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <ShieldCheck size={16} /> Branch A: Nominal Baseline
+                  </span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--status-success)' }}>100% OPERATIONAL</span>
+                </div>
+                <div style={{ fontSize: 12.5, color: 'var(--text-secondary)' }}>
+                  Standard diurnal climate. Heating, communications, and power grids operating within specification ratings.
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 4, fontSize: 12 }}>
+                  <div><strong>Fuel Reserve:</strong> {branchAFuel}% (Nominal)</div>
+                  <div><strong>Station Temp:</strong> {branchATemp}°C (Comfort)</div>
+                  <div><strong>Grid Delivery:</strong> {branchAPower}% Bus Capacity</div>
+                  <div><strong>Survival Horizon:</strong> &gt; 180 Days</div>
+                </div>
+              </div>
+
+              {/* Branch B */}
+              <div style={{
+                padding: '16px 20px',
+                borderRadius: 'var(--radius-lg)',
+                background: isBranchFaultActive
+                  ? (isLight ? '#fef2f2' : 'rgba(248, 113, 113, 0.08)')
+                  : (isLight ? '#f8fafc' : 'rgba(255, 255, 255, 0.03)'),
+                border: isBranchFaultActive
+                  ? '1.5px solid rgba(248, 113, 113, 0.4)'
+                  : (isLight ? '1px solid #cbd5e1' : '1px solid rgba(255, 255, 255, 0.1)'),
+                display: 'flex', flexDirection: 'column', gap: 10,
+                transition: 'all 0.2s ease',
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span style={{
+                    fontSize: 13, fontWeight: 800,
+                    color: isBranchFaultActive ? 'var(--status-failure)' : 'var(--text-primary)',
+                    display: 'flex', alignItems: 'center', gap: 6
+                  }}>
+                    <AlertTriangle size={16} style={{ color: isBranchFaultActive ? 'var(--status-failure)' : 'var(--text-tertiary)' }} />
+                    Branch B: Blizzard + Generator Failure
+                  </span>
+                  <span style={{
+                    fontSize: 11, fontWeight: 700,
+                    color: isBranchFaultActive ? 'var(--status-failure)' : 'var(--text-tertiary)'
+                  }}>
+                    {isBranchFaultActive ? 'EMERGENCY SHED' : 'STANDBY'}
+                  </span>
+                </div>
+                <div style={{ fontSize: 12.5, color: 'var(--text-secondary)' }}>
+                  {isBranchFaultActive
+                    ? 'Generator 1 offline. Station running on backup diesel turbines with heavy fuel acceleration.'
+                    : 'Fault scheduled at T+8.0h. Currently executing nominal parallel baseline.'}
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 4, fontSize: 12 }}>
+                  <div><strong>Fuel Reserve:</strong> <span style={{ color: isBranchFaultActive ? 'var(--status-failure)' : 'inherit', fontWeight: 700 }}>{branchBFuel}%</span></div>
+                  <div><strong>Station Temp:</strong> <span style={{ color: isBranchFaultActive ? 'var(--accent-cyan)' : 'inherit', fontWeight: 700 }}>{branchBTemp}°C</span></div>
+                  <div><strong>Grid Delivery:</strong> <span style={{ color: isBranchFaultActive ? 'var(--status-warning)' : 'inherit', fontWeight: 700 }}>{branchBPower}%</span></div>
+                  <div><strong>Survival Horizon:</strong> <span style={{ color: isBranchFaultActive ? 'var(--status-failure)' : 'inherit', fontWeight: 700 }}>{isBranchFaultActive ? 'Critical in 24.5h' : 'Stable'}</span></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bottom Delta Banner */}
+            <div style={{
+              marginTop: 18,
+              padding: '12px 16px',
+              borderRadius: 'var(--radius-md)',
+              background: isBranchFaultActive
+                ? (isLight ? '#fffbeb' : 'rgba(248, 213, 126, 0.08)')
+                : (isLight ? '#f8fafc' : 'rgba(255, 255, 255, 0.03)'),
+              border: isBranchFaultActive
+                ? '1px solid rgba(248, 213, 126, 0.3)'
+                : innerBorder,
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 12,
+              fontSize: 12.5,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Sparkles size={16} style={{ color: 'var(--accent-amber)' }} />
+                <span>
+                  <strong>Comparative Divergence Delta:</strong>{' '}
+                  {isBranchFaultActive
+                    ? `Branch B has burned ${(branchAFuel - branchBFuel).toFixed(1)}% more fuel than baseline. Perimeter temperature down by ${(branchATemp - branchBTemp).toFixed(1)}°C.`
+                    : 'Zero delta. Branch B runs identical to nominal baseline until fault injection at T+8.0h.'}
+                </span>
+              </div>
+              <div style={{ fontWeight: 700, color: isBranchFaultActive ? 'var(--status-failure)' : 'var(--text-tertiary)', fontFamily: 'monospace' }}>
+                {isBranchFaultActive ? '⚠ DECISION ACTION WINDOW: 6.2 HOURS' : 'MONITORING NOMINAL'}
+              </div>
+            </div>
+
+          </div>
+
+        </div>
       </div>
-      <div>
-        <h3 style={{ margin: '0 0 10px 0', fontSize: '18px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
-          {title}
-        </h3>
-        <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '14.5px', lineHeight: 1.65 }}>
-          {desc}
-        </p>
-      </div>
-    </div>
+    </section>
   );
 }
 
@@ -2281,66 +3133,8 @@ export function LandingPage() {
         )}
       </section>
 
-      {/* ─ Features Section ─ */}
-      <section style={{
-        padding: '100px 24px',
-        background: isLight ? '#FFFFFF' : 'var(--bg-panel-secondary)',
-        borderTop: '1px solid var(--border-color)',
-        borderBottom: '1px solid var(--border-color)',
-        boxShadow: isLight ? '0 -10px 40px rgba(0,0,0,0.02)' : 'none',
-        position: 'relative',
-      }}>
-        {/* Subtle mesh background for light mode capabilities section */}
-        {isLight && (
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: 'radial-gradient(circle at 20% 0%, rgba(2, 132, 199, 0.03) 0%, transparent 50%), radial-gradient(circle at 80% 100%, rgba(124, 58, 237, 0.03) 0%, transparent 50%)',
-            pointerEvents: 'none',
-          }} />
-        )}
-
-        <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative' }}>
-          <div style={{ textAlign: 'center', marginBottom: 64 }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
-              <div style={{ height: 2, width: 40, background: 'linear-gradient(to right, transparent, var(--accent-purple))', borderRadius: 2 }} />
-              <span style={{ fontSize: 12, fontWeight: 800, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--accent-purple)' }}>
-                Capabilities
-              </span>
-              <div style={{ height: 2, width: 40, background: 'linear-gradient(to left, transparent, var(--accent-purple))', borderRadius: 2 }} />
-            </div>
-            <h2 style={{ fontSize: 'clamp(28px, 4vw, 40px)', fontWeight: 900, color: 'var(--text-primary)', margin: '0 0 16px 0', letterSpacing: '-0.03em' }}>
-              Platform Capabilities
-            </h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '16px', margin: '0 auto', maxWidth: 560, lineHeight: 1.6 }}>
-              Everything you need to monitor, simulate, and optimize remote research infrastructure with absolute precision.
-            </p>
-          </div>
-
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '32px', justifyContent: 'center' }}>
-            <FeatureCard
-              icon={Radio}
-              title="Real-time Telemetry"
-              desc="Stream live sensor data from physical components directly into the digital twin for instant health monitoring and diagnostics."
-              color="var(--accent-primary)"
-              glowColor="rgba(99,219,188,0.15)"
-            />
-            <FeatureCard
-              icon={MonitorPlay}
-              title="Scenario Simulation"
-              desc="Design custom timeline events—like extreme weather or power failures—and watch the station components react dynamically."
-              color="var(--accent-purple)"
-              glowColor="rgba(167,139,250,0.15)"
-            />
-            <FeatureCard
-              icon={Zap}
-              title="3D Visualization"
-              desc="Explore an immersive representation of the station hierarchy, enabling rapid spatial awareness and component localization."
-              color="var(--accent-cyan)"
-              glowColor="rgba(56,217,245,0.15)"
-            />
-          </div>
-        </div>
-      </section>
+      {/* ─ Platform Capabilities & Engine Suite (Bento Architecture) ─ */}
+      <PlatformCapabilitiesSection isLight={isLight} />
 
       {/* ─ Scripting Section: Interactive DSL Studio & Technical Reference ─ */}
       <DslInteractiveStudio isLight={isLight} />

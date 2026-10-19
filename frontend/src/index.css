@@ -1443,4 +1443,51 @@ input:disabled {
 
 :root[data-theme="light"] .dsl-code-container::-webkit-scrollbar-thumb:hover {
   background: rgba(2, 132, 199, 0.5);
+}
+
+/* ═══════════════════════════════════════════════════════
+   PLATFORM CAPABILITIES BENTO GRID
+   ═══════════════════════════════════════════════════════ */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 24px;
+}
+
+.bento-card {
+  border-radius: var(--radius-xl);
+  padding: 28px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.bento-card:hover {
+  transform: translateY(-3px);
+}
+
+.bento-card-7 { grid-column: span 7; }
+.bento-card-5 { grid-column: span 5; }
+.bento-card-4 { grid-column: span 4; }
+.bento-card-12 { grid-column: span 12; }
+
+@media (max-width: 1080px) {
+  .bento-card-7,
+  .bento-card-5 {
+    grid-column: span 12 !important;
+  }
+}
+
+@media (max-width: 860px) {
+  .bento-card-4 {
+    grid-column: span 12 !important;
+  }
+  .bento-grid {
+    gap: 16px;
+  }
+  .bento-card {
+    padding: 20px;
+  }
 }
