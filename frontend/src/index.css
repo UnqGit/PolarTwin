@@ -166,6 +166,8 @@
 
 html {
   scroll-behavior: smooth;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
 body {
@@ -177,24 +179,74 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow: hidden;
-  scrollbar-width: none;
-  /* Firefox */
-  -ms-overflow-style: none;
-  /* IE and Edge */
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+/* ── Remove Side Scroll Bar on Main Page & Root Window ── */
+html::-webkit-scrollbar,
+body::-webkit-scrollbar,
+.landing-scroll-container::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+.landing-scroll-container {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
 }
 
 /* ═══════════════════════════════════════════════════════
-   SCROLLBARS — Hidden site-wide
+   SLEEK FLOATING SCROLLBARS — ZERO WHITE GUTTER
+   Matches theme background seamlessly (Dark & Light)
    ═══════════════════════════════════════════════════════ */
 * {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+:root[data-theme="light"] * {
+  scrollbar-color: rgba(0, 0, 0, 0.22) transparent;
 }
 
 ::-webkit-scrollbar {
-  display: none;
-  width: 0;
-  height: 0;
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 9999px;
+  border: 1.5px solid transparent;
+  background-clip: padding-box;
+  transition: background 0.15s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(80, 219, 192, 0.5);
+  border: 1.5px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent !important;
+}
+
+:root[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1.5px solid transparent;
+  background-clip: padding-box;
+}
+
+:root[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(2, 132, 199, 0.5);
+  border: 1.5px solid transparent;
+  background-clip: padding-box;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -1351,13 +1403,18 @@ input:disabled {
 }
 
 .dsl-code-container {
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
   font-size: 13px;
   line-height: 1.6;
   border-radius: var(--radius-lg);
   overflow-x: auto;
   position: relative;
   scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.18) transparent;
+}
+
+:root[data-theme="light"] .dsl-code-container {
+  scrollbar-color: rgba(0, 0, 0, 0.22) transparent;
 }
 
 .dsl-code-container::-webkit-scrollbar {
@@ -1366,10 +1423,24 @@ input:disabled {
 }
 
 .dsl-code-container::-webkit-scrollbar-track {
-  background: transparent;
+  background: transparent !important;
 }
 
 .dsl-code-container::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 9999px;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+.dsl-code-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(80, 219, 192, 0.5);
+}
+
+:root[data-theme="light"] .dsl-code-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+:root[data-theme="light"] .dsl-code-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(2, 132, 199, 0.5);
 }

@@ -7,7 +7,8 @@ import {
   Globe, Cpu, FileCode, Clock, Layers,
   Play, Pause, RotateCcw, Check, Copy,
   AlertTriangle, ShieldCheck, Terminal, Code2,
-  Sparkles, Filter, Database, Sliders, ChevronRight
+  Sparkles, Filter, Database, Sliders, ChevronRight,
+  Network
 } from 'lucide-react';
 import { useTheme } from '../components/ThemeContext';
 
@@ -481,7 +482,7 @@ event:polar_blizzard at=1.5 for=inf`,
     category: 'Network Partition',
     summary: 'Uses partial connection wildcard @(|data|) to simultaneously sever every data connection leading to a sensor across the station topology graph.',
     targetKind: '@connection',
-    eventFilename: 'sever_data_links.event',
+    eventFilename: 'sever_links.event',
     sceneFilename: 'telemetry_blackout.scene',
     targetSelector: '@(|data|)',
     at: 0.8,
@@ -490,7 +491,6 @@ event:polar_blizzard at=1.5 for=inf`,
 # Evaluates target component type across connection graph
 target @connection
 where @component(target).type = "sensor"
-& type = "data"
 set status = failure`,
     sceneCode: `# telemetry_blackout.scene
 # Wildcard selector targets ALL sensor data links simultaneously
@@ -509,7 +509,7 @@ event:sever_data_links @(|data|) at=0.8 for=1.8`,
     badge: 'Relational AST · Graph Condition',
     badgeColor: 'var(--accent-amber)',
     category: 'Smart Protection Drill',
-    summary: 'Demonstrates runtime AST condition evaluation: where type="battery" & value.charge < 20 isolates power buses only when depleted.',
+    summary: 'Demonstrates runtime AST condition evaluation: where type="battery" & state.charge < 20 isolates power buses only when depleted.',
     targetKind: '@component.type',
     eventFilename: 'load_shed.event',
     sceneFilename: 'emergency_shed.scene',
@@ -521,15 +521,15 @@ event:sever_data_links @(|data|) at=0.8 for=1.8`,
 target @component.type
 where type = "battery"
 & status = "active"
-& value.charge < 20.0
+& state.charge < 20.0
 set {
     status = inactive             # Safe isolation
-    values.output_voltage = 0.0
+    output.voltage
 }`,
     sceneCode: `# emergency_shed.scene
 # Evaluated against all battery units in hierarchy.twin
 event:load_shed @battery at=2.0 for=1.2 set {
-    values.output_voltage = 0.0
+    output.voltage = 0.0
 }`,
     metricLabel: 'Battery Bus Output',
     metricUnit: 'V',
@@ -541,12 +541,395 @@ event:load_shed @battery at=2.0 for=1.2 set {
   },
 ];
 
+/* ── DSL Target Taxonomy Specification (10 Valid Forms) ── */
+interface TargetFormItem {
+  id: number;
+  target: string;
+  scope: string;
+  category: 'Component' | 'Connection' | 'External';
+  categoryColor: string;
+  categoryBg: string;
+  categoryBorder: string;
+  desc: string;
+  example: string;
+}
+
+const TARGET_FORMS: TargetFormItem[] = [
+  {
+    id: 1,
+    target: 'target @component.name',
+    scope: 'Exact Component',
+    category: 'Component',
+    categoryColor: '#50dbc0',
+    categoryBg: 'rgba(80, 219, 192, 0.12)',
+    categoryBorder: 'rgba(80, 219, 192, 0.3)',
+    desc: 'Binds mutation to a single unique component declared by name in hierarchy.twin.',
+    example: 'event:fail @Generator1 at=1.0 for=2.0',
+  },
+  {
+    id: 2,
+    target: 'target @component.type',
+    scope: 'All Components of Type',
+    category: 'Component',
+    categoryColor: '#38d9f5',
+    categoryBg: 'rgba(56, 217, 245, 0.12)',
+    categoryBorder: 'rgba(56, 217, 245, 0.3)',
+    desc: 'Broadcasts mutation to every component across the facility sharing the type class.',
+    example: 'event:disable_pumps @pump at=0.0 for=inf',
+  },
+  {
+    id: 3,
+    target: 'target @component.type | @component.name',
+    scope: 'Combined Fallback',
+    category: 'Component',
+    categoryColor: '#50dbc0',
+    categoryBg: 'rgba(80, 219, 192, 0.12)',
+    categoryBorder: 'rgba(80, 219, 192, 0.3)',
+    desc: 'Matches exact component name first; falls back to matching by type if not found.',
+    example: 'event:overheat @Generator1 at=1.0 for=2.0',
+  },
+  {
+    id: 4,
+    target: 'target @connection',
+    scope: 'Full 3-Part Tuple',
+    category: 'Connection',
+    categoryColor: '#a78bfa',
+    categoryBg: 'rgba(167, 139, 250, 0.12)',
+    categoryBorder: 'rgba(167, 139, 250, 0.3)',
+    desc: 'Requires @(source|type|target) 3-part selector in the invoking scene.',
+    example: 'event:cut @(Gen1|power|BusA) at=0.5 for=1.0',
+  },
+  {
+    id: 5,
+    target: 'target @connection.source',
+    scope: 'Origin Filter',
+    category: 'Connection',
+    categoryColor: '#a78bfa',
+    categoryBg: 'rgba(167, 139, 250, 0.12)',
+    categoryBorder: 'rgba(167, 139, 250, 0.3)',
+    desc: 'Filters network connections originating from the specified source node.',
+    example: 'event:isolate @Generator1 at=0.0 for=1.0',
+  },
+  {
+    id: 6,
+    target: 'target @connection.target',
+    scope: 'Destination Filter',
+    category: 'Connection',
+    categoryColor: '#a78bfa',
+    categoryBg: 'rgba(167, 139, 250, 0.12)',
+    categoryBorder: 'rgba(167, 139, 250, 0.3)',
+    desc: 'Filters network connections terminating at the specified destination node.',
+    example: 'event:trip @MainSwitchboard at=0.0 for=1.0',
+  },
+  {
+    id: 7,
+    target: 'target @connection.type',
+    scope: 'Medium Filter',
+    category: 'Connection',
+    categoryColor: '#a78bfa',
+    categoryBg: 'rgba(167, 139, 250, 0.12)',
+    categoryBorder: 'rgba(167, 139, 250, 0.3)',
+    desc: 'Filters connection links by medium (power, fluid, data, or signal).',
+    example: 'event:sever @data at=1.0 for=2.0',
+  },
+  {
+    id: 8,
+    target: 'target @connection.(source & target)',
+    scope: 'Multi-Field Connection',
+    category: 'Connection',
+    categoryColor: '#a78bfa',
+    categoryBg: 'rgba(167, 139, 250, 0.12)',
+    categoryBorder: 'rgba(167, 139, 250, 0.3)',
+    desc: 'Enforces exactly two distinct fields from source, target, and medium type.',
+    example: 'event:cut @(Gen1||BusA) at=1.0 for=1.0',
+  },
+  {
+    id: 9,
+    target: 'target @connection [Wildcard]',
+    scope: 'Partial Wildcard Selector',
+    category: 'Connection',
+    categoryColor: '#a78bfa',
+    categoryBg: 'rgba(167, 139, 250, 0.12)',
+    categoryBorder: 'rgba(167, 139, 250, 0.3)',
+    desc: 'The @(|data|) syntax matches all data links across the entire station topology.',
+    example: 'event:drop_comms @(|data|) at=0.0 for=1.0',
+  },
+  {
+    id: 10,
+    target: 'target @external[.weather|.network|.supplies]',
+    scope: 'Environmental Subsystems',
+    category: 'External',
+    categoryColor: '#f8d57e',
+    categoryBg: 'rgba(248, 213, 126, 0.12)',
+    categoryBorder: 'rgba(248, 213, 126, 0.3)',
+    desc: 'Directly targets station environment. No scene selector needed (compiler synthesizes).',
+    example: 'event:blizzard at=0.0 for=inf',
+  },
+];
+
+/* ── DSL Monaco-Fidelity Syntax Tokenizer ─────────────────────── */
+function renderDslLine(line: string, isLight: boolean): React.ReactNode {
+  if (!line) return <span> </span>;
+  if (line.trim().startsWith('#')) {
+    return (
+      <span style={{ color: isLight ? '#94a3b8' : '#64748b', fontStyle: 'italic' }}>
+        {line}
+      </span>
+    );
+  }
+
+  // Token regex matching in exact DSLEditor Monaco order:
+  // 1: comment (#[^\r\n]*)
+  // 2: string ("[^"\\]*(?:\\.[^"\\]*)*"|'[^'\\]*(?:\\.[^'\\]*)*')
+  // 3: selector (@[A-Za-z0-9_.]*(?:(?:\.[A-Za-z0-9_.]*)|(?:\([^)]*\))|(?:\[[^\]]*\]))*)
+  // 4: keyword (event:|\b(?:event|target|where|set|fields|at|for|inf)\b)
+  // 5: operator (<=|>=|!=|==|[|&])
+  // 6: delimiter ([={}:])
+  // 7: number (\b\d+(?:\.\d+)?\b)
+  const regex = /(#[^\r\n]*)|("[^"\\]*(?:\\.[^"\\]*)*"|'[^'\\]*(?:\\.[^'\\]*)*')|(@[A-Za-z0-9_.]*(?:(?:\.[A-Za-z0-9_.]*)|(?:\([^)]*\))|(?:\[[^\]]*\]))*)|(event:|\b(?:event|target|where|set|fields|at|for|inf)\b)|(<=|>=|!=|==|[|&])|([={}:])|(\b\d+(?:\.\d+)?\b)/g;
+
+  const elements: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(line)) !== null) {
+    if (match.index > lastIndex) {
+      const text = line.substring(lastIndex, match.index);
+      elements.push(
+        <span key={`txt-${lastIndex}`} style={{ color: isLight ? '#182230' : '#dce5f0' }}>
+          {text}
+        </span>
+      );
+    }
+
+    const [, comment, str, selector, keyword, operator, delimiter, number] = match;
+
+    if (comment) {
+      elements.push(
+        <span key={`c-${match.index}`} style={{ color: isLight ? '#94a3b8' : '#64748b', fontStyle: 'italic' }}>
+          {comment}
+        </span>
+      );
+    } else if (str) {
+      elements.push(
+        <span key={`s-${match.index}`} style={{ color: isLight ? '#059669' : '#34d399' }}>
+          {str}
+        </span>
+      );
+    } else if (selector) {
+      elements.push(
+        <span key={`sel-${match.index}`} style={{ color: isLight ? '#0ea5e9' : '#63dbbc', fontWeight: 600 }}>
+          {selector}
+        </span>
+      );
+    } else if (keyword) {
+      elements.push(
+        <span key={`kw-${match.index}`} style={{ color: isLight ? '#0284c7' : '#b566ff', fontWeight: 700 }}>
+          {keyword}
+        </span>
+      );
+    } else if (operator) {
+      elements.push(
+        <span key={`op-${match.index}`} style={{ color: isLight ? '#475569' : '#0ea5e9', fontWeight: 600 }}>
+          {operator}
+        </span>
+      );
+    } else if (delimiter) {
+      elements.push(
+        <span key={`del-${match.index}`} style={{ color: isLight ? '#475569' : '#0ea5e9', fontWeight: 600 }}>
+          {delimiter}
+        </span>
+      );
+    } else if (number) {
+      elements.push(
+        <span key={`num-${match.index}`} style={{ color: isLight ? '#d97706' : '#fbbf24' }}>
+          {number}
+        </span>
+      );
+    }
+
+    lastIndex = regex.lastIndex;
+  }
+
+  if (lastIndex < line.length) {
+    elements.push(
+      <span key={`txt-end`} style={{ color: isLight ? '#182230' : '#dce5f0' }}>
+        {line.substring(lastIndex)}
+      </span>
+    );
+  }
+
+  return elements;
+}
+
+/* ── DSL Monaco-Style Code Block Component ────────────────────── */
+function DslCodeViewer({
+  code,
+  isLight,
+  showLineNumbers = false,
+  filename,
+  fileType,
+  copyable = false,
+  isCopied = false,
+  onCopy,
+  maxHeight,
+  style,
+  inline = false,
+}: {
+  code: string;
+  isLight: boolean;
+  showLineNumbers?: boolean;
+  filename?: string;
+  fileType?: 'event' | 'scene' | 'target';
+  copyable?: boolean;
+  isCopied?: boolean;
+  onCopy?: () => void;
+  maxHeight?: string | number;
+  style?: React.CSSProperties;
+  inline?: boolean;
+}) {
+  if (inline) {
+    return (
+      <span style={{
+        fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
+        fontSize: 13,
+        ...style,
+      }}>
+        {renderDslLine(code, isLight)}
+      </span>
+    );
+  }
+
+  const lines = code.trim().split(/\r?\n/);
+  const editorBg = isLight ? '#f0f4f8' : '#060812';
+  const editorBorder = isLight ? '1px solid #d5dee8' : '1px solid rgba(255, 255, 255, 0.08)';
+  const gutterColor = isLight ? '#94a3b8' : '#475569';
+  const gutterBorder = isLight ? '1px solid #e2e8f0' : '1px solid rgba(255, 255, 255, 0.06)';
+
+  return (
+    <div style={{
+      background: editorBg,
+      border: editorBorder,
+      borderRadius: 'var(--radius-lg)',
+      overflow: 'hidden',
+      display: 'flex',
+      flexDirection: 'column',
+      boxShadow: isLight ? '0 2px 8px rgba(0,0,0,0.03)' : '0 4px 20px rgba(0,0,0,0.4)',
+      ...style,
+    }}>
+      {(filename || copyable) && (
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '8px 14px',
+          background: isLight ? '#e8edf3' : '#0b101c',
+          borderBottom: editorBorder,
+          fontSize: 12,
+          fontFamily: "'JetBrains Mono', monospace",
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ display: 'flex', gap: 5 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#f87171', opacity: 0.85 }} />
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#fbbf24', opacity: 0.85 }} />
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#4ade80', opacity: 0.85 }} />
+            </span>
+            {filename && (
+              <span style={{
+                color: isLight ? '#334155' : '#cbd5e1',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                marginLeft: 4,
+                fontSize: 12.5,
+              }}>
+                <FileCode size={14} style={{ color: fileType === 'event' ? (isLight ? '#0284c7' : 'var(--accent-primary)') : (isLight ? '#7c3aed' : 'var(--accent-purple)') }} />
+                {filename}
+              </span>
+            )}
+          </div>
+          {copyable && (
+            <button
+              onClick={onCopy}
+              style={{
+                background: isLight ? 'rgba(0,0,0,0.05)' : 'rgba(255,255,255,0.06)',
+                border: isLight ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,255,255,0.1)',
+                color: isCopied ? 'var(--status-active)' : 'var(--text-secondary)',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 5,
+                fontSize: 11,
+                fontWeight: 600,
+                padding: '3px 8px',
+                borderRadius: 4,
+                transition: 'all 0.15s ease',
+              }}
+              title="Copy code"
+            >
+              {isCopied ? <Check size={12} style={{ color: 'var(--status-active)' }} /> : <Copy size={12} />}
+              <span>{isCopied ? 'Copied' : 'Copy'}</span>
+            </button>
+          )}
+        </div>
+      )}
+
+      <div
+        className="dsl-code-container"
+        style={{
+          padding: showLineNumbers ? '12px 0' : '12px 16px',
+          overflowX: 'auto',
+          maxHeight,
+          background: editorBg,
+          flex: 1,
+        }}
+      >
+        <table style={{ borderCollapse: 'collapse', width: '100%' }}>
+          <tbody>
+            {lines.map((line, idx) => (
+              <tr key={idx} style={{ lineHeight: 1.65 }}>
+                {showLineNumbers && (
+                  <td style={{
+                    width: 38,
+                    minWidth: 38,
+                    padding: '0 12px 0 10px',
+                    textAlign: 'right',
+                    color: gutterColor,
+                    fontSize: 11.5,
+                    fontFamily: "'JetBrains Mono', monospace",
+                    userSelect: 'none',
+                    borderRight: gutterBorder,
+                    verticalAlign: 'top',
+                  }}>
+                    {idx + 1}
+                  </td>
+                )}
+                <td style={{
+                  padding: showLineNumbers ? '0 16px' : '0',
+                  whiteSpace: 'pre',
+                  fontFamily: "'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace",
+                  fontSize: 13,
+                  verticalAlign: 'top',
+                }}>
+                  {renderDslLine(line, isLight)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 function DslInteractiveStudio({ isLight }: { isLight: boolean }) {
   const [activePresetId, setActivePresetId] = useState('generator');
   const [currentTime, setCurrentTime] = useState(0.0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'taxonomy' | 'where' | 'set' | 'compiler'>('taxonomy');
+  const [targetFilter, setTargetFilter] = useState<'all' | 'Component' | 'Connection' | 'External'>('all');
 
   const preset = DSL_PRESETS.find(p => p.id === activePresetId) || DSL_PRESETS[0];
 
@@ -717,16 +1100,17 @@ function DslInteractiveStudio({ isLight }: { isLight: boolean }) {
               <strong>Definition:</strong> Declares the target scope, filtering criteria, and mutation schema (fixed vs required vs optional fields).
             </div>
 
-            <pre className="dsl-code-container" style={{
-              flex: 1,
-              margin: 0,
-              padding: 16,
-              background: isLight ? '#0f172a' : '#020617',
-              color: '#e2e8f0',
-              border: isLight ? '1px solid #1e293b' : '1px solid rgba(255,255,255,0.08)',
-            }}>
-              <code>{preset.eventCode}</code>
-            </pre>
+            <DslCodeViewer
+              code={preset.eventCode}
+              isLight={isLight}
+              showLineNumbers
+              filename={preset.eventFilename}
+              fileType="event"
+              copyable
+              isCopied={copiedKey === 'event'}
+              onCopy={() => copyToClipboard(preset.eventCode, 'event')}
+              style={{ flex: 1, minHeight: 220 }}
+            />
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 14 }}>
               <div style={{ fontSize: 11.5, color: 'var(--text-secondary)' }}>
@@ -796,16 +1180,17 @@ function DslInteractiveStudio({ isLight }: { isLight: boolean }) {
               <strong>Invocation:</strong> Binds the event by name, specifies the target selector, sets the start time (<code style={{ color: 'var(--accent-cyan)' }}>at</code>), duration (<code style={{ color: 'var(--accent-cyan)' }}>for</code>), and runtime parameters.
             </div>
 
-            <pre className="dsl-code-container" style={{
-              flex: 1,
-              margin: 0,
-              padding: 16,
-              background: isLight ? '#0f172a' : '#020617',
-              color: '#e2e8f0',
-              border: isLight ? '1px solid #1e293b' : '1px solid rgba(255,255,255,0.08)',
-            }}>
-              <code>{preset.sceneCode}</code>
-            </pre>
+            <DslCodeViewer
+              code={preset.sceneCode}
+              isLight={isLight}
+              showLineNumbers
+              filename={preset.sceneFilename}
+              fileType="scene"
+              copyable
+              isCopied={copiedKey === 'scene'}
+              onCopy={() => copyToClipboard(preset.sceneCode, 'scene')}
+              style={{ flex: 1, minHeight: 220 }}
+            />
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginTop: 14 }}>
               <div style={{ fontSize: 11.5, color: 'var(--text-secondary)' }}>
@@ -1102,102 +1487,253 @@ function DslInteractiveStudio({ isLight }: { isLight: boolean }) {
           </div>
 
           {/* Tab Content 1: Target Taxonomy */}
-          {activeTab === 'taxonomy' && (
-            <div className="glass-panel" style={{
-              borderRadius: 'var(--radius-xl)',
-              padding: 32,
-              background: isLight ? '#ffffff' : 'var(--bg-panel)',
-              border: isLight ? '1px solid rgba(0,0,0,0.08)' : '1px solid var(--border-color)',
-            }}>
-              <h4 style={{ margin: '0 0 8px 0', fontSize: 20, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Box size={20} /> Target Clause Taxonomy (Spec §9)
-              </h4>
-              <p style={{ margin: '0 0 24px 0', color: 'var(--text-secondary)', fontSize: 15, lineHeight: 1.6 }}>
-                The <code style={{ color: 'var(--accent-primary)', fontWeight: 700 }}>target</code> clause governs the structural scope of an event. Bare <code style={{ color: 'var(--accent-red)' }}>@component</code> is illegal. All 10 valid targets are strictly validated by the compiler:
-              </p>
+          {activeTab === 'taxonomy' && (() => {
+            const filteredTargets = targetFilter === 'all'
+              ? TARGET_FORMS
+              : TARGET_FORMS.filter(t => t.category === targetFilter);
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: 16 }}>
-                {[
-                  {
-                    target: 'target @component.name',
-                    scope: 'Exact Component',
-                    desc: 'Matches a specific single component declared in hierarchy.twin.',
-                    example: 'event:fail @Generator1 at=1.0 for=2.0',
-                  },
-                  {
-                    target: 'target @component.type',
-                    scope: 'All Components of Type',
-                    desc: 'Broadcasts mutation to all components sharing the type.',
-                    example: 'event:disable_pumps @pump at=0.0 for=inf',
-                  },
-                  {
-                    target: 'target @component.type | @component.name',
-                    scope: 'Combined Fallback',
-                    desc: 'Matches exact component name first; if not found, matches by type.',
-                    example: 'event:overheat @Generator1 at=1.0 for=2.0',
-                  },
-                  {
-                    target: 'target @connection',
-                    scope: 'Full 3-Part Connection Tuple',
-                    desc: 'Requires @(source|type|target) selector. Wildcards supported.',
-                    example: 'event:cut @(Gen1|power|BusA) at=0.5 for=1.0',
-                  },
-                  {
-                    target: 'target @connection.source',
-                    scope: 'Origin Filter',
-                    desc: 'Filters connections originating from the specified source node.',
-                    example: 'event:isolate @Generator1 at=0.0 for=1.0',
-                  },
-                  {
-                    target: 'target @connection.target',
-                    scope: 'Destination Filter',
-                    desc: 'Filters connections terminating at the specified destination node.',
-                    example: 'event:trip @MainSwitchboard at=0.0 for=1.0',
-                  },
-                  {
-                    target: 'target @connection.type',
-                    scope: 'Medium Filter',
-                    desc: 'Filters connections by medium (power, fluid, data, signal).',
-                    example: 'event:sever @data at=1.0 for=2.0',
-                  },
-                  {
-                    target: 'target @connection.(source & target)',
-                    scope: 'Multi-field Connection',
-                    desc: 'Enforces exactly two distinct fields from source, target, type.',
-                    example: 'event:cut @(Gen1||BusA) at=1.0 for=1.0',
-                  },
-                  {
-                    target: 'target @connection [Wildcard]',
-                    scope: 'Partial Wildcard Selector',
-                    desc: 'The @(|data|) syntax matches all data links across the entire base.',
-                    example: 'event:drop_comms @(|data|) at=0.0 for=1.0',
-                  },
-                  {
-                    target: 'target @external[.weather|.network|.supplies]',
-                    scope: 'Environmental Subsystems',
-                    desc: 'No scene selector required for specific externals (synthesized by compiler).',
-                    example: 'event:blizzard at=0.0 for=inf',
-                  },
-                ].map((item, idx) => (
-                  <div key={idx} style={{
-                    padding: 16,
-                    borderRadius: 'var(--radius-lg)',
-                    background: isLight ? '#f8fafc' : 'rgba(255,255,255,0.03)',
-                    border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.08)',
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                      <code style={{ fontSize: 13, fontWeight: 700, color: 'var(--accent-primary)' }}>{item.target}</code>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase' }}>{item.scope}</span>
-                    </div>
-                    <p style={{ margin: '0 0 10px 0', fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5 }}>{item.desc}</p>
-                    <div style={{ background: isLight ? '#0f172a' : '#020617', padding: '6px 10px', borderRadius: 6, fontSize: 11.5, fontFamily: 'monospace', color: '#38d9f5' }}>
-                      {item.example}
-                    </div>
+            return (
+              <div className="glass-panel" style={{
+                borderRadius: 'var(--radius-xl)',
+                padding: '32px 28px',
+                background: isLight ? '#ffffff' : 'var(--bg-panel)',
+                border: isLight ? '1px solid rgba(0,0,0,0.08)' : '1px solid var(--border-color)',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, marginBottom: 12 }}>
+                  <div>
+                    <h4 style={{ margin: '0 0 6px 0', fontSize: 21, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <Box size={22} /> Target Clause Taxonomy (Spec §9)
+                    </h4>
+                    <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: 14.5, lineHeight: 1.6 }}>
+                      The <code style={{ color: 'var(--accent-primary)', fontWeight: 700 }}>target</code> clause governs the structural scope of an event. Bare <code style={{ color: 'var(--accent-red)' }}>@component</code> is illegal. All 10 valid targets are strictly validated by the compiler:
+                    </p>
                   </div>
-                ))}
+
+                  {/* Compiler Guarantee Pill */}
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    padding: '8px 14px',
+                    borderRadius: 'var(--radius-full)',
+                    background: isLight ? 'rgba(80, 219, 192, 0.1)' : 'rgba(80, 219, 192, 0.08)',
+                    border: '1px solid rgba(80, 219, 192, 0.25)',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    color: isLight ? '#0f766e' : 'var(--accent-primary)',
+                  }}>
+                    <ShieldCheck size={16} />
+                    <span>10 Valid Compiler Forms · Zero Ambiguity Invariant</span>
+                  </div>
+                </div>
+
+                {/* Category Filter Pills */}
+                <div style={{
+                  display: 'flex',
+                  gap: 8,
+                  flexWrap: 'wrap',
+                  margin: '22px 0 24px 0',
+                  paddingBottom: 16,
+                  borderBottom: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.06)',
+                }}>
+                  {[
+                    { id: 'all', label: 'All 10 Forms', count: 10, color: isLight ? '#0284c7' : 'var(--accent-primary)' },
+                    { id: 'Component', label: 'Component Scopes', count: 3, color: '#50dbc0' },
+                    { id: 'Connection', label: 'Connection Topologies', count: 6, color: '#a78bfa' },
+                    { id: 'External', label: 'Environmental Subsystems', count: 1, color: '#f8d57e' },
+                  ].map(f => {
+                    const active = targetFilter === f.id;
+                    return (
+                      <button
+                        key={f.id}
+                        onClick={() => setTargetFilter(f.id as any)}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          padding: '7px 16px',
+                          borderRadius: 'var(--radius-full)',
+                          background: active
+                            ? (isLight ? '#f0fdfa' : 'rgba(80, 219, 192, 0.12)')
+                            : (isLight ? 'rgba(0,0,0,0.03)' : 'rgba(255,255,255,0.03)'),
+                          border: active
+                            ? `1.5px solid ${f.color}`
+                            : (isLight ? '1px solid #cbd5e1' : '1px solid rgba(255,255,255,0.08)'),
+                          color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
+                          fontSize: 12.5,
+                          fontWeight: active ? 700 : 500,
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                          boxShadow: active ? `0 2px 10px ${f.color}25` : 'none',
+                        }}
+                      >
+                        <span>{f.label}</span>
+                        <span style={{
+                          fontSize: 11,
+                          fontWeight: 800,
+                          padding: '1px 7px',
+                          borderRadius: 10,
+                          background: active ? f.color : (isLight ? 'rgba(0,0,0,0.06)' : 'rgba(255,255,255,0.08)'),
+                          color: active ? '#030A0F' : 'var(--text-tertiary)',
+                        }}>
+                          {f.count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* 10 Target Cards Grid */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: 18 }}>
+                  {filteredTargets.map(item => (
+                    <div
+                      key={item.id}
+                      style={{
+                        padding: 20,
+                        borderRadius: 'var(--radius-lg)',
+                        background: isLight ? '#ffffff' : 'rgba(12, 16, 27, 0.65)',
+                        border: isLight ? '1px solid #dbe2ea' : '1px solid rgba(255,255,255,0.07)',
+                        boxShadow: isLight ? '0 4px 16px rgba(0,0,0,0.03)' : '0 4px 20px rgba(0,0,0,0.25)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        position: 'relative',
+                        transition: 'all 0.2s ease',
+                      }}
+                    >
+                      {/* Top Meta Bar: Number, Category, Scope Badge */}
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        marginBottom: 12,
+                        gap: 8,
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                          <span style={{
+                            fontFamily: "'JetBrains Mono', monospace",
+                            fontWeight: 800,
+                            fontSize: 11.5,
+                            padding: '2px 7px',
+                            borderRadius: 6,
+                            background: item.categoryBg,
+                            color: item.categoryColor,
+                            border: `1px solid ${item.categoryBorder}`,
+                            flexShrink: 0,
+                          }}>
+                            #{String(item.id).padStart(2, '0')}
+                          </span>
+                          <span style={{
+                            fontSize: 10.5,
+                            fontWeight: 800,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.07em',
+                            color: item.categoryColor,
+                            whiteSpace: 'nowrap',
+                          }}>
+                            {item.category}
+                          </span>
+                        </div>
+
+                        {/* Scope Pill Badge: Insulated with fixed alignment and zero overflow */}
+                        <div
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            padding: '4px 10px',
+                            borderRadius: 'var(--radius-full)',
+                            background: isLight ? '#f1f5f9' : 'rgba(255,255,255,0.06)',
+                            border: isLight ? '1px solid #cbd5e1' : '1px solid rgba(255,255,255,0.1)',
+                            fontSize: 11,
+                            fontWeight: 700,
+                            color: isLight ? '#334155' : 'var(--text-secondary)',
+                            letterSpacing: '0.02em',
+                            whiteSpace: 'nowrap',
+                            flexShrink: 0,
+                          }}
+                          title={item.scope}
+                        >
+                          <span style={{ width: 6, height: 6, borderRadius: '50%', background: item.categoryColor, flexShrink: 0 }} />
+                          <span>{item.scope}</span>
+                        </div>
+                      </div>
+
+                      {/* Target Syntax Banner (Dedicated full-width row) */}
+                      <div style={{
+                        padding: '8px 12px',
+                        borderRadius: 'var(--radius-md)',
+                        background: isLight ? '#f0f4f8' : '#060812',
+                        border: isLight ? '1px solid #d5dee8' : '1px solid rgba(255, 255, 255, 0.08)',
+                        marginBottom: 12,
+                        overflowX: 'auto',
+                      }}>
+                        <DslCodeViewer code={item.target} isLight={isLight} inline />
+                      </div>
+
+                      {/* Description */}
+                      <p style={{
+                        margin: '0 0 14px 0',
+                        fontSize: 13,
+                        color: 'var(--text-secondary)',
+                        lineHeight: 1.55,
+                        minHeight: 40,
+                      }}>
+                        {item.desc}
+                      </p>
+
+                      {/* Scene Usage Box */}
+                      <div style={{
+                        marginTop: 'auto',
+                        borderRadius: 'var(--radius-md)',
+                        overflow: 'hidden',
+                        border: isLight ? '1px solid #d5dee8' : '1px solid rgba(255,255,255,0.08)',
+                        background: isLight ? '#f0f4f8' : '#060812',
+                      }}>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '5px 10px',
+                          background: isLight ? '#e8edf3' : '#0b101c',
+                          borderBottom: isLight ? '1px solid #d5dee8' : '1px solid rgba(255,255,255,0.06)',
+                          fontSize: 10.5,
+                          color: 'var(--text-tertiary)',
+                          fontFamily: "'JetBrains Mono', monospace",
+                        }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                            <FileCode size={12} style={{ color: item.categoryColor }} />
+                            <span>*.scene invocation</span>
+                          </span>
+                          <button
+                            onClick={() => copyToClipboard(item.example, `target-${item.id}`)}
+                            style={{
+                              background: 'transparent',
+                              border: 'none',
+                              color: copiedKey === `target-${item.id}` ? 'var(--status-active)' : 'var(--text-tertiary)',
+                              cursor: 'pointer',
+                              padding: '2px 4px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 4,
+                              fontSize: 10.5,
+                              fontWeight: 600,
+                            }}
+                            title="Copy snippet"
+                          >
+                            {copiedKey === `target-${item.id}` ? <Check size={12} style={{ color: 'var(--status-active)' }} /> : <Copy size={12} />}
+                            <span>{copiedKey === `target-${item.id}` ? 'Copied' : 'Copy'}</span>
+                          </button>
+                        </div>
+                        <div style={{ padding: '8px 12px', overflowX: 'auto' }}>
+                          <DslCodeViewer code={item.example} isLight={isLight} inline />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           {/* Tab Content 2: Where Condition AST */}
           {activeTab === 'where' && (
@@ -1225,12 +1761,13 @@ function DslInteractiveStudio({ isLight }: { isLight: boolean }) {
                   <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.6, margin: '0 0 14px 0' }}>
                     Evaluates numbers, strings, and booleans against live telemetry or static spec ratings:
                   </p>
-                  <pre className="dsl-code-container" style={{ padding: 12, margin: 0, background: isLight ? '#0f172a' : '#020617', color: '#e2e8f0' }}>
-                    <code>{`where type = "battery"
+                  <DslCodeViewer
+                    code={`where type = "battery"
 & status = "active"
 & value.charge < 20.0
-& is_backup = false`}</code>
-                  </pre>
+& is_backup = false`}
+                    isLight={isLight}
+                  />
                   <ul style={{ margin: '12px 0 0 0', paddingLeft: 18, fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                     <li>Supports: <code>=</code>, <code>!=</code>, <code>&lt;</code>, <code>&gt;</code>, <code>&lt;=</code>, <code>&gt;=</code></li>
                     <li>Evaluates nested paths: <code>value.voltage.output &gt; 120</code></li>
@@ -1247,16 +1784,17 @@ function DslInteractiveStudio({ isLight }: { isLight: boolean }) {
                   <p style={{ fontSize: 13.5, color: 'var(--text-secondary)', lineHeight: 1.6, margin: '0 0 14px 0' }}>
                     Inspects connected neighbors and network topology from the perspective of <code style={{ color: 'var(--accent-primary)' }}>@node</code>:
                   </p>
-                  <pre className="dsl-code-container" style={{ padding: 12, margin: 0, background: isLight ? '#0f172a' : '#020617', color: '#e2e8f0' }}>
-                    <code>{`# Check outgoing data connection
+                  <DslCodeViewer
+                    code={`# Check outgoing data connection
 where @connection(@node|data|)
 
 # Check incoming control signal
 & @connection(MainController||@node)
 
 # Check target component type
-& @component(target).type = "sensor"`}</code>
-                  </pre>
+& @component(target).type = "sensor"`}
+                    isLight={isLight}
+                  />
                   <ul style={{ margin: '12px 0 0 0', paddingLeft: 18, fontSize: 12.5, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                     <li><code>@node</code> dynamically binds to the candidate component.</li>
                     <li><code>@component(source)</code> evaluates connection endpoints.</li>
@@ -1283,32 +1821,40 @@ where @connection(@node|data|)
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 16 }}>
                 <div style={{ padding: 16, borderRadius: 'var(--radius-lg)', background: isLight ? '#f8fafc' : 'rgba(255,255,255,0.03)', border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.08)' }}>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--status-failure)', marginBottom: 6 }}>Fixed Fields</div>
-                  <code style={{ fontSize: 12.5, color: 'var(--text-primary)' }}>status = failure</code>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--status-failure)', marginBottom: 8 }}>Fixed Fields</div>
+                  <div style={{ padding: '6px 10px', borderRadius: 6, background: isLight ? '#f0f4f8' : '#060812', border: isLight ? '1px solid #d5dee8' : '1px solid rgba(255,255,255,0.08)' }}>
+                    <DslCodeViewer code="status = failure" isLight={isLight} inline />
+                  </div>
                   <p style={{ fontSize: 12.5, color: 'var(--text-secondary)', marginTop: 8, lineHeight: 1.5 }}>
                     Hardcoded values enforced by the event. Scenes <strong>cannot</strong> override this; attempting to do so triggers a compilation error.
                   </p>
                 </div>
 
                 <div style={{ padding: 16, borderRadius: 'var(--radius-lg)', background: isLight ? '#f8fafc' : 'rgba(255,255,255,0.03)', border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.08)' }}>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--accent-cyan)', marginBottom: 6 }}>Required Fields</div>
-                  <code style={{ fontSize: 12.5, color: 'var(--text-primary)' }}>values.temperature</code>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--accent-cyan)', marginBottom: 8 }}>Required Fields</div>
+                  <div style={{ padding: '6px 10px', borderRadius: 6, background: isLight ? '#f0f4f8' : '#060812', border: isLight ? '1px solid #d5dee8' : '1px solid rgba(255,255,255,0.08)' }}>
+                    <DslCodeViewer code="values.temperature" isLight={isLight} inline />
+                  </div>
                   <p style={{ fontSize: 12.5, color: 'var(--text-secondary)', marginTop: 8, lineHeight: 1.5 }}>
                     The invoking scene <strong>must</strong> provide a value in its payload. If omitted, the compiler throws: <code>Missing required field</code>.
                   </p>
                 </div>
 
                 <div style={{ padding: 16, borderRadius: 'var(--radius-lg)', background: isLight ? '#f8fafc' : 'rgba(255,255,255,0.03)', border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.08)' }}>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--accent-amber)', marginBottom: 6 }}>Optional Fields (?)</div>
-                  <code style={{ fontSize: 12.5, color: 'var(--text-primary)' }}>?values.rpm</code>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--accent-amber)', marginBottom: 8 }}>Optional Fields (?)</div>
+                  <div style={{ padding: '6px 10px', borderRadius: 6, background: isLight ? '#f0f4f8' : '#060812', border: isLight ? '1px solid #d5dee8' : '1px solid rgba(255,255,255,0.08)' }}>
+                    <DslCodeViewer code="?values.rpm" isLight={isLight} inline />
+                  </div>
                   <p style={{ fontSize: 12.5, color: 'var(--text-secondary)', marginTop: 8, lineHeight: 1.5 }}>
                     Prefixed with <code>?</code>. Scenes can safely omit this field without throwing validation errors.
                   </p>
                 </div>
 
                 <div style={{ padding: 16, borderRadius: 'var(--radius-lg)', background: isLight ? '#f8fafc' : 'rgba(255,255,255,0.03)', border: isLight ? '1px solid #e2e8f0' : '1px solid rgba(255,255,255,0.08)' }}>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--accent-primary)', marginBottom: 6 }}>Wildcard (fields)</div>
-                  <code style={{ fontSize: 12.5, color: 'var(--text-primary)' }}>fields</code>
+                  <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--accent-primary)', marginBottom: 8 }}>Wildcard (fields)</div>
+                  <div style={{ padding: '6px 10px', borderRadius: 6, background: isLight ? '#f0f4f8' : '#060812', border: isLight ? '1px solid #d5dee8' : '1px solid rgba(255,255,255,0.08)' }}>
+                    <DslCodeViewer code="fields" isLight={isLight} inline />
+                  </div>
                   <p style={{ fontSize: 12.5, color: 'var(--text-secondary)', marginTop: 8, lineHeight: 1.5 }}>
                     Relaxes strict schema checking, permitting the scene to pass arbitrary custom attributes without validation rejection.
                   </p>
@@ -1442,12 +1988,15 @@ export function LandingPage() {
     <div
       ref={heroRef}
       onScroll={handleScroll}
+      className="landing-scroll-container"
       style={{
         display: 'flex', flexDirection: 'column',
         height: '100vh',
         backgroundColor: 'var(--bg-main)',
         overflowY: 'auto',
         overflowX: 'hidden',
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none',
         // Initialize CSS variables so the calc() animations don't break before scrolling
         '--p-up': '0',
         '--p-left': '0',
