@@ -237,9 +237,37 @@ def parse_event_string(source: str, name: str = "<anonymous>") -> EventDefinitio
         elif line.startswith("set "):
             remainder = line[len("set "):].strip()
 
-            if remainder == "{":
+            if remainder == "fields":
+                # set fields  (Spec §11.1)
+                set_fields_allowed = True
+
+            elif remainder == "{":
                 # set {  (Spec §11.4 multi-line block)
                 in_set_block = True
+
+            elif remainder.startswith("fields {") and remainder.endswith("}"):
+                # set fields { value }  (Spec §11.2 inline block)
+                inner = remainder[len("fields {"):-1].strip()
+                set_fields_allowed = True
+                if inner:
+                    for field in inner.replace(",", " ").split():
+                        field = field.strip()
+                        if not field:
+                            continue
+                        if field == "fields":
+                            set_fields_allowed = True
+                        elif "=" in field:
+                            key, val = field.split("=", 1)
+                            key = key.strip()
+                            if key.startswith("?"):
+                                raise EventParseError("Initiated fields cannot be optional (cannot start with '?')", i, line)
+                            set_fixed[key] = parse_value(val)
+                        else:
+                            if field.startswith("?"):
+                                set_allowed.append(field[1:])
+                            else:
+                                set_allowed.append(field)
+                                set_required.append(field)
 
             elif remainder.startswith("{") and remainder.endswith("}"):
                 # set { value }  (Spec §11.2 single-line inline block)
@@ -277,7 +305,7 @@ def parse_event_string(source: str, name: str = "<anonymous>") -> EventDefinitio
                     "Invalid set clause.",
                     i,
                     line,
-                    expected="'{', '{ ... }', or 'field=value'."
+                    expected="'fields', '{', 'fields { ... }', '{ ... }', or 'field=value'."
                 )
 
         else:

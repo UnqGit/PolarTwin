@@ -67,7 +67,7 @@ def parse_scene_string(source: str) -> list[SceneEvent]:
                 # e.g. event:set_component @Generator1 at=1.2 for=inf {
                 # or event:set_component @Generator1 at=1.2 for=inf set {
                 m = re.match(
-                    r"^event\s*:\s*([A-Za-z_]\w*)(?:\s+(@\S+))?\s+at\s*=\s*((?:\d+(?:\.\d*)?|\.\d+))\s+for\s*=\s*(inf|(?:\d+(?:\.\d*)?|\.\d+))\s*set\s*\{$",
+                    r"^event\s*:\s*([A-Za-z_]\w*)(?:\s+(@\S+))?\s+at\s*=\s*((?:\d+(?:\.\d*)?|\.\d+))\s+for\s*=\s*(inf|(?:\d+(?:\.\d*)?|\.\d+))\s*(?:set\s*)?\{$",
                     line,
                 )
                 if not m:
