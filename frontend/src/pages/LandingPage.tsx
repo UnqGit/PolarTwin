@@ -29,7 +29,7 @@ function AuroraCanvas({ theme }: { theme: 'light' | 'dark' }) {
 
     const isDark = theme === 'dark';
     const particles: { x: number; y: number; r: number; speed: number; speedX: number; alpha: number; color: string }[] = [];
-    
+
     if (isDark) {
       const colors = ['#63dbc0', '#38d9f5', '#a78bfa', '#f8d57e'];
       for (let i = 0; i < 60; i++) {
@@ -112,16 +112,16 @@ function AuroraCanvas({ theme }: { theme: 'light' | 'dark' }) {
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-        
+
         if (!isDark) {
           // Subtle drop shadow for snow in light mode to contrast with bright background
           ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
           ctx.shadowBlur = 4;
         }
-        
+
         ctx.fillStyle = p.color + Math.round(p.alpha * 255).toString(16).padStart(2, '0');
         ctx.fill();
-        
+
         if (!isDark) {
           ctx.shadowBlur = 0;
         }
@@ -171,10 +171,10 @@ function StationCard({ station }: { station: StationManifest }) {
           gap: '16px',
           position: 'relative',
           overflow: 'hidden',
-          background: isLight 
-            ? 'linear-gradient(145deg, rgba(255,255,255,1) 0%, rgba(248,250,252,0.9) 100%)' 
+          background: isLight
+            ? 'linear-gradient(145deg, rgba(255,255,255,1) 0%, rgba(248,250,252,0.9) 100%)'
             : 'var(--bg-panel)',
-          boxShadow: isLight 
+          boxShadow: isLight
             ? '0 10px 30px -10px rgba(2, 132, 199, 0.15), 0 4px 6px -4px rgba(0, 0, 0, 0.05)'
             : 'var(--shadow-md)',
           border: isLight ? '1px solid rgba(2, 132, 199, 0.1)' : '1px solid var(--border-color)',
@@ -186,7 +186,7 @@ function StationCard({ station }: { station: StationManifest }) {
           top: -40, right: -40,
           width: 140, height: 140,
           borderRadius: '50%',
-          background: isLight 
+          background: isLight
             ? 'radial-gradient(circle, rgba(2,132,199,0.08) 0%, transparent 70%)'
             : 'radial-gradient(circle, rgba(99,219,188,0.12) 0%, transparent 70%)',
           pointerEvents: 'none',
@@ -334,8 +334,8 @@ function FeatureCard({ icon: Icon, title, desc, color, glowColor }: { icon: any;
         gap: '20px',
         position: 'relative',
         overflow: 'hidden',
-        background: isLight 
-          ? 'linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(248,250,252,0.8) 100%)' 
+        background: isLight
+          ? 'linear-gradient(180deg, rgba(255,255,255,1) 0%, rgba(248,250,252,0.8) 100%)'
           : 'var(--bg-panel)',
         border: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid var(--border-color)',
         boxShadow: isLight ? '0 12px 32px -12px rgba(0,0,0,0.06)' : 'var(--shadow-md)',
@@ -389,31 +389,31 @@ export function LandingPage() {
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const y = e.currentTarget.scrollTop;
-    
+
     // Phase 1: Move up to the top center (over the first 300px of scroll)
     let pUp = y / 300;
     if (pUp > 1) pUp = 1;
     if (pUp < 0) pUp = 0;
     const easeUp = 1 - Math.pow(1 - pUp, 3);
-    
+
     // Phase 2: Shrink and move left as we leave the hero section
     const vh = window.innerHeight;
     const heroBottom = vh * 0.76;
     // Start moving left 400px before the hero section ends
     const startLeft = Math.max(300, heroBottom - 400);
     const endLeft = heroBottom;
-    
+
     let pLeft = 0;
     if (y >= startLeft) {
       pLeft = (y - startLeft) / (endLeft - startLeft);
       if (pLeft > 1) pLeft = 1;
     }
     const easeLeft = 1 - Math.pow(1 - pLeft, 3);
-    
+
     let rawP = y / 400;
     if (rawP > 1) rawP = 1;
     if (rawP < 0) rawP = 0;
-    
+
     if (heroRef.current) {
       heroRef.current.style.setProperty('--p-up', easeUp.toString());
       heroRef.current.style.setProperty('--p-left', easeLeft.toString());
@@ -423,7 +423,7 @@ export function LandingPage() {
   };
 
   return (
-    <div 
+    <div
       ref={heroRef}
       onScroll={handleScroll}
       style={{
@@ -462,8 +462,8 @@ export function LandingPage() {
           letterSpacing: 'calc( -0.04em * (1 - var(--p-left)) - 0.02em * var(--p-left) )',
           lineHeight: 1.05,
           color: isLight ? '#0f172a' : '#fff',
-          textShadow: isLight 
-            ? '0 4px 24px rgba(255,255,255,calc(0.8 * (1 - var(--p-left))))' 
+          textShadow: isLight
+            ? '0 4px 24px rgba(255,255,255,calc(0.3 * (1 - var(--p-left))))'
             : '0 4px 20px rgba(0,0,0,calc(0.3 * (1 - var(--p-left))))',
           pointerEvents: 'auto',
           zIndex: 101,
@@ -481,11 +481,11 @@ export function LandingPage() {
             transition: 'all 0.15s ease-out',
             top: 'calc( 24px * (1 - var(--p-up)) + 18px * var(--p-up) )',
             right: 'calc( 24px * (1 - var(--p-left)) + 32px * var(--p-left) )',
-            background: isLight 
-              ? 'rgba(255,255,255,calc(0.7 * (1 - var(--p-left)) + 0.04 * var(--p-left)))' 
+            background: isLight
+              ? 'rgba(255,255,255,calc(0.7 * (1 - var(--p-left)) + 0.04 * var(--p-left)))'
               : 'rgba(255,255,255,calc(0.12 * (1 - var(--p-left)) + 0.1 * var(--p-left)))',
-            border: isLight 
-              ? '1px solid rgba(0,0,0,calc(0.1 * (1 - var(--p-left)) + 0.08 * var(--p-left)))' 
+            border: isLight
+              ? '1px solid rgba(0,0,0,calc(0.4 * (1 - var(--p-left)) + 0.08 * var(--p-left)))'
               : '1px solid rgba(255,255,255,calc(0.18 * (1 - var(--p-left)) + 0.15 * var(--p-left)))',
             color: isLight ? '#0f172a' : '#fff',
             borderRadius: 'var(--radius-full)',
@@ -505,7 +505,7 @@ export function LandingPage() {
       <section style={{
         position: 'relative',
         minHeight: '76vh',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-start',
         overflow: 'hidden',
       }}>
         {/* Background image */}
@@ -518,11 +518,11 @@ export function LandingPage() {
           transition: 'filter 0.5s ease',
         }} />
 
-        {/* Light Mode Overlay Gradient for better text readability */}
+        {/* Light Mode Overlay Gradient for top picture clarity and smooth bottom blend */}
         {isLight && (
           <div style={{
             position: 'absolute', inset: 0,
-            background: 'linear-gradient(to bottom, rgba(255,255,255,0.6) 0%, rgba(243,246,250,1) 100%)',
+            background: 'linear-gradient(to bottom, transparent 0%, rgba(255,255,255,0.05) 10%, rgba(243,246,250,0.4) 25%, rgba(243,246,250,0.85) 80%, rgba(243,246,250,1) 100%)',
             zIndex: 1,
             transition: 'opacity 0.5s ease',
           }} />
@@ -549,27 +549,52 @@ export function LandingPage() {
           textAlign: 'center',
           display: 'flex', flexDirection: 'column',
           alignItems: 'center', gap: '24px',
-          padding: '0 24px',
+          padding: 'calc( 38vh - 165px ) 24px 60px',
           animation: 'fadeInScale 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         }}>
-          
-          {/* Static Icon (Scrolls up naturally and fades out) */}
-          <div style={{
-            width: '88px', height: '88px', borderRadius: '28px',
-            background: isLight ? 'rgba(2, 132, 199, 0.1)' : 'rgba(99,219,188,0.15)',
-            border: isLight ? '1px solid rgba(2, 132, 199, 0.2)' : '1px solid rgba(99,219,188,0.3)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'var(--accent-primary)',
-            backdropFilter: 'blur(16px)',
-            boxShadow: isLight 
-              ? '0 20px 40px -10px rgba(2,132,199,0.15), 0 0 0 1px rgba(255,255,255,0.5) inset' 
-              : '0 0 40px rgba(99,219,188,0.2), 0 8px 32px rgba(0,0,0,0.3)',
-            transform: 'translateY(calc( -6px * var(--float, 0) ))',
-            opacity: 'calc(1 - var(--raw-p, 0))',
-          }}>
-            <Snowflake style={{ width: '42px', height: '42px', strokeWidth: 2 }} />
+
+          {/* Hero Icon with Idle Hovering Animation */}
+          <div
+            className="hero-icon-wrapper"
+            style={{
+              opacity: 'calc(1 - var(--raw-p, 0))',
+            }}
+          >
+            {/* Ambient Backdrop Glow */}
+            <div className="hero-icon-backdrop" />
+
+            {/* Translucent Glass Icon Container */}
+            <div
+              className="hero-icon-container"
+              style={{
+                borderRadius: '28px',
+                background: isLight
+                  ? 'linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(224, 242, 254, 0.08) 100%)'
+                  : 'linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(80, 219, 192, 0.08) 100%)',
+                border: isLight ? '1.5px solid rgba(2, 132, 199, 0.3)' : '1.5px solid rgba(80, 219, 192, 0.35)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: isLight ? '#0284c7' : 'var(--accent-primary)',
+                backdropFilter: 'blur(20px) saturate(1.8)',
+                WebkitBackdropFilter: 'blur(20px) saturate(1.8)',
+                cursor: 'pointer',
+              }}
+            >
+              <Snowflake
+                className="hero-snowflake-icon"
+                style={{
+                  width: '44px',
+                  height: '44px',
+                  strokeWidth: isLight ? 2.4 : 2.2,
+                  filter: isLight
+                    ? 'drop-shadow(0 2px 4px rgba(2, 132, 199, 0.35))'
+                    : 'drop-shadow(0 0 10px rgba(80, 219, 192, 0.5))'
+                }}
+              />
+            </div>
           </div>
-          
+
           {/* Title Placeholder to preserve exact height/layout for fixed title */}
           <h1 style={{
             fontSize: 'clamp(48px, 8vw, 84px)',
@@ -584,12 +609,12 @@ export function LandingPage() {
           }}>
             <p style={{
               fontSize: 'clamp(16px, 2vw, 19px)',
-              color: isLight ? '#334155' : 'rgba(255,255,255,0.8)',
-              fontWeight: 500,
+              color: isLight ? '#0f172a' : 'rgba(255,255,255,0.8)',
+              fontWeight: isLight ? 600 : 500,
               maxWidth: 640,
               margin: '20px auto 0',
               lineHeight: 1.7,
-              textShadow: isLight ? '0 2px 10px rgba(255,255,255,0.8)' : 'none',
+              textShadow: isLight ? '0 2px 14px rgba(240,250,255,0.8), 0 0 4px rgba(255,255,255,0.8)' : 'none',
             }}>
               Advanced digital twin simulation platform for Antarctic research stations.
               Monitor, simulate, and analyze infrastructure in the harshest environments on Earth.
@@ -608,21 +633,21 @@ export function LandingPage() {
                   background: isLight ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.15)',
                   border: isLight ? '1px solid rgba(0,0,0,0.08)' : '1px solid rgba(255,255,255,0.3)',
                   borderRadius: 'var(--radius-full)',
-                  fontSize: 13.5, fontWeight: 700, 
+                  fontSize: 13.5, fontWeight: 700,
                   color: isLight ? '#1e293b' : '#ffffff',
                   backdropFilter: 'blur(12px)',
                   boxShadow: isLight ? '0 4px 12px rgba(0,0,0,0.03)' : '0 4px 12px rgba(0,0,0,0.1)',
                   transition: 'transform 0.2s ease, box-shadow 0.2s ease',
                   cursor: 'default',
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-2px)';
-                  e.currentTarget.style.boxShadow = isLight ? '0 6px 16px rgba(0,0,0,0.06)' : '0 6px 16px rgba(0,0,0,0.15)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = isLight ? '0 4px 12px rgba(0,0,0,0.03)' : '0 4px 12px rgba(0,0,0,0.1)';
-                }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'translateY(-2px)';
+                    e.currentTarget.style.boxShadow = isLight ? '0 6px 16px rgba(0,0,0,0.06)' : '0 6px 16px rgba(0,0,0,0.15)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'translateY(0)';
+                    e.currentTarget.style.boxShadow = isLight ? '0 4px 12px rgba(0,0,0,0.03)' : '0 4px 12px rgba(0,0,0,0.1)';
+                  }}
                 >
                   <Icon size={16} strokeWidth={2.5} style={{ color: 'var(--accent-primary)' }} />
                   {label}
@@ -708,7 +733,7 @@ export function LandingPage() {
             pointerEvents: 'none',
           }} />
         )}
-        
+
         <div style={{ maxWidth: 1200, margin: '0 auto', position: 'relative' }}>
           <div style={{ textAlign: 'center', marginBottom: 64 }}>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
@@ -776,7 +801,7 @@ export function LandingPage() {
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(12, 1fr)', gap: '32px' }}>
-            
+
             {/* --- EVENT FILES SECTION --- */}
             <div style={{ gridColumn: '1 / -1', marginBottom: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, borderBottom: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid var(--border-color)', paddingBottom: '16px' }}>
@@ -790,7 +815,7 @@ export function LandingPage() {
 
             {/* Event: Target Card */}
             <div className="glass-panel" style={{ gridColumn: 'span 4', borderRadius: 'var(--radius-xl)', padding: '24px', background: isLight ? '#fff' : 'var(--bg-panel)', border: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid var(--border-color)', boxShadow: isLight ? '0 8px 24px rgba(0,0,0,0.04)' : 'var(--shadow-md)' }}>
-              <h4 style={{ margin: '0 0 16px 0', fontSize: 18, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: 8 }}><Box size={18}/> Target Mechanism</h4>
+              <h4 style={{ margin: '0 0 16px 0', fontSize: 18, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: 8 }}><Box size={18} /> Target Mechanism</h4>
               <p style={{ margin: '0 0 16px 0', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5 }}>Defines the scope of the event. Supports components, connections, and external systems.</p>
               <ul style={{ margin: 0, paddingLeft: 20, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                 <li><code>@component.name</code> / <code>@component.type</code></li>
@@ -803,18 +828,18 @@ export function LandingPage() {
 
             {/* Event: Where Card */}
             <div className="glass-panel" style={{ gridColumn: 'span 4', borderRadius: 'var(--radius-xl)', padding: '24px', background: isLight ? '#fff' : 'var(--bg-panel)', border: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid var(--border-color)', boxShadow: isLight ? '0 8px 24px rgba(0,0,0,0.04)' : 'var(--shadow-md)' }}>
-              <h4 style={{ margin: '0 0 16px 0', fontSize: 18, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: 8 }}><Activity size={18}/> Where Filters</h4>
+              <h4 style={{ margin: '0 0 16px 0', fontSize: 18, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: 8 }}><Activity size={18} /> Where Filters</h4>
               <p style={{ margin: '0 0 16px 0', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5 }}>Filters the target scope based on runtime or static attributes. Complex queries can be chained.</p>
               <div style={{ background: isLight ? '#f1f5f9' : '#0f172a', padding: '12px', borderRadius: 'var(--radius-sm)', fontFamily: 'monospace', fontSize: 13, color: isLight ? '#334155' : '#cbd5e1' }}>
-                <span style={{ color: '#c678dd' }}>where</span> type=<span style={{ color: '#98c379' }}>"battery"</span><br/>
-                <span style={{ color: '#c678dd' }}>&</span> status=<span style={{ color: '#98c379' }}>"online"</span><br/>
+                <span style={{ color: '#c678dd' }}>where</span> type=<span style={{ color: '#98c379' }}>"battery"</span><br />
+                <span style={{ color: '#c678dd' }}>&</span> status=<span style={{ color: '#98c379' }}>"online"</span><br />
                 <span style={{ color: '#c678dd' }}>&</span> charge &lt; <span style={{ color: '#d19a66' }}>20</span>
               </div>
             </div>
 
             {/* Event: Set Card */}
             <div className="glass-panel" style={{ gridColumn: 'span 4', borderRadius: 'var(--radius-xl)', padding: '24px', background: isLight ? '#fff' : 'var(--bg-panel)', border: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid var(--border-color)', boxShadow: isLight ? '0 8px 24px rgba(0,0,0,0.04)' : 'var(--shadow-md)' }}>
-              <h4 style={{ margin: '0 0 16px 0', fontSize: 18, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: 8 }}><FileCode size={18}/> Set Declarations</h4>
+              <h4 style={{ margin: '0 0 16px 0', fontSize: 18, color: 'var(--accent-primary)', display: 'flex', alignItems: 'center', gap: 8 }}><FileCode size={18} /> Set Declarations</h4>
               <p style={{ margin: '0 0 12px 0', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5 }}>Declares the payload schema that scenes can override.</p>
               <ul style={{ margin: 0, paddingLeft: 20, fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                 <li><strong>Fixed:</strong> <code>status=failure</code> (hardcoded)</li>
@@ -839,7 +864,7 @@ export function LandingPage() {
             <div className="glass-panel" style={{ gridColumn: 'span 6', borderRadius: 'var(--radius-xl)', padding: '24px', background: isLight ? '#fff' : 'var(--bg-panel)', border: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid var(--border-color)', boxShadow: isLight ? '0 8px 24px rgba(0,0,0,0.04)' : 'var(--shadow-md)' }}>
               <h4 style={{ margin: '0 0 16px 0', fontSize: 18, color: 'var(--accent-cyan)' }}>Invokable Events & Selectors</h4>
               <p style={{ margin: '0 0 16px 0', fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                Events are invoked via <code>event:&lt;name&gt;</code>. Selectors (e.g. <code>@Generator1</code>) resolve against the event's <code>where</code> filters to target specific components or connections. 
+                Events are invoked via <code>event:&lt;name&gt;</code>. Selectors (e.g. <code>@Generator1</code>) resolve against the event's <code>where</code> filters to target specific components or connections.
               </p>
               <div style={{ background: isLight ? '#0f172a' : '#020617', padding: '16px', borderRadius: 'var(--radius-md)', fontFamily: 'monospace', fontSize: 13, color: '#e2e8f0', overflowX: 'auto', whiteSpace: 'pre' }}>
                 <span style={{ color: '#5c6370', fontStyle: 'italic' }}># Target component by name</span>{'\n'}
@@ -874,29 +899,29 @@ export function LandingPage() {
 
             {/* Execution: LIFO */}
             <div className="glass-panel" style={{ gridColumn: 'span 7', display: 'flex', flexDirection: 'column', borderRadius: 'var(--radius-xl)', padding: '32px', background: isLight ? '#fff' : 'var(--bg-panel)', border: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid var(--border-color)', boxShadow: isLight ? '0 8px 24px rgba(0,0,0,0.04)' : 'var(--shadow-md)' }}>
-              <h4 style={{ margin: '0 0 16px 0', fontSize: 20, color: 'var(--accent-purple)', display: 'flex', alignItems: 'center', gap: 10 }}><Layers size={22}/> LIFO Unwinding</h4>
+              <h4 style={{ margin: '0 0 16px 0', fontSize: 20, color: 'var(--accent-purple)', display: 'flex', alignItems: 'center', gap: 10 }}><Layers size={22} /> LIFO Unwinding</h4>
               <p style={{ margin: '0 0 24px 0', color: 'var(--text-secondary)', fontSize: 15, lineHeight: 1.6 }}>
                 The engine utilizes a strict <strong>Last-In-First-Out (LIFO)</strong> state stack. When an event fires for a set duration (e.g., <code>for=1.5h</code>), it pushes to the top of the stack. When the duration expires, the stack automatically pops, <strong>unwinding</strong> the simulation back to the state directly underneath it, seamlessly restoring nominal operations. Infinite events never pop.
               </p>
-              
+
               <div style={{ background: isLight ? 'rgba(167,139,250,0.05)' : 'rgba(167,139,250,0.1)', padding: '24px', borderRadius: 'var(--radius-lg)', display: 'flex', alignItems: 'center', justifyContent: 'center', border: isLight ? '1px solid rgba(167,139,250,0.2)' : '1px solid rgba(167,139,250,0.2)' }}>
-                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%', maxWidth: 320 }}>
-                   <div style={{ background: 'var(--accent-purple)', padding: '12px 20px', borderRadius: 'var(--radius-md)', color: '#fff', fontSize: 13, fontWeight: 700, textAlign: 'center', boxShadow: '0 4px 12px rgba(167,139,250,0.3)', transform: 'translateY(10px)', zIndex: 3, position: 'relative' }}>
-                     [Active] Temporary Event (Popping in 1h)
-                   </div>
-                   <div style={{ background: isLight ? '#e2e8f0' : '#334155', padding: '12px 20px', borderRadius: 'var(--radius-md)', color: isLight ? '#475569' : '#cbd5e1', fontSize: 13, fontWeight: 600, textAlign: 'center', opacity: 0.8, transform: 'scale(0.95)', zIndex: 2, position: 'relative' }}>
-                     [Hidden] Infinite Event (Override)
-                   </div>
-                   <div style={{ background: isLight ? '#cbd5e1' : '#1e293b', padding: '12px 20px', borderRadius: 'var(--radius-md)', color: isLight ? '#64748b' : '#94a3b8', fontSize: 13, fontWeight: 600, textAlign: 'center', opacity: 0.5, transform: 'scale(0.9) translateY(-10px)', zIndex: 1, position: 'relative' }}>
-                     Baseline Initial State
-                   </div>
-                 </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%', maxWidth: 320 }}>
+                  <div style={{ background: 'var(--accent-purple)', padding: '12px 20px', borderRadius: 'var(--radius-md)', color: '#fff', fontSize: 13, fontWeight: 700, textAlign: 'center', boxShadow: '0 4px 12px rgba(167,139,250,0.3)', transform: 'translateY(10px)', zIndex: 3, position: 'relative' }}>
+                    [Active] Temporary Event (Popping in 1h)
+                  </div>
+                  <div style={{ background: isLight ? '#e2e8f0' : '#334155', padding: '12px 20px', borderRadius: 'var(--radius-md)', color: isLight ? '#475569' : '#cbd5e1', fontSize: 13, fontWeight: 600, textAlign: 'center', opacity: 0.8, transform: 'scale(0.95)', zIndex: 2, position: 'relative' }}>
+                    [Hidden] Infinite Event (Override)
+                  </div>
+                  <div style={{ background: isLight ? '#cbd5e1' : '#1e293b', padding: '12px 20px', borderRadius: 'var(--radius-md)', color: isLight ? '#64748b' : '#94a3b8', fontSize: 13, fontWeight: 600, textAlign: 'center', opacity: 0.5, transform: 'scale(0.9) translateY(-10px)', zIndex: 1, position: 'relative' }}>
+                    Baseline Initial State
+                  </div>
+                </div>
               </div>
             </div>
 
             {/* Execution: Inspector */}
             <div className="glass-panel" style={{ gridColumn: 'span 5', display: 'flex', flexDirection: 'column', borderRadius: 'var(--radius-xl)', padding: '32px', background: isLight ? '#fff' : 'var(--bg-panel)', border: isLight ? '1px solid rgba(0,0,0,0.06)' : '1px solid var(--border-color)', boxShadow: isLight ? '0 8px 24px rgba(0,0,0,0.04)' : 'var(--shadow-md)' }}>
-              <h4 style={{ margin: '0 0 16px 0', fontSize: 20, color: 'var(--accent-purple)', display: 'flex', alignItems: 'center', gap: 10 }}><Radio size={22}/> Ad-hoc Inspector</h4>
+              <h4 style={{ margin: '0 0 16px 0', fontSize: 20, color: 'var(--accent-purple)', display: 'flex', alignItems: 'center', gap: 10 }}><Radio size={22} /> Ad-hoc Inspector</h4>
               <p style={{ margin: '0 0 24px 0', color: 'var(--text-secondary)', fontSize: 15, lineHeight: 1.6 }}>
                 You aren't limited to writing DSL text files. The <strong>UI Inspector</strong> integrates directly with the engine's LIFO stack in real-time.
               </p>
