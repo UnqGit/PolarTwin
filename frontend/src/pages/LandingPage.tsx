@@ -7,13 +7,14 @@ import {
   Globe, Cpu, FileCode, Clock, Layers,
   Play, Pause, RotateCcw, Check, Copy,
   AlertTriangle, ShieldCheck, Terminal, Code2,
-  Sparkles, Filter, Database, Sliders, ChevronRight, ChevronDown,
+  Sparkles, Filter, Database, Sliders, ChevronRight, ChevronDown, X,
   Network, Thermometer, Wind, Droplets, Flame, Workflow, Gauge
 } from 'lucide-react';
 import { useTheme } from '../components/ThemeContext';
 import { StationHologram3D } from '../components/StationHologram3D';
 import { TopologyMiniVisualizer } from '../components/TopologyMiniVisualizer';
 import { CommandCenterTour } from '../components/CommandCenterTour';
+import { Footer } from '../components/Footer';
 
 /* ── Aurora & Snow particle canvas ───────────────────────────── */
 function AuroraCanvas({ theme }: { theme: 'light' | 'dark' }) {
@@ -3336,48 +3337,7 @@ export function LandingPage() {
 
 
       {/* ─ Footer ─ */}
-      <footer style={{
-        padding: '32px 40px',
-        borderTop: isLight ? 'none' : '1px solid var(--border-color)',
-        background: isLight ? '#F8FAFC' : 'var(--bg-panel)',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: 20,
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--text-secondary)', fontSize: '14px', fontWeight: 500 }}>
-          <div style={{
-            width: 28, height: 28, borderRadius: 8,
-            background: 'var(--accent-surface)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'var(--accent-primary)'
-          }}>
-            <Snowflake size={16} strokeWidth={2.5} />
-          </div>
-          <span>© 2026 PolarTwin. All rights reserved.</span>
-        </div>
-        <div style={{ display: 'flex', gap: '24px' }}>
-          {['About', 'Privacy Policy', 'Terms of Service'].map(label => (
-            <a
-              key={label}
-              href="#"
-              onClick={(e) => e.preventDefault()}
-              style={{
-                color: 'var(--text-tertiary)',
-                textDecoration: 'none',
-                fontSize: 14,
-                fontWeight: 500,
-                transition: 'color 0.2s ease',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
-              onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-tertiary)')}
-            >
-              {label}
-            </a>
-          ))}
-        </div>
-      </footer>
+      <Footer variant="landing" />
     </div>
   );
 }
