@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import cytoscape from 'cytoscape';
 import elk from 'cytoscape-elk';
 import { Target, PanelLeft } from 'lucide-react';
@@ -56,6 +57,14 @@ const GraphContainer: React.FC<{ root: NodeLayout, connections: ConnectionLayout
 
   const { setHoveredName, hoveredName } = React.useContext(HoverContext);
   const { setSelectedName, selectedName, hiddenSet } = useSelection();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.selectedName) {
+      setSelectedName(location.state.selectedName);
+    }
+  }, [location.state, setSelectedName]);
+
   const { theme } = useTheme();
   
   const liveStateRef = useRef<Record<string, unknown>>({});
