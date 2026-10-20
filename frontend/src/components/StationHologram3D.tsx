@@ -479,10 +479,19 @@ function StationModel({
   );
 }
 
-/* ═══════════════════════════════════════════════════════
-   MAIN EXPORTED COMPONENT: StationHologram3D
-   ═══════════════════════════════════════════════════════ */
-export function StationHologram3D({ isLight = false }: { isLight?: boolean }) {
+export interface StationHologram3DProps {
+  isLight?: boolean;
+  height?: string | number;
+  style?: React.CSSProperties;
+  showBadge?: boolean;
+}
+
+export function StationHologram3D({
+  isLight = false,
+  height = '520px',
+  style,
+  showBadge = true,
+}: StationHologram3DProps) {
   const [mode, setMode] = useState<HologramMode>('nominal');
   const [hoveredHotspot, setHoveredHotspot] = useState<string | null>('radome');
   const [autoRotate, setAutoRotate] = useState(true);
@@ -502,9 +511,10 @@ export function StationHologram3D({ isLight = false }: { isLight?: boolean }) {
       boxShadow: isLight
         ? '0 20px 45px -10px rgba(2, 132, 199, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.8) inset'
         : '0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 35px rgba(80, 219, 192, 0.12) inset',
-      height: '520px',
+      height: typeof height === 'number' ? `${height}px` : height,
       display: 'flex',
       flexDirection: 'column',
+      ...style,
     }}>
 
       {/* ── Top Header Controls & Mode Switcher ── */}
