@@ -7,6 +7,7 @@ import { TypeIcon } from './TypeIcon';
 import { ConnectionsList } from './ConnectionsList';
 import { Network, Link2, Sliders, ChevronRight, Eye, EyeOff, Focus, Edit2 } from 'lucide-react';
 import { Dropdown } from './Dropdown';
+import { useTwinVisual } from './TwinVisualContext';
 
 const PANEL_BORDER = '1px solid var(--border-color)';
 const ITEM_HEIGHT = 26;
@@ -264,6 +265,7 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
 
   const { selectedName } = useSelection();
   const { runId } = useStation();
+  const { visualMode, setVisualMode, explodedFactor, setExplodedFactor, weatherEnabled, setWeatherEnabled } = useTwinVisual();
 
   // Clear editing state when view changes or another component is selected
   useEffect(() => {
@@ -676,6 +678,75 @@ export const HierarchyPanel: React.FC<HierarchyPanelProps> = ({
                     />
                   </label>
                 )}
+
+                <div style={{ fontWeight: 600, color: 'var(--text-secondary)', fontSize: 11, textTransform: 'uppercase', marginTop: 12, marginBottom: 4 }}>
+                  3D Digital Twin Visuals
+                </div>
+                <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
+                  <span>View Mode</span>
+                  <Dropdown
+                    value={visualMode}
+                    onChange={val => setVisualMode(val as any)}
+                    options={[
+                      { value: 'realistic', label: 'Polar Pod (Physical)' },
+                      { value: 'holographic', label: 'Holographic CAD' },
+                      { value: 'thermal', label: 'Thermal Heatmap' }
+                    ]}
+                    style={{ minWidth: 160 }}
+                  />
+                </label>
+                <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', marginTop: 6 }}>
+                  <span>Exploded View</span>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <button
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); setExplodedFactor(0); }}
+                      title="Snap to 0%"
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        padding: 0,
+                        fontSize: 10,
+                        fontWeight: 600,
+                        color: Math.round(explodedFactor * 100) === 0 ? 'var(--accent-primary)' : 'var(--text-tertiary)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      0%
+                    </button>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      step={1}
+                      value={Math.round(explodedFactor * 100)}
+                      onChange={e => setExplodedFactor(Number(e.target.value) / 100)}
+                      className="twin-slider"
+                      style={{ width: 80, accentColor: 'var(--accent-primary)', cursor: 'pointer' }}
+                    />
+                    <button
+                      type="button"
+                      onClick={(e) => { e.preventDefault(); setExplodedFactor(1); }}
+                      title="Snap to 100%"
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        padding: 0,
+                        fontSize: 10,
+                        fontWeight: 600,
+                        color: Math.round(explodedFactor * 100) === 100 ? 'var(--accent-primary)' : 'var(--text-tertiary)',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      100%
+                    </button>
+                    <span style={{ fontSize: 11, fontFamily: 'monospace', width: 28, textAlign: 'right' }}>{Math.round(explodedFactor * 100)}%</span>
+                  </div>
+                </label>
+                <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer', marginTop: 6 }}>
+                  <span>Blizzard Storm FX</span>
+                  <input type="checkbox" checked={weatherEnabled} onChange={(e) => setWeatherEnabled(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />
+                </label>
                 <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}>
                   <span>Hide All Components</span>
                   <input type="checkbox" checked={!!hideAllComponents} onChange={(e) => onHideAllComponentsChange?.(e.target.checked)} style={{ cursor: 'pointer', accentColor: 'var(--accent-blue)' }} />

@@ -1,8 +1,8 @@
 /**
  * SensorMesh.tsx
  *
- * Detailed sensor device with a mounting base, technical stalk,
- * glowing data rings, and a glass-like antenna dome.
+ * Detailed sensor instrument with mounting base, technical stalk,
+ * glowing data rings, and optical dome.
  * Bottom at local Y = 0.
  */
 
@@ -35,7 +35,7 @@ export const SensorMesh: React.FC<MeshProps> = ({
       {/* Data Transmission Ring (Glowing) */}
       <mesh position={[0, baseH + stalkH * 0.8, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <torusGeometry args={[radius * 0.5, 0.02, 16, 32]} />
-        <meshStandardMaterial color="var(--accent-amber)" emissive="var(--accent-amber)" emissiveIntensity={0.8} />
+        <meshStandardMaterial color="#f59e0b" emissive="#f59e0b" emissiveIntensity={0.8} />
       </mesh>
 
       {/* Sensor Array Head */}
@@ -47,13 +47,13 @@ export const SensorMesh: React.FC<MeshProps> = ({
       {/* Antenna / Optical Dome */}
       <mesh position={[0, baseH + stalkH + h * 0.05, 0]}>
         <sphereGeometry args={[domeR * 0.8, 16, 16, 0, Math.PI * 2, 0, Math.PI / 2]} />
-        <meshStandardMaterial color="var(--accent-cyan)" metalness={0.9} roughness={0.1} emissive="var(--accent-cyan)" emissiveIntensity={0.4} transparent opacity={0.8} />
+        <meshStandardMaterial color="#06b6d4" metalness={0.9} roughness={0.1} emissive="#06b6d4" emissiveIntensity={0.4} transparent opacity={0.8} />
       </mesh>
-      
+
       {/* Small indicator lights on the base */}
       <mesh position={[radius * 0.8, baseH / 2, 0]} rotation={[0, 0, -Math.PI / 2]}>
-         <cylinderGeometry args={[0.02, 0.02, 0.05, 8]} />
-         <meshStandardMaterial color="#10b981" emissive="#10b981" emissiveIntensity={1} />
+        <cylinderGeometry args={[0.02, 0.02, 0.05, 8]} />
+        <meshStandardMaterial color="#10b981" emissive="#10b981" emissiveIntensity={1} />
       </mesh>
     </group>
   );

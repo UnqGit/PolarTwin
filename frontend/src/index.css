@@ -1511,4 +1511,61 @@ input:disabled {
     filter: drop-shadow(0 0 6px var(--accent-primary));
   }
 }
+
+/* ─── 3D Twin Exploded View Slider ─── */
+.twin-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 9999px;
+  outline: none;
+  background: transparent;
+  margin: 0;
+  padding: 0;
+  vertical-align: middle;
+  cursor: pointer;
+}
+
+.twin-slider::-webkit-slider-runnable-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--border-color);
+  border: none;
+}
+
+.twin-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  margin-top: -4px;
+  transition: transform 0.1s ease;
+}
+
+.twin-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+.twin-slider::-moz-range-track {
+  height: 6px;
+  border-radius: 9999px;
+  background: var(--border-color);
+  border: none;
+}
+
+.twin-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent-cyan);
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+}
+
 

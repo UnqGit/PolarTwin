@@ -94,7 +94,7 @@ export const TankMesh: React.FC<MeshProps> = ({
         {/* Inner glow (indicating active substance/sensor inside) */}
         <mesh position={[0, bodyHeight * 0.07, 0]}>
           <planeGeometry args={[tankWidth * 0.15, tankDepth * 0.15]} />
-          <meshBasicMaterial color="var(--accent-cyan)" opacity={0.6} transparent />
+          <meshBasicMaterial color="#06b6d4" opacity={0.6} transparent />
         </mesh>
       </group>
 
@@ -119,6 +119,18 @@ export const TankMesh: React.FC<MeshProps> = ({
         ))}
       </group>
 
+      {/* Vertical Liquid Level Sight Glass */}
+      <group position={[-tankWidth / 2 - 0.02, legHeight + bodyHeight * 0.45, 0]}>
+        <mesh>
+          <cylinderGeometry args={[0.025, 0.025, bodyHeight * 0.6, 12]} />
+          <meshStandardMaterial color="#38bdf8" roughness={0.1} metalness={0.8} transparent opacity={0.85} />
+        </mesh>
+        <mesh position={[0, 0, 0]}>
+          <cylinderGeometry args={[0.035, 0.035, bodyHeight * 0.62, 8, 1, true]} />
+          <meshStandardMaterial color="#475569" wireframe />
+        </mesh>
+      </group>
+
       {/* Modern Control Panel on front side */}
       <group position={[0, legHeight + bodyHeight * 0.4, tankDepth / 2 + tankDepth * 0.05]}>
         <mesh castShadow>
@@ -132,7 +144,7 @@ export const TankMesh: React.FC<MeshProps> = ({
         {/* Screen Glow */}
         <mesh position={[0, bodyHeight * 0.05, tankDepth * 0.072]}>
           <planeGeometry args={[tankWidth * 0.25, bodyHeight * 0.12]} />
-          <meshBasicMaterial color="var(--accent-cyan)" opacity={0.7} transparent />
+          <meshBasicMaterial color="#06b6d4" opacity={0.7} transparent />
         </mesh>
       </group>
     </group>
