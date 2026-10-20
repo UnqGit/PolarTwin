@@ -1490,4 +1490,25 @@ input:disabled {
   .bento-card {
     padding: 20px;
   }
-}
+}
+
+/* ─── Topology Circuit & Bus Animations ─── */
+@keyframes dashMove {
+  from {
+    stroke-dashoffset: 40;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes circuitPulse {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+    filter: drop-shadow(0 0 6px var(--accent-primary));
+  }
+}
+
