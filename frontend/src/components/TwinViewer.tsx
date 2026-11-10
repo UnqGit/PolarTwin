@@ -36,10 +36,45 @@ import { SelectionContext } from './SelectionContext';
 import { HierarchyPanel } from './HierarchyPanel';
 import { GraphModal } from './GraphModal';
 import { useTheme } from './ThemeContext';
+import { TwinVisualProvider } from './TwinVisualContext';
+import { PolarEnvironment } from './PolarEnvironment';
+import { TwinViewerToolbar } from './TwinViewerToolbar';
 
 // ─── types ────────────────────────────────────────────────────────────────────
 
 export type LightingMode = 'dynamic' | 'static' | 'off';
+
+class ViewerErrorBoundary extends React.Component<{ children: ReactNode; fallback?: ReactNode }, { hasError: boolean }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(err: any, info: any) {
+    console.warn('TwinViewer 3D Canvas error caught:', err, info);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-main, #0b111e)', color: 'var(--text-secondary, #94a3b8)', gap: '12px' }}>
+          <div style={{ color: '#ef4444', fontWeight: 700, fontSize: '14px' }}>3D Scene View Recovery</div>
+          <div style={{ fontSize: '12px', maxWidth: '360px', textAlign: 'center' }}>
+            A visual rendering glitch occurred during simulation. The simulation engine and telemetry remain active.
+          </div>
+          <button
+            onClick={() => this.setState({ hasError: false })}
+            style={{ padding: '6px 14px', borderRadius: '4px', background: 'var(--accent-blue, #38d9f5)', color: '#000', border: 'none', fontWeight: 600, cursor: 'pointer' }}
+          >
+            Reset 3D Canvas
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 // ─── raycaster configurator ───────────────────────────────────────────────────
 
@@ -369,8 +404,12 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
 
   const [internalComponentsInteractable, setInternalComponentsInteractable] = useState(true);
   const [internalConnectionsInteractable, setInternalConnectionsInteractable] = useState(true);
-  const [internalLightingMode, setInternalLightingMode] = useState<LightingMode>('dynamic');
+  const [internalLightingMode, setInternalLightingMode] = useState<LightingMode>(lightingMode || 'dynamic');
   const [internalOcclusion, setInternalOcclusion] = useState<'off' | 'off_on_hover'>('off');
+
+  useEffect(() => {
+    if (lightingMode) setInternalLightingMode(lightingMode);
+  }, [lightingMode]);
 
   const controlsRef = useRef<any>(null);
 
@@ -498,81 +537,62 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
 
   return (
     <SelectionProvider externalSelection={onSelectName !== undefined ? [selectedName, onSelectName] : undefined}>
-      <HoverContext.Provider value={{ 
-        hoveredName: internalHoveredName, 
-        hoveredAssociated,
-        selectedAssociated,
-        hoveredAncestors, 
-        selectedAncestors, 
-        activeLayer,
-        componentsInteractable: activeComponentsInteractable,
-        connectionsInteractable: activeConnectionsInteractable,
-        setHoveredName: handleHoverChange,
-      }}>
-        <div style={{ width: '100%', height: '100%', background: 'var(--bg-main)', position: 'relative' }}>
-          <Canvas
-            camera={{ position: [35, 25, 35], fov: 50 }}
-            shadows={lightingMode !== 'off'}
-            gl={{ antialias: true }}
-          >
-            <color attach="background" args={[bgMain]} />
+      <TwinVisualProvider>
+        <HoverContext.Provider value={{ 
+          hoveredName: internalHoveredName, 
+          hoveredAssociated,
+          selectedAssociated,
+          hoveredAncestors, 
+          selectedAncestors, 
+          activeLayer,
+          componentsInteractable: activeComponentsInteractable,
+          connectionsInteractable: activeConnectionsInteractable,
+          setHoveredName: handleHoverChange,
+        }}>
+          <div style={{ width: '100%', height: '100%', background: 'var(--bg-main)', position: 'relative' }}>
+            {/* Mission Control 3D Toolbar */}
+            <TwinViewerToolbar onResetCamera={handleResetCamera} />
 
-            <RaycasterConfig />
-
-            <SceneLights key={`${internalLightingMode}-${theme}`} mode={internalLightingMode} theme={theme} />
-
-            <Suspense fallback={null}>
-              <Environment preset="warehouse" />
-              <HoverManager 
-                hoveredNameRef={hoveredNameRef} 
-                onHoverChange={handleHoverChange}
-                componentsInteractable={activeComponentsInteractable}
-                connectionsInteractable={activeConnectionsInteractable}
+            <ViewerErrorBoundary>
+              <Canvas
+                camera={{ position: [35, 25, 35], fov: 50 }}
+                shadows={internalLightingMode !== 'off'}
+                gl={{ antialias: true }}
               >
-                <Bounds margin={1.3}>
-                  {!hideAllComponents && (
-                    <TwinNodeRenderer
-                      layout={sceneLayout.root}
-                      depth={0}
-                      liveStateRef={liveStateRef}
-                      containerOcclusion={internalOcclusion}
-                      buildLimit={buildLimit}
-                    />
-                  )}
-                  {!hideAllConnections && (
-                    <ConnectionRenderer
-                      connections={renderedConnections}
-                      root={sceneLayout.root}
-                    />
-                  )}
-                </Bounds>
-              </HoverManager>
-            </Suspense>
+                <RaycasterConfig />
 
-            <OrbitControls ref={controlsRef} makeDefault enablePan enableRotate enableZoom />
-            
-            {/* Floor / Reference Plane + Axis Lines */}
-            <group position={[0, -0.01, 0]}>
-              {/* X axis line (red) */}
-              <line>
-                <bufferGeometry>
-                  <bufferAttribute attach="attributes-position" args={[new Float32Array([-30,0,0, 30,0,0]), 3]} />
-                </bufferGeometry>
-                <lineBasicMaterial color="#ef4444" opacity={0.5} transparent />
-              </line>
-              {/* Z axis line (blue) */}
-              <line>
-                <bufferGeometry>
-                  <bufferAttribute attach="attributes-position" args={[new Float32Array([0,0,-30, 0,0,30]), 3]} />
-                </bufferGeometry>
-                <lineBasicMaterial color={theme === 'light' ? '#0ea5e9' : '#00d2ff'} opacity={0.5} transparent />
-              </line>
-              <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.05, 0]} receiveShadow>
-                <planeGeometry args={[100, 100]} />
-                <shadowMaterial transparent opacity={0.2} />
-              </mesh>
-            </group>
-          </Canvas>
+                <Suspense fallback={null}>
+                  <Environment preset="warehouse" />
+                  <PolarEnvironment lightingMode={internalLightingMode} />
+                  <HoverManager 
+                    hoveredNameRef={hoveredNameRef} 
+                    onHoverChange={handleHoverChange}
+                    componentsInteractable={activeComponentsInteractable}
+                    connectionsInteractable={activeConnectionsInteractable}
+                  >
+                    <Bounds margin={1.3}>
+                      {!hideAllComponents && (
+                        <TwinNodeRenderer
+                          layout={sceneLayout.root}
+                          depth={0}
+                          liveStateRef={liveStateRef}
+                          containerOcclusion={internalOcclusion}
+                          buildLimit={buildLimit}
+                        />
+                      )}
+                      {!hideAllConnections && (
+                        <ConnectionRenderer
+                          connections={renderedConnections}
+                          root={sceneLayout.root}
+                        />
+                      )}
+                    </Bounds>
+                  </HoverManager>
+                </Suspense>
+
+                <OrbitControls ref={controlsRef} makeDefault enablePan enableRotate enableZoom />
+              </Canvas>
+            </ViewerErrorBoundary>
           
           <RightUIStack root={sceneLayout.root} connections={renderedConnections} liveStateRef={liveStateRef} rightOffset={rightOffset} bottomOffset={bottomOffset}>
           </RightUIStack>
@@ -625,6 +645,7 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
           {children}
         </div>
       </HoverContext.Provider>
+      </TwinVisualProvider>
     </SelectionProvider>
   );
 });

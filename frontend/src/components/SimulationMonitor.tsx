@@ -85,17 +85,25 @@ export function SimulationMonitor({ simState, simulationDuration }: SimulationMo
               <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Visibility</span> <span>{external.weather.visibility} m</span></div>
             </div>
             
-            <div style={{ color: 'var(--text-secondary)', fontSize: '11px', textTransform: 'uppercase', marginTop: '16px', marginBottom: '8px' }}>Network</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Bandwidth</span> <span>{external.network.bandwidth} Mbps</span></div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Mainland</span> <span style={{ color: external.network.mainland_connectivity ? 'var(--status-success)' : 'var(--status-error)' }}>{external.network.mainland_connectivity ? 'Connected' : 'Offline'}</span></div>
-            </div>
+            {external.network && (
+              <>
+                <div style={{ color: 'var(--text-secondary)', fontSize: '11px', textTransform: 'uppercase', marginTop: '16px', marginBottom: '8px' }}>Network</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Bandwidth</span> <span>{external.network.bandwidth ?? '--'} Mbps</span></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Mainland</span> <span style={{ color: external.network.mainland_connectivity ? 'var(--status-success)' : 'var(--status-error)' }}>{external.network.mainland_connectivity ? 'Connected' : 'Offline'}</span></div>
+                </div>
+              </>
+            )}
 
-            <div style={{ color: 'var(--text-secondary)', fontSize: '11px', textTransform: 'uppercase', marginTop: '16px', marginBottom: '8px' }}>Supplies</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>ETA</span> <span>{external.supplies.eta_days} days</span></div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Mode</span> <span style={{ textTransform: 'capitalize' }}>{external.supplies.transport_mode}</span></div>
-            </div>
+            {Array.isArray(external.supplies) && external.supplies.length > 0 && (
+              <>
+                <div style={{ color: 'var(--text-secondary)', fontSize: '11px', textTransform: 'uppercase', marginTop: '16px', marginBottom: '8px' }}>Supplies</div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>ETA</span> <span>{external.supplies[0]?.ETA ?? external.supplies[0]?.eta_days ?? '--'} days</span></div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between' }}><span>Mode</span> <span style={{ textTransform: 'capitalize' }}>{external.supplies[0]?.mode ?? external.supplies[0]?.transport_mode ?? '--'}</span></div>
+                </div>
+              </>
+            )}
           </div>
         </div>
       )}

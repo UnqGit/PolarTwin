@@ -147,13 +147,12 @@ function SolarArray({ position, isBlizzard }: { position: [number, number, numbe
 /* ── Blizzard Particle Storm ──────────────────────────────────── */
 function BlizzardStorm({ active }: { active: boolean }) {
   const pointsRef = useRef<THREE.Points>(null);
-  const count = 350;
+  const count = 900;
 
-  const [positions, speeds] = useMemo(() => {
+  const [positions, particleData] = useMemo(() => {
     const pos = new Float32Array(count * 3);
-    const spd = new Float32Array(count);
+    const data = new Float32Array(count * 5);
     for (let i = 0; i < count; i++) {
-      // Deterministic pseudo-random generation for React Compiler purity
       const seed1 = Math.sin(i * 12.9898 + 1.2) * 43758.5453;
       const r1 = seed1 - Math.floor(seed1);
       const seed2 = Math.sin(i * 78.233 + 4.5) * 43758.5453;
@@ -161,27 +160,47 @@ function BlizzardStorm({ active }: { active: boolean }) {
       const seed3 = Math.sin(i * 37.719 + 7.8) * 43758.5453;
       const r3 = seed3 - Math.floor(seed3);
 
-      pos[i * 3] = (r1 - 0.5) * 16;
-      pos[i * 3 + 1] = r2 * 8;
-      pos[i * 3 + 2] = (r3 - 0.5) * 16;
-      spd[i] = r1 * 0.15 + 0.08;
+      pos[i * 3] = (r1 - 0.5) * 24;
+      pos[i * 3 + 1] = r2 * 12 + 0.1;
+      pos[i * 3 + 2] = (r3 - 0.5) * 24;
+
+      data[i * 5] = r1 * 0.8 + 0.5; // fall
+      data[i * 5 + 1] = r2 * 1.5 + 1.0; // drift
+      data[i * 5 + 2] = r3 * Math.PI * 2; // phase
+      data[i * 5 + 3] = r1 * 2.0 + 1.0; // freq
     }
-    return [pos, spd];
+    return [pos, data];
   }, []);
 
-  useFrame(() => {
+  useFrame((state, delta) => {
     if (!pointsRef.current || !active) return;
     const pos = pointsRef.current.geometry.attributes.position.array as Float32Array;
+    const time = state.clock.getElapsedTime();
+
     for (let i = 0; i < count; i++) {
-      // Wind carries snow horizontally & downward
-      pos[i * 3] += speeds[i] * 1.8;
-      pos[i * 3 + 1] -= speeds[i] * 0.8;
-      pos[i * 3 + 2] += speeds[i] * 0.6;
+      const idx = i * 3;
+      const dIdx = i * 5;
+      const fall = particleData[dIdx] || 0.7;
+      const drift = particleData[dIdx + 1] || 1.2;
+      const phase = particleData[dIdx + 2] || 0;
+      const freq = particleData[dIdx + 3] || 1.5;
+
+      const swirlX = Math.sin(time * freq + phase) * 0.6;
+      const swirlZ = Math.cos(time * freq * 0.8 + phase) * 0.6;
+
+      pos[idx] += (drift + swirlX) * delta * 2.5;
+      pos[idx + 1] -= fall * delta * 2.5;
+      pos[idx + 2] += swirlZ * delta * 2.5;
 
       // Wrap boundaries
-      if (pos[i * 3] > 8) pos[i * 3] = -8;
-      if (pos[i * 3 + 1] < 0) pos[i * 3 + 1] = 7;
-      if (pos[i * 3 + 2] > 8) pos[i * 3 + 2] = -8;
+      if (pos[idx + 1] < 0.1) {
+        pos[idx + 1] = 11.5;
+        pos[idx] = (Math.sin(i * 7.1 + time) * 0.5) * 24;
+        pos[idx + 2] = (Math.cos(i * 11.3 + time) * 0.5) * 24;
+      }
+      if (pos[idx] > 12) pos[idx] = -12;
+      if (pos[idx + 2] > 12) pos[idx + 2] = -12;
+      else if (pos[idx + 2] < -12) pos[idx + 2] = 12;
     }
     pointsRef.current.geometry.attributes.position.needsUpdate = true;
   });
@@ -197,11 +216,12 @@ function BlizzardStorm({ active }: { active: boolean }) {
         />
       </bufferGeometry>
       <pointsMaterial
-        size={0.12}
+        size={0.16}
         color="#ffffff"
         transparent
         opacity={0.75}
         blending={THREE.AdditiveBlending}
+        depthWrite={false}
       />
     </points>
   );
@@ -479,10 +499,19 @@ function StationModel({
   );
 }
 
-/* ═══════════════════════════════════════════════════════
-   MAIN EXPORTED COMPONENT: StationHologram3D
-   ═══════════════════════════════════════════════════════ */
-export function StationHologram3D({ isLight = false }: { isLight?: boolean }) {
+export interface StationHologram3DProps {
+  isLight?: boolean;
+  height?: string | number;
+  style?: React.CSSProperties;
+  showBadge?: boolean;
+}
+
+export function StationHologram3D({
+  isLight = false,
+  height = '520px',
+  style,
+  showBadge = true,
+}: StationHologram3DProps) {
   const [mode, setMode] = useState<HologramMode>('nominal');
   const [hoveredHotspot, setHoveredHotspot] = useState<string | null>('radome');
   const [autoRotate, setAutoRotate] = useState(true);
@@ -502,9 +531,10 @@ export function StationHologram3D({ isLight = false }: { isLight?: boolean }) {
       boxShadow: isLight
         ? '0 20px 45px -10px rgba(2, 132, 199, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.8) inset'
         : '0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 35px rgba(80, 219, 192, 0.12) inset',
-      height: '520px',
+      height: typeof height === 'number' ? `${height}px` : height,
       display: 'flex',
       flexDirection: 'column',
+      ...style,
     }}>
 
       {/* ── Top Header Controls & Mode Switcher ── */}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, Component, type ReactNode } from 'react';
 import { api } from '../lib/api';
 import { useStation } from '../components/StationContext';
 import { TwinViewer } from '../components/TwinViewer';
@@ -7,9 +7,38 @@ import { DSLEditor, DSLEditorContext } from '../components/DSLEditor';
 import type { SceneEventData } from '../components/TimelineEditor';
 import { EventInspector } from '../components/EventInspector';
 import { SimulationMonitor } from '../components/SimulationMonitor';
-import { Play, Pause, RefreshCw, StepForward, Code, List, Activity, Library, ChevronUp, ChevronDown, MousePointer2, LayoutDashboard, Trash2, FileText, FilePlus, PanelLeft, PanelRight, PanelBottom, Edit2, X, RotateCcw, Radio, Square, PlayCircle } from 'lucide-react';
+import { 
+  Play, Pause, RefreshCw, StepForward, Code, List, Activity, Library, 
+  ChevronUp, ChevronDown, MousePointer2, LayoutDashboard, Trash2, FileText, 
+  FilePlus, PanelLeft, PanelRight, PanelBottom, Edit2, X, RotateCcw, Radio, 
+  Square, PlayCircle, Shield, ShieldAlert, Award, GitCompare, Thermometer, 
+  Wind, Compass, Sparkles 
+} from 'lucide-react';
 import { formatTime } from '../utils';
 import { Dropdown } from '../components/Dropdown';
+import { getScenarioMissionProfile } from './ScenariosPage/scenarioProfiles';
+import { MissionBriefingModal } from './ScenariosPage/MissionBriefingModal';
+import { SubsystemHealthHUD } from './ScenariosPage/SubsystemHealthHUD';
+import { TacticalCascadeBanner } from './ScenariosPage/TacticalCascadeBanner';
+import { MissionDebriefModal } from './ScenariosPage/MissionDebriefModal';
+import { ScenarioComparison } from '../components/ScenarioComparison';
+
+class HUDErrorBoundary extends Component<{ children: ReactNode; fallback?: ReactNode }, { hasError: boolean }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(err: any) {
+    console.warn('Tactical HUD render caught error:', err);
+  }
+  render() {
+    if (this.state.hasError) return this.props.fallback || null;
+    return this.props.children;
+  }
+}
 
 export function ScenariosPage() {
   const {
@@ -70,12 +99,29 @@ export function ScenariosPage() {
   const [playbackSpeed, setPlaybackSpeed] = useState<number>(1.0);
   const [simulationDuration, setSimulationDuration] = useState<number>(0);
 
+  // Thematic UI & Mission state
+  const [viewMode, setViewMode] = useState<'command' | 'studio'>('command');
+  const [showBriefingModal, setShowBriefingModal] = useState<boolean>(false);
+  const [showDebriefModal, setShowDebriefModal] = useState<boolean>(false);
+  const [showCompareModal, setShowCompareModal] = useState<boolean>(false);
+  const [subsystemsCollapsed, setSubsystemsCollapsed] = useState<boolean>(false);
+  const [lastCompletedRun, setLastCompletedRun] = useState<{ simTime: number; simState: any; simLog: any[] } | null>(null);
+
   // UI state
   const [timelineOpen, setTimelineOpen] = useState(true);
   const [timelineZoom, setTimelineZoom] = useState(100);
   const [bottomOpen, setBottomOpen] = useState(false);
   const [leftOpen, setLeftOpen] = useState(true);
-  const [bottomTab, setBottomTab] = useState<'source' | 'log' | 'diagnostics' | 'inspector' | 'monitor'>('source');
+  const [bottomTab, setBottomTab] = useState<'source' | 'log' | 'diagnostics' | 'inspector' | 'monitor' | 'compare'>('source');
+
+  const currentScenario = scenarios.find(s => s.id === selectedScenarioId);
+  const missionProfile = useMemo(() => {
+    return getScenarioMissionProfile(
+      selectedScenarioId,
+      currentScenario?.name || (selectedScenarioId ? selectedScenarioId.split(':').pop() : 'New Scenario'),
+      scenarioSource
+    );
+  }, [selectedScenarioId, currentScenario, scenarioSource]);
 
   const ZOOM_STEPS = [25, 33, 50, 67, 75, 80, 90, 100, 110, 125, 150, 175, 200, 250, 300, 400, 500];
 
@@ -289,7 +335,25 @@ export function ScenariosPage() {
           delete (window as any).__telemetryFlushInterval;
         }
       }
-      await api.stopSimulation(runId);
+      if (simState || (Array.isArray(simLog) && simLog.length > 0)) {
+        let safeSimState = null;
+        try {
+          safeSimState = simState ? JSON.parse(JSON.stringify(simState)) : null;
+        } catch (_) {
+          safeSimState = simState ? { ...simState } : null;
+        }
+        setLastCompletedRun({
+          simTime,
+          simState: safeSimState,
+          simLog: Array.isArray(simLog) ? [...simLog] : [],
+        });
+        setShowDebriefModal(true);
+      }
+      try {
+        await api.stopSimulation(runId);
+      } catch (e) {
+        console.error('Stop simulation error:', e);
+      }
       setRunId(null);
       setSimStatus('Ready');
       setSimTime(0);
@@ -879,20 +943,53 @@ export function ScenariosPage() {
       {/* Top Bar */}
       <div style={{ position: 'relative', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 16px', backgroundColor: 'var(--bg-panel-secondary)', borderBottom: '1px solid var(--border-color)', flexShrink: 0 }}>
         {/* LEFT: Scenario Management & Component Config */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Dropdown
             disabled={!!runId}
             value={selectedScenarioId || ''}
             onChange={val => { setSelectedScenarioId(val || null); setEditingType('scenario'); }}
             options={scenarios.map(s => ({ value: s.id, label: s.name }))}
             placeholder="-- Select Scenario --"
-            style={{ minWidth: 220, height: 30 }}
+            style={{ minWidth: 200, height: 30 }}
           />
           {selectedScenarioId && (
             <button disabled={!!runId} className="btn-glass" onClick={() => { setSelectedScenarioId(null); setScenarioEvents([]); setRunId(null); setSimStatus('Ready'); if (editingType === 'scenario') setScenarioSource(''); }} title="Deselect Scenario" style={{ padding: '0 8px' }}>
               <X size={15} />
             </button>
           )}
+
+          {/* Tactical Mission Briefing Button */}
+          {selectedScenarioId && (
+            <button
+              className="btn-glass"
+              onClick={() => setShowBriefingModal(true)}
+              title="Open Antarctic Mission Intelligence Briefing"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '0 10px',
+                borderColor: missionProfile?.threat?.borderColor || 'rgba(56, 217, 245, 0.4)',
+                color: missionProfile?.threat?.badgeColor || '#38d9f5',
+                background: missionProfile?.threat?.badgeBg || 'rgba(56, 217, 245, 0.1)',
+              }}
+            >
+              <span
+                style={{
+                  width: 7,
+                  height: 7,
+                  borderRadius: '50%',
+                  backgroundColor: missionProfile?.threat?.badgeColor || '#38d9f5',
+                  boxShadow: missionProfile?.threat?.glow || '0 0 8px #38d9f5',
+                }}
+              />
+              <span style={{ fontWeight: 700, fontSize: '11px', letterSpacing: '0.04em' }}>
+                {missionProfile?.threat?.level ? missionProfile.threat.level.split(' - ')[0] : 'NOMINAL'}
+              </span>
+              <Compass size={13} style={{ marginLeft: 2 }} />
+            </button>
+          )}
+
           <button className="btn-glass" onClick={saveSource} title="Save Scenario">
             <FileText size={15} />
             Save
@@ -962,6 +1059,26 @@ export function ScenariosPage() {
             <RefreshCw size={15} />
             Reset All
           </button>
+
+          {/* Debrief Action Trigger */}
+
+          {lastCompletedRun && (
+            <button
+              className="btn-glass"
+              onClick={() => setShowDebriefModal(true)}
+              title="View Post-Simulation Survivability Debrief"
+              style={{
+                padding: '0 9px',
+                color: '#10b981',
+                borderColor: 'rgba(16, 185, 129, 0.4)',
+                background: 'rgba(16, 185, 129, 0.08)',
+              }}
+            >
+              <Award size={14} />
+              <span style={{ fontSize: 11, marginLeft: 3 }}>Debrief</span>
+            </button>
+          )}
+
           <button
             onClick={() => setTelemetryEnabled(!telemetryEnabled)}
             className={`btn-glass ${telemetryEnabled ? 'active' : ''}`}
@@ -973,19 +1090,89 @@ export function ScenariosPage() {
         </div>
 
         {/* RIGHT: Playback & View Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           
+          {/* Tactical View Mode Switcher */}
+          <div style={{ display: 'flex', alignItems: 'center', backgroundColor: 'var(--bg-input)', borderRadius: 'var(--radius-sm)', padding: '2px', border: '1px solid var(--border-color)', height: 28 }}>
+            <button
+              onClick={() => {
+                setViewMode('command');
+                setBottomOpen(false);
+              }}
+              style={{
+                border: 'none',
+                background: viewMode === 'command' ? 'var(--accent-primary)' : 'transparent',
+                color: viewMode === 'command' ? '#000' : 'var(--text-secondary)',
+                padding: '2px 8px',
+                borderRadius: '3px',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                height: '100%',
+                transition: 'all 0.15s ease',
+              }}
+              title="Switch to Tactical Command HUD"
+            >
+              <Shield size={12} />
+              <span>Command HUD</span>
+            </button>
+            <button
+              onClick={() => {
+                setViewMode('studio');
+                setBottomOpen(true);
+                setTimelineOpen(true);
+                setLeftOpen(true);
+              }}
+              style={{
+                border: 'none',
+                background: viewMode === 'studio' ? 'var(--accent-primary)' : 'transparent',
+                color: viewMode === 'studio' ? '#000' : 'var(--text-secondary)',
+                padding: '2px 8px',
+                borderRadius: '3px',
+                fontSize: '11px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+                height: '100%',
+                transition: 'all 0.15s ease',
+              }}
+              title="Switch to DSL Script Studio"
+            >
+              <Code size={12} />
+              <span>DSL Studio</span>
+            </button>
+          </div>
+
+          {/* Atmospheric Telemetry Widget */}
+          {simState?.external?.weather && typeof simState.external.weather.temperature !== 'undefined' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: 'var(--text-secondary)', padding: '0 8px', borderLeft: '1px solid var(--border-color)', height: 26 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                <Thermometer size={12} style={{ color: '#38d9f5' }} />
+                <span style={{ color: '#38d9f5', fontWeight: 600 }}>{simState.external.weather.temperature}°C</span>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '3px' }}>
+                <Wind size={12} style={{ color: '#f8d57e' }} />
+                <span>{simState.external.weather.wind_speed ?? 0} km/h</span>
+              </div>
+            </div>
+          )}
+
           {/* YouTube-style Status & Time */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', height: 30 }}>
-            {simStatus.toUpperCase() === 'RUNNING' && (
+            {(simStatus || '').toUpperCase() === 'RUNNING' && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#ef4444', fontWeight: 600, fontSize: '11px', letterSpacing: '0.05em' }}>
                 <div style={{ width: 6, height: 6, borderRadius: '50%', backgroundColor: '#ef4444', boxShadow: '0 0 6px #ef4444' }} />
                 LIVE
               </div>
             )}
-            {simStatus.toUpperCase() !== 'RUNNING' && (
+            {(simStatus || '').toUpperCase() !== 'RUNNING' && (
               <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-tertiary)', letterSpacing: '0.05em' }}>
-                {simStatus.toUpperCase()}
+                {(simStatus || 'READY').toUpperCase()}
               </span>
             )}
             <span style={{ fontSize: '13px', fontFamily: 'var(--font-mono, monospace)', fontWeight: 500, color: 'var(--text-primary)' }}>
@@ -1095,32 +1282,60 @@ export function ScenariosPage() {
         {/* Twin Viewer Area (Full size) */}
         <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: '#000', zIndex: 1 }}>
           {hierarchy && spec && connections ? (
-            <TwinViewer
-              topology={hierarchy}
-              specification={spec}
-              connections={connections}
-              customSidebarTabs={customTabs}
-              liveStateRef={liveStateRef}
-              selectedName={selectedComponentName}
-              onSelectName={setSelectedComponentName}
-              rightOffset={(bottomOpen ? rightPanelWidth : 0) + 48}
-              bottomOffset={(timelineOpen ? bottomPanelHeight : 40)}
-              leftPanelOpen={leftOpen}
-              setLeftPanelOpen={setLeftOpen}
-              isEditingInitials={isEditingInitials}
-              setIsEditingInitials={setIsEditingInitials}
-              onSetInitials={handleSetInitial}
-              onResetInitials={handleResetInitials}
-              hideEditInitials={true}
-              valueOverrides={valueOverrides}
-              runtime={runtime}
-            />
+            <HUDErrorBoundary fallback={<div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>3D Twin visualizer temporarily unavailable</div>}>
+              <TwinViewer
+                topology={hierarchy}
+                specification={spec}
+                connections={connections}
+                customSidebarTabs={customTabs}
+                liveStateRef={liveStateRef}
+                selectedName={selectedComponentName}
+                onSelectName={setSelectedComponentName}
+                rightOffset={(bottomOpen ? rightPanelWidth : 0) + 48}
+                bottomOffset={(timelineOpen ? bottomPanelHeight : 40)}
+                leftPanelOpen={leftOpen}
+                setLeftPanelOpen={setLeftOpen}
+                isEditingInitials={isEditingInitials}
+                setIsEditingInitials={setIsEditingInitials}
+                onSetInitials={handleSetInitial}
+                onResetInitials={handleResetInitials}
+                hideEditInitials={true}
+                valueOverrides={valueOverrides}
+                runtime={runtime}
+              />
+            </HUDErrorBoundary>
           ) : (
             <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>
               Loading twin data...
             </div>
           )}
         </div>
+
+        {/* Floating Tactical Incident Banner */}
+        <div style={{ position: 'absolute', top: 14, left: '50%', transform: 'translateX(-50%)', zIndex: 30, pointerEvents: 'auto' }}>
+          <HUDErrorBoundary>
+            <TacticalCascadeBanner
+              simState={simState}
+              simTime={simTime}
+              simStatus={simStatus}
+              onFocusComponent={(name) => setSelectedComponentName(name)}
+            />
+          </HUDErrorBoundary>
+        </div>
+
+        {/* Floating Subsystem Health HUD (visible in Command HUD mode, movable anywhere below navbar) */}
+        {viewMode === 'command' && (
+          <HUDErrorBoundary>
+            <SubsystemHealthHUD
+              simState={simState}
+              selectedComponent={selectedComponentName}
+              onSelectComponent={(name) => setSelectedComponentName(name)}
+              collapsed={subsystemsCollapsed}
+              onToggleCollapse={() => setSubsystemsCollapsed(!subsystemsCollapsed)}
+              initialPosition={{ x: leftOpen ? 300 : 20, y: 14 }}
+            />
+          </HUDErrorBoundary>
+        )}
 
         {/* Right Side Panel (Overlay) */}
         <div style={{
@@ -1202,7 +1417,7 @@ export function ScenariosPage() {
 
                   {runId && <div style={{ borderTop: '1px solid var(--border-color)', margin: '12px 0' }} />}
 
-                  {runId && simLog.map((log, i) => (
+                  {runId && (Array.isArray(simLog) ? simLog : []).map((log, i) => (
                     <div key={`sim-${i}`} style={{ marginBottom: '4px', color: log.level === 'ERROR' ? '#ef4444' : log.level === 'WARN' ? '#f59e0b' : 'var(--text-primary)' }}>
                       <span style={{ color: 'var(--text-tertiary)' }}>[{formatTime(log.time || 0)}]</span> {log.message || JSON.stringify(log)}
                     </div>
@@ -1212,7 +1427,7 @@ export function ScenariosPage() {
 
               {bottomTab === 'diagnostics' && (
                 <div style={{ padding: '16px', height: '100%', overflowY: 'auto', fontFamily: 'monospace', fontSize: '13px' }}>
-                  {diagLog.length === 0 ? (
+                  {(!Array.isArray(diagLog) || diagLog.length === 0) ? (
                     <div style={{ color: 'var(--text-tertiary)' }}>No simulation diagnostics recorded yet.</div>
                   ) : (
                     diagLog.map((log, i) => (
@@ -1237,6 +1452,12 @@ export function ScenariosPage() {
               {bottomTab === 'monitor' && (
                 <SimulationMonitor simState={simState} simulationDuration={simulationDuration} />
               )}
+
+              {bottomTab === 'compare' && selectedStation && (
+                <div style={{ height: '100%', overflowY: 'auto' }}>
+                  <ScenarioComparison stationId={selectedStation} />
+                </div>
+              )}
             </div>
           )}
 
@@ -1247,6 +1468,7 @@ export function ScenariosPage() {
             <RightIconBtn icon={<Activity size={20} />} active={bottomOpen && bottomTab === 'diagnostics'} onClick={() => toggleBottomTab('diagnostics')} title="Diagnostics" />
             <RightIconBtn icon={<MousePointer2 size={20} />} active={bottomOpen && bottomTab === 'inspector'} onClick={() => toggleBottomTab('inspector')} title="Inspector" />
             <RightIconBtn icon={<LayoutDashboard size={20} />} active={bottomOpen && bottomTab === 'monitor'} onClick={() => toggleBottomTab('monitor')} title="Simulation Monitor" />
+            <RightIconBtn icon={<GitCompare size={20} />} active={bottomOpen && bottomTab === 'compare'} onClick={() => toggleBottomTab('compare')} title="Scenario A/B Compare" />
           </div>
         </div>
 
@@ -1582,6 +1804,80 @@ export function ScenariosPage() {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Antarctic Mission Intelligence Briefing Modal */}
+      <MissionBriefingModal
+        profile={missionProfile}
+        isOpen={showBriefingModal}
+        onClose={() => setShowBriefingModal(false)}
+        stationName={selectedStation || 'Maitri'}
+        isSimRunning={!!runId}
+        onLaunchDrill={() => {
+          if (!runId) {
+            handleStartStop();
+          }
+        }}
+      />
+
+      {/* Mission Execution Debrief & Survivability Scorecard */}
+      <HUDErrorBoundary>
+        <MissionDebriefModal
+          isOpen={showDebriefModal}
+          onClose={() => setShowDebriefModal(false)}
+          profile={missionProfile}
+          simTime={lastCompletedRun ? lastCompletedRun.simTime : simTime}
+          simState={lastCompletedRun ? lastCompletedRun.simState : simState}
+          simLog={lastCompletedRun ? lastCompletedRun.simLog : simLog}
+          onRerun={() => {
+            handleStartStop();
+          }}
+          onOpenCompare={() => {
+            setShowCompareModal(true);
+          }}
+        />
+      </HUDErrorBoundary>
+
+      {/* Fullscreen A/B Differential Comparison Modal */}
+      {showCompareModal && selectedStation && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(5, 8, 15, 0.8)',
+            backdropFilter: 'blur(10px)',
+            zIndex: 1250,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px',
+          }}
+          onClick={() => setShowCompareModal(false)}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: '900px',
+              height: '82vh',
+              backgroundColor: 'var(--bg-main, #0b111e)',
+              borderRadius: '12px',
+              border: '1px solid rgba(167, 139, 250, 0.4)',
+              boxShadow: '0 24px 70px rgba(0, 0, 0, 0.8), 0 0 30px rgba(167, 139, 250, 0.15)',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ScenarioComparison
+              stationId={selectedStation}
+              onClose={() => setShowCompareModal(false)}
+            />
+          </div>
         </div>
       )}
     </div>

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { TwinViewer } from '../components/TwinViewer';
 import { useStation } from '../components/StationContext';
 
@@ -11,10 +12,21 @@ export function DigitalTwin() {
     liveStateRef
   } = useStation();
 
-  const [selectedComponentName, setSelectedComponentName] = useState<string | null>(null);
+  const location = useLocation();
+  const [selectedComponentName, setSelectedComponentName] = useState<string | null>(
+    location.state?.selectedComponentName || null
+  );
 
   useEffect(() => {
-    setSelectedComponentName(null);
+    if (location.state?.selectedComponentName) {
+      setSelectedComponentName(location.state.selectedComponentName);
+    }
+  }, [location.state]);
+
+  useEffect(() => {
+    if (!location.state?.selectedComponentName) {
+      setSelectedComponentName(null);
+    }
   }, [selectedTwin]);
 
 

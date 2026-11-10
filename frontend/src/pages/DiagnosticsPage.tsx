@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { useStation } from '../components/StationContext';
 import { api } from '../lib/api';
 import {
@@ -11,6 +12,7 @@ import { Dropdown } from '../components/Dropdown';
 
 export function DiagnosticsPage() {
   const { selectedStation, hierarchy, connections, spec } = useStation();
+  const location = useLocation();
   const [runs, setRuns] = useState<any[]>([]);
   const [selectedRunId, setSelectedRunId] = useState<string>('');
   const [selectedScenarioFilter, setSelectedScenarioFilter] = useState<string>('');
@@ -35,9 +37,15 @@ export function DiagnosticsPage() {
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [historyData, setHistoryData] = useState<any[]>([]);
 
-  const [selectedName, setSelectedName] = useState<string | null>(null);
+  const [selectedName, setSelectedName] = useState<string | null>(location.state?.selectedName || null);
   const [activeView, setActiveView] = useState<string>('overview');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  useEffect(() => {
+    if (location.state?.selectedName) {
+      setSelectedName(location.state.selectedName);
+    }
+  }, [location.state]);
 
   const sceneLayout = useMemo(() => {
     if (!hierarchy || !spec) return null;

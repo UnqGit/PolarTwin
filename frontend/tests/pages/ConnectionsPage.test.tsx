@@ -146,4 +146,61 @@ describe('ConnectionsPage', () => {
     // Should render Cytoscape container
     expect(screen.getByTestId('cytoscape-container')).toBeInTheDocument();
   });
+
+  it('renders correctly inside MemoryRouter and switches view modes', async () => {
+    const { MemoryRouter } = await import('react-router-dom');
+    const { fireEvent } = await import('@testing-library/react');
+
+    const mockHierarchy = {
+      name: 'Station1',
+      type: 'station',
+      priority: 0,
+      floor: 0,
+      is_backup: false,
+      backup: [],
+      children: [
+        { name: 'EnergyBlock', type: 'block', children: [{ name: 'A', type: 'generator', children: [] }] },
+        { name: 'HVACBlock', type: 'block', children: [{ name: 'B', type: 'pump', children: [] }] }
+      ],
+      tags: []
+    };
+    const mockConnections = [
+      { id: '1', source: 'A', target: 'B', connectionType: 'power', relation: 'power_cable' }
+    ];
+
+    render(
+      <MemoryRouter initialEntries={['/connections']}>
+        <StationContext.Provider value={{
+          selectedStation: 'Twin',
+          hierarchy: mockHierarchy,
+          connections: mockConnections,
+          spec: {},
+          availableStations: [],
+          isLoadingData: false,
+          setSelectedStation: vi.fn(),
+        } as any}>
+          <ConnectionsPage />
+        </StationContext.Provider>
+      </MemoryRouter>
+    );
+
+    // Initial view: Schematic Topology
+    expect(await screen.findByText('Schematic Topology')).toBeInTheDocument();
+    expect(screen.getByTestId('cytoscape-container')).toBeInTheDocument();
+
+    // Switch to Subsystem Bus Architecture
+    const busBtn = screen.getByText('Subsystem Bus Architecture');
+    fireEvent.click(busBtn);
+    expect(await screen.findByText(/Subsystem Interconnect Bus Architecture/i)).toBeInTheDocument();
+
+    // Switch to Dependency Matrix
+    const matrixBtn = screen.getByText('Dependency Matrix');
+    fireEvent.click(matrixBtn);
+    expect(await screen.findByText(/Subsystem Cross-Coupling & Dependency Matrix/i)).toBeInTheDocument();
+
+    // Switch back to Schematic
+    const schematicBtn = screen.getByText('Schematic Topology');
+    fireEvent.click(schematicBtn);
+    expect(screen.getByTestId('cytoscape-container')).toBeInTheDocument();
+  });
 });

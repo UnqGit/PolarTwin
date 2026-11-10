@@ -1,5 +1,6 @@
 import { useLocation, Navigate, useParams } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
+import { PageErrorBoundary } from './components/PageErrorBoundary';
 import { Overview } from './pages/Overview';
 import { DigitalTwin } from './pages/DigitalTwin';
 import { ComponentsPage } from './pages/ComponentsPage';
@@ -37,22 +38,34 @@ export function Layout() {
         flexDirection: 'column'
       }}>
         <div style={{ display: page === 'overview' ? 'block' : 'none', flex: 1, height: '100%', width: '100%' }}>
-          <Overview />
+          <PageErrorBoundary pageName="Overview" resetKey={page}>
+            <Overview />
+          </PageErrorBoundary>
         </div>
         <div style={{ display: page === 'twin' ? 'block' : 'none', flex: 1, height: '100%', width: '100%' }}>
-          <DigitalTwin />
+          <PageErrorBoundary pageName="Digital Twin" resetKey={page}>
+            <DigitalTwin />
+          </PageErrorBoundary>
         </div>
         <div style={{ display: page === 'components' ? 'block' : 'none', flex: 1, height: '100%', width: '100%' }}>
-          <ComponentsPage />
+          <PageErrorBoundary pageName="Components" resetKey={page}>
+            <ComponentsPage />
+          </PageErrorBoundary>
         </div>
         <div style={{ display: page === 'connections' ? 'block' : 'none', flex: 1, height: '100%', width: '100%' }}>
-          <ConnectionsPage />
+          <PageErrorBoundary pageName="Connections" resetKey={page}>
+            <ConnectionsPage />
+          </PageErrorBoundary>
         </div>
         <div style={{ display: page === 'scenarios' ? 'block' : 'none', flex: 1, height: '100%', width: '100%' }}>
-          <ScenariosPage />
+          <PageErrorBoundary pageName="Scenarios" resetKey={page}>
+            <ScenariosPage />
+          </PageErrorBoundary>
         </div>
         <div style={{ display: page === 'diagnostics' ? 'block' : 'none', flex: 1, height: '100%', width: '100%' }}>
-          <DiagnosticsPage />
+          <PageErrorBoundary pageName="Diagnostics" resetKey={page}>
+            <DiagnosticsPage />
+          </PageErrorBoundary>
         </div>
       </main>
     </div>
