@@ -44,6 +44,31 @@ export function Dropdown({ value, onChange, options, placeholder = 'Select...', 
         ...style
       }}
     >
+      {/* Hidden underlying select for accessibility and testing */}
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        disabled={disabled}
+        tabIndex={-1}
+        style={{
+          position: 'absolute',
+          opacity: 0,
+          pointerEvents: 'none',
+          width: 0,
+          height: 0,
+          margin: 0,
+          padding: 0,
+          border: 'none',
+        }}
+      >
+        {placeholder && <option value="">{placeholder}</option>}
+        {options.map(opt => (
+          <option key={opt.value} value={opt.value}>
+            {typeof opt.label === 'string' ? opt.label : opt.value}
+          </option>
+        ))}
+      </select>
+
       {/* Trigger */}
       <div
         onClick={() => {

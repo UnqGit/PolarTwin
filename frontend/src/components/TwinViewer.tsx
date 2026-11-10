@@ -44,6 +44,38 @@ import { TwinViewerToolbar } from './TwinViewerToolbar';
 
 export type LightingMode = 'dynamic' | 'static' | 'off';
 
+class ViewerErrorBoundary extends React.Component<{ children: ReactNode; fallback?: ReactNode }, { hasError: boolean }> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(err: any, info: any) {
+    console.warn('TwinViewer 3D Canvas error caught:', err, info);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', alignItems: 'center', justifyContent: 'center', backgroundColor: 'var(--bg-main, #0b111e)', color: 'var(--text-secondary, #94a3b8)', gap: '12px' }}>
+          <div style={{ color: '#ef4444', fontWeight: 700, fontSize: '14px' }}>3D Scene View Recovery</div>
+          <div style={{ fontSize: '12px', maxWidth: '360px', textAlign: 'center' }}>
+            A visual rendering glitch occurred during simulation. The simulation engine and telemetry remain active.
+          </div>
+          <button
+            onClick={() => this.setState({ hasError: false })}
+            style={{ padding: '6px 14px', borderRadius: '4px', background: 'var(--accent-blue, #38d9f5)', color: '#000', border: 'none', fontWeight: 600, cursor: 'pointer' }}
+          >
+            Reset 3D Canvas
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 // ─── raycaster configurator ───────────────────────────────────────────────────
 
 const RaycasterConfig: React.FC = () => {
@@ -521,44 +553,46 @@ export const TwinViewer: React.FC<TwinViewerProps> = React.memo(({
             {/* Mission Control 3D Toolbar */}
             <TwinViewerToolbar onResetCamera={handleResetCamera} />
 
-            <Canvas
-              camera={{ position: [35, 25, 35], fov: 50 }}
-              shadows={internalLightingMode !== 'off'}
-              gl={{ antialias: true }}
-            >
-              <RaycasterConfig />
+            <ViewerErrorBoundary>
+              <Canvas
+                camera={{ position: [35, 25, 35], fov: 50 }}
+                shadows={internalLightingMode !== 'off'}
+                gl={{ antialias: true }}
+              >
+                <RaycasterConfig />
 
-              <Suspense fallback={null}>
-                <Environment preset="warehouse" />
-                <PolarEnvironment lightingMode={internalLightingMode} />
-                <HoverManager 
-                  hoveredNameRef={hoveredNameRef} 
-                  onHoverChange={handleHoverChange}
-                  componentsInteractable={activeComponentsInteractable}
-                  connectionsInteractable={activeConnectionsInteractable}
-                >
-                  <Bounds margin={1.3}>
-                    {!hideAllComponents && (
-                      <TwinNodeRenderer
-                        layout={sceneLayout.root}
-                        depth={0}
-                        liveStateRef={liveStateRef}
-                        containerOcclusion={internalOcclusion}
-                        buildLimit={buildLimit}
-                      />
-                    )}
-                    {!hideAllConnections && (
-                      <ConnectionRenderer
-                        connections={renderedConnections}
-                        root={sceneLayout.root}
-                      />
-                    )}
-                  </Bounds>
-                </HoverManager>
-              </Suspense>
+                <Suspense fallback={null}>
+                  <Environment preset="warehouse" />
+                  <PolarEnvironment lightingMode={internalLightingMode} />
+                  <HoverManager 
+                    hoveredNameRef={hoveredNameRef} 
+                    onHoverChange={handleHoverChange}
+                    componentsInteractable={activeComponentsInteractable}
+                    connectionsInteractable={activeConnectionsInteractable}
+                  >
+                    <Bounds margin={1.3}>
+                      {!hideAllComponents && (
+                        <TwinNodeRenderer
+                          layout={sceneLayout.root}
+                          depth={0}
+                          liveStateRef={liveStateRef}
+                          containerOcclusion={internalOcclusion}
+                          buildLimit={buildLimit}
+                        />
+                      )}
+                      {!hideAllConnections && (
+                        <ConnectionRenderer
+                          connections={renderedConnections}
+                          root={sceneLayout.root}
+                        />
+                      )}
+                    </Bounds>
+                  </HoverManager>
+                </Suspense>
 
-              <OrbitControls ref={controlsRef} makeDefault enablePan enableRotate enableZoom />
-            </Canvas>
+                <OrbitControls ref={controlsRef} makeDefault enablePan enableRotate enableZoom />
+              </Canvas>
+            </ViewerErrorBoundary>
           
           <RightUIStack root={sceneLayout.root} connections={renderedConnections} liveStateRef={liveStateRef} rightOffset={rightOffset} bottomOffset={bottomOffset}>
           </RightUIStack>

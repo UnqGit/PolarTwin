@@ -44,13 +44,20 @@ function StrobeHazardBeacon({ position }: { position: [number, number, number] }
   const lightRef = useRef<THREE.PointLight>(null);
 
   useFrame((state) => {
-    const strobe = Math.sin(state.clock.elapsedTime * 14) > 0;
-    if (meshRef.current) {
-      meshRef.current.rotation.y += 0.15;
-      (meshRef.current.material as THREE.MeshBasicMaterial).color.set(strobe ? '#ef4444' : '#7f1d1d');
-    }
-    if (lightRef.current) {
-      lightRef.current.intensity = strobe ? 2.5 : 0.2;
+    try {
+      const strobe = Math.sin(state.clock.elapsedTime * 14) > 0;
+      if (meshRef.current) {
+        meshRef.current.rotation.y += 0.15;
+        const mat = meshRef.current.material as any;
+        if (mat && !Array.isArray(mat) && mat.color && typeof mat.color.set === 'function') {
+          mat.color.set(strobe ? '#ef4444' : '#7f1d1d');
+        }
+      }
+      if (lightRef.current) {
+        lightRef.current.intensity = strobe ? 2.5 : 0.2;
+      }
+    } catch (_) {
+      // Guard against frame-time disposal or race conditions
     }
   });
 
@@ -312,21 +319,26 @@ export const TwinNodeRenderer: React.FC<TwinNodeRendererProps> = React.memo(({
   const [liveThermalValue, setLiveThermalValue] = useState(0.2);
 
   useFrame(() => {
-    const state = liveStateRef.current?.[layout.name] as any;
-    const isFailed = state?.status === 'failure';
-    if (isFailed !== failed) {
-      setFailed(isFailed);
-    }
-    // Calculate simulated thermal load
-    if (visualMode === 'thermal') {
-      const val = state?.value ?? state?.temperature ?? state?.load;
-      if (typeof val === 'number') {
-        const norm = isFailed ? 1.0 : Math.min(Math.max((val - 15) / 50, 0.1), 0.95);
-        setLiveThermalValue(norm);
-      } else if (isFailed) {
-        setLiveThermalValue(1.0);
+    try {
+      const state = liveStateRef.current?.[layout.name] as any;
+      const s = (state?.status || '').toLowerCase();
+      const isFailed = s === 'failure' || s === 'failed' || s === 'critical';
+      if (isFailed !== failed) {
+        setFailed(isFailed);
       }
-    }
+      // Calculate simulated thermal load
+      if (visualMode === 'thermal') {
+        const val = state?.value ?? state?.temperature ?? state?.load;
+        if (typeof val === 'number') {
+          const norm = isFailed ? 1.0 : Math.min(Math.max((val - 15) / 50, 0.1), 0.95);
+          if (Math.abs(norm - liveThermalValue) > 0.05) {
+            setLiveThermalValue(norm);
+          }
+        } else if (isFailed && liveThermalValue !== 1.0) {
+          setLiveThermalValue(1.0);
+        }
+      }
+    } catch (_) {}
   });
 
   const mat = useMemo(

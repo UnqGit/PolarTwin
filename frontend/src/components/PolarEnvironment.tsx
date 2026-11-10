@@ -5,44 +5,83 @@ import * as THREE from 'three';
 import { useTwinVisual } from './TwinVisualContext';
 import { useTheme } from './ThemeContext';
 
-/* ── Blizzard Snow Particles ─────────────────────────────────── */
+/* ── Volumetric Polar Blizzard Storm Particles ─────────────────── */
 function BlizzardStorm({ active }: { active: boolean }) {
   const pointsRef = useRef<THREE.Points>(null);
-  const count = 450;
+  const count = 1600;
 
-  const [positions, speeds] = useMemo(() => {
+  // Precompute random particle states: initial positions, fall speeds, swirl frequencies, and phases
+  const [positions, particleData] = useMemo(() => {
     const pos = new Float32Array(count * 3);
-    const spd = new Float32Array(count);
-    for (let i = 0; i < count; i++) {
-      // Deterministic pseudo-random generation for React purity
-      const s1 = Math.sin(i * 19.123 + 1.2) * 43758.5453;
-      const r1 = s1 - Math.floor(s1);
-      const s2 = Math.sin(i * 47.654 + 3.4) * 43758.5453;
-      const r2 = s2 - Math.floor(s2);
-      const s3 = Math.sin(i * 83.912 + 5.6) * 43758.5453;
-      const r3 = s3 - Math.floor(s3);
+    // [fallSpeed, driftSpeed, phaseX, phaseZ, freq]
+    const data = new Float32Array(count * 5);
 
-      pos[i * 3] = (r1 - 0.5) * 80;
-      pos[i * 3 + 1] = r2 * 25 + 0.2;
-      pos[i * 3 + 2] = (r3 - 0.5) * 80;
-      spd[i] = r1 * 0.25 + 0.15;
+    for (let i = 0; i < count; i++) {
+      const s1 = Math.sin(i * 12.9898 + 1.234) * 43758.5453;
+      const r1 = s1 - Math.floor(s1);
+      const s2 = Math.sin(i * 78.233 + 4.567) * 43758.5453;
+      const r2 = s2 - Math.floor(s2);
+      const s3 = Math.sin(i * 37.719 + 8.912) * 43758.5453;
+      const r3 = s3 - Math.floor(s3);
+      const s4 = Math.sin(i * 53.179 + 3.141) * 43758.5453;
+      const r4 = s4 - Math.floor(s4);
+
+      // Broad 3D volume covering camera viewport and entire station
+      pos[i * 3] = (r1 - 0.5) * 160;      // X: -80 to +80
+      pos[i * 3 + 1] = r2 * 50 + 0.2;     // Y: 0.2 to 50
+      pos[i * 3 + 2] = (r3 - 0.5) * 160;  // Z: -80 to +80
+
+      data[i * 5] = r1 * 2.2 + 1.6;       // fall speed: 1.6 to 3.8
+      data[i * 5 + 1] = r2 * 3.5 + 3.0;   // base wind drift: 3.0 to 6.5
+      data[i * 5 + 2] = r3 * Math.PI * 2; // phaseX
+      data[i * 5 + 3] = r4 * Math.PI * 2; // phaseZ
+      data[i * 5 + 4] = r1 * 1.5 + 0.8;   // frequency
     }
-    return [pos, spd];
+    return [pos, data];
   }, []);
 
-  useFrame((_, delta) => {
+  useFrame((state, delta) => {
     if (!pointsRef.current || !active) return;
     const pos = pointsRef.current.geometry.attributes.position.array as Float32Array;
-    for (let i = 0; i < count; i++) {
-      // Katabatic wind carrying snow horizontally & downward
-      pos[i * 3] += speeds[i] * delta * 45; // Drift along +X
-      pos[i * 3 + 1] -= speeds[i] * delta * 20; // Falling down
-      pos[i * 3 + 2] += speeds[i] * delta * 12; // Slight Z skew
+    const time = state.clock.getElapsedTime();
+    // Gentle macro wind gust
+    const gustX = Math.sin(time * 0.35) * 1.8;
+    const gustZ = Math.cos(time * 0.25) * 1.2;
 
-      // Wrap boundaries
-      if (pos[i * 3] > 40) pos[i * 3] = -40;
-      if (pos[i * 3 + 1] < 0.1) pos[i * 3 + 1] = 25;
-      if (pos[i * 3 + 2] > 40) pos[i * 3 + 2] = -40;
+    for (let i = 0; i < count; i++) {
+      const idx = i * 3;
+      const dIdx = i * 5;
+      const fallSpd = particleData[dIdx];
+      const driftSpd = particleData[dIdx + 1];
+      const phaseX = particleData[dIdx + 2];
+      const phaseZ = particleData[dIdx + 3];
+      const freq = particleData[dIdx + 4];
+
+      // Swirling harmonic turbulence (curling eddy motion instead of parallel lines)
+      const swirlX = Math.sin(time * freq + phaseX) * 2.2;
+      const swirlZ = Math.cos(time * freq * 0.85 + phaseZ) * 2.0;
+      const flutterY = Math.sin(time * 1.8 + phaseX) * 0.4;
+
+      // Update positions with natural variable drift
+      pos[idx] += (driftSpd + gustX + swirlX) * delta;
+      pos[idx + 1] -= (fallSpd + flutterY) * delta;
+      pos[idx + 2] += (swirlZ + gustZ) * delta;
+
+      // Continuous volumetric wrap-around with randomized reinjection
+      if (pos[idx + 1] < 0.2) {
+        pos[idx + 1] = 48 + Math.sin(i + time) * 2;
+        pos[idx] = (Math.sin(i * 17.3 + time) * 0.5) * 160;
+        pos[idx + 2] = (Math.cos(i * 29.1 + time) * 0.5) * 160;
+      }
+      if (pos[idx] > 80) {
+        pos[idx] = -80;
+        pos[idx + 1] = Math.random() * 45 + 5;
+      }
+      if (pos[idx + 2] > 80) {
+        pos[idx + 2] = -80;
+      } else if (pos[idx + 2] < -80) {
+        pos[idx + 2] = 80;
+      }
     }
     pointsRef.current.geometry.attributes.position.needsUpdate = true;
   });
@@ -55,10 +94,10 @@ function BlizzardStorm({ active }: { active: boolean }) {
         <bufferAttribute attach="attributes-position" args={[positions, 3]} />
       </bufferGeometry>
       <pointsMaterial
-        size={0.16}
+        size={0.24}
         color="#e0f2fe"
         transparent
-        opacity={0.8}
+        opacity={0.78}
         blending={THREE.AdditiveBlending}
         depthWrite={false}
       />

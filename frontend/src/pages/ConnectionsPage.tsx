@@ -271,55 +271,81 @@ const GraphContainer: React.FC<GraphContainerProps> = ({
     return els;
   }, [allNodes, connections, root.name]);
 
+  // Track active layout instance to prevent async callbacks after destroy
+  const activeLayoutRef = useRef<cytoscape.Layouts | null>(null);
+
   // Run layout function
   const runLayout = useCallback((algo: 'elk' | 'breadthfirst' | 'concentric') => {
     if (!cyRef.current) return;
     const cy = cyRef.current;
+    if (cy.destroyed && cy.destroyed()) return;
 
-    if (algo === 'elk') {
-      cy.elements().not('.real-edge').layout({
-        name: 'elk',
-        nodeDimensionsIncludeLabels: true,
-        fit: true,
-        padding: 50,
-        animate: false,
-        elk: {
-          algorithm: 'layered',
-          'elk.direction': 'DOWN',
-          'elk.edgeRouting': 'ORTHOGONAL',
-          'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
-          'elk.layered.crossingMinimization.greedySwitch.type': 'TWO_SIDED',
-          'elk.layered.thoroughness': '100',
-          'elk.layered.spacing.nodeNodeBetweenLayers': '60',
-          'elk.spacing.nodeNode': '40',
-          'elk.spacing.edgeNode': '30',
-          'elk.spacing.edgeEdge': '20',
-          'elk.layered.spacing.edgeNodeBetweenLayers': '30',
-          'elk.layered.spacing.edgeEdgeBetweenLayers': '25',
-          'elk.hierarchyHandling': 'INCLUDE_CHILDREN',
-          'elk.padding': '[top=30,left=20,bottom=20,right=20]',
-          'elk.randomSeed': '1',
-        },
-      } as any).run();
-    } else if (algo === 'breadthfirst') {
-      cy.elements().layout({
-        name: 'breadthfirst',
-        directed: true,
-        fit: true,
-        padding: 40,
-        animate: true,
-        animationDuration: 400
-      } as any).run();
-    } else if (algo === 'concentric') {
-      cy.elements().layout({
-        name: 'concentric',
-        fit: true,
-        padding: 40,
-        animate: true,
-        animationDuration: 400,
-        concentric: (node: any) => node.degree(),
-        levelWidth: () => 2
-      } as any).run();
+    // Do not run layouts if container is not visible / 0x0
+    if (!containerRef.current || containerRef.current.clientWidth === 0 || containerRef.current.clientHeight === 0) {
+      return;
+    }
+
+    if (activeLayoutRef.current) {
+      try {
+        activeLayoutRef.current.stop();
+      } catch (e) {}
+      activeLayoutRef.current = null;
+    }
+
+    try {
+      if (algo === 'elk') {
+        const layout = cy.elements().not('.real-edge').layout({
+          name: 'elk',
+          nodeDimensionsIncludeLabels: true,
+          fit: true,
+          padding: 50,
+          animate: false,
+          elk: {
+            algorithm: 'layered',
+            'elk.direction': 'DOWN',
+            'elk.edgeRouting': 'ORTHOGONAL',
+            'elk.layered.crossingMinimization.strategy': 'LAYER_SWEEP',
+            'elk.layered.crossingMinimization.greedySwitch.type': 'TWO_SIDED',
+            'elk.layered.thoroughness': '100',
+            'elk.layered.spacing.nodeNodeBetweenLayers': '60',
+            'elk.spacing.nodeNode': '40',
+            'elk.spacing.edgeNode': '30',
+            'elk.spacing.edgeEdge': '20',
+            'elk.layered.spacing.edgeNodeBetweenLayers': '30',
+            'elk.layered.spacing.edgeEdgeBetweenLayers': '25',
+            'elk.hierarchyHandling': 'INCLUDE_CHILDREN',
+            'elk.padding': '[top=30,left=20,bottom=20,right=20]',
+            'elk.randomSeed': '1',
+          },
+        } as any);
+        activeLayoutRef.current = layout;
+        layout.run();
+      } else if (algo === 'breadthfirst') {
+        const layout = cy.elements().layout({
+          name: 'breadthfirst',
+          directed: true,
+          fit: true,
+          padding: 40,
+          animate: true,
+          animationDuration: 400
+        } as any);
+        activeLayoutRef.current = layout;
+        layout.run();
+      } else if (algo === 'concentric') {
+        const layout = cy.elements().layout({
+          name: 'concentric',
+          fit: true,
+          padding: 40,
+          animate: true,
+          animationDuration: 400,
+          concentric: (node: any) => node.degree(),
+          levelWidth: () => 2
+        } as any);
+        activeLayoutRef.current = layout;
+        layout.run();
+      }
+    } catch (e) {
+      console.warn('Cytoscape layout execution error:', e);
     }
   }, []);
 
@@ -672,46 +698,56 @@ const GraphContainer: React.FC<GraphContainerProps> = ({
     });
 
     cyRef.current = cy;
-    runLayout('elk');
+    let hasInitialLayoutRun = false;
+    if (containerRef.current.clientWidth > 0 && containerRef.current.clientHeight > 0) {
+      hasInitialLayoutRun = true;
+      runLayout('elk');
+    }
 
     const updateZoomTypography = () => {
-      const z = cy.zoom();
-      const calcFSize = (base: number, sMin: number, sMax: number, zHide: number) => {
-        if (z < zHide) return 0.001;
-        const screen = base * z;
-        return (Math.min(Math.max(screen, sMin), sMax)) / z;
-      };
+      if (cy.destroyed && cy.destroyed()) return;
+      try {
+        const z = cy.zoom();
+        const calcFSize = (base: number, sMin: number, sMax: number, zHide: number) => {
+          if (z < zHide) return 0.001;
+          const screen = base * z;
+          return (Math.min(Math.max(screen, sMin), sMax)) / z;
+        };
 
-      cy.style()
-        .selector('node[depth = 0], :parent[depth = 0]')
-        .style({ 'font-size': `${calcFSize(120, 14, 24, 0.05)}px` })
-        .selector('node[depth = 1], :parent[depth = 1]')
-        .style({ 'font-size': `${calcFSize(80, 12, 18, 0.15)}px` })
-        .selector('node[depth >= 2]')
-        .style({ 'font-size': `${calcFSize(40, 10, 14, 0.25)}px` })
-        .update();
+        cy.style()
+          .selector('node[depth = 0], :parent[depth = 0]')
+          .style({ 'font-size': `${calcFSize(120, 14, 24, 0.05)}px` })
+          .selector('node[depth = 1], :parent[depth = 1]')
+          .style({ 'font-size': `${calcFSize(80, 12, 18, 0.15)}px` })
+          .selector('node[depth >= 2]')
+          .style({ 'font-size': `${calcFSize(40, 10, 14, 0.25)}px` })
+          .update();
 
-      const edgeOpacity = z < 0.25 ? 0.2 : (z < 0.6 ? 0.2 + (z - 0.25)/0.35 * 0.55 : 0.75);
-      cy.style().selector('.internal-edge:not(.highlighted):not(.connection-selected):not(.trace-highlight):not(.trace-blast), .real-edge:not(.highlighted):not(.connection-selected):not(.trace-highlight):not(.trace-blast)').style({ 'opacity': edgeOpacity }).update();
+        const edgeOpacity = z < 0.25 ? 0.2 : (z < 0.6 ? 0.2 + (z - 0.25)/0.35 * 0.55 : 0.75);
+        cy.style().selector('.internal-edge:not(.highlighted):not(.connection-selected):not(.trace-highlight):not(.trace-blast), .real-edge:not(.highlighted):not(.connection-selected):not(.trace-highlight):not(.trace-blast)').style({ 'opacity': edgeOpacity }).update();
+      } catch (e) {}
     };
 
     cy.on('zoom', updateZoomTypography);
 
     cy.on('layoutstop', () => {
-      cy.fit(undefined, 50);
-      const initialZoom = cy.zoom();
-      cy.minZoom(initialZoom / 3.5);
+      if (cy.destroyed && cy.destroyed()) return;
+      try {
+        cy.fit(undefined, 50);
+        const initialZoom = cy.zoom();
+        cy.minZoom(initialZoom / 3.5);
 
-      cy.edges('.internal-edge').forEach((e: any) => {
-        const pIdx = e.data('parallelIndex') || 0;
-        const pTotal = e.data('parallelTotal') || 1;
-        if (pTotal > 1) {
-          const offset = 40 + (pIdx - (pTotal - 1) / 2) * 20;
-          e.style('taxi-turn', `${offset}px`);
-        }
-      });
+        cy.edges('.internal-edge').forEach((e: any) => {
+          const pIdx = e.data('parallelIndex') || 0;
+          const pTotal = e.data('parallelTotal') || 1;
+          if (pTotal > 1) {
+            const offset = 40 + (pIdx - (pTotal - 1) / 2) * 20;
+            e.style('taxi-turn', `${offset}px`);
+          }
+        });
 
-      updateZoomTypography();
+        updateZoomTypography();
+      } catch (e) {}
     });
 
     const handleMouseOver = (e: cytoscape.EventObject) => {
@@ -755,16 +791,33 @@ const GraphContainer: React.FC<GraphContainerProps> = ({
     cy.on('tap', 'node', handleNodeTap);
     cy.on('tap', handleBgTap);
 
-    const observer = new ResizeObserver(() => {
-      if (cy) {
-        cy.resize();
+    const observer = new ResizeObserver((entries) => {
+      if (cy && !cy.destroyed()) {
+        try {
+          const entry = entries[0];
+          if (entry && entry.contentRect.width > 0 && entry.contentRect.height > 0) {
+            cy.resize();
+            if (!hasInitialLayoutRun) {
+              hasInitialLayoutRun = true;
+              runLayout(layoutAlgorithm);
+            }
+          }
+        } catch (e) {}
       }
     });
     observer.observe(containerRef.current);
 
     return () => {
       observer.disconnect();
-      cy.destroy();
+      if (activeLayoutRef.current) {
+        try {
+          activeLayoutRef.current.stop();
+        } catch (e) {}
+        activeLayoutRef.current = null;
+      }
+      try {
+        cy.destroy();
+      } catch (e) {}
       cyRef.current = null;
     };
   }, [elements, setHoveredName, setSelectedName, runLayout, isLight]);

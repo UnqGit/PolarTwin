@@ -74,10 +74,11 @@ export const ConnectionsStatsRibbon: React.FC<ConnectionsStatsRibbonProps> = ({
     return { activeCount: act, degradedCount: deg, totalWatts: watts };
   }, [connections, liveStateRef]);
 
-  const formatKw = (w: number) => {
-    if (w >= 1000000) return `${(w / 1000000).toFixed(1)} MW`;
-    if (w >= 1000) return `${(w / 1000).toFixed(1)} kW`;
-    return `${w.toFixed(0)} W`;
+  const formatKw = (w: any) => {
+    const num = typeof w === 'number' && !isNaN(w) ? w : (Number(w) || 0);
+    if (num >= 1000000) return `${(num / 1000000).toFixed(1)} MW`;
+    if (num >= 1000) return `${(num / 1000).toFixed(1)} kW`;
+    return `${num.toFixed(0)} W`;
   };
 
   return (

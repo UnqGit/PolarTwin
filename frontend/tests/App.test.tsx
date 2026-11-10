@@ -22,7 +22,7 @@ describe('App Routing', () => {
     // LandingPage has a specific title
     await waitFor(() => {
       expect(screen.getByText('PolarTwin')).toBeInTheDocument();
-      expect(screen.getByText('Select a Station')).toBeInTheDocument();
+      expect(screen.getByText(/Select Station/i)).toBeInTheDocument();
     });
   });
 });

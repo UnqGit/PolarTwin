@@ -114,17 +114,43 @@ const SUBSYSTEM_CONFIGS: Record<string, SubsystemConfig> = {
 /* ═══════════════════════════════════════════════════════
    FORMATTING HELPERS
    ═══════════════════════════════════════════════════════ */
-function formatWatts(w: number): string {
-  if (w >= 1000000) return `${(w / 1000000).toFixed(2)} MW`;
-  if (w >= 1000) return `${(w / 1000).toFixed(1)} kW`;
-  return `${w.toFixed(0)} W`;
+export function extractNumeric(val: any, fallback = 0): number {
+  if (typeof val === 'number') {
+    return isNaN(val) ? fallback : val;
+  }
+  if (typeof val === 'string') {
+    const parsed = parseFloat(val);
+    return isNaN(parsed) ? fallback : parsed;
+  }
+  if (val && typeof val === 'object') {
+    if (typeof val.current === 'number') return val.current;
+    if (typeof val.output === 'number') return val.output;
+    if (typeof val.value === 'number') return val.value;
+    if (typeof val.level === 'number') return val.level;
+    if (typeof val.volume === 'number') return val.volume;
+    if (typeof val.power === 'number') return val.power;
+    if (typeof val.temp === 'number') return val.temp;
+    if (typeof val.temperature === 'number') return val.temperature;
+    for (const key of Object.keys(val)) {
+      if (typeof val[key] === 'number') return val[key];
+    }
+  }
+  return fallback;
 }
 
-function formatSimTime(sec: number): string {
-  if (!sec || sec <= 0) return 'T+00:00:00';
-  const h = Math.floor(sec / 3600);
-  const m = Math.floor((sec % 3600) / 60);
-  const s = Math.floor(sec % 60);
+function formatWatts(w: any): string {
+  const num = extractNumeric(w, 0);
+  if (num >= 1000000) return `${(num / 1000000).toFixed(2)} MW`;
+  if (num >= 1000) return `${(num / 1000).toFixed(1)} kW`;
+  return `${num.toFixed(0)} W`;
+}
+
+function formatSimTime(sec: any): string {
+  const sNum = extractNumeric(sec, 0);
+  if (sNum <= 0) return 'T+00:00:00';
+  const h = Math.floor(sNum / 3600);
+  const m = Math.floor((sNum % 3600) / 60);
+  const s = Math.floor(sNum % 60);
   return `T+${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
@@ -238,31 +264,40 @@ export function Overview() {
       let secondaryMetric = `${activeNodes}/${totalNodes} Nodes Active`;
 
       if (blockName === 'EnergyBlock') {
-        const genPwr = (live['MainGenerator'] as any)?.power 
-          ?? (live['MainGeneratorPower'] as any)?.power
-          ?? 250000;
-        const genTemp = (live['MainGenerator'] as any)?.temperature ?? 52.5;
+        const genPwr = extractNumeric(
+          (live['MainGenerator'] as any)?.power 
+          ?? (live['MainGeneratorPower'] as any)?.power,
+          250000
+        );
+        const genTemp = extractNumeric((live['MainGenerator'] as any)?.temperature, 52.5);
         primaryMetric = `${formatWatts(genPwr)} Output`;
         secondaryMetric = `Temp: ${genTemp.toFixed(1)}°C · 400V Bus`;
       } else if (blockName === 'HVACBlock') {
-        const hvacTemp = (live['MainAC'] as any)?.temperature?.output 
-          ?? (live['HVACBlock'] as any)?.temperature 
-          ?? 16.0;
-        primaryMetric = `Temp: ${typeof hvacTemp === 'number' ? hvacTemp.toFixed(1) : hvacTemp}°C`;
+        const hvacTemp = extractNumeric(
+          (live['MainAC'] as any)?.temperature?.output 
+          ?? (live['MainAC'] as any)?.temperature 
+          ?? (live['HVACBlock'] as any)?.temperature,
+          16.0
+        );
+        primaryMetric = `Temp: ${hvacTemp.toFixed(1)}°C`;
         secondaryMetric = `Airflow: 0.14 m³/s · Nominal`;
       } else if (blockName === 'ControlBlock') {
-        const srvPwr = (live['MainServer'] as any)?.power ?? 600;
-        primaryMetric = `SCADA Server: ${srvPwr}W`;
+        const srvPwr = extractNumeric((live['MainServer'] as any)?.power, 600);
+        primaryMetric = `SCADA Server: ${formatWatts(srvPwr)}`;
         secondaryMetric = `LEO Stream: 57.5 kHz · 14ms`;
       } else if (blockName === 'WaterAndWasteBlock') {
-        const wVol = (live['WaterTank'] as any)?.volume ?? 1500;
+        const wVol = extractNumeric((live['WaterTank'] as any)?.volume, 1500);
         primaryMetric = `Reserves: ${wVol.toFixed(0)} L`;
         secondaryMetric = `Recycle Loop: Active`;
       } else if (blockName === 'ResearchBlock') {
         primaryMetric = `Instruments: Online`;
         secondaryMetric = `Geomagnetic & Met Mast`;
       } else if (blockName === 'InventoryBlock') {
-        const fVol = (live['FuelTank'] as any)?.volume ?? 1500;
+        const fVol = extractNumeric(
+          (live['FuelTank'] as any)?.volume 
+          ?? (live['FuelTank'] as any)?.fuel,
+          1500
+        );
         primaryMetric = `Cryo Fuel: ${fVol.toFixed(0)} L`;
         secondaryMetric = `148 Days Autonomy`;
       }
@@ -297,15 +332,17 @@ export function Overview() {
     const healthPercent = totalNodes > 0 ? Math.round((activeNodes / totalNodes) * 100) : 100;
 
     // Power output calculation
-    const mainPwr = (live['MainGenerator'] as any)?.power ?? 250000;
-    const backupPwr = (live['BackupGenerator'] as any)?.power ?? 0;
+    const mainPwr = extractNumeric((live['MainGenerator'] as any)?.power, 250000);
+    const backupPwr = extractNumeric((live['BackupGenerator'] as any)?.power, 0);
     const isBackupActive = (live['BackupGenerator'] as any)?.status === 'active';
     const totalGenWatts = mainPwr + (isBackupActive ? backupPwr : 0);
 
     // Habitat climate
-    const habitatTemp = (live['Maitri'] as any)?.temperature 
-      ?? (live['HVACBlock'] as any)?.temperature 
-      ?? 18.5;
+    const habitatTemp = extractNumeric(
+      (live['Maitri'] as any)?.temperature 
+      ?? (live['HVACBlock'] as any)?.temperature,
+      18.5
+    );
 
     // Active connection pathways
     const totalConnections = connectionsData.length;
@@ -316,7 +353,7 @@ export function Overview() {
       totalNodes,
       failedNodes,
       totalGenWatts,
-      habitatTemp: typeof habitatTemp === 'number' ? habitatTemp.toFixed(1) : habitatTemp,
+      habitatTemp: habitatTemp.toFixed(1),
       externalTemp: '-24.8',
       windChill: '-36.2',
       totalConnections,

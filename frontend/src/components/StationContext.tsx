@@ -135,14 +135,18 @@ export const StationProvider: React.FC<{ children: ReactNode, stationId?: string
     if (runId && (simStatus === 'running' || simStatus === 'RUNNING')) {
       const interval = setInterval(() => {
         api.getSimulationState(runId).then(data => {
-          setSimStatus(data.status);
-          setSimTime(data.simulation_time);
+          if (!data || typeof data !== 'object') return;
+          if (data.status) setSimStatus(data.status);
+          if (typeof data.simulation_time === 'number') setSimTime(data.simulation_time);
           setSimState(data);
           
-          if (data.components) {
+          if (Array.isArray(data.components)) {
             const newState: Record<string, unknown> = {};
             data.components.forEach((c: any) => {
-              newState[c.name] = { ...c.value, status: c.status };
+              if (c && c.name) {
+                const valObj = (c.value && typeof c.value === 'object') ? c.value : {};
+                newState[c.name] = { ...valObj, status: c.status };
+              }
             });
             liveStateRef.current = newState;
           }
@@ -156,13 +160,14 @@ export const StationProvider: React.FC<{ children: ReactNode, stationId?: string
         });
 
         api.getSimulationLog(runId).then(logs => {
+          if (!logs) return;
           if (Array.isArray(logs)) {
              // Fallback just in case backend hasn't restarted yet
              setSimLog(logs);
              setDiagLog([]);
           } else {
-             setSimLog(logs.simLog || []);
-             setDiagLog(logs.diagLog || []);
+             setSimLog(Array.isArray(logs.simLog) ? logs.simLog : []);
+             setDiagLog(Array.isArray(logs.diagLog) ? logs.diagLog : []);
           }
         }).catch(err => console.error("Error polling sim log:", err));
       }, 1000);

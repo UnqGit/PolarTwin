@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { DiagnosticsPage } from '../../src/pages/DiagnosticsPage';
 import { StationContext } from '../../src/components/StationContext';
 import { api } from '../../src/lib/api';
@@ -51,17 +52,19 @@ describe('DiagnosticsPage', () => {
 
   it('renders simulation history layout', async () => {
     render(
-      <StationContext.Provider value={{
-        selectedStation: 'Station1',
-        hierarchy: null,
-        connections: null,
-        spec: null,
-        availableStations: [],
-        isLoadingData: false,
-        setSelectedStation: vi.fn()
-      } as any}>
-        <DiagnosticsPage />
-      </StationContext.Provider>
+      <MemoryRouter>
+        <StationContext.Provider value={{
+          selectedStation: 'Station1',
+          hierarchy: null,
+          connections: null,
+          spec: null,
+          availableStations: [],
+          isLoadingData: false,
+          setSelectedStation: vi.fn()
+        } as any}>
+          <DiagnosticsPage />
+        </StationContext.Provider>
+      </MemoryRouter>
     );
 
     expect(screen.getByText('Simulation History')).toBeInTheDocument();
@@ -74,26 +77,34 @@ describe('DiagnosticsPage', () => {
 
   it('loads run details when a run is selected', async () => {
     render(
-      <StationContext.Provider value={{
-        selectedStation: 'Station1',
-        hierarchy: null,
-        connections: null,
-        spec: null,
-        availableStations: [],
-        isLoadingData: false,
-        setSelectedStation: vi.fn()
-      } as any}>
-        <DiagnosticsPage />
-      </StationContext.Provider>
+      <MemoryRouter>
+        <StationContext.Provider value={{
+          selectedStation: 'Station1',
+          hierarchy: null,
+          connections: null,
+          spec: null,
+          availableStations: [],
+          isLoadingData: false,
+          setSelectedStation: vi.fn()
+        } as any}>
+          <DiagnosticsPage />
+        </StationContext.Provider>
+      </MemoryRouter>
     );
 
     await waitFor(() => {
       expect(screen.getAllByRole('option').length).toBeGreaterThan(1);
     });
 
-    const runSelect = screen.getByRole('combobox');
-    
-    // Change run selection
+    const comboboxes = screen.getAllByRole('combobox');
+    const scenarioSelect = comboboxes[0];
+    fireEvent.change(scenarioSelect, { target: { value: 'Manual' } });
+
+    await waitFor(() => {
+      expect(screen.getAllByRole('combobox')[1]).not.toBeDisabled();
+    });
+
+    const runSelect = screen.getAllByRole('combobox')[1];
     fireEvent.change(runSelect, { target: { value: 'run-1' } });
     
     // Should fetch metadata, events, and logs
