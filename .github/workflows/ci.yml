@@ -9,52 +9,50 @@ on:
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.11'
-        
-    - name: Install dependencies
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+
+    - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-        pip install pytest pyright
+        pip install pytest pyright ruff
 
-    - name: Format Check (Black)
+    - name: Format Check (Ruff)
       run: |
-        pip install black
-        black --check src/ tests/
+        ruff format --check src/ tests/
+
+    - name: Lint (Ruff)
+      run: |
+        ruff check src/ tests/
 
     - name: Typecheck
       run: |
         pyright
 
-    - name: Lint (Ruff)
-      run: |
-        pip install ruff
-        ruff check src/ tests/
-
     - name: Backend Unit Tests (Pytest)
       run: |
-        PYTHONPATH=src pytest tests/
-        
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-        
+        pytest
+
     - name: Install Frontend Dependencies
       working-directory: ./frontend
       run: npm ci
-      
+
     - name: Frontend Tests
       working-directory: ./frontend
-      run: npm run test -- --watchAll=false
-      
+      run: npm run test
+
     - name: Production Build
       working-directory: ./frontend
       run: npm run build
